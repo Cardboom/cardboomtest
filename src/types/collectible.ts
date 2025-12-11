@@ -1,5 +1,6 @@
 export interface Collectible {
   id: string;
+  priceId: string;
   name: string;
   category: 'nba' | 'football' | 'tcg' | 'figures';
   image: string;
