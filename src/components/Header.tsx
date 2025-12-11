@@ -19,10 +19,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-display font-bold text-lg">V</span>
+              <span className="text-primary-foreground font-display font-bold text-lg">C</span>
             </div>
             <span className="font-display text-xl font-bold text-foreground hidden sm:block">
-              VAULT<span className="text-primary">X</span>
+              CARD<span className="text-primary">BOOM</span>
             </span>
           </div>
 
