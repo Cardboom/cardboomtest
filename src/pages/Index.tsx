@@ -12,6 +12,7 @@ import { PriceChart } from '@/components/PriceChart';
 import { Footer } from '@/components/Footer';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
+import { useLivePrices } from '@/hooks/useLivePrices';
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -19,10 +20,30 @@ const Index = () => {
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Get live prices for all collectibles
+  const productIds = useMemo(() => mockCollectibles.map(c => c.priceId), []);
+  const { prices, lastUpdated } = useLivePrices({ productIds, refreshInterval: 15000 });
+
+  // Merge live prices with collectibles
+  const collectiblesWithLivePrices = useMemo(() => {
+    return mockCollectibles.map(collectible => {
+      const livePrice = prices[collectible.priceId];
+      if (livePrice) {
+        return {
+          ...collectible,
+          price: livePrice.price,
+          priceChange: livePrice.change,
+          previousPrice: Math.round(livePrice.price / (1 + livePrice.change / 100)),
+        };
+      }
+      return collectible;
+    });
+  }, [prices]);
+
   const filteredCollectibles = useMemo(() => {
-    if (selectedCategory === 'all') return mockCollectibles;
-    return mockCollectibles.filter((item) => item.category === selectedCategory);
-  }, [selectedCategory]);
+    if (selectedCategory === 'all') return collectiblesWithLivePrices;
+    return collectiblesWithLivePrices.filter((item) => item.category === selectedCategory);
+  }, [selectedCategory, collectiblesWithLivePrices]);
 
   const handleAddToCart = (collectible: Collectible) => {
     if (cartItems.find((item) => item.id === collectible.id)) {
@@ -52,14 +73,14 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-3 gap-6 mb-12">
               <div className="lg:col-span-2">
-                <PriceChart title="VaultX Market Index" />
+                <PriceChart title="Cardboom Market Index" />
               </div>
               <div className="space-y-6">
                 <div className="glass rounded-xl p-6">
                   <h3 className="font-display text-lg font-semibold text-foreground mb-4">
                     Top Gainers 📈
                   </h3>
-                  {mockCollectibles
+                  {collectiblesWithLivePrices
                     .filter((item) => item.priceChange > 0)
                     .sort((a, b) => b.priceChange - a.priceChange)
                     .slice(0, 3)
@@ -81,7 +102,7 @@ const Index = () => {
                   <h3 className="font-display text-lg font-semibold text-foreground mb-4">
                     Top Losers 📉
                   </h3>
-                  {mockCollectibles
+                  {collectiblesWithLivePrices
                     .filter((item) => item.priceChange < 0)
                     .sort((a, b) => a.priceChange - b.priceChange)
                     .slice(0, 3)
