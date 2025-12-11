@@ -8,10 +8,10 @@ export const Footer = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-display font-bold">V</span>
+                <span className="text-primary-foreground font-display font-bold">C</span>
               </div>
               <span className="font-display text-lg font-bold">
-                VAULT<span className="text-primary">X</span>
+                CARD<span className="text-primary">BOOM</span>
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -52,7 +52,7 @@ export const Footer = () => {
 
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border/50">
           <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-            © 2024 VaultX. All rights reserved.
+            © 2024 Cardboom. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
