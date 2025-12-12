@@ -835,36 +835,92 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_commissions: {
+        Row: {
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          event_type: string
+          id: string
+          referral_id: string | null
+          referred_id: string
+          referrer_id: string
+          source_amount: number
+        }
+        Insert: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          event_type: string
+          id?: string
+          referral_id?: string | null
+          referred_id: string
+          referrer_id: string
+          source_amount?: number
+        }
+        Update: {
+          commission_amount?: number
+          commission_rate?: number
+          created_at?: string
+          event_type?: string
+          id?: string
+          referral_id?: string | null
+          referred_id?: string
+          referrer_id?: string
+          source_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_commissions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
+          commission_earned: number | null
           completed_at: string | null
           created_at: string
           id: string
           referral_code: string
+          referred_deposit_total: number | null
           referred_id: string
+          referred_trade_volume: number | null
           referrer_id: string
           reward_amount: number | null
           status: string
+          tier: string | null
         }
         Insert: {
+          commission_earned?: number | null
           completed_at?: string | null
           created_at?: string
           id?: string
           referral_code: string
+          referred_deposit_total?: number | null
           referred_id: string
+          referred_trade_volume?: number | null
           referrer_id: string
           reward_amount?: number | null
           status?: string
+          tier?: string | null
         }
         Update: {
+          commission_earned?: number | null
           completed_at?: string | null
           created_at?: string
           id?: string
           referral_code?: string
+          referred_deposit_total?: number | null
           referred_id?: string
+          referred_trade_volume?: number | null
           referrer_id?: string
           reward_amount?: number | null
           status?: string
+          tier?: string | null
         }
         Relationships: []
       }
