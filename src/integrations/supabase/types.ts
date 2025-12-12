@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_logins: {
+        Row: {
+          created_at: string
+          id: string
+          login_date: string
+          streak_count: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          login_date?: string
+          streak_count?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          login_date?: string
+          streak_count?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           allows_shipping: boolean
@@ -217,7 +241,13 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          level: number | null
+          national_id: string | null
+          phone: string | null
+          phone_verified: boolean | null
           updated_at: string
+          wire_transfer_code: string | null
+          xp: number | null
         }
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
@@ -227,7 +257,13 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          level?: number | null
+          national_id?: string | null
+          phone?: string | null
+          phone_verified?: boolean | null
           updated_at?: string
+          wire_transfer_code?: string | null
+          xp?: number | null
         }
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
@@ -237,7 +273,49 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          level?: number | null
+          national_id?: string | null
+          phone?: string | null
+          phone_verified?: boolean | null
           updated_at?: string
+          wire_transfer_code?: string | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
+      rewards_catalog: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          stock: number | null
+          type: Database["public"]["Enums"]["reward_type"]
+          value_amount: number | null
+          xp_cost: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          stock?: number | null
+          type: Database["public"]["Enums"]["reward_type"]
+          value_amount?: number | null
+          xp_cost: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          stock?: number | null
+          type?: Database["public"]["Enums"]["reward_type"]
+          value_amount?: number | null
+          xp_cost?: number
         }
         Relationships: []
       }
@@ -278,6 +356,80 @@ export type Database = {
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_ibans: {
+        Row: {
+          bank_name: string | null
+          created_at: string
+          holder_name: string
+          iban: string
+          id: string
+          is_primary: boolean | null
+          is_verified: boolean | null
+          user_id: string
+        }
+        Insert: {
+          bank_name?: string | null
+          created_at?: string
+          holder_name: string
+          iban: string
+          id?: string
+          is_primary?: boolean | null
+          is_verified?: boolean | null
+          user_id: string
+        }
+        Update: {
+          bank_name?: string | null
+          created_at?: string
+          holder_name?: string
+          iban?: string
+          id?: string
+          is_primary?: boolean | null
+          is_verified?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_rewards: {
+        Row: {
+          claimed_at: string
+          code: string | null
+          expires_at: string | null
+          id: string
+          reward_id: string
+          status: Database["public"]["Enums"]["reward_status"]
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          code?: string | null
+          expires_at?: string | null
+          id?: string
+          reward_id: string
+          status?: Database["public"]["Enums"]["reward_status"]
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          code?: string | null
+          expires_at?: string | null
+          id?: string
+          reward_id?: string
+          status?: Database["public"]["Enums"]["reward_status"]
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards_catalog"
             referencedColumns: ["id"]
           },
         ]
@@ -429,12 +581,93 @@ export type Database = {
         }
         Relationships: []
       }
+      wire_transfers: {
+        Row: {
+          amount: number
+          commission_rate: number | null
+          created_at: string
+          currency: string | null
+          id: string
+          matched_code: string | null
+          net_amount: number | null
+          notes: string | null
+          processed_at: string | null
+          sender_iban: string | null
+          sender_name: string | null
+          status: Database["public"]["Enums"]["wire_transfer_status"]
+          transfer_description: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          commission_rate?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          matched_code?: string | null
+          net_amount?: number | null
+          notes?: string | null
+          processed_at?: string | null
+          sender_iban?: string | null
+          sender_name?: string | null
+          status?: Database["public"]["Enums"]["wire_transfer_status"]
+          transfer_description?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          commission_rate?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          matched_code?: string | null
+          net_amount?: number | null
+          notes?: string | null
+          processed_at?: string | null
+          sender_iban?: string | null
+          sender_name?: string | null
+          status?: Database["public"]["Enums"]["wire_transfer_status"]
+          transfer_description?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      xp_history: {
+        Row: {
+          action: Database["public"]["Enums"]["xp_action_type"]
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["xp_action_type"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          user_id: string
+          xp_earned: number
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["xp_action_type"]
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_level: { Args: { xp_amount: number }; Returns: number }
     }
     Enums: {
       account_type: "buyer" | "seller" | "both"
@@ -448,6 +681,12 @@ export type Database = {
         | "delivered"
         | "completed"
         | "cancelled"
+      reward_status: "available" | "claimed" | "expired" | "used"
+      reward_type:
+        | "voucher"
+        | "free_shipping"
+        | "early_access"
+        | "exclusive_drop"
       transaction_type:
         | "topup"
         | "purchase"
@@ -457,6 +696,16 @@ export type Database = {
         | "withdrawal"
       verification_status: "pending" | "approved" | "rejected"
       waitlist_interest: "buyer" | "seller" | "both"
+      wire_transfer_status: "pending" | "matched" | "confirmed" | "rejected"
+      xp_action_type:
+        | "purchase"
+        | "sale"
+        | "listing"
+        | "referral"
+        | "daily_login"
+        | "review"
+        | "first_purchase"
+        | "streak_bonus"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -596,6 +845,13 @@ export const Constants = {
         "completed",
         "cancelled",
       ],
+      reward_status: ["available", "claimed", "expired", "used"],
+      reward_type: [
+        "voucher",
+        "free_shipping",
+        "early_access",
+        "exclusive_drop",
+      ],
       transaction_type: [
         "topup",
         "purchase",
@@ -606,6 +862,17 @@ export const Constants = {
       ],
       verification_status: ["pending", "approved", "rejected"],
       waitlist_interest: ["buyer", "seller", "both"],
+      wire_transfer_status: ["pending", "matched", "confirmed", "rejected"],
+      xp_action_type: [
+        "purchase",
+        "sale",
+        "listing",
+        "referral",
+        "daily_login",
+        "review",
+        "first_purchase",
+        "streak_bonus",
+      ],
     },
   },
 } as const
