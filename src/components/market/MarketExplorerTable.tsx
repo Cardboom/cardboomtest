@@ -6,6 +6,7 @@ import { MarketFilters, SortOption } from '@/pages/Explorer';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 // Mock data for demonstration - in production this comes from market_items table
 const MOCK_MARKET_DATA = [
@@ -32,6 +33,7 @@ interface MarketExplorerTableProps {
 
 export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: MarketExplorerTableProps) => {
   const navigate = useNavigate();
+  const { formatPrice: formatCurrency } = useCurrency();
   const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
 
@@ -148,9 +150,7 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
   };
 
   const formatPrice = (price: number) => {
-    if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
-    if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
-    return `$${price.toLocaleString()}`;
+    return formatCurrency(price);
   };
 
   const getLiquidityColor = (liquidity: string) => {

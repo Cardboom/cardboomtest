@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Listing {
   id: string;
@@ -30,6 +31,7 @@ interface ListingsTableProps {
 
 export const ListingsTable = ({ category, search }: ListingsTableProps) => {
   const navigate = useNavigate();
+  const { formatPrice: formatCurrency } = useCurrency();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -71,9 +73,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
   };
 
   const formatPrice = (price: number) => {
-    if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
-    if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
-    return `$${price.toLocaleString()}`;
+    return formatCurrency(price);
   };
 
   const getCategoryLabel = (cat: string) => {

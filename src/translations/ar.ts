@@ -1,0 +1,123 @@
+import { Translations } from "./en";
+
+export const ar: Translations = {
+  // Navigation
+  nav: {
+    marketplace: "السوق",
+    portfolio: "المحفظة",
+    sell: "بيع",
+    learn: "تعلم",
+    signIn: "تسجيل الدخول",
+    signOut: "تسجيل الخروج",
+    profile: "الملف الشخصي",
+    search: "ابحث عن المقتنيات...",
+  },
+  // Hero
+  hero: {
+    badge: "تداول مباشر",
+    title: "انطلق بمجموعتك",
+    titleHighlight: "الآن",
+    subtitle: "أسعار فورية • تسوية لحظية",
+    description: "انضم إلى السوق الرائد لبطاقات التداول والمقتنيات النادرة. أسعار فورية، معاملات آمنة، ومجتمع من الجامعين الموثقين.",
+    startTrading: "ابدأ التداول",
+    exploreMarket: "استكشف السوق",
+    totalVolume: "إجمالي الحجم",
+    volume24h: "حجم 24 ساعة",
+    activeListings: "الإعلانات النشطة",
+    traders: "المتداولون",
+  },
+  // Waitlist
+  waitlist: {
+    badge: "قريباً",
+    title: "احصل على وصول مبكر إلى Cardboom",
+    description: "السوق الرائد لبطاقات التداول والمقتنيات. انضم لقائمة الانتظار للحصول على وصول مبكر حصري.",
+    features: {
+      pricing: "أسعار فورية",
+      secure: "معاملات آمنة",
+      verified: "متداولون موثقون",
+    },
+    form: {
+      email: "البريد الإلكتروني",
+      emailPlaceholder: "you@example.com",
+      interest: "أنا مهتم بـ",
+      buying: "الشراء",
+      selling: "البيع",
+      both: "كلاهما",
+      submit: "انضم لقائمة الانتظار",
+      submitting: "جارٍ الانضمام...",
+      disclaimer: "بالانضمام، توافق على تلقي تحديثات حول Cardboom. لا رسائل مزعجة أبداً.",
+      skip: "تخطى واستعرض السوق ←",
+    },
+    success: {
+      title: "أنت مسجل!",
+      description: "سنرسل لك بريداً إلكترونياً عند إطلاق Cardboom. في الوقت الحالي، استكشف المعاينة.",
+      explore: "استكشف المعاينة",
+    },
+    toast: {
+      alreadyJoined: "أنت مسجل بالفعل!",
+      alreadyJoinedDesc: "أنت مسجل بالفعل للوصول المبكر.",
+      welcome: "مرحباً بك في Cardboom!",
+      welcomeDesc: "أنت في القائمة. سنُعلمك عند الإطلاق.",
+      error: "حدث خطأ ما",
+      errorDesc: "يرجى المحاولة لاحقاً.",
+      emailRequired: "البريد الإلكتروني مطلوب",
+      emailRequiredDesc: "يرجى إدخال بريدك الإلكتروني.",
+    },
+  },
+  // Market
+  market: {
+    index: "مؤشر سوق Cardboom",
+    topGainers: "أعلى الرابحين",
+    topLosers: "أعلى الخاسرين",
+    explore: "استكشف المقتنيات",
+  },
+  // Categories
+  categories: {
+    all: "الكل",
+    nba: "بطاقات NBA",
+    football: "كرة القدم",
+    tcg: "TCG",
+    figures: "مجسمات",
+  },
+  // Cart
+  cart: {
+    title: "سلتك",
+    empty: "سلتك فارغة",
+    emptyDesc: "أضف بعض المقتنيات للبدء!",
+    subtotal: "المجموع الفرعي",
+    checkout: "متابعة الدفع",
+    remove: "إزالة",
+    added: "تمت الإضافة للسلة",
+    alreadyIn: "العنصر موجود في السلة",
+    removed: "تم إزالة العنصر من السلة",
+  },
+  // Common
+  common: {
+    addToCart: "أضف للسلة",
+    buyNow: "اشترِ الآن",
+    viewDetails: "عرض التفاصيل",
+    close: "إغلاق",
+    loading: "جارٍ التحميل...",
+  },
+  // Footer
+  footer: {
+    tagline: "السوق الرائد لبطاقات التداول والمجسمات.",
+    marketplace: "السوق",
+    nbaCards: "بطاقات NBA",
+    footballCards: "بطاقات كرة القدم",
+    tcg: "TCG",
+    figures: "مجسمات",
+    company: "الشركة",
+    about: "من نحن",
+    careers: "الوظائف",
+    blog: "المدونة",
+    press: "الصحافة",
+    support: "الدعم",
+    helpCenter: "مركز المساعدة",
+    safety: "الأمان",
+    terms: "الشروط",
+    privacy: "الخصوصية",
+    copyright: "© 2025 Brainbaby Bilişim A.Ş. جميع الحقوق محفوظة.",
+    address: "Iran Caddesi 55/9, Gaziosmanpaşa Mahallesi, Çankaya, Ankara, Türkiye",
+  },
+};
