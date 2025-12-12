@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  TrendingUp, TrendingDown, Eye, Heart, ShoppingCart, 
-  MessageSquare, ArrowLeftRight, Clock, Users, ChevronLeft,
-  Plus
+  TrendingUp, TrendingDown, Eye, Heart, 
+  Clock, Users, ChevronLeft, Plus, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
 import { ItemListings } from '@/components/item/ItemListings';
@@ -20,41 +20,14 @@ import { ItemGradeComparison } from '@/components/item/ItemGradeComparison';
 import { WhatIfSimulator } from '@/components/item/WhatIfSimulator';
 import { TimeToSell } from '@/components/item/TimeToSell';
 import { SentimentIndicator } from '@/components/item/SentimentIndicator';
-import { mockCollectibles } from '@/data/mockData';
 
 const ItemDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [cartItems, setCartItems] = useState([]);
-  const [isWatching, setIsWatching] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [selectedGrade, setSelectedGrade] = useState('psa10');
-
-  // Find item from mock data or use default
-  const item = mockCollectibles.find(c => c.id === id) || {
-    id: id || '1',
-    name: 'Charizard 1st Edition Holo',
-    category: 'pokemon',
-    image: '/placeholder.svg',
-    price: 420000,
-    previousPrice: 374000,
-    priceChange: 12.3,
-    rarity: 'grail',
-    seller: 'PokéVault',
-    condition: 'BGS 9.5',
-    year: 1999,
-    brand: 'Pokémon Base Set',
-    trending: true,
-  };
-
-  // Calculate realistic metrics
-  const change24h = item.priceChange * 0.3;
-  const change7d = item.priceChange * 0.6;
-  const change30d = item.priceChange;
-  const views24h = Math.floor(800 + Math.random() * 600);
-  const views7d = views24h * 6;
-  const watchlistCount = Math.floor(200 + Math.random() * 300);
-  const salesCount30d = Math.floor(20 + Math.random() * 40);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,20 +35,148 @@ const ItemDetail = () => {
     });
   }, []);
 
+  // Track view on page load
+  useEffect(() => {
+    if (id) {
+      const sessionId = localStorage.getItem('session_id') || crypto.randomUUID();
+      localStorage.setItem('session_id', sessionId);
+      
+      supabase.from('item_views').insert({
+        market_item_id: id,
+        user_id: user?.id || null,
+        session_id: sessionId,
+      }).then(() => {
+        // Refetch views after logging
+        queryClient.invalidateQueries({ queryKey: ['item-views', id] });
+      });
+    }
+  }, [id, user?.id]);
+
+  // Fetch market item from database
+  const { data: item, isLoading: itemLoading } = useQuery({
+    queryKey: ['market-item', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('market_items')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch view counts
+  const { data: viewStats } = useQuery({
+    queryKey: ['item-views', id],
+    queryFn: async () => {
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      const [views24hRes, views7dRes] = await Promise.all([
+        supabase.from('item_views').select('id', { count: 'exact', head: true })
+          .eq('market_item_id', id).gte('viewed_at', twentyFourHoursAgo.toISOString()),
+        supabase.from('item_views').select('id', { count: 'exact', head: true })
+          .eq('market_item_id', id).gte('viewed_at', sevenDaysAgo.toISOString()),
+      ]);
+
+      return {
+        views24h: views24hRes.count || 0,
+        views7d: views7dRes.count || 0,
+      };
+    },
+    enabled: !!id,
+  });
+
+  // Fetch watchlist count
+  const { data: watchlistCount } = useQuery({
+    queryKey: ['watchlist-count', id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('watchlist')
+        .select('id', { count: 'exact', head: true })
+        .eq('market_item_id', id);
+      return count || 0;
+    },
+    enabled: !!id,
+  });
+
+  // Check if user is watching this item
+  const { data: isWatching } = useQuery({
+    queryKey: ['user-watchlist', id, user?.id],
+    queryFn: async () => {
+      if (!user?.id) return false;
+      const { data } = await supabase
+        .from('watchlist')
+        .select('id')
+        .eq('market_item_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return !!data;
+    },
+    enabled: !!id && !!user?.id,
+  });
+
+  // Fetch sales count (from orders related to listings with this item name)
+  const { data: salesCount30d } = useQuery({
+    queryKey: ['sales-count', id],
+    queryFn: async () => {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const { count } = await supabase
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', thirtyDaysAgo.toISOString());
+      return count || 0;
+    },
+    enabled: !!id,
+  });
+
+  // Toggle watchlist mutation
+  const toggleWatchlistMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      if (isWatching) {
+        const { error } = await supabase
+          .from('watchlist')
+          .delete()
+          .eq('market_item_id', id)
+          .eq('user_id', user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('watchlist')
+          .insert({ market_item_id: id, user_id: user.id });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-watchlist', id] });
+      queryClient.invalidateQueries({ queryKey: ['watchlist-count', id] });
+      toast.success(isWatching ? 'Removed from watchlist' : 'Added to watchlist');
+    },
+    onError: (error) => {
+      toast.error('Failed to update watchlist');
+      console.error(error);
+    },
+  });
+
   const formatPrice = (price: number) => {
     if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
     if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
     return `$${price.toLocaleString()}`;
   };
 
-  const toggleWatchlist = async () => {
+  const toggleWatchlist = () => {
     if (!user) {
       toast.error('Please sign in to add to watchlist');
       navigate('/auth');
       return;
     }
-    setIsWatching(!isWatching);
-    toast.success(isWatching ? 'Removed from watchlist' : 'Added to watchlist');
+    toggleWatchlistMutation.mutate();
   };
 
   const addToPortfolio = () => {
@@ -86,6 +187,32 @@ const ItemDetail = () => {
     }
     toast.success('Added to portfolio');
   };
+
+  if (itemLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header cartCount={0} onCartClick={() => {}} />
+        <main className="container mx-auto px-4 py-20 text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Item Not Found</h1>
+          <p className="text-muted-foreground mb-6">This item doesn't exist in our database.</p>
+          <Button onClick={() => navigate('/explorer')}>Browse Items</Button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const change24h = item.change_24h || 0;
+  const change7d = item.change_7d || 0;
+  const change30d = item.change_30d || 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,7 +235,7 @@ const ItemDetail = () => {
           <div className="lg:col-span-1">
             <div className="glass rounded-2xl p-4 aspect-square">
               <img 
-                src={item.image} 
+                src={item.image_url || '/placeholder.svg'} 
                 alt={item.name}
                 className="w-full h-full object-contain rounded-xl"
               />
@@ -120,20 +247,22 @@ const ItemDetail = () => {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary" className="capitalize">
-                  {item.category.replace('-', ' ')}
+                  {item.category?.replace('-', ' ')}
                 </Badge>
-                {item.trending && (
+                {item.is_trending && (
                   <Badge className="bg-accent text-accent-foreground">
                     🔥 Trending
                   </Badge>
                 )}
-                <Badge variant="outline">{item.condition}</Badge>
+                {item.rarity && (
+                  <Badge variant="outline">{item.rarity}</Badge>
+                )}
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
                 {item.name}
               </h1>
               <p className="text-muted-foreground text-lg">
-                {item.brand} • {item.year}
+                {item.set_name && `${item.set_name} • `}{item.series}
               </p>
             </div>
 
@@ -143,7 +272,7 @@ const ItemDetail = () => {
                 <div>
                   <p className="text-muted-foreground text-sm mb-1">Current Price</p>
                   <p className="font-display text-4xl font-bold text-foreground">
-                    {formatPrice(item.price)}
+                    {formatPrice(item.current_price || 0)}
                   </p>
                 </div>
                 <div className="flex gap-4">
@@ -179,26 +308,26 @@ const ItemDetail = () => {
               </div>
             </div>
 
-            {/* Stats Row */}
+            {/* Stats Row - Real Data */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="glass rounded-xl p-4 text-center">
                 <Eye className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{views24h.toLocaleString()}</p>
+                <p className="text-foreground font-semibold">{(viewStats?.views24h || 0).toLocaleString()}</p>
                 <p className="text-muted-foreground text-xs">Views (24h)</p>
               </div>
               <div className="glass rounded-xl p-4 text-center">
                 <Eye className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{views7d.toLocaleString()}</p>
+                <p className="text-foreground font-semibold">{(viewStats?.views7d || 0).toLocaleString()}</p>
                 <p className="text-muted-foreground text-xs">Views (7d)</p>
               </div>
               <div className="glass rounded-xl p-4 text-center">
                 <Users className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{watchlistCount}</p>
+                <p className="text-foreground font-semibold">{watchlistCount || 0}</p>
                 <p className="text-muted-foreground text-xs">Watching</p>
               </div>
               <div className="glass rounded-xl p-4 text-center">
                 <Clock className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{salesCount30d}</p>
+                <p className="text-foreground font-semibold">{salesCount30d || 0}</p>
                 <p className="text-muted-foreground text-xs">Sales (30d)</p>
               </div>
             </div>
@@ -209,6 +338,7 @@ const ItemDetail = () => {
                 onClick={toggleWatchlist}
                 variant={isWatching ? "secondary" : "outline"}
                 className="gap-2"
+                disabled={toggleWatchlistMutation.isPending}
               >
                 <Heart className={cn("w-4 h-4", isWatching && "fill-current text-loss")} />
                 {isWatching ? 'Watching' : 'Add to Watchlist'}
@@ -221,16 +351,16 @@ const ItemDetail = () => {
           </div>
         </div>
 
-        {/* New: Investment Intelligence Section */}
+        {/* Investment Intelligence Section */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <WhatIfSimulator currentPrice={item.price} itemName={item.name} />
-          <TimeToSell category={item.category} rarity={item.rarity} />
+          <WhatIfSimulator currentPrice={item.current_price || 0} itemName={item.name} />
+          <TimeToSell category={item.category} rarity={item.rarity || 'common'} />
           <SentimentIndicator 
             priceChange24h={change24h}
             priceChange7d={change7d}
-            views24h={views24h}
-            salesCount30d={salesCount30d}
-            watchlistCount={watchlistCount}
+            views24h={viewStats?.views24h || 0}
+            salesCount30d={salesCount30d || 0}
+            watchlistCount={watchlistCount || 0}
           />
         </div>
 
@@ -244,23 +374,23 @@ const ItemDetail = () => {
           </TabsList>
 
           <TabsContent value="chart">
-            <ItemPriceChart itemId={id || '1'} />
+            <ItemPriceChart itemId={id || ''} />
           </TabsContent>
 
           <TabsContent value="grades">
             <ItemGradeComparison 
-              itemId={id || '1'} 
+              itemId={id || ''} 
               selectedGrade={selectedGrade}
               onGradeChange={setSelectedGrade}
             />
           </TabsContent>
 
           <TabsContent value="history">
-            <ItemSalesHistory itemId={id || '1'} />
+            <ItemSalesHistory itemId={id || ''} />
           </TabsContent>
 
           <TabsContent value="listings">
-            <ItemListings itemId={id || '1'} />
+            <ItemListings itemId={id || ''} />
           </TabsContent>
         </Tabs>
       </main>
