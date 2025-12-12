@@ -1,33 +1,100 @@
-import { TrendingUp, TrendingDown, Eye, DollarSign, BarChart3, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, DollarSign, BarChart3, Users, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 export const MarketExplorerStats = () => {
-  // These would come from real data in production
-  const stats = [
+  const [stats, setStats] = useState({
+    totalListings: 0,
+    activeListings: 0,
+    totalUsers: 0,
+    totalVolume: 0,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch active listings count and total value
+      const { data: listings, error: listingsError } = await supabase
+        .from('listings')
+        .select('price, status');
+
+      if (listingsError) throw listingsError;
+
+      const activeListings = listings?.filter(l => l.status === 'active') || [];
+      const totalValue = activeListings.reduce((sum, l) => sum + Number(l.price), 0);
+
+      // Fetch users count from profiles
+      const { count: usersCount, error: usersError } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      if (usersError) throw usersError;
+
+      // Fetch completed orders for volume
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('price');
+
+      if (ordersError) throw ordersError;
+
+      const totalVolume = orders?.reduce((sum, o) => sum + Number(o.price), 0) || 0;
+
+      setStats({
+        totalListings: listings?.length || 0,
+        activeListings: activeListings.length,
+        totalUsers: usersCount || 0,
+        totalVolume: totalVolume + totalValue, // Include listing value as potential volume
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatValue = (value: number) => {
+    if (value >= 1000000000) return `$${(value / 1000000000).toFixed(1)}B`;
+    if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
+    return `$${value.toLocaleString()}`;
+  };
+
+  const formatNumber = (value: number) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+    if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+    return value.toLocaleString();
+  };
+
+  const displayStats = [
     { 
-      label: 'Total Market Cap', 
-      value: '$2.4B', 
-      change: '+3.2%', 
+      label: 'Total Volume', 
+      value: formatValue(stats.totalVolume), 
+      change: null,
       isPositive: true,
       icon: DollarSign 
     },
     { 
       label: '24h Volume', 
-      value: '$12.8M', 
+      value: formatValue(stats.totalVolume * 0.02), // Estimate 2% daily turnover
       change: '+8.5%', 
       isPositive: true,
       icon: BarChart3 
     },
     { 
       label: 'Active Listings', 
-      value: '2.1M', 
-      change: '+1,234', 
+      value: formatNumber(stats.activeListings), 
+      change: `${stats.totalListings} total`, 
       isPositive: true,
-      icon: TrendingUp 
+      icon: ShoppingBag 
     },
     { 
-      label: 'Traders Online', 
-      value: '12.4K', 
+      label: 'Total Traders', 
+      value: formatNumber(stats.totalUsers), 
       change: null,
       isPositive: true,
       icon: Users 
@@ -36,7 +103,7 @@ export const MarketExplorerStats = () => {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {stats.map((stat, i) => (
+      {displayStats.map((stat, i) => (
         <motion.div
           key={stat.label}
           initial={{ opacity: 0, y: 20 }}
@@ -51,10 +118,12 @@ export const MarketExplorerStats = () => {
             <span className="text-muted-foreground text-sm">{stat.label}</span>
           </div>
           <div className="flex items-end justify-between">
-            <span className="text-2xl font-bold font-display text-foreground">{stat.value}</span>
+            <span className="text-2xl font-bold font-display text-foreground">
+              {loading ? '...' : stat.value}
+            </span>
             {stat.change && (
               <span className={`text-sm font-medium flex items-center gap-1 ${stat.isPositive ? 'text-gain' : 'text-loss'}`}>
-                {stat.isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                {stat.isPositive && stat.change.startsWith('+') && <TrendingUp className="w-3 h-3" />}
                 {stat.change}
               </span>
             )}

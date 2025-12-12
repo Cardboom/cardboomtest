@@ -127,7 +127,8 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         {listings.map((listing, index) => (
           <div
             key={listing.id}
-            className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-secondary/30 transition-colors"
+            onClick={() => navigate(`/listing/${listing.id}`)}
+            className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-secondary/30 transition-colors cursor-pointer"
           >
             {/* Rank */}
             <div className="col-span-1 text-muted-foreground text-sm font-medium">
