@@ -7,11 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { User, ShoppingBag, Store, ArrowLeft } from 'lucide-react';
+import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const phoneSchema = z.string().regex(/^(\+90|0)?[5][0-9]{9}$/, 'Please enter a valid Turkish phone number');
+const nationalIdSchema = z.string().regex(/^[1-9][0-9]{10}$/, 'Please enter a valid 11-digit T.C. Kimlik No');
 
 type AccountType = 'buyer' | 'seller' | 'both';
 
@@ -21,8 +23,15 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [nationalId, setNationalId] = useState('');
   const [accountType, setAccountType] = useState<AccountType>('buyer');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ 
+    email?: string; 
+    password?: string; 
+    phone?: string;
+    nationalId?: string;
+  }>({});
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -42,7 +51,7 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const validateForm = () => {
+  const validateLoginForm = () => {
     const newErrors: { email?: string; password?: string } = {};
     
     const emailResult = emailSchema.safeParse(email);
@@ -59,9 +68,41 @@ const Auth = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateSignupForm = () => {
+    const newErrors: { 
+      email?: string; 
+      password?: string; 
+      phone?: string;
+      nationalId?: string;
+    } = {};
+    
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      newErrors.email = emailResult.error.errors[0].message;
+    }
+    
+    const passwordResult = passwordSchema.safeParse(password);
+    if (!passwordResult.success) {
+      newErrors.password = passwordResult.error.errors[0].message;
+    }
+
+    const phoneResult = phoneSchema.safeParse(phone);
+    if (!phoneResult.success) {
+      newErrors.phone = phoneResult.error.errors[0].message;
+    }
+
+    const nationalIdResult = nationalIdSchema.safeParse(nationalId);
+    if (!nationalIdResult.success) {
+      newErrors.nationalId = nationalIdResult.error.errors[0].message;
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateLoginForm()) return;
     
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
@@ -83,7 +124,7 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateSignupForm()) return;
     
     setLoading(true);
     const redirectUrl = `${window.location.origin}/`;
@@ -96,6 +137,8 @@ const Auth = () => {
         data: {
           display_name: displayName || email.split('@')[0],
           account_type: accountType,
+          phone: phone,
+          national_id: nationalId,
         },
       },
     });
@@ -110,6 +153,20 @@ const Auth = () => {
       toast.success('Account created successfully! Welcome to Cardboom!');
     }
     setLoading(false);
+  };
+
+  const formatPhone = (value: string) => {
+    // Remove non-digits
+    const digits = value.replace(/\D/g, '');
+    // Format as Turkish phone
+    if (digits.startsWith('90')) {
+      return '+' + digits.slice(0, 12);
+    } else if (digits.startsWith('0')) {
+      return digits.slice(0, 11);
+    } else if (digits.startsWith('5')) {
+      return '0' + digits.slice(0, 10);
+    }
+    return digits.slice(0, 11);
   };
 
   return (
@@ -192,6 +249,14 @@ const Auth = () => {
               {/* Register Tab */}
               <TabsContent value="register">
                 <form onSubmit={handleSignUp} className="space-y-4">
+                  {/* Security Notice */}
+                  <div className="bg-gold/10 border border-gold/30 rounded-lg p-3 flex items-start gap-2">
+                    <Shield className="w-5 h-5 text-gold shrink-0 mt-0.5" />
+                    <p className="text-platinum/80 text-xs">
+                      Your personal information is encrypted and securely stored. Required for regulatory compliance (KVKK/GDPR).
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="register-name" className="text-platinum">Display Name</Label>
                     <Input
@@ -203,6 +268,7 @@ const Auth = () => {
                       className="bg-obsidian border-platinum/20 text-platinum placeholder:text-platinum/40"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="register-email" className="text-platinum">Email</Label>
                     <Input
@@ -216,6 +282,42 @@ const Auth = () => {
                     />
                     {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="register-phone" className="text-platinum flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      Phone Number
+                    </Label>
+                    <Input
+                      id="register-phone"
+                      type="tel"
+                      placeholder="0 5XX XXX XX XX"
+                      value={phone}
+                      onChange={(e) => setPhone(formatPhone(e.target.value))}
+                      className="bg-obsidian border-platinum/20 text-platinum placeholder:text-platinum/40"
+                      required
+                    />
+                    {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="register-national-id" className="text-platinum flex items-center gap-2">
+                      <CreditCard className="w-4 h-4" />
+                      T.C. Kimlik No
+                    </Label>
+                    <Input
+                      id="register-national-id"
+                      type="text"
+                      placeholder="XXXXXXXXXXX"
+                      value={nationalId}
+                      onChange={(e) => setNationalId(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                      className="bg-obsidian border-platinum/20 text-platinum placeholder:text-platinum/40"
+                      maxLength={11}
+                      required
+                    />
+                    {errors.nationalId && <p className="text-red-500 text-sm">{errors.nationalId}</p>}
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="register-password" className="text-platinum">Password</Label>
                     <Input
