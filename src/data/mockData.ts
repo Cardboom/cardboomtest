@@ -13,6 +13,12 @@ import chaseOptic from '@/assets/cards/chase-optic.jpg';
 import mewtwoRainbow from '@/assets/cards/mewtwo-rainbow.jpg';
 import valorantVp from '@/assets/cards/valorant-vp.jpg';
 import pubgUc from '@/assets/cards/pubg-uc.jpg';
+import yugiohBlueEyes from '@/assets/cards/yugioh-blue-eyes.jpg';
+import yugiohDarkMagician from '@/assets/cards/yugioh-dark-magician.jpg';
+import onepieceLuffy from '@/assets/cards/onepiece-luffy.jpg';
+import onepieceShanks from '@/assets/cards/onepiece-shanks.jpg';
+import lorcanaElsa from '@/assets/cards/lorcana-elsa.jpg';
+import lorcanaMickey from '@/assets/cards/lorcana-mickey.jpg';
 
 export const mockCollectibles: Collectible[] = [
   // NBA Cards
@@ -201,7 +207,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'yugioh-blue-eyes',
     name: 'Blue-Eyes White Dragon LOB',
     category: 'yugioh',
-    image: charizard1st,
+    image: yugiohBlueEyes,
     price: 15000,
     previousPrice: 14200,
     priceChange: 5.6,
@@ -217,7 +223,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'yugioh-dark-magician',
     name: 'Dark Magician SDY 1st Ed',
     category: 'yugioh',
-    image: mewtwoRainbow,
+    image: yugiohDarkMagician,
     price: 8500,
     previousPrice: 8200,
     priceChange: 3.7,
@@ -234,7 +240,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'onepiece-luffy-alt',
     name: 'Monkey D. Luffy Alt Art',
     category: 'onepiece',
-    image: lukaPrizm,
+    image: onepieceLuffy,
     price: 450,
     previousPrice: 380,
     priceChange: 18.4,
@@ -250,7 +256,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'onepiece-shanks-manga',
     name: 'Shanks Manga Art SP',
     category: 'onepiece',
-    image: chaseOptic,
+    image: onepieceShanks,
     price: 890,
     previousPrice: 750,
     priceChange: 18.7,
@@ -267,7 +273,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'lorcana-elsa-enchanted',
     name: 'Elsa Spirit of Winter Enchanted',
     category: 'lorcana',
-    image: pikachuIllustrator,
+    image: lorcanaElsa,
     price: 320,
     previousPrice: 290,
     priceChange: 10.3,
@@ -283,7 +289,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'lorcana-mickey-enchanted',
     name: 'Mickey Mouse Enchanted',
     category: 'lorcana',
-    image: kawsCompanion,
+    image: lorcanaMickey,
     price: 280,
     previousPrice: 250,
     priceChange: 12.0,
