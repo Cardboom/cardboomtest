@@ -52,8 +52,14 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
         },
-        gain: 'hsl(var(--gain))',
-        loss: 'hsl(var(--loss))',
+        gain: {
+          DEFAULT: 'hsl(var(--gain))',
+          foreground: 'hsl(var(--background))'
+        },
+        loss: {
+          DEFAULT: 'hsl(var(--loss))',
+          foreground: 'hsl(var(--foreground))'
+        },
         gold: 'hsl(var(--gold))',
         platinum: 'hsl(var(--platinum))',
         premium: 'hsl(var(--premium))',

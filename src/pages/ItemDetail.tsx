@@ -17,29 +17,10 @@ import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
 import { ItemListings } from '@/components/item/ItemListings';
 import { ItemGradeComparison } from '@/components/item/ItemGradeComparison';
-
-// Mock data - in production comes from market_items table
-const MOCK_ITEM = {
-  id: '1',
-  name: 'Charizard',
-  set_name: 'Base Set',
-  series: '1st Edition',
-  category: 'pokemon',
-  rarity: 'Holo Rare',
-  character_name: 'Charizard',
-  current_price: 420000,
-  change_24h: 12.3,
-  change_7d: 8.5,
-  change_30d: 25.2,
-  last_sale_price: 415000,
-  liquidity: 'high',
-  views_24h: 1250,
-  views_7d: 8400,
-  watchlist_count: 342,
-  is_trending: true,
-  image_url: '/placeholder.svg',
-  sales_count_30d: 45,
-};
+import { WhatIfSimulator } from '@/components/item/WhatIfSimulator';
+import { TimeToSell } from '@/components/item/TimeToSell';
+import { SentimentIndicator } from '@/components/item/SentimentIndicator';
+import { mockCollectibles } from '@/data/mockData';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -48,6 +29,32 @@ const ItemDetail = () => {
   const [isWatching, setIsWatching] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [selectedGrade, setSelectedGrade] = useState('psa10');
+
+  // Find item from mock data or use default
+  const item = mockCollectibles.find(c => c.id === id) || {
+    id: id || '1',
+    name: 'Charizard 1st Edition Holo',
+    category: 'pokemon',
+    image: '/placeholder.svg',
+    price: 420000,
+    previousPrice: 374000,
+    priceChange: 12.3,
+    rarity: 'grail',
+    seller: 'PokéVault',
+    condition: 'BGS 9.5',
+    year: 1999,
+    brand: 'Pokémon Base Set',
+    trending: true,
+  };
+
+  // Calculate realistic metrics
+  const change24h = item.priceChange * 0.3;
+  const change7d = item.priceChange * 0.6;
+  const change30d = item.priceChange;
+  const views24h = Math.floor(800 + Math.random() * 600);
+  const views7d = views24h * 6;
+  const watchlistCount = Math.floor(200 + Math.random() * 300);
+  const salesCount30d = Math.floor(20 + Math.random() * 40);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -61,9 +68,10 @@ const ItemDetail = () => {
     return `$${price.toLocaleString()}`;
   };
 
-  const toggleWatchlist = () => {
+  const toggleWatchlist = async () => {
     if (!user) {
       toast.error('Please sign in to add to watchlist');
+      navigate('/auth');
       return;
     }
     setIsWatching(!isWatching);
@@ -73,6 +81,7 @@ const ItemDetail = () => {
   const addToPortfolio = () => {
     if (!user) {
       toast.error('Please sign in to add to portfolio');
+      navigate('/auth');
       return;
     }
     toast.success('Added to portfolio');
@@ -86,11 +95,11 @@ const ItemDetail = () => {
         {/* Back Button */}
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/explorer')}
+          onClick={() => navigate(-1)}
           className="mb-4 gap-2"
         >
           <ChevronLeft className="w-4 h-4" />
-          Back to Explorer
+          Back
         </Button>
 
         {/* Item Header */}
@@ -99,8 +108,8 @@ const ItemDetail = () => {
           <div className="lg:col-span-1">
             <div className="glass rounded-2xl p-4 aspect-square">
               <img 
-                src={MOCK_ITEM.image_url} 
-                alt={MOCK_ITEM.name}
+                src={item.image} 
+                alt={item.name}
                 className="w-full h-full object-contain rounded-xl"
               />
             </div>
@@ -111,19 +120,20 @@ const ItemDetail = () => {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary" className="capitalize">
-                  {MOCK_ITEM.category.replace('-', ' ')}
+                  {item.category.replace('-', ' ')}
                 </Badge>
-                {MOCK_ITEM.is_trending && (
+                {item.trending && (
                   <Badge className="bg-accent text-accent-foreground">
                     🔥 Trending
                   </Badge>
                 )}
+                <Badge variant="outline">{item.condition}</Badge>
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-                {MOCK_ITEM.name}
+                {item.name}
               </h1>
               <p className="text-muted-foreground text-lg">
-                {MOCK_ITEM.set_name} • {MOCK_ITEM.series}
+                {item.brand} • {item.year}
               </p>
             </div>
 
@@ -133,7 +143,7 @@ const ItemDetail = () => {
                 <div>
                   <p className="text-muted-foreground text-sm mb-1">Current Price</p>
                   <p className="font-display text-4xl font-bold text-foreground">
-                    {formatPrice(MOCK_ITEM.current_price)}
+                    {formatPrice(item.price)}
                   </p>
                 </div>
                 <div className="flex gap-4">
@@ -141,28 +151,28 @@ const ItemDetail = () => {
                     <p className="text-muted-foreground text-xs mb-1">24h</p>
                     <span className={cn(
                       "inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-semibold",
-                      MOCK_ITEM.change_24h >= 0 ? "bg-gain/20 text-gain" : "bg-loss/20 text-loss"
+                      change24h >= 0 ? "bg-gain/20 text-gain" : "bg-loss/20 text-loss"
                     )}>
-                      {MOCK_ITEM.change_24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                      {MOCK_ITEM.change_24h >= 0 ? '+' : ''}{MOCK_ITEM.change_24h.toFixed(1)}%
+                      {change24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                      {change24h >= 0 ? '+' : ''}{change24h.toFixed(1)}%
                     </span>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs mb-1">7d</p>
                     <span className={cn(
                       "text-sm font-semibold",
-                      MOCK_ITEM.change_7d >= 0 ? "text-gain" : "text-loss"
+                      change7d >= 0 ? "text-gain" : "text-loss"
                     )}>
-                      {MOCK_ITEM.change_7d >= 0 ? '+' : ''}{MOCK_ITEM.change_7d.toFixed(1)}%
+                      {change7d >= 0 ? '+' : ''}{change7d.toFixed(1)}%
                     </span>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs mb-1">30d</p>
                     <span className={cn(
                       "text-sm font-semibold",
-                      MOCK_ITEM.change_30d >= 0 ? "text-gain" : "text-loss"
+                      change30d >= 0 ? "text-gain" : "text-loss"
                     )}>
-                      {MOCK_ITEM.change_30d >= 0 ? '+' : ''}{MOCK_ITEM.change_30d.toFixed(1)}%
+                      {change30d >= 0 ? '+' : ''}{change30d.toFixed(1)}%
                     </span>
                   </div>
                 </div>
@@ -173,22 +183,22 @@ const ItemDetail = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="glass rounded-xl p-4 text-center">
                 <Eye className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{MOCK_ITEM.views_24h.toLocaleString()}</p>
+                <p className="text-foreground font-semibold">{views24h.toLocaleString()}</p>
                 <p className="text-muted-foreground text-xs">Views (24h)</p>
               </div>
               <div className="glass rounded-xl p-4 text-center">
                 <Eye className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{MOCK_ITEM.views_7d.toLocaleString()}</p>
+                <p className="text-foreground font-semibold">{views7d.toLocaleString()}</p>
                 <p className="text-muted-foreground text-xs">Views (7d)</p>
               </div>
               <div className="glass rounded-xl p-4 text-center">
                 <Users className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{MOCK_ITEM.watchlist_count}</p>
+                <p className="text-foreground font-semibold">{watchlistCount}</p>
                 <p className="text-muted-foreground text-xs">Watching</p>
               </div>
               <div className="glass rounded-xl p-4 text-center">
                 <Clock className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-foreground font-semibold">{MOCK_ITEM.sales_count_30d}</p>
+                <p className="text-foreground font-semibold">{salesCount30d}</p>
                 <p className="text-muted-foreground text-xs">Sales (30d)</p>
               </div>
             </div>
@@ -209,6 +219,19 @@ const ItemDetail = () => {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* New: Investment Intelligence Section */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          <WhatIfSimulator currentPrice={item.price} itemName={item.name} />
+          <TimeToSell category={item.category} rarity={item.rarity} />
+          <SentimentIndicator 
+            priceChange24h={change24h}
+            priceChange7d={change7d}
+            views24h={views24h}
+            salesCount30d={salesCount30d}
+            watchlistCount={watchlistCount}
+          />
         </div>
 
         {/* Tabs */}

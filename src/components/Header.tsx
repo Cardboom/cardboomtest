@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -107,6 +107,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <TrendingUp className="w-4 h-4" />
               Markets
             </Link>
+            <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              Deals
+            </Link>
             <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t.nav.sell}
             </Link>
@@ -210,6 +214,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <TrendingUp className="w-4 h-4" />
                 Markets
+              </Link>
+              <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Sparkles className="w-4 h-4" />
+                Deals
               </Link>
               <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.sell}
