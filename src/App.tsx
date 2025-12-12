@@ -14,6 +14,10 @@ import Sell from "./pages/Sell";
 import VerifiedSeller from "./pages/VerifiedSeller";
 import Markets from "./pages/Markets";
 import Explorer from "./pages/Explorer";
+import ItemDetail from "./pages/ItemDetail";
+import Messages from "./pages/Messages";
+import Portfolio from "./pages/Portfolio";
+import Trades from "./pages/Trades";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +39,10 @@ const App = () => (
               <Route path="/verified-seller" element={<VerifiedSeller />} />
               <Route path="/markets" element={<Markets />} />
               <Route path="/explorer" element={<Explorer />} />
+              <Route path="/item/:id" element={<ItemDetail />} />
+              <Route path="/messages" element={<Messages />} />
+              <Route path="/portfolio" element={<Portfolio />} />
+              <Route path="/trades" element={<Trades />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
