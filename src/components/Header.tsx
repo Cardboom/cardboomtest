@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { XPProgressBar } from '@/components/XPProgressBar';
+import { NotificationCenter } from '@/components/NotificationCenter';
 
 interface HeaderProps {
   cartCount: number;
@@ -123,10 +124,11 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           <div className="flex items-center gap-2">
             <LanguageSelector />
             
-            <Button variant="ghost" size="icon" className="hidden sm:flex relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
-            </Button>
+            {user && (
+              <div className="hidden sm:flex">
+                <NotificationCenter />
+              </div>
+            )}
             
             <Button variant="ghost" size="icon" className="relative" onClick={onCartClick}>
               <ShoppingCart className="w-5 h-5" />
