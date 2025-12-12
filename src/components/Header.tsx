@@ -18,6 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { XPProgressBar } from '@/components/XPProgressBar';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { CurrencyToggle } from '@/components/CurrencyToggle';
 
 interface HeaderProps {
   cartCount: number;
@@ -121,8 +122,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             </Link>
           </nav>
 
-          {/* Actions */}
           <div className="flex items-center gap-1">
+            <CurrencyToggle />
             <ThemeToggle />
             <LanguageSelector />
             {user && (
