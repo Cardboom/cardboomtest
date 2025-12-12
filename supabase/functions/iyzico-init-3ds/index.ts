@@ -8,35 +8,64 @@ const corsHeaders = {
 
 const IYZICO_API_KEY = Deno.env.get('IYZICO_API_KEY')!;
 const IYZICO_SECRET_KEY = Deno.env.get('IYZICO_SECRET_KEY')!;
-const IYZICO_BASE_URL = 'https://api.iyzipay.com'; // Use sandbox.iyzipay.com for testing
+const IYZICO_BASE_URL = Deno.env.get('IYZICO_BASE_URL') || 'https://sandbox-api.iyzipay.com';
 
-// Generate iyzico authorization header
-function generateAuthorizationHeader(
+// Generate PKI string from object (iyzico specific format)
+function generatePkiString(obj: Record<string, unknown>, prefix = ''): string {
+  let result = prefix ? `${prefix}=[` : '[';
+  
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === null || value === undefined) continue;
+    
+    if (Array.isArray(value)) {
+      result += `${key}=[`;
+      for (const item of value) {
+        if (typeof item === 'object' && item !== null) {
+          result += generatePkiString(item as Record<string, unknown>);
+          result += ', ';
+        } else {
+          result += `${item}, `;
+        }
+      }
+      if (value.length > 0) {
+        result = result.slice(0, -2);
+      }
+      result += '], ';
+    } else if (typeof value === 'object') {
+      result += `${key}=${generatePkiString(value as Record<string, unknown>)}, `;
+    } else {
+      result += `${key}=${value}, `;
+    }
+  }
+  
+  if (result.endsWith(', ')) {
+    result = result.slice(0, -2);
+  }
+  
+  result += ']';
+  return result;
+}
+
+// Generate iyzico authorization header using SHA-1 hash
+async function generateAuthorizationV1(
   apiKey: string,
   secretKey: string,
   randomString: string,
-  request: string
-): string {
+  requestBody: Record<string, unknown>
+): Promise<string> {
+  const pkiString = generatePkiString(requestBody);
+  const dataToHash = apiKey + randomString + secretKey + pkiString;
+  
   const encoder = new TextEncoder();
-  const hashInput = randomString + request;
+  const data = encoder.encode(dataToHash);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hashArray = new Uint8Array(hashBuffer);
+  const hashHex = Array.from(hashArray).map(b => b.toString(16).padStart(2, '0')).join('');
   
-  // Create SHA1 hash
-  const hashBuffer = new Uint8Array(20);
-  const data = encoder.encode(hashInput);
+  const authString = apiKey + randomString + secretKey + hashHex;
+  const authBase64 = btoa(authString);
   
-  // Simple hash implementation for Deno
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    hash = ((hash << 5) - hash) + data[i];
-    hash = hash & hash;
-  }
-  
-  const hashString = Math.abs(hash).toString(16);
-  const authString = apiKey + randomString + secretKey + hashString;
-  
-  // Base64 encode
-  const base64 = btoa(authString);
-  return `IYZWS ${apiKey}:${base64}`;
+  return `IYZWS ${apiKey}:${authBase64}`;
 }
 
 serve(async (req) => {
@@ -50,12 +79,10 @@ serve(async (req) => {
       throw new Error('Missing authorization header');
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get user from token
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     
@@ -83,10 +110,9 @@ serve(async (req) => {
 
     const fee = amount * 0.07;
     const total = amount + fee;
-    const conversationId = `topup_${user.id}_${Date.now()}`;
+    const conversationId = `topup_${user.id.substring(0, 8)}_${Date.now()}`;
     const basketId = `basket_${Date.now()}`;
 
-    // Store pending payment
     const { error: insertError } = await supabase
       .from('pending_payments')
       .insert({
@@ -103,10 +129,9 @@ serve(async (req) => {
       throw new Error('Failed to create pending payment');
     }
 
-    // Prepare iyzico 3DS init request
     const callbackUrl = `${supabaseUrl}/functions/v1/iyzico-callback`;
     
-    const iyzicoRequest = {
+    const iyzicoRequest: Record<string, unknown> = {
       locale: 'en',
       conversationId,
       price: total.toFixed(2),
@@ -120,34 +145,34 @@ serve(async (req) => {
       paymentCard: {
         cardHolderName,
         cardNumber: cardNumber.replace(/\s/g, ''),
-        expireYear,
-        expireMonth,
+        expireYear: expireYear.length === 2 ? `20${expireYear}` : expireYear,
+        expireMonth: expireMonth.padStart(2, '0'),
         cvc
       },
       buyer: {
-        id: user.id,
-        name: buyerName,
-        surname: buyerSurname,
-        identityNumber: '11111111111', // Placeholder for iyzico requirement
-        email: buyerEmail || user.email,
+        id: user.id.substring(0, 20),
+        name: buyerName || 'Test',
+        surname: buyerSurname || 'User',
+        identityNumber: '11111111111',
+        email: buyerEmail || user.email || 'test@test.com',
         gsmNumber: buyerPhone || '+905000000000',
-        registrationAddress: buyerAddress || 'Not provided',
+        registrationAddress: buyerAddress || 'Test Address',
         city: buyerCity || 'Istanbul',
         country: buyerCountry || 'Turkey',
         zipCode: buyerZipCode || '34000',
-        ip: buyerIp || '127.0.0.1'
+        ip: buyerIp || '85.34.78.112'
       },
       shippingAddress: {
-        address: buyerAddress || 'Digital Product',
+        address: buyerAddress || 'Test Address',
         zipCode: buyerZipCode || '34000',
-        contactName: `${buyerName} ${buyerSurname}`,
+        contactName: `${buyerName || 'Test'} ${buyerSurname || 'User'}`,
         city: buyerCity || 'Istanbul',
         country: buyerCountry || 'Turkey'
       },
       billingAddress: {
-        address: buyerAddress || 'Digital Product',
+        address: buyerAddress || 'Test Address',
         zipCode: buyerZipCode || '34000',
-        contactName: `${buyerName} ${buyerSurname}`,
+        contactName: `${buyerName || 'Test'} ${buyerSurname || 'User'}`,
         city: buyerCity || 'Istanbul',
         country: buyerCountry || 'Turkey'
       },
@@ -163,29 +188,32 @@ serve(async (req) => {
       ]
     };
 
-    console.log('Sending 3DS init request to iyzico');
+    console.log('Sending 3DS init request to iyzico:', IYZICO_BASE_URL);
+    console.log('Callback URL:', callbackUrl);
 
-    // Make request to iyzico
     const randomString = Date.now().toString();
-    const requestBody = JSON.stringify(iyzicoRequest);
+    const authorization = await generateAuthorizationV1(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, iyzicoRequest);
     
+    console.log('Random string:', randomString);
+    console.log('API Key (first 8 chars):', IYZICO_API_KEY?.substring(0, 8));
+
     const response = await fetch(`${IYZICO_BASE_URL}/payment/3dsecure/initialize`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': generateAuthorizationHeader(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, requestBody),
+        'Authorization': authorization,
         'x-iyzi-rnd': randomString
       },
-      body: requestBody
+      body: JSON.stringify(iyzicoRequest)
     });
 
     const data = await response.json();
     console.log('iyzico response status:', data.status);
+    console.log('iyzico response:', JSON.stringify(data, null, 2));
 
     if (data.status !== 'success') {
-      console.error('iyzico error:', data.errorMessage);
+      console.error('iyzico error:', data.errorMessage, data.errorCode);
       
-      // Update pending payment as failed
       await supabase
         .from('pending_payments')
         .update({ status: 'failed' })
@@ -194,7 +222,6 @@ serve(async (req) => {
       throw new Error(data.errorMessage || 'Payment initialization failed');
     }
 
-    // Return the 3DS HTML content
     return new Response(JSON.stringify({
       success: true,
       threeDSHtmlContent: data.threeDSHtmlContent,
@@ -210,7 +237,7 @@ serve(async (req) => {
       success: false,
       error: errorMessage 
     }), {
-      status: 500,
+      status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
