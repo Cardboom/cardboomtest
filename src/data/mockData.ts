@@ -1,4 +1,16 @@
 import { Collectible, MarketStats, PricePoint } from '@/types/collectible';
+import lebronRookie from '@/assets/cards/lebron-rookie.jpg';
+import charizard1st from '@/assets/cards/charizard-1st.jpg';
+import mahomesPrizm from '@/assets/cards/mahomes-prizm.jpg';
+import kawsCompanion from '@/assets/cards/kaws-companion.jpg';
+import jordanFleer from '@/assets/cards/jordan-fleer.jpg';
+import blackLotus from '@/assets/cards/black-lotus.jpg';
+import bradyContenders from '@/assets/cards/brady-contenders.jpg';
+import bearbrickKaws from '@/assets/cards/bearbrick-kaws.jpg';
+import lukaPrizm from '@/assets/cards/luka-prizm.jpg';
+import pikachuIllustrator from '@/assets/cards/pikachu-illustrator.jpg';
+import chaseOptic from '@/assets/cards/chase-optic.jpg';
+import mewtwoRainbow from '@/assets/cards/mewtwo-rainbow.jpg';
 
 export const mockCollectibles: Collectible[] = [
   {
@@ -6,7 +18,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'nba-lebron-2003',
     name: 'LeBron James Rookie PSA 10',
     category: 'nba',
-    image: '/placeholder.svg',
+    image: lebronRookie,
     price: 245000,
     previousPrice: 232000,
     priceChange: 5.2,
@@ -22,7 +34,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'tcg-charizard-1st',
     name: 'Charizard 1st Edition Holo',
     category: 'tcg',
-    image: '/placeholder.svg',
+    image: charizard1st,
     price: 420000,
     previousPrice: 374000,
     priceChange: 12.3,
@@ -38,7 +50,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'football-mahomes-prizm',
     name: 'Patrick Mahomes Prizm Silver',
     category: 'football',
-    image: '/placeholder.svg',
+    image: mahomesPrizm,
     price: 15000,
     previousPrice: 14400,
     priceChange: 4.2,
@@ -54,7 +66,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'figure-kaws-companion',
     name: 'KAWS Companion Black',
     category: 'figures',
-    image: '/placeholder.svg',
+    image: kawsCompanion,
     price: 45000,
     previousPrice: 42000,
     priceChange: 7.2,
@@ -70,7 +82,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'nba-jordan-fleer',
     name: 'Michael Jordan Fleer Rookie',
     category: 'nba',
-    image: '/placeholder.svg',
+    image: jordanFleer,
     price: 89000,
     previousPrice: 82100,
     priceChange: 8.4,
@@ -86,7 +98,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'tcg-black-lotus',
     name: 'Black Lotus Alpha MTG',
     category: 'tcg',
-    image: '/placeholder.svg',
+    image: blackLotus,
     price: 185000,
     previousPrice: 173700,
     priceChange: 6.5,
@@ -102,7 +114,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'football-brady-rookie',
     name: 'Tom Brady Contenders Auto',
     category: 'football',
-    image: '/placeholder.svg',
+    image: bradyContenders,
     price: 125000,
     previousPrice: 121600,
     priceChange: 2.8,
@@ -118,7 +130,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'figure-bearbrick-1000',
     name: 'Be@rbrick 1000% Kaws',
     category: 'figures',
-    image: '/placeholder.svg',
+    image: bearbrickKaws,
     price: 12000,
     previousPrice: 11640,
     priceChange: 3.1,
@@ -134,7 +146,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'nba-luka-prizm',
     name: 'Luka Doncic Prizm Silver',
     category: 'nba',
-    image: '/placeholder.svg',
+    image: lukaPrizm,
     price: 12500,
     previousPrice: 12770,
     priceChange: -2.1,
@@ -150,7 +162,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'tcg-pikachu-illustrator',
     name: 'Pikachu Illustrator Promo',
     category: 'tcg',
-    image: '/placeholder.svg',
+    image: pikachuIllustrator,
     price: 2500000,
     previousPrice: 2456000,
     priceChange: 1.8,
@@ -166,7 +178,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'football-chase-auto',
     name: 'Ja\'Marr Chase Optic Auto',
     category: 'football',
-    image: '/placeholder.svg',
+    image: chaseOptic,
     price: 8900,
     previousPrice: 9035,
     priceChange: -1.5,
@@ -182,7 +194,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'tcg-psa10-mewtwo',
     name: 'Mewtwo GX Rainbow PSA 10',
     category: 'tcg',
-    image: '/placeholder.svg',
+    image: mewtwoRainbow,
     price: 28000,
     previousPrice: 28225,
     priceChange: -0.8,
