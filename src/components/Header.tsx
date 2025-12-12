@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -48,6 +48,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
       toast.error('Error signing out');
     } else {
       toast.success('Signed out successfully');
+      navigate('/');
     }
   };
 
@@ -79,15 +80,15 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-6">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t.nav.marketplace}
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            </Link>
+            <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t.nav.sell}
-            </a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            </Link>
+            <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t.nav.portfolio}
-            </a>
+            </Link>
           </nav>
 
           {/* Actions */}
@@ -116,10 +117,23 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     {user.email?.split('@')[0]}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => navigate('/')}>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate('/wallet')}>
+                    <Wallet className="w-4 h-4 mr-2" />
+                    Wallet
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/vault')}>
+                    <Vault className="w-4 h-4 mr-2" />
+                    My Vault
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/sell')}>
                     <User className="w-4 h-4 mr-2" />
-                    {t.nav.profile}
+                    My Listings
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/verified-seller')}>
+                    <BadgeCheck className="w-4 h-4 mr-2" />
+                    Verified Seller
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
@@ -162,15 +176,27 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               />
             </div>
             <nav className="flex flex-col gap-3">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
+              <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.marketplace}
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
+              </Link>
+              <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.sell}
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
+              </Link>
+              <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.portfolio}
-              </a>
+              </Link>
+              {user && (
+                <>
+                  <Link to="/wallet" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                    <Wallet className="w-4 h-4 inline mr-2" />
+                    Wallet
+                  </Link>
+                  <Link to="/verified-seller" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                    <BadgeCheck className="w-4 h-4 inline mr-2" />
+                    Verified Seller
+                  </Link>
+                </>
+              )}
               {user ? (
                 <>
                   <div className="py-2 text-foreground font-medium">
