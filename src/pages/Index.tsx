@@ -14,10 +14,12 @@ import { WaitlistBanner } from '@/components/WaitlistBanner';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
 import { useLivePrices } from '@/hooks/useLivePrices';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
 
 const Index = () => {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
@@ -38,7 +40,7 @@ const Index = () => {
 
   // Get live prices for all collectibles
   const productIds = useMemo(() => mockCollectibles.map(c => c.priceId), []);
-  const { prices, lastUpdated } = useLivePrices({ productIds, refreshInterval: 15000 });
+  const { prices } = useLivePrices({ productIds, refreshInterval: 15000 });
 
   // Merge live prices with collectibles
   const collectiblesWithLivePrices = useMemo(() => {
@@ -63,16 +65,16 @@ const Index = () => {
 
   const handleAddToCart = (collectible: Collectible) => {
     if (cartItems.find((item) => item.id === collectible.id)) {
-      toast.error('Item already in cart');
+      toast.error(t.cart.alreadyIn);
       return;
     }
     setCartItems([...cartItems, collectible]);
-    toast.success(`${collectible.name.slice(0, 30)}... added to cart`);
+    toast.success(`${collectible.name.slice(0, 30)}... ${t.cart.added}`);
   };
 
   const handleRemoveFromCart = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
-    toast.info('Item removed from cart');
+    toast.info(t.cart.removed);
   };
 
   return (
@@ -90,12 +92,12 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-3 gap-6 mb-12">
               <div className="lg:col-span-2">
-                <PriceChart title="Cardboom Market Index" />
+                <PriceChart title={t.market.index} />
               </div>
               <div className="space-y-6">
                 <div className="glass rounded-xl p-6">
                   <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-                    Top Gainers 📈
+                    {t.market.topGainers} 📈
                   </h3>
                   {collectiblesWithLivePrices
                     .filter((item) => item.priceChange > 0)
@@ -117,7 +119,7 @@ const Index = () => {
                 </div>
                 <div className="glass rounded-xl p-6">
                   <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-                    Top Losers 📉
+                    {t.market.topLosers} 📉
                   </h3>
                   {collectiblesWithLivePrices
                     .filter((item) => item.priceChange < 0)
@@ -146,7 +148,7 @@ const Index = () => {
         <section className="py-12 border-t border-border/50">
           <div className="container mx-auto px-4">
             <h2 className="font-display text-2xl font-bold text-foreground mb-6">
-              Explore Collectibles
+              {t.market.explore}
             </h2>
             
             <CategoryFilter

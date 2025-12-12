@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface WaitlistBannerProps {
   onDismiss: () => void;
 }
 
 export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [interest, setInterest] = useState<"buyer" | "seller" | "both">("both");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,8 +24,8 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
     
     if (!email.trim()) {
       toast({
-        title: "Email required",
-        description: "Please enter your email address.",
+        title: t.waitlist.toast.emailRequired,
+        description: t.waitlist.toast.emailRequiredDesc,
         variant: "destructive",
       });
       return;
@@ -39,8 +41,8 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
       if (error) {
         if (error.code === "23505") {
           toast({
-            title: "Already on the list!",
-            description: "You're already signed up for early access.",
+            title: t.waitlist.toast.alreadyJoined,
+            description: t.waitlist.toast.alreadyJoinedDesc,
           });
           setIsSubmitted(true);
         } else {
@@ -49,15 +51,15 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
       } else {
         setIsSubmitted(true);
         toast({
-          title: "Welcome to Cardboom!",
-          description: "You're on the list. We'll notify you when we launch.",
+          title: t.waitlist.toast.welcome,
+          description: t.waitlist.toast.welcomeDesc,
         });
       }
     } catch (error) {
       console.error("Waitlist error:", error);
       toast({
-        title: "Something went wrong",
-        description: "Please try again later.",
+        title: t.waitlist.toast.error,
+        description: t.waitlist.toast.errorDesc,
         variant: "destructive",
       });
     } finally {
@@ -81,14 +83,14 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
           </div>
           
           <h2 className="text-2xl font-display font-bold text-foreground mb-2">
-            You're In!
+            {t.waitlist.success.title}
           </h2>
           <p className="text-muted-foreground mb-6">
-            We'll email you when Cardboom launches. In the meantime, feel free to explore the preview.
+            {t.waitlist.success.description}
           </p>
           
           <Button onClick={onDismiss} className="w-full">
-            Explore Preview
+            {t.waitlist.success.explore}
           </Button>
         </div>
       </div>
@@ -108,38 +110,38 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
             <Sparkles className="h-4 w-4" />
-            Coming Soon
+            {t.waitlist.badge}
           </div>
           <h2 className="text-3xl font-display font-bold text-foreground mb-2">
-            Get Early Access to Cardboom
+            {t.waitlist.title}
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            The premier marketplace for trading cards and collectibles. Join the waitlist for exclusive early access.
+            {t.waitlist.description}
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="text-center p-4 rounded-xl bg-muted/50">
             <TrendingUp className="h-6 w-6 text-gain mx-auto mb-2" />
-            <p className="text-sm font-medium text-foreground">Real-time Pricing</p>
+            <p className="text-sm font-medium text-foreground">{t.waitlist.features.pricing}</p>
           </div>
           <div className="text-center p-4 rounded-xl bg-muted/50">
             <Shield className="h-6 w-6 text-primary mx-auto mb-2" />
-            <p className="text-sm font-medium text-foreground">Secure Transactions</p>
+            <p className="text-sm font-medium text-foreground">{t.waitlist.features.secure}</p>
           </div>
           <div className="text-center p-4 rounded-xl bg-muted/50">
             <Users className="h-6 w-6 text-gold mx-auto mb-2" />
-            <p className="text-sm font-medium text-foreground">Verified Traders</p>
+            <p className="text-sm font-medium text-foreground">{t.waitlist.features.verified}</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="email" className="text-foreground">Email Address</Label>
+            <Label htmlFor="email" className="text-foreground">{t.waitlist.form.email}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="you@example.com"
+              placeholder={t.waitlist.form.emailPlaceholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1.5"
@@ -148,7 +150,7 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
           </div>
 
           <div>
-            <Label className="text-foreground mb-3 block">I'm interested in</Label>
+            <Label className="text-foreground mb-3 block">{t.waitlist.form.interest}</Label>
             <RadioGroup
               value={interest}
               onValueChange={(value) => setInterest(value as typeof interest)}
@@ -156,25 +158,25 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
             >
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="buyer" id="buyer" />
-                <Label htmlFor="buyer" className="cursor-pointer">Buying</Label>
+                <Label htmlFor="buyer" className="cursor-pointer">{t.waitlist.form.buying}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="seller" id="seller" />
-                <Label htmlFor="seller" className="cursor-pointer">Selling</Label>
+                <Label htmlFor="seller" className="cursor-pointer">{t.waitlist.form.selling}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="both" id="both" />
-                <Label htmlFor="both" className="cursor-pointer">Both</Label>
+                <Label htmlFor="both" className="cursor-pointer">{t.waitlist.form.both}</Label>
               </div>
             </RadioGroup>
           </div>
 
           <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-            {isSubmitting ? "Joining..." : "Join the Waitlist"}
+            {isSubmitting ? t.waitlist.form.submitting : t.waitlist.form.submit}
           </Button>
 
           <p className="text-center text-xs text-muted-foreground">
-            By joining, you agree to receive updates about Cardboom. No spam, ever.
+            {t.waitlist.form.disclaimer}
           </p>
         </form>
 
@@ -182,7 +184,7 @@ export const WaitlistBanner = ({ onDismiss }: WaitlistBannerProps) => {
           onClick={onDismiss}
           className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          Skip and preview the marketplace →
+          {t.waitlist.form.skip}
         </button>
       </div>
     </div>

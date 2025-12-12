@@ -1,13 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { marketStats } from '@/data/mockData';
 import { ArrowRight, TrendingUp, Users, Layers, DollarSign } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const HeroSection = () => {
+  const { t } = useLanguage();
+  
   const stats = [
-    { label: 'Total Volume', value: `$${(marketStats.totalVolume / 1e9).toFixed(2)}B`, icon: DollarSign },
-    { label: '24h Volume', value: `$${(marketStats.dailyVolume / 1e6).toFixed(1)}M`, icon: TrendingUp },
-    { label: 'Active Listings', value: `${(marketStats.activeListings / 1e6).toFixed(2)}M`, icon: Layers },
-    { label: 'Traders', value: `${(marketStats.activeTraders / 1e3).toFixed(0)}K`, icon: Users },
+    { label: t.hero.totalVolume, value: `$${(marketStats.totalVolume / 1e9).toFixed(2)}B`, icon: DollarSign },
+    { label: t.hero.volume24h, value: `$${(marketStats.dailyVolume / 1e6).toFixed(1)}M`, icon: TrendingUp },
+    { label: t.hero.activeListings, value: `${(marketStats.activeListings / 1e6).toFixed(2)}M`, icon: Layers },
+    { label: t.hero.traders, value: `${(marketStats.activeTraders / 1e3).toFixed(0)}K`, icon: Users },
   ];
 
   return (
@@ -20,26 +23,25 @@ export const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 text-primary text-sm font-medium mb-6 animate-fade-in">
             <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            Live Trading Active
+            {t.hero.badge}
           </div>
           
           <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            The Premier<br />
-            <span className="text-gradient-primary">Collectibles</span> Exchange
+            {t.hero.title}<br />
+            <span className="text-gradient-primary">{t.hero.titleHighlight}</span>
           </h1>
           
           <p className="text-muted-foreground text-lg md:text-xl mb-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
-            Trade NBA cards, football cards, TCG, and rare figures with real-time pricing, 
-            secure transactions, and instant settlements.
+            {t.hero.description}
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
             <Button variant="hero" size="xl">
-              Start Trading
+              {t.hero.startTrading}
               <ArrowRight className="w-5 h-5" />
             </Button>
             <Button variant="glass" size="xl">
-              Explore Market
+              {t.hero.exploreMarket}
             </Button>
           </div>
         </div>

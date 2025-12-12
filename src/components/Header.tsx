@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface HeaderProps {
   cartCount: number;
@@ -21,6 +23,7 @@ interface HeaderProps {
 
 export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -67,7 +70,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <Search className="absolute left-3 w-5 h-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search cards, figures, TCG..."
+              placeholder={t.nav.search}
               className="pl-10 bg-secondary border-border/50 focus:border-primary/50 focus:ring-primary/20 rounded-full"
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
@@ -77,18 +80,20 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-6">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
-              Explore
+              {t.nav.marketplace}
             </a>
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
-              Sell
+              {t.nav.sell}
             </a>
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
-              Portfolio
+              {t.nav.portfolio}
             </a>
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+            
             <Button variant="ghost" size="icon" className="hidden sm:flex relative">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
@@ -114,12 +119,12 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={() => navigate('/')}>
                     <User className="w-4 h-4 mr-2" />
-                    My Profile
+                    {t.nav.profile}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
                     <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    {t.nav.signOut}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -130,7 +135,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 onClick={() => navigate('/auth')}
               >
                 <User className="w-4 h-4" />
-                Sign In
+                {t.nav.signIn}
               </Button>
             )}
 
@@ -152,19 +157,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Search className="absolute ml-3 w-5 h-5 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search..."
+                placeholder={t.nav.search}
                 className="pl-10 bg-secondary border-border/50 rounded-full"
               />
             </div>
             <nav className="flex flex-col gap-3">
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
-                Explore
+                {t.nav.marketplace}
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
-                Sell
+                {t.nav.sell}
               </a>
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
-                Portfolio
+                {t.nav.portfolio}
               </a>
               {user ? (
                 <>
@@ -173,13 +178,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </div>
                   <Button variant="destructive" onClick={handleSignOut} className="mt-2">
                     <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    {t.nav.signOut}
                   </Button>
                 </>
               ) : (
                 <Button variant="default" onClick={() => navigate('/auth')} className="mt-2">
                   <User className="w-4 h-4 mr-2" />
-                  Sign In / Register
+                  {t.nav.signIn}
                 </Button>
               )}
             </nav>
