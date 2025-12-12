@@ -151,7 +151,7 @@ const Markets = () => {
               {gainers.slice(0, 5).map((item, i) => (
                 <div 
                   key={item.id}
-                  onClick={() => navigate('/', { state: { selectedCollectible: item } })}
+                  onClick={() => navigate(`/item/${item.id}`)}
                   className="flex items-center justify-between p-3 hover:bg-secondary/30 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -181,7 +181,7 @@ const Markets = () => {
               {losers.slice(0, 5).map((item, i) => (
                 <div 
                   key={item.id}
-                  onClick={() => navigate('/', { state: { selectedCollectible: item } })}
+                  onClick={() => navigate(`/item/${item.id}`)}
                   className="flex items-center justify-between p-3 hover:bg-secondary/30 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ const Markets = () => {
             {filteredCollectibles.map((item, i) => (
               <div 
                 key={item.id}
-                onClick={() => navigate('/', { state: { selectedCollectible: item } })}
+                onClick={() => navigate(`/item/${item.id}`)}
                 className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-secondary/30 cursor-pointer transition-colors"
               >
                 <div className="col-span-1 text-muted-foreground text-sm">{i + 1}</div>

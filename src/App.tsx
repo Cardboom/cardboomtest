@@ -15,6 +15,7 @@ import VerifiedSeller from "./pages/VerifiedSeller";
 import Markets from "./pages/Markets";
 import Explorer from "./pages/Explorer";
 import ItemDetail from "./pages/ItemDetail";
+import ListingDetail from "./pages/ListingDetail";
 import Messages from "./pages/Messages";
 import Portfolio from "./pages/Portfolio";
 import Trades from "./pages/Trades";
@@ -41,6 +42,7 @@ const App = () => (
               <Route path="/markets" element={<Markets />} />
               <Route path="/explorer" element={<Explorer />} />
               <Route path="/item/:id" element={<ItemDetail />} />
+              <Route path="/listing/:id" element={<ListingDetail />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/trades" element={<Trades />} />
