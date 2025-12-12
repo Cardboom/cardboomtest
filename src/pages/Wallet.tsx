@@ -117,39 +117,42 @@ const WalletPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-background bg-mesh flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background bg-mesh">
       <Header cartCount={0} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Balance Card */}
-          <Card className="mb-8 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="p-8">
+          <Card className="mb-8 overflow-hidden border-primary/20 relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-gold/5" />
+            <CardContent className="p-8 relative">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
-                  <h1 className="text-4xl font-display font-bold text-foreground">
+                  <p className="text-sm text-muted-foreground mb-2 uppercase tracking-wider font-medium">Available Balance</p>
+                  <h1 className="text-5xl font-display font-bold text-foreground tracking-tight">
                     {formatCurrency(balance)}
                   </h1>
                 </div>
                 <div className="flex gap-3">
-                  <Button onClick={() => setShowTopUp(true)} className="gap-2">
-                    <Plus className="h-4 w-4" />
+                  <Button onClick={() => setShowTopUp(true)} size="lg" className="gap-2 shadow-glow">
+                    <Plus className="h-5 w-5" />
                     Add Funds
                   </Button>
                 </div>
               </div>
               
-              <div className="mt-6 p-4 rounded-lg bg-background/50 border border-border/50">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <TrendingUp className="h-4 w-4" />
+              <div className="mt-8 p-4 rounded-xl bg-secondary/50 border border-border/30">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                  </div>
                   <span>7% fee on credit card top-ups • 6% buy fee • 6% sell fee</span>
                 </div>
               </div>
@@ -158,32 +161,37 @@ const WalletPage = () => {
 
           {/* Transactions */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5" />
+            <CardHeader className="border-b border-border/30">
+              <CardTitle className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+                  <History className="h-5 w-5 text-foreground" />
+                </div>
                 Transaction History
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               {transactions.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No transactions yet</p>
+                <div className="text-center py-16 text-muted-foreground">
+                  <div className="w-16 h-16 rounded-2xl bg-secondary mx-auto mb-4 flex items-center justify-center">
+                    <Wallet className="h-8 w-8 opacity-50" />
+                  </div>
+                  <p className="font-medium">No transactions yet</p>
                   <p className="text-sm mt-1">Add funds to start trading</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {transactions.map((txn) => (
+                <div className="divide-y divide-border/30">
+                  {transactions.map((txn, index) => (
                     <div
                       key={txn.id}
-                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                      className="flex items-center justify-between p-5 hover:bg-secondary/30 transition-colors animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                           {getTransactionIcon(txn.type)}
                         </div>
                         <div>
-                          <p className="font-medium text-foreground capitalize">
+                          <p className="font-semibold text-foreground capitalize">
                             {txn.type}
                           </p>
                           <p className="text-sm text-muted-foreground">
@@ -192,7 +200,7 @@ const WalletPage = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`font-medium ${
+                        <p className={`font-mono font-bold text-lg ${
                           txn.type === 'topup' || txn.type === 'sale' 
                             ? 'text-gain' 
                             : 'text-loss'
@@ -201,12 +209,17 @@ const WalletPage = () => {
                           {formatCurrency(Math.abs(txn.amount))}
                         </p>
                         {txn.fee > 0 && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground font-mono">
                             Fee: {formatCurrency(txn.fee)}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(txn.created_at).toLocaleDateString()}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(txn.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </p>
                       </div>
                     </div>
