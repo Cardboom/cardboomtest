@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Header } from '@/components/Header';
 import { MarketTicker } from '@/components/MarketTicker';
@@ -10,15 +10,31 @@ import { CollectibleModal } from '@/components/CollectibleModal';
 import { CartDrawer } from '@/components/CartDrawer';
 import { PriceChart } from '@/components/PriceChart';
 import { Footer } from '@/components/Footer';
+import { WaitlistBanner } from '@/components/WaitlistBanner';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
 import { useLivePrices } from '@/hooks/useLivePrices';
+
+const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [showWaitlist, setShowWaitlist] = useState(false);
+
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem(WAITLIST_DISMISSED_KEY);
+    if (!dismissed) {
+      setShowWaitlist(true);
+    }
+  }, []);
+
+  const handleDismissWaitlist = () => {
+    sessionStorage.setItem(WAITLIST_DISMISSED_KEY, 'true');
+    setShowWaitlist(false);
+  };
 
   // Get live prices for all collectibles
   const productIds = useMemo(() => mockCollectibles.map(c => c.priceId), []);
@@ -61,6 +77,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {showWaitlist && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <MarketTicker />
       
