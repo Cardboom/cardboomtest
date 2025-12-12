@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.iyzico-callback]
 verify_jwt = false
+
+[functions.messaging]
+verify_jwt = true
