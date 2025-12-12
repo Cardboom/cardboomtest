@@ -146,10 +146,13 @@ export type Database = {
           condition: string
           created_at: string
           description: string | null
+          external_id: string | null
+          external_price: number | null
           id: string
           image_url: string | null
           price: number
           seller_id: string
+          source: string
           status: Database["public"]["Enums"]["listing_status"]
           title: string
           updated_at: string
@@ -162,10 +165,13 @@ export type Database = {
           condition?: string
           created_at?: string
           description?: string | null
+          external_id?: string | null
+          external_price?: number | null
           id?: string
           image_url?: string | null
           price: number
           seller_id: string
+          source?: string
           status?: Database["public"]["Enums"]["listing_status"]
           title: string
           updated_at?: string
@@ -178,10 +184,13 @@ export type Database = {
           condition?: string
           created_at?: string
           description?: string | null
+          external_id?: string | null
+          external_price?: number | null
           id?: string
           image_url?: string | null
           price?: number
           seller_id?: string
+          source?: string
           status?: Database["public"]["Enums"]["listing_status"]
           title?: string
           updated_at?: string
