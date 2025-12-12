@@ -73,6 +73,27 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       item_views: {
         Row: {
           id: string
@@ -383,6 +404,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          follower_activity: boolean | null
+          id: string
+          messages: boolean | null
+          new_offers: boolean | null
+          order_updates: boolean | null
+          price_alerts: boolean | null
+          push_enabled: boolean | null
+          push_subscription: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_activity?: boolean | null
+          id?: string
+          messages?: boolean | null
+          new_offers?: boolean | null
+          order_updates?: boolean | null
+          price_alerts?: boolean | null
+          push_enabled?: boolean | null
+          push_subscription?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          follower_activity?: boolean | null
+          id?: string
+          messages?: boolean | null
+          new_offers?: boolean | null
+          order_updates?: boolean | null
+          price_alerts?: boolean | null
+          push_enabled?: boolean | null
+          push_subscription?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       offers: {
         Row: {
@@ -695,6 +791,8 @@ export type Database = {
           national_id: string | null
           phone: string | null
           phone_verified: boolean | null
+          referral_code: string | null
+          referred_by: string | null
           updated_at: string
           wire_transfer_code: string | null
           xp: number | null
@@ -711,6 +809,8 @@ export type Database = {
           national_id?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
           wire_transfer_code?: string | null
           xp?: number | null
@@ -727,11 +827,90 @@ export type Database = {
           national_id?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
           wire_transfer_code?: string | null
           xp?: number | null
         }
         Relationships: []
+      }
+      referrals: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          reward_amount: number | null
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          reward_amount?: number | null
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referrer_id?: string
+          reward_amount?: number | null
+          status?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          photos: string[] | null
+          rating: number
+          review_type: string
+          reviewed_id: string
+          reviewer_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          photos?: string[] | null
+          rating: number
+          review_type: string
+          reviewed_id: string
+          reviewer_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          photos?: string[] | null
+          rating?: number
+          review_type?: string
+          reviewed_id?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rewards_catalog: {
         Row: {
@@ -1262,6 +1441,13 @@ export type Database = {
     }
     Functions: {
       calculate_level: { Args: { xp_amount: number }; Returns: number }
+      get_seller_rating: {
+        Args: { seller_uuid: string }
+        Returns: {
+          avg_rating: number
+          review_count: number
+        }[]
+      }
     }
     Enums: {
       account_type: "buyer" | "seller" | "both"
