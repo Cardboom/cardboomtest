@@ -5,10 +5,11 @@ import { Footer } from '@/components/Footer';
 import { MarketExplorerFilters } from '@/components/market/MarketExplorerFilters';
 import { MarketExplorerTable } from '@/components/market/MarketExplorerTable';
 import { MarketExplorerStats } from '@/components/market/MarketExplorerStats';
+import { ListingsTable } from '@/components/market/ListingsTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, TrendingDown, BarChart3, Award, Layers } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Award, Layers, ShoppingBag } from 'lucide-react';
 
-export type MarketTab = 'all' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers';
+export type MarketTab = 'all' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers' | 'forsale';
 export type SortOption = 'change_24h' | 'change_7d' | 'change_30d' | 'price' | 'volume' | 'views' | 'liquidity' | 'recent';
 
 export interface MarketFilters {
@@ -26,7 +27,7 @@ export interface MarketFilters {
 
 const Explorer = () => {
   const [cartItems, setCartItems] = useState([]);
-  const [activeTab, setActiveTab] = useState<MarketTab>('all');
+  const [activeTab, setActiveTab] = useState<MarketTab>('forsale');
   const [sortBy, setSortBy] = useState<SortOption>('change_24h');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [filters, setFilters] = useState<MarketFilters>({
@@ -63,6 +64,10 @@ const Explorer = () => {
           {/* Main Tabs */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as MarketTab)} className="mt-6">
             <TabsList className="bg-secondary/50 p-1 rounded-xl mb-4 flex-wrap h-auto gap-1">
+              <TabsTrigger value="forsale" className="rounded-lg data-[state=active]:bg-gold data-[state=active]:text-gold-foreground">
+                <ShoppingBag className="w-4 h-4 mr-2" />
+                For Sale
+              </TabsTrigger>
               <TabsTrigger value="all" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Layers className="w-4 h-4 mr-2" />
                 All Cards
@@ -88,18 +93,26 @@ const Explorer = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* Filters */}
-            <MarketExplorerFilters 
-              filters={filters} 
-              setFilters={setFilters}
-              sortBy={sortBy}
-              setSortBy={setSortBy}
-              sortOrder={sortOrder}
-              setSortOrder={setSortOrder}
-              activeTab={activeTab}
-            />
+            {/* Filters - hide for forsale tab */}
+            {activeTab !== 'forsale' && (
+              <MarketExplorerFilters 
+                filters={filters} 
+                setFilters={setFilters}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
+                activeTab={activeTab}
+              />
+            )}
 
             {/* Table Content */}
+            <TabsContent value="forsale" className="mt-0">
+              <ListingsTable 
+                category={filters.category === 'all' ? undefined : filters.category}
+                search={filters.search}
+              />
+            </TabsContent>
             <TabsContent value="all" className="mt-0">
               <MarketExplorerTable 
                 filters={filters} 
