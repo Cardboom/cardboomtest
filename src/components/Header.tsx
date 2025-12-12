@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -166,6 +166,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <User className="w-4 h-4 mr-2" />
                     My Listings
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/referrals')}>
+                    <Gift className="w-4 h-4 mr-2" />
+                    Referrals & XP
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/verified-seller')}>
                     <BadgeCheck className="w-4 h-4 mr-2" />
@@ -238,6 +242,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <Link to="/verified-seller" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                     <BadgeCheck className="w-4 h-4 inline mr-2" />
                     Verified Seller
+                  </Link>
+                  <Link to="/referrals" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                    <Gift className="w-4 h-4 inline mr-2" />
+                    Referrals & XP
                   </Link>
                 </>
               )}
