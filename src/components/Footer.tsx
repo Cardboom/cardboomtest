@@ -52,7 +52,7 @@ export const Footer = () => {
 
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border/50">
           <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-            © 2024 Cardboom. All rights reserved.
+            © 2025 Cardboom. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
