@@ -1,7 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Wallet, ShoppingCart, Menu, X, Bell } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 interface HeaderProps {
   cartCount: number;
@@ -9,15 +20,40 @@ interface HeaderProps {
 }
 
 export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error('Error signing out');
+    } else {
+      toast.success('Signed out successfully');
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 glass border-b border-border/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-display font-bold text-lg">C</span>
             </div>
@@ -67,10 +103,36 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               )}
             </Button>
 
-            <Button variant="default" className="hidden sm:flex gap-2">
-              <Wallet className="w-4 h-4" />
-              Connect
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="default" className="hidden sm:flex gap-2">
+                    <User className="w-4 h-4" />
+                    {user.email?.split('@')[0]}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate('/')}>
+                    <User className="w-4 h-4 mr-2" />
+                    My Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="default" 
+                className="hidden sm:flex gap-2"
+                onClick={() => navigate('/auth')}
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </Button>
+            )}
 
             <Button
               variant="ghost"
@@ -104,10 +166,22 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors py-2">
                 Portfolio
               </a>
-              <Button variant="default" className="mt-2">
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </Button>
+              {user ? (
+                <>
+                  <div className="py-2 text-foreground font-medium">
+                    {user.email}
+                  </div>
+                  <Button variant="destructive" onClick={handleSignOut} className="mt-2">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Button variant="default" onClick={() => navigate('/auth')} className="mt-2">
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In / Register
+                </Button>
+              )}
             </nav>
           </div>
         )}
