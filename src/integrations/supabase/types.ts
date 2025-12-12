@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string | null
+          listing_id: string | null
+          participant_1: string
+          participant_2: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          listing_id?: string | null
+          participant_1: string
+          participant_2: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          listing_id?: string | null
+          participant_1?: string
+          participant_2?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_logins: {
         Row: {
           created_at: string
@@ -37,6 +72,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      item_views: {
+        Row: {
+          id: string
+          market_item_id: string
+          session_id: string | null
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          market_item_id: string
+          session_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          market_item_id?: string
+          session_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_views_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       listings: {
         Row: {
@@ -88,6 +155,250 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      market_item_grades: {
+        Row: {
+          avg_days_to_sell: number | null
+          change_24h: number | null
+          change_30d: number | null
+          change_7d: number | null
+          created_at: string
+          current_price: number
+          grade: Database["public"]["Enums"]["card_condition"]
+          id: string
+          last_sale_price: number | null
+          market_item_id: string
+          sales_count_30d: number | null
+        }
+        Insert: {
+          avg_days_to_sell?: number | null
+          change_24h?: number | null
+          change_30d?: number | null
+          change_7d?: number | null
+          created_at?: string
+          current_price?: number
+          grade: Database["public"]["Enums"]["card_condition"]
+          id?: string
+          last_sale_price?: number | null
+          market_item_id: string
+          sales_count_30d?: number | null
+        }
+        Update: {
+          avg_days_to_sell?: number | null
+          change_24h?: number | null
+          change_30d?: number | null
+          change_7d?: number | null
+          created_at?: string
+          current_price?: number
+          grade?: Database["public"]["Enums"]["card_condition"]
+          id?: string
+          last_sale_price?: number | null
+          market_item_id?: string
+          sales_count_30d?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_item_grades_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_items: {
+        Row: {
+          base_price: number
+          category: string
+          change_24h: number | null
+          change_30d: number | null
+          change_7d: number | null
+          character_name: string | null
+          created_at: string
+          current_price: number
+          data_source: string | null
+          external_id: string | null
+          id: string
+          image_url: string | null
+          is_trending: boolean | null
+          last_sale_at: string | null
+          last_sale_price: number | null
+          liquidity: Database["public"]["Enums"]["liquidity_level"] | null
+          name: string
+          price_24h_ago: number | null
+          price_30d_ago: number | null
+          price_7d_ago: number | null
+          rarity: string | null
+          sales_count_30d: number | null
+          series: string | null
+          set_name: string | null
+          subcategory: string | null
+          updated_at: string
+          views_24h: number | null
+          views_7d: number | null
+          watchlist_count: number | null
+        }
+        Insert: {
+          base_price?: number
+          category: string
+          change_24h?: number | null
+          change_30d?: number | null
+          change_7d?: number | null
+          character_name?: string | null
+          created_at?: string
+          current_price?: number
+          data_source?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_trending?: boolean | null
+          last_sale_at?: string | null
+          last_sale_price?: number | null
+          liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
+          name: string
+          price_24h_ago?: number | null
+          price_30d_ago?: number | null
+          price_7d_ago?: number | null
+          rarity?: string | null
+          sales_count_30d?: number | null
+          series?: string | null
+          set_name?: string | null
+          subcategory?: string | null
+          updated_at?: string
+          views_24h?: number | null
+          views_7d?: number | null
+          watchlist_count?: number | null
+        }
+        Update: {
+          base_price?: number
+          category?: string
+          change_24h?: number | null
+          change_30d?: number | null
+          change_7d?: number | null
+          character_name?: string | null
+          created_at?: string
+          current_price?: number
+          data_source?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_trending?: boolean | null
+          last_sale_at?: string | null
+          last_sale_price?: number | null
+          liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
+          name?: string
+          price_24h_ago?: number | null
+          price_30d_ago?: number | null
+          price_7d_ago?: number | null
+          rarity?: string | null
+          sales_count_30d?: number | null
+          series?: string | null
+          set_name?: string | null
+          subcategory?: string | null
+          updated_at?: string
+          views_24h?: number | null
+          views_7d?: number | null
+          watchlist_count?: number | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          filtered_content: string | null
+          id: string
+          is_filtered: boolean | null
+          is_read: boolean | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          filtered_content?: string | null
+          id?: string
+          is_filtered?: boolean | null
+          is_read?: boolean | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          filtered_content?: string | null
+          id?: string
+          is_filtered?: boolean | null
+          is_read?: boolean | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          amount: number
+          buyer_id: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          listing_id: string
+          message: string | null
+          parent_offer_id: string | null
+          responded_at: string | null
+          seller_id: string
+          status: Database["public"]["Enums"]["offer_status"]
+        }
+        Insert: {
+          amount: number
+          buyer_id: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          listing_id: string
+          message?: string | null
+          parent_offer_id?: string | null
+          responded_at?: string | null
+          seller_id: string
+          status?: Database["public"]["Enums"]["offer_status"]
+        }
+        Update: {
+          amount?: number
+          buyer_id?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          listing_id?: string
+          message?: string | null
+          parent_offer_id?: string | null
+          responded_at?: string | null
+          seller_id?: string
+          status?: Database["public"]["Enums"]["offer_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_parent_offer_id_fkey"
+            columns: ["parent_offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -208,6 +519,72 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_items: {
+        Row: {
+          created_at: string
+          custom_name: string | null
+          grade: Database["public"]["Enums"]["card_condition"] | null
+          id: string
+          image_url: string | null
+          in_vault: boolean | null
+          market_item_id: string | null
+          notes: string | null
+          purchase_date: string | null
+          purchase_price: number | null
+          quantity: number | null
+          updated_at: string
+          user_id: string
+          vault_item_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          custom_name?: string | null
+          grade?: Database["public"]["Enums"]["card_condition"] | null
+          id?: string
+          image_url?: string | null
+          in_vault?: boolean | null
+          market_item_id?: string | null
+          notes?: string | null
+          purchase_date?: string | null
+          purchase_price?: number | null
+          quantity?: number | null
+          updated_at?: string
+          user_id: string
+          vault_item_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          custom_name?: string | null
+          grade?: Database["public"]["Enums"]["card_condition"] | null
+          id?: string
+          image_url?: string | null
+          in_vault?: boolean | null
+          market_item_id?: string | null
+          notes?: string | null
+          purchase_date?: string | null
+          purchase_price?: number | null
+          quantity?: number | null
+          updated_at?: string
+          user_id?: string
+          vault_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_items_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portfolio_items_vault_item_id_fkey"
+            columns: ["vault_item_id"]
+            isOneToOne: false
+            referencedRelation: "vault_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_history: {
         Row: {
           id: string
@@ -316,6 +693,109 @@ export type Database = {
           type?: Database["public"]["Enums"]["reward_type"]
           value_amount?: number | null
           xp_cost?: number
+        }
+        Relationships: []
+      }
+      trade_items: {
+        Row: {
+          created_at: string
+          description: string
+          estimated_value: number | null
+          id: string
+          owner_id: string
+          photo_url: string | null
+          photo_verified: boolean | null
+          portfolio_item_id: string | null
+          trade_id: string
+          vault_item_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          estimated_value?: number | null
+          id?: string
+          owner_id: string
+          photo_url?: string | null
+          photo_verified?: boolean | null
+          portfolio_item_id?: string | null
+          trade_id: string
+          vault_item_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          estimated_value?: number | null
+          id?: string
+          owner_id?: string
+          photo_url?: string | null
+          photo_verified?: boolean | null
+          portfolio_item_id?: string | null
+          trade_id?: string
+          vault_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_items_portfolio_item_id_fkey"
+            columns: ["portfolio_item_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_items_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_items_vault_item_id_fkey"
+            columns: ["vault_item_id"]
+            isOneToOne: false
+            referencedRelation: "vault_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trades: {
+        Row: {
+          cash_adjustment: number | null
+          cash_from_initiator: boolean | null
+          created_at: string
+          id: string
+          initiator_confirmed: boolean | null
+          initiator_id: string
+          notes: string | null
+          recipient_confirmed: boolean | null
+          recipient_id: string
+          status: Database["public"]["Enums"]["trade_status"]
+          updated_at: string
+        }
+        Insert: {
+          cash_adjustment?: number | null
+          cash_from_initiator?: boolean | null
+          created_at?: string
+          id?: string
+          initiator_confirmed?: boolean | null
+          initiator_id: string
+          notes?: string | null
+          recipient_confirmed?: boolean | null
+          recipient_id: string
+          status?: Database["public"]["Enums"]["trade_status"]
+          updated_at?: string
+        }
+        Update: {
+          cash_adjustment?: number | null
+          cash_from_initiator?: boolean | null
+          created_at?: string
+          id?: string
+          initiator_confirmed?: boolean | null
+          initiator_id?: string
+          notes?: string | null
+          recipient_confirmed?: boolean | null
+          recipient_id?: string
+          status?: Database["public"]["Enums"]["trade_status"]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -581,6 +1061,47 @@ export type Database = {
         }
         Relationships: []
       }
+      watchlist: {
+        Row: {
+          created_at: string
+          grade: Database["public"]["Enums"]["card_condition"] | null
+          id: string
+          market_item_id: string
+          notify_on_new_listing: boolean | null
+          notify_on_price_drop: boolean | null
+          target_price: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          grade?: Database["public"]["Enums"]["card_condition"] | null
+          id?: string
+          market_item_id: string
+          notify_on_new_listing?: boolean | null
+          notify_on_price_drop?: boolean | null
+          target_price?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          grade?: Database["public"]["Enums"]["card_condition"] | null
+          id?: string
+          market_item_id?: string
+          notify_on_new_listing?: boolean | null
+          notify_on_price_drop?: boolean | null
+          target_price?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watchlist_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wire_transfers: {
         Row: {
           amount: number
@@ -671,8 +1192,34 @@ export type Database = {
     }
     Enums: {
       account_type: "buyer" | "seller" | "both"
+      card_condition:
+        | "raw"
+        | "psa1"
+        | "psa2"
+        | "psa3"
+        | "psa4"
+        | "psa5"
+        | "psa6"
+        | "psa7"
+        | "psa8"
+        | "psa9"
+        | "psa10"
+        | "bgs9"
+        | "bgs9_5"
+        | "bgs10"
+        | "cgc9"
+        | "cgc9_5"
+        | "cgc10"
       delivery_option: "vault" | "trade" | "ship"
+      liquidity_level: "high" | "medium" | "low"
       listing_status: "active" | "sold" | "cancelled" | "reserved"
+      offer_status:
+        | "pending"
+        | "accepted"
+        | "rejected"
+        | "countered"
+        | "expired"
+        | "cancelled"
       order_status:
         | "pending"
         | "paid"
@@ -687,6 +1234,16 @@ export type Database = {
         | "free_shipping"
         | "early_access"
         | "exclusive_drop"
+      trade_status:
+        | "proposed"
+        | "pending_photos"
+        | "photos_submitted"
+        | "pending_confirmation"
+        | "confirmed"
+        | "in_transit"
+        | "completed"
+        | "cancelled"
+        | "disputed"
       transaction_type:
         | "topup"
         | "purchase"
@@ -834,8 +1391,36 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["buyer", "seller", "both"],
+      card_condition: [
+        "raw",
+        "psa1",
+        "psa2",
+        "psa3",
+        "psa4",
+        "psa5",
+        "psa6",
+        "psa7",
+        "psa8",
+        "psa9",
+        "psa10",
+        "bgs9",
+        "bgs9_5",
+        "bgs10",
+        "cgc9",
+        "cgc9_5",
+        "cgc10",
+      ],
       delivery_option: ["vault", "trade", "ship"],
+      liquidity_level: ["high", "medium", "low"],
       listing_status: ["active", "sold", "cancelled", "reserved"],
+      offer_status: [
+        "pending",
+        "accepted",
+        "rejected",
+        "countered",
+        "expired",
+        "cancelled",
+      ],
       order_status: [
         "pending",
         "paid",
@@ -851,6 +1436,17 @@ export const Constants = {
         "free_shipping",
         "early_access",
         "exclusive_drop",
+      ],
+      trade_status: [
+        "proposed",
+        "pending_photos",
+        "photos_submitted",
+        "pending_confirmation",
+        "confirmed",
+        "in_transit",
+        "completed",
+        "cancelled",
+        "disputed",
       ],
       transaction_type: [
         "topup",
