@@ -121,6 +121,45 @@ export type Database = {
           },
         ]
       }
+      pending_payments: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          conversation_id: string
+          created_at: string
+          fee: number
+          id: string
+          payment_id: string | null
+          status: string
+          total: number
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          completed_at?: string | null
+          conversation_id: string
+          created_at?: string
+          fee: number
+          id?: string
+          payment_id?: string | null
+          status?: string
+          total: number
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          conversation_id?: string
+          created_at?: string
+          fee?: number
+          id?: string
+          payment_id?: string | null
+          status?: string
+          total?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string
@@ -142,6 +181,30 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      price_history: {
+        Row: {
+          id: string
+          price: number
+          product_id: string
+          recorded_at: string
+          source: string
+        }
+        Insert: {
+          id?: string
+          price: number
+          product_id: string
+          recorded_at?: string
+          source?: string
+        }
+        Update: {
+          id?: string
+          price?: number
+          product_id?: string
+          recorded_at?: string
+          source?: string
         }
         Relationships: []
       }

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Wallet, ArrowUpRight, ArrowDownLeft, History, Plus, CreditCard, TrendingUp } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
@@ -22,12 +21,29 @@ interface Transaction {
 
 const WalletPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useLanguage();
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTopUp, setShowTopUp] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  // Handle payment callback from iyzico
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    const amount = searchParams.get('amount');
+    const error = searchParams.get('error');
+
+    if (paymentStatus === 'success' && amount) {
+      toast.success(`Successfully added $${amount} to your wallet!`);
+      // Clear the URL params
+      setSearchParams({});
+    } else if (paymentStatus === 'failed') {
+      toast.error(error || 'Payment failed. Please try again.');
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const checkAuth = async () => {
