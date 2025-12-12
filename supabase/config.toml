@@ -1,1 +1,10 @@
 project_id = "kgffwhyfgkqeevsuhldt"
+
+[functions.fetch-prices]
+verify_jwt = false
+
+[functions.iyzico-init-3ds]
+verify_jwt = false
+
+[functions.iyzico-callback]
+verify_jwt = false
