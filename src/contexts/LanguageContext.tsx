@@ -6,11 +6,15 @@ interface LanguageContextType {
   setLocale: (locale: Locale) => void;
   t: Translations;
   isLoading: boolean;
+  isRTL: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const LOCALE_STORAGE_KEY = "cardboom_locale";
+
+// RTL languages
+const RTL_LOCALES: Locale[] = ["ar"];
 
 // Map country codes to locales
 const countryToLocale: Record<string, Locale> = {
@@ -21,6 +25,24 @@ const countryToLocale: Record<string, Locale> = {
   FR: "fr",
   BE: "fr",
   CA: "fr",
+  IT: "it",
+  SM: "it",
+  VA: "it",
+  SA: "ar",
+  AE: "ar",
+  EG: "ar",
+  MA: "ar",
+  DZ: "ar",
+  IQ: "ar",
+  JO: "ar",
+  KW: "ar",
+  LB: "ar",
+  LY: "ar",
+  OM: "ar",
+  QA: "ar",
+  SY: "ar",
+  YE: "ar",
+  BH: "ar",
   // Default to English for all others
 };
 
@@ -67,10 +89,19 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     initLocale();
   }, []);
 
+  // Update document direction for RTL languages
+  useEffect(() => {
+    const isRTL = RTL_LOCALES.includes(locale);
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
     localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
   };
+
+  const isRTL = RTL_LOCALES.includes(locale);
 
   return (
     <LanguageContext.Provider
@@ -79,6 +110,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         setLocale,
         t: translations[locale],
         isLoading,
+        isRTL,
       }}
     >
       {children}

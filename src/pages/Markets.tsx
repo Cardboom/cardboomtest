@@ -9,9 +9,11 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 const Markets = () => {
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const [cartItems, setCartItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'change' | 'price' | 'volume'>('change');
@@ -163,7 +165,7 @@ const Markets = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-foreground font-semibold">${item.price.toLocaleString()}</p>
+                    <p className="text-foreground font-semibold">{formatPrice(item.price)}</p>
                     <p className="text-gain text-sm font-medium">+{item.priceChange.toFixed(2)}%</p>
                   </div>
                 </div>
@@ -193,7 +195,7 @@ const Markets = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-foreground font-semibold">${item.price.toLocaleString()}</p>
+                    <p className="text-foreground font-semibold">{formatPrice(item.price)}</p>
                     <p className="text-loss text-sm font-medium">{item.priceChange.toFixed(2)}%</p>
                   </div>
                 </div>
@@ -258,7 +260,7 @@ const Markets = () => {
                   </div>
                 </div>
                 <div className="col-span-2 text-right">
-                  <p className="text-foreground font-semibold">${item.price.toLocaleString()}</p>
+                  <p className="text-foreground font-semibold">{formatPrice(item.price)}</p>
                 </div>
                 <div className="col-span-2 text-right">
                   <span className={cn(
