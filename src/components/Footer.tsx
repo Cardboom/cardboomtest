@@ -1,6 +1,9 @@
-import { Github, Twitter, MessageCircle } from 'lucide-react';
+import { Github, Twitter, MessageCircle, MapPin } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const Footer = () => {
+  const { t } = useLanguage();
+  
   return (
     <footer className="border-t border-border/50 py-12 mt-12">
       <div className="container mx-auto px-4">
@@ -14,46 +17,55 @@ export const Footer = () => {
                 CARD<span className="text-primary">BOOM</span>
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              The premier marketplace for collectible cards and figures.
+            <p className="text-sm text-muted-foreground mb-4">
+              {t.footer.tagline}
             </p>
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{t.footer.address}</span>
+            </div>
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Marketplace</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t.footer.marketplace}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">NBA Cards</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Football Cards</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">TCG</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Figures</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.nbaCards}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.footballCards}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.tcg}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.figures}</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Company</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t.footer.company}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">About</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Press</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.about}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.careers}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.blog}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.press}</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">Support</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t.footer.support}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Safety</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Terms</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Privacy</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.helpCenter}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.safety}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.terms}</a></li>
+              <li><a href="#" className="hover:text-foreground transition-colors">{t.footer.privacy}</a></li>
             </ul>
           </div>
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border/50">
-          <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-            © 2025 Cardboom. All rights reserved.
-          </p>
+          <div className="mb-4 md:mb-0 text-center md:text-left">
+            <p className="text-sm font-medium text-foreground">
+              Brainbaby Bilişim A.Ş.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t.footer.copyright}
+            </p>
+          </div>
           <div className="flex items-center gap-4">
             <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
               <Twitter className="w-5 h-5" />
