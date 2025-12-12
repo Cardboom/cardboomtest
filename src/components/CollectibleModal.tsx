@@ -1,8 +1,9 @@
-import { X, TrendingUp, TrendingDown, ShoppingCart, Heart, Share2 } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
 import { PriceChart } from './PriceChart';
 import { cn } from '@/lib/utils';
+import { ShareButton } from './ShareButton';
 
 interface CollectibleModalProps {
   collectible: Collectible | null;
@@ -125,9 +126,10 @@ export const CollectibleModal = ({ collectible, onClose, onAddToCart }: Collecti
               <Button variant="glass" size="lg">
                 <Heart className="w-5 h-5" />
               </Button>
-              <Button variant="glass" size="lg">
-                <Share2 className="w-5 h-5" />
-              </Button>
+              <ShareButton 
+                title={collectible.name}
+                text={`Check out ${collectible.name} on CardBoom - $${collectible.price.toLocaleString()}`}
+              />
             </div>
 
             {/* Trust Badges */}

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   TrendingUp, TrendingDown, Eye, Heart, 
-  Clock, Users, ChevronLeft, Plus, Loader2
+  Clock, Users, ChevronLeft, Plus, Loader2, ImagePlus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,8 @@ import { ItemGradeComparison } from '@/components/item/ItemGradeComparison';
 import { WhatIfSimulator } from '@/components/item/WhatIfSimulator';
 import { TimeToSell } from '@/components/item/TimeToSell';
 import { SentimentIndicator } from '@/components/item/SentimentIndicator';
+import { ShareButton } from '@/components/ShareButton';
+import { useGenerateItemImage } from '@/hooks/useGenerateItemImage';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -28,6 +30,7 @@ const ItemDetail = () => {
   const [cartItems, setCartItems] = useState([]);
   const [user, setUser] = useState<any>(null);
   const [selectedGrade, setSelectedGrade] = useState('psa10');
+  const { generateImage, isGenerating } = useGenerateItemImage();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -188,6 +191,20 @@ const ItemDetail = () => {
     toast.success('Added to portfolio');
   };
 
+  const handleGenerateImage = async () => {
+    if (!item) return;
+    const newImageUrl = await generateImage({
+      item_id: item.id,
+      item_name: item.name,
+      category: item.category,
+      set_name: item.set_name || undefined,
+      rarity: item.rarity || undefined
+    });
+    if (newImageUrl) {
+      queryClient.invalidateQueries({ queryKey: ['market-item', id] });
+    }
+  };
+
   if (itemLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -233,12 +250,29 @@ const ItemDetail = () => {
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Image */}
           <div className="lg:col-span-1">
-            <div className="glass rounded-2xl p-4 aspect-square">
+            <div className="glass rounded-2xl p-4 aspect-square relative">
               <img 
                 src={item.image_url || '/placeholder.svg'} 
                 alt={item.name}
                 className="w-full h-full object-contain rounded-xl"
               />
+              {/* Generate Image Button */}
+              {(!item.image_url || item.image_url === '/placeholder.svg') && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleGenerateImage}
+                  disabled={isGenerating}
+                  className="absolute bottom-6 right-6 gap-2"
+                >
+                  {isGenerating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ImagePlus className="w-4 h-4" />
+                  )}
+                  Generate Image
+                </Button>
+              )}
             </div>
           </div>
 
@@ -347,6 +381,10 @@ const ItemDetail = () => {
                 <Plus className="w-4 h-4" />
                 Add to Portfolio
               </Button>
+              <ShareButton 
+                title={item.name}
+                text={`Check out ${item.name} on CardBoom - ${formatPrice(item.current_price || 0)}`}
+              />
             </div>
           </div>
         </div>

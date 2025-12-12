@@ -1,4 +1,4 @@
-import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift } from 'lucide-react';
+import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, BellRing, BellOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications } from '@/hooks/useNotifications';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { formatDistanceToNow } from 'date-fns';
 
 const getNotificationIcon = (type: string) => {
@@ -36,6 +37,15 @@ const getNotificationIcon = (type: string) => {
 
 export const NotificationCenter = () => {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
+  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+
+  const handlePushToggle = () => {
+    if (isSubscribed) {
+      unsubscribe();
+    } else {
+      subscribe();
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -67,7 +77,31 @@ export const NotificationCenter = () => {
             </Button>
           )}
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        
+        {/* Push notifications toggle */}
+        {isSupported && (
+          <>
+            <DropdownMenuItem 
+              onClick={handlePushToggle}
+              className="cursor-pointer"
+              disabled={pushLoading}
+            >
+              {isSubscribed ? (
+                <>
+                  <BellOff className="h-4 w-4 mr-2" />
+                  Disable Push Notifications
+                </>
+              ) : (
+                <>
+                  <BellRing className="h-4 w-4 mr-2" />
+                  Enable Push Notifications
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        
         <ScrollArea className="h-[300px]">
           {loading ? (
             <div className="p-4 text-center text-muted-foreground">
