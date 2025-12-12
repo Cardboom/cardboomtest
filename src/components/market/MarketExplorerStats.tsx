@@ -70,6 +70,27 @@ export const MarketExplorerStats = () => {
     return value.toLocaleString();
   };
 
+  // Calculate real 24h volume from orders created in last 24 hours
+  const [volume24h, setVolume24h] = useState(0);
+  
+  useEffect(() => {
+    const fetch24hVolume = async () => {
+      const twentyFourHoursAgo = new Date();
+      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+      
+      const { data: recentOrders, error } = await supabase
+        .from('orders')
+        .select('price')
+        .gte('created_at', twentyFourHoursAgo.toISOString());
+      
+      if (!error && recentOrders) {
+        const vol = recentOrders.reduce((sum, o) => sum + Number(o.price), 0);
+        setVolume24h(vol);
+      }
+    };
+    fetch24hVolume();
+  }, []);
+
   const displayStats = [
     { 
       label: 'Total Volume', 
@@ -80,8 +101,8 @@ export const MarketExplorerStats = () => {
     },
     { 
       label: '24h Volume', 
-      value: formatValue(stats.totalVolume * 0.02), // Estimate 2% daily turnover
-      change: '+8.5%', 
+      value: formatValue(volume24h),
+      change: null,
       isPositive: true,
       icon: BarChart3 
     },
