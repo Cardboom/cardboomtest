@@ -11,6 +11,8 @@ import lukaPrizm from '@/assets/cards/luka-prizm.jpg';
 import pikachuIllustrator from '@/assets/cards/pikachu-illustrator.jpg';
 import chaseOptic from '@/assets/cards/chase-optic.jpg';
 import mewtwoRainbow from '@/assets/cards/mewtwo-rainbow.jpg';
+import valorantVp from '@/assets/cards/valorant-vp.jpg';
+import pubgUc from '@/assets/cards/pubg-uc.jpg';
 
 export const mockCollectibles: Collectible[] = [
   // NBA Cards
@@ -399,7 +401,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'valorant-1000vp',
     name: 'Valorant 1000 VP',
     category: 'gamepoints',
-    image: chaseOptic,
+    image: valorantVp,
     price: 10.50, // 5% above $10
     previousPrice: 10.50,
     priceChange: 0,
@@ -415,7 +417,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'valorant-2050vp',
     name: 'Valorant 2050 VP',
     category: 'gamepoints',
-    image: chaseOptic,
+    image: valorantVp,
     price: 21.00, // 5% above $20
     previousPrice: 21.00,
     priceChange: 0,
@@ -431,7 +433,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'valorant-5350vp',
     name: 'Valorant 5350 VP',
     category: 'gamepoints',
-    image: chaseOptic,
+    image: valorantVp,
     price: 52.50, // 5% above $50
     previousPrice: 52.50,
     priceChange: 0,
@@ -448,7 +450,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'pubg-600uc',
     name: 'PUBG 600 UC',
     category: 'gamepoints',
-    image: mahomesPrizm,
+    image: pubgUc,
     price: 10.50, // 5% above $10
     previousPrice: 10.50,
     priceChange: 0,
@@ -464,7 +466,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'pubg-1500uc',
     name: 'PUBG 1500 UC',
     category: 'gamepoints',
-    image: mahomesPrizm,
+    image: pubgUc,
     price: 26.25, // 5% above $25
     previousPrice: 26.25,
     priceChange: 0,
@@ -480,7 +482,7 @@ export const mockCollectibles: Collectible[] = [
     priceId: 'pubg-3850uc',
     name: 'PUBG 3850 UC',
     category: 'gamepoints',
-    image: mahomesPrizm,
+    image: pubgUc,
     price: 52.50, // 5% above $50
     previousPrice: 52.50,
     priceChange: 0,
