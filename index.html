@@ -1,14 +1,20 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="canonical" href="https://cardboom.com/" />
+    
+    <!-- Preload fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
     <title>Cardboom - Premier Collectibles Trading Exchange</title>
     <meta name="description" content="Trade NBA cards, football cards, TCG, and rare figures with real-time pricing, secure transactions, and instant settlements on Cardboom." />
     <meta name="author" content="Cardboom" />
     <meta name="keywords" content="trading cards, NBA cards, football cards, TCG, Pokemon, collectibles, figures, marketplace, live prices" />
+    <meta name="theme-color" content="#0a0c0f" />
 
     <meta property="og:title" content="Cardboom - Premier Collectibles Trading Exchange" />
     <meta property="og:description" content="Trade NBA cards, football cards, TCG, and rare figures with real-time pricing." />
@@ -19,9 +25,25 @@
     <meta name="twitter:title" content="Cardboom - Premier Collectibles Exchange" />
     <meta name="twitter:description" content="Trade collectible cards and figures with real-time pricing." />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Cardboom",
+      "url": "https://cardboom.com",
+      "description": "Premier Collectibles Trading Exchange for NBA cards, football cards, TCG, and rare figures",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://cardboom.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
 
-  <body>
+  <body class="bg-background">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -53,26 +53,26 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass border-b border-border/50">
+    <header className="sticky top-0 z-50 glass border-b border-border/30">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-glow group-hover:scale-105 transition-transform">
               <span className="text-primary-foreground font-display font-bold text-lg">C</span>
             </div>
-            <span className="font-display text-xl font-bold text-foreground hidden sm:block">
+            <span className="font-display text-xl font-bold text-foreground hidden sm:block tracking-tight">
               CARD<span className="text-primary">BOOM</span>
             </span>
           </div>
 
           {/* Search Bar */}
-          <div className={`hidden md:flex items-center flex-1 max-w-xl mx-8 relative transition-all duration-300 ${searchFocused ? 'scale-105' : ''}`}>
-            <Search className="absolute left-3 w-5 h-5 text-muted-foreground" />
+          <div className={`hidden md:flex items-center flex-1 max-w-xl mx-8 relative transition-all duration-300 ${searchFocused ? 'scale-[1.02]' : ''}`}>
+            <Search className="absolute left-4 w-4 h-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder={t.nav.search}
-              className="pl-10 bg-secondary border-border/50 focus:border-primary/50 focus:ring-primary/20 rounded-full"
+              className="pl-11 bg-secondary/50 border-border/30 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-11"
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
             />
