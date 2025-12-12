@@ -1,18 +1,56 @@
 import { Button } from '@/components/ui/button';
-import { marketStats } from '@/data/mockData';
 import { ArrowRight, TrendingUp, Users, Layers, DollarSign } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 export const HeroSection = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  
+
+  const { data: realStats } = useQuery({
+    queryKey: ['hero-stats'],
+    queryFn: async () => {
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+      const [listingsRes, profilesRes, ordersRes, orders24hRes] = await Promise.all([
+        supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('orders').select('price'),
+        supabase.from('orders').select('price').gte('created_at', twentyFourHoursAgo.toISOString()),
+      ]);
+
+      const totalVolume = ordersRes.data?.reduce((sum, order) => sum + Number(order.price), 0) || 0;
+      const volume24h = orders24hRes.data?.reduce((sum, order) => sum + Number(order.price), 0) || 0;
+
+      return {
+        totalVolume,
+        volume24h,
+        activeListings: listingsRes.count || 0,
+        traders: profilesRes.count || 0,
+      };
+    },
+  });
+
+  const formatValue = (value: number, type: 'currency' | 'number') => {
+    if (type === 'currency') {
+      if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
+      if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
+      if (value >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
+      return `$${value.toFixed(0)}`;
+    }
+    if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
+    if (value >= 1e3) return `${(value / 1e3).toFixed(0)}K`;
+    return value.toString();
+  };
+
   const stats = [
-    { label: t.hero.totalVolume, value: `$${(marketStats.totalVolume / 1e9).toFixed(2)}B`, icon: DollarSign },
-    { label: t.hero.volume24h, value: `$${(marketStats.dailyVolume / 1e6).toFixed(1)}M`, icon: TrendingUp },
-    { label: t.hero.activeListings, value: `${(marketStats.activeListings / 1e6).toFixed(2)}M`, icon: Layers },
-    { label: t.hero.traders, value: `${(marketStats.activeTraders / 1e3).toFixed(0)}K`, icon: Users },
+    { label: t.hero.totalVolume, value: formatValue(realStats?.totalVolume || 0, 'currency'), icon: DollarSign },
+    { label: t.hero.volume24h, value: formatValue(realStats?.volume24h || 0, 'currency'), icon: TrendingUp },
+    { label: t.hero.activeListings, value: formatValue(realStats?.activeListings || 0, 'number'), icon: Layers },
+    { label: t.hero.traders, value: formatValue(realStats?.traders || 0, 'number'), icon: Users },
   ];
 
   const scrollToListings = () => {
