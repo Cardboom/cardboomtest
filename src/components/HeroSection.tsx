@@ -36,10 +36,10 @@ export const HeroSection = () => {
 
   const formatValue = (value: number, type: 'currency' | 'number') => {
     if (type === 'currency') {
-      if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-      if (value >= 1e6) return `$${(value / 1e6).toFixed(1)}M`;
-      if (value >= 1e3) return `$${(value / 1e3).toFixed(1)}K`;
-      return `$${value.toFixed(0)}`;
+      if (value >= 1e9) return `₺${(value / 1e9).toFixed(2)}B`;
+      if (value >= 1e6) return `₺${(value / 1e6).toFixed(1)}M`;
+      if (value >= 1e3) return `₺${(value / 1e3).toFixed(1)}K`;
+      return `₺${value.toFixed(0)}`;
     }
     if (value >= 1e6) return `${(value / 1e6).toFixed(2)}M`;
     if (value >= 1e3) return `${(value / 1e3).toFixed(0)}K`;
@@ -59,47 +59,46 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative py-20 overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-3xl" />
+    <section className="relative py-20 lg:py-28 overflow-hidden">
+      {/* Subtle Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent dark:from-primary/[0.05]" />
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 text-primary text-sm font-medium mb-6 animate-fade-in">
+        <div className="max-w-4xl mx-auto text-center mb-14">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
             <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             {t.hero.badge}
           </div>
           
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            {t.hero.title}<br />
-            <span className="text-gradient-primary">{t.hero.titleHighlight}</span>
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
+            <span className="text-gradient-primary">Boom</span>, your collection.
+            <br />
+            <span className="text-foreground">Trade Smarter.</span>
           </h1>
           
-          <p className="text-muted-foreground text-lg md:text-xl mb-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
+          <p className="text-muted-foreground text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
             {t.hero.description}
           </p>
           
-          <div className="flex flex-wrap justify-center gap-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
-            <Button variant="hero" size="xl" onClick={scrollToListings}>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button size="xl" onClick={scrollToListings} className="shadow-md hover:shadow-lg">
               {t.hero.startTrading}
               <ArrowRight className="w-5 h-5" />
             </Button>
-            <Button variant="glass" size="xl" onClick={() => navigate('/markets')}>
+            <Button variant="outline" size="xl" onClick={() => navigate('/markets')}>
               {t.hero.exploreMarket}
             </Button>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: '400ms' }}>
-          {stats.map((stat, index) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          {stats.map((stat) => (
             <div
               key={stat.label}
-              className="glass rounded-xl p-4 text-center hover:border-primary/50 transition-all duration-300 hover:scale-105"
-              style={{ animationDelay: `${400 + index * 100}ms` }}
+              className="rounded-xl border border-border/50 bg-card/50 p-5 text-center hover:border-primary/30 hover:shadow-md transition-all duration-300"
             >
-              <stat.icon className="w-5 h-5 text-primary mx-auto mb-2" />
+              <stat.icon className="w-5 h-5 text-primary mx-auto mb-3" />
               <div className="text-2xl md:text-3xl font-bold font-display text-foreground mb-1">
                 {stat.value}
               </div>

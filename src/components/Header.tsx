@@ -17,6 +17,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { XPProgressBar } from '@/components/XPProgressBar';
 import { NotificationCenter } from '@/components/NotificationCenter';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface HeaderProps {
   cartCount: number;
@@ -121,9 +122,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
             <LanguageSelector />
-            
             {user && (
               <div className="hidden sm:flex">
                 <NotificationCenter />
