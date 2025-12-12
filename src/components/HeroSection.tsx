@@ -2,9 +2,11 @@ import { Button } from '@/components/ui/button';
 import { marketStats } from '@/data/mockData';
 import { ArrowRight, TrendingUp, Users, Layers, DollarSign } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 export const HeroSection = () => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   
   const stats = [
     { label: t.hero.totalVolume, value: `$${(marketStats.totalVolume / 1e9).toFixed(2)}B`, icon: DollarSign },
@@ -12,6 +14,11 @@ export const HeroSection = () => {
     { label: t.hero.activeListings, value: `${(marketStats.activeListings / 1e6).toFixed(2)}M`, icon: Layers },
     { label: t.hero.traders, value: `${(marketStats.activeTraders / 1e3).toFixed(0)}K`, icon: Users },
   ];
+
+  const scrollToListings = () => {
+    const listingsSection = document.querySelector('section:last-of-type');
+    listingsSection?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <section className="relative py-20 overflow-hidden">
@@ -36,11 +43,11 @@ export const HeroSection = () => {
           </p>
           
           <div className="flex flex-wrap justify-center gap-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
-            <Button variant="hero" size="xl">
+            <Button variant="hero" size="xl" onClick={scrollToListings}>
               {t.hero.startTrading}
               <ArrowRight className="w-5 h-5" />
             </Button>
-            <Button variant="glass" size="xl">
+            <Button variant="glass" size="xl" onClick={() => navigate('/markets')}>
               {t.hero.exploreMarket}
             </Button>
           </div>

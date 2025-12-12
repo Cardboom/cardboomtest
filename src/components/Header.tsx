@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { XPProgressBar } from '@/components/XPProgressBar';
 
 interface HeaderProps {
   cartCount: number;
@@ -27,20 +28,39 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userXP, setUserXP] = useState(0);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchUserXP(session.user.id);
+        }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserXP(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserXP = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('xp')
+      .eq('id', userId)
+      .single();
+    
+    if (data) {
+      setUserXP(data.xp || 0);
+    }
+  };
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -83,6 +103,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t.nav.marketplace}
             </Link>
+            <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4" />
+              Markets
+            </Link>
             <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
               {t.nav.sell}
             </Link>
@@ -113,11 +137,15 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="default" className="hidden sm:flex gap-2">
-                    <User className="w-4 h-4" />
+                    <Star className="w-4 h-4" />
                     {user.email?.split('@')[0]}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-72">
+                  {/* XP Progress */}
+                  <div className="p-3 border-b border-border/50">
+                    <XPProgressBar xp={userXP} compact />
+                  </div>
                   <DropdownMenuItem onClick={() => navigate('/wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
                     Wallet
@@ -178,6 +206,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <nav className="flex flex-col gap-3">
               <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.marketplace}
+              </Link>
+              <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <TrendingUp className="w-4 h-4" />
+                Markets
               </Link>
               <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.sell}

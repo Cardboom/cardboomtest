@@ -12,6 +12,7 @@ import Wallet from "./pages/Wallet";
 import Vault from "./pages/Vault";
 import Sell from "./pages/Sell";
 import VerifiedSeller from "./pages/VerifiedSeller";
+import Markets from "./pages/Markets";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/vault" element={<Vault />} />
               <Route path="/sell" element={<Sell />} />
               <Route path="/verified-seller" element={<VerifiedSeller />} />
+              <Route path="/markets" element={<Markets />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

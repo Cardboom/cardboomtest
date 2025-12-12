@@ -1,8 +1,9 @@
-import { TrendingUp, TrendingDown, ShoppingCart } from 'lucide-react';
+import { useState } from 'react';
+import { TrendingUp, TrendingDown, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
-import { rarityColors } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface CollectibleCardProps {
   collectible: Collectible;
@@ -11,7 +12,14 @@ interface CollectibleCardProps {
 }
 
 export const CollectibleCard = ({ collectible, onAddToCart, onClick }: CollectibleCardProps) => {
+  const [isFavorited, setIsFavorited] = useState(false);
   const isPositive = collectible.priceChange >= 0;
+
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFavorited(!isFavorited);
+    toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites');
+  };
 
   return (
     <div
@@ -38,9 +46,24 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
           {collectible.rarity}
         </div>
 
+        {/* Favorite Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleFavorite}
+          className={cn(
+            "absolute top-3 right-3 z-20 w-8 h-8 rounded-full backdrop-blur-sm transition-all",
+            isFavorited 
+              ? "bg-red-500/20 text-red-500 hover:bg-red-500/30" 
+              : "bg-secondary/50 text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+          )}
+        >
+          <Heart className={cn("w-4 h-4", isFavorited && "fill-current")} />
+        </Button>
+
         {/* Trending Badge */}
         {collectible.trending && (
-          <div className="absolute top-3 right-3 z-20 px-2 py-1 rounded-md text-xs font-bold bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm flex items-center gap-1">
+          <div className="absolute bottom-3 left-3 z-20 px-2 py-1 rounded-md text-xs font-bold bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm flex items-center gap-1">
             <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
             HOT
           </div>
