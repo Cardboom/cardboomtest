@@ -154,6 +154,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <div className="p-3 border-b border-border/50">
                     <XPProgressBar xp={userXP} compact />
                   </div>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <User className="w-4 h-4 mr-2" />
+                    My Profile
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
                     Wallet
@@ -163,7 +167,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     My Vault
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/sell')}>
-                    <User className="w-4 h-4 mr-2" />
+                    <TrendingUp className="w-4 h-4 mr-2" />
                     My Listings
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/referrals')}>

@@ -22,6 +22,7 @@ import Portfolio from "./pages/Portfolio";
 import Trades from "./pages/Trades";
 import Deals from "./pages/Deals";
 import Referrals from "./pages/Referrals";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,8 @@ const App = () => (
                 <Route path="/trades" element={<Trades />} />
                 <Route path="/deals" element={<Deals />} />
                 <Route path="/referrals" element={<Referrals />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/:userId" element={<Profile />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
