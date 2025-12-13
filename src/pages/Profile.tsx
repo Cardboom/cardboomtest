@@ -9,6 +9,7 @@ import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileShowcase } from '@/components/profile/ProfileShowcase';
 import { useProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, Package, Star, Clock } from 'lucide-react';
 
@@ -48,14 +49,19 @@ const Profile = () => {
       <div className="min-h-screen bg-background">
         <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
         <main className="container mx-auto px-4 py-8">
-          <Card>
+          <Card className="max-w-md mx-auto">
             <CardContent className="py-16 text-center">
               <h2 className="text-2xl font-bold mb-2">Profile Not Found</h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-6">
                 {isOwnProfile 
                   ? 'Please sign in to view your profile.'
                   : 'This user profile does not exist.'}
               </p>
+              {isOwnProfile && (
+                <Button onClick={() => window.location.href = '/auth'}>
+                  Sign In
+                </Button>
+              )}
             </CardContent>
           </Card>
         </main>

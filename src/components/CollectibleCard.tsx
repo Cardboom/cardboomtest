@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { TrendingUp, TrendingDown, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
@@ -13,7 +13,45 @@ interface CollectibleCardProps {
 
 export const CollectibleCard = ({ collectible, onAddToCart, onClick }: CollectibleCardProps) => {
   const [isFavorited, setIsFavorited] = useState(false);
+  const [displayPrice, setDisplayPrice] = useState(collectible.price);
+  const [priceDirection, setPriceDirection] = useState<'up' | 'down' | null>(null);
+  const prevPriceRef = useRef(collectible.price);
   const isPositive = collectible.priceChange >= 0;
+
+  // Animate price changes
+  useEffect(() => {
+    if (collectible.price !== prevPriceRef.current) {
+      const direction = collectible.price > prevPriceRef.current ? 'up' : 'down';
+      setPriceDirection(direction);
+      
+      // Animate the price change
+      const startPrice = prevPriceRef.current;
+      const endPrice = collectible.price;
+      const duration = 800;
+      const startTime = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function for smooth animation
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const currentPrice = startPrice + (endPrice - startPrice) * easeOutQuart;
+        
+        setDisplayPrice(currentPrice);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          setDisplayPrice(endPrice);
+          setTimeout(() => setPriceDirection(null), 500);
+        }
+      };
+      
+      requestAnimationFrame(animate);
+      prevPriceRef.current = collectible.price;
+    }
+  }, [collectible.price]);
 
   const handleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -86,11 +124,24 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
           <span>{collectible.condition}</span>
         </div>
 
-        {/* Price Section */}
+        {/* Price Section with Animation */}
         <div className="flex items-end justify-between">
           <div>
-            <div className="text-2xl font-bold text-foreground font-display">
-              ${collectible.price.toLocaleString()}
+            <div className={cn(
+              "text-2xl font-bold font-display transition-all duration-300",
+              priceDirection === 'up' && "text-gain animate-pulse",
+              priceDirection === 'down' && "text-loss animate-pulse",
+              !priceDirection && "text-foreground"
+            )}>
+              <span className="inline-flex items-center gap-1">
+                ${displayPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                {priceDirection === 'up' && (
+                  <TrendingUp className="w-4 h-4 animate-bounce" />
+                )}
+                {priceDirection === 'down' && (
+                  <TrendingDown className="w-4 h-4 animate-bounce" />
+                )}
+              </span>
             </div>
             <div className={cn(
               'flex items-center gap-1 text-sm font-medium',
