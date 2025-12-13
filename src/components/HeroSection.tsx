@@ -114,13 +114,13 @@ export const HeroSection = () => {
             </div>
 
             {/* Stats Row - Compact */}
-            <div className="flex flex-wrap gap-8 pt-4">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-8 pt-4">
               {stats.map(stat => (
-                <div key={stat.label} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold font-display text-foreground">
+                <div key={stat.label} className="text-center sm:text-left">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold font-display text-foreground">
                     {stat.value}
                   </div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">
+                  <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mt-1">
                     {stat.label}
                   </div>
                 </div>
