@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, ArrowUpRight, ArrowDownLeft, History, Plus, CreditCard, TrendingUp } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, History, Plus, CreditCard, TrendingUp, TrendingDown, Banknote } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
+import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { toast } from 'sonner';
 
 interface Transaction {
@@ -23,6 +25,7 @@ const WalletPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useLanguage();
+  const { formatPrice, currency } = useCurrency();
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,14 +39,13 @@ const WalletPage = () => {
     const error = searchParams.get('error');
 
     if (paymentStatus === 'success' && amount) {
-      toast.success(`Successfully added $${amount} to your wallet!`);
-      // Clear the URL params
+      toast.success(`Successfully added ${formatPrice(Number(amount))} to your wallet!`);
       setSearchParams({});
     } else if (paymentStatus === 'failed') {
       toast.error(error || 'Payment failed. Please try again.');
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, formatPrice]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -60,7 +62,6 @@ const WalletPage = () => {
 
   const fetchWalletData = async (userId: string) => {
     try {
-      // Fetch wallet
       const { data: wallet, error: walletError } = await supabase
         .from('wallets')
         .select('*')
@@ -72,7 +73,6 @@ const WalletPage = () => {
       if (wallet) {
         setBalance(Number(wallet.balance));
 
-        // Fetch transactions
         const { data: txns, error: txnError } = await supabase
           .from('transactions')
           .select('*')
@@ -91,12 +91,28 @@ const WalletPage = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  // Calculate today's PNL
+  const todaysPNL = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todayTxns = transactions.filter(txn => {
+      const txnDate = new Date(txn.created_at);
+      txnDate.setHours(0, 0, 0, 0);
+      return txnDate.getTime() === today.getTime();
+    });
+
+    let pnl = 0;
+    todayTxns.forEach(txn => {
+      if (txn.type === 'sale' || txn.type === 'topup') {
+        pnl += Number(txn.amount);
+      } else if (txn.type === 'purchase' || txn.type === 'fee' || txn.type === 'subscription' || txn.type === 'withdrawal') {
+        pnl -= Math.abs(Number(txn.amount));
+      }
+    });
+
+    return pnl;
+  }, [transactions]);
 
   const getTransactionIcon = (type: string) => {
     switch (type) {
@@ -129,32 +145,83 @@ const WalletPage = () => {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Header with Currency Toggle */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="font-display text-2xl font-bold text-foreground">My Wallet</h1>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Currency:</span>
+              <CurrencyToggle />
+            </div>
+          </div>
+
           {/* Balance Card */}
-          <Card className="mb-8 overflow-hidden border-primary/20 relative">
+          <Card className="mb-6 overflow-hidden border-primary/20 relative">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-gold/5" />
             <CardContent className="p-8 relative">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2 uppercase tracking-wider font-medium">Available Balance</p>
-                  <h1 className="text-5xl font-display font-bold text-foreground tracking-tight">
-                    {formatCurrency(balance)}
-                  </h1>
-                </div>
-                <div className="flex gap-3">
-                  <Button onClick={() => setShowTopUp(true)} size="lg" className="gap-2 shadow-glow">
-                    <Plus className="h-5 w-5" />
-                    Add Funds
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="mt-8 p-4 rounded-xl bg-secondary/50 border border-border/30">
-                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-primary" />
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2 uppercase tracking-wider font-medium">Available Balance</p>
+                    <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground tracking-tight">
+                      {formatPrice(balance)}
+                    </h2>
                   </div>
-                  <span>7% fee on credit card top-ups • 6% buy fee • 6% sell fee</span>
+                  
+                  {/* Today's PNL */}
+                  <div className="flex items-center gap-3">
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${
+                      todaysPNL >= 0 ? 'bg-gain/10 text-gain' : 'bg-loss/10 text-loss'
+                    }`}>
+                      {todaysPNL >= 0 ? (
+                        <TrendingUp className="h-4 w-4" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4" />
+                      )}
+                      <span className="font-semibold text-sm">
+                        {todaysPNL >= 0 ? '+' : ''}{formatPrice(todaysPNL)}
+                      </span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">Today's P&L</span>
+                  </div>
                 </div>
+
+                <Button onClick={() => setShowTopUp(true)} size="lg" className="gap-2 shadow-glow h-14 px-8">
+                  <Plus className="h-5 w-5" />
+                  Add Funds
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Add Funds Options */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <h3 className="font-display font-semibold text-foreground mb-4">Quick Add Funds</h3>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <button
+                  onClick={() => setShowTopUp(true)}
+                  className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-secondary/30 transition-all text-left"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <CreditCard className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Credit / Debit Card</p>
+                    <p className="text-sm text-muted-foreground">Instant deposit with card</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setShowTopUp(true)}
+                  className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-secondary/30 transition-all text-left"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Banknote className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Bank Transfer</p>
+                    <p className="text-sm text-muted-foreground">Transfer from your bank</p>
+                  </div>
+                </button>
               </div>
             </CardContent>
           </Card>
@@ -192,7 +259,7 @@ const WalletPage = () => {
                         </div>
                         <div>
                           <p className="font-semibold text-foreground capitalize">
-                            {txn.type}
+                            {txn.type === 'topup' ? 'Deposit' : txn.type}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {txn.description || 'Transaction'}
@@ -206,13 +273,8 @@ const WalletPage = () => {
                             : 'text-loss'
                         }`}>
                           {txn.type === 'topup' || txn.type === 'sale' ? '+' : '-'}
-                          {formatCurrency(Math.abs(txn.amount))}
+                          {formatPrice(Math.abs(txn.amount))}
                         </p>
-                        {txn.fee > 0 && (
-                          <p className="text-xs text-muted-foreground font-mono">
-                            Fee: {formatCurrency(txn.fee)}
-                          </p>
-                        )}
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(txn.created_at).toLocaleDateString('en-US', {
                             month: 'short',
