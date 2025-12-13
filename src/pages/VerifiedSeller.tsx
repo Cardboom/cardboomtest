@@ -114,7 +114,59 @@ const VerifiedSellerPage = () => {
       return;
     }
 
-    toast.info('Subscription payment from wallet coming soon.');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      // Get wallet
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('id, balance')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (!wallet || wallet.balance < MONTHLY_FEE) {
+        toast.error('Insufficient balance');
+        return;
+      }
+
+      // Deduct from wallet
+      const newBalance = Number(wallet.balance) - MONTHLY_FEE;
+      await supabase
+        .from('wallets')
+        .update({ balance: newBalance })
+        .eq('id', wallet.id);
+
+      // Create transaction record
+      await supabase
+        .from('transactions')
+        .insert({
+          wallet_id: wallet.id,
+          amount: -MONTHLY_FEE,
+          type: 'subscription',
+          description: 'Verified Seller Subscription - 1 Month',
+        });
+
+      // Update verified seller status
+      const subscriptionEnd = new Date();
+      subscriptionEnd.setMonth(subscriptionEnd.getMonth() + 1);
+
+      await supabase
+        .from('verified_sellers')
+        .update({
+          subscription_active: true,
+          subscription_started_at: new Date().toISOString(),
+          subscription_ends_at: subscriptionEnd.toISOString(),
+        })
+        .eq('user_id', session.user.id);
+
+      toast.success('Subscription activated! You are now a Verified Seller.');
+      fetchData(session.user.id);
+      setWalletBalance(newBalance);
+    } catch (error: any) {
+      console.error('Subscription error:', error);
+      toast.error(error.message || 'Failed to activate subscription');
+    }
   };
 
   const getStatusBadge = (status: string) => {

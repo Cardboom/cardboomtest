@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { 
   Flame, Trophy, Gift, Zap, Star, Target, 
-  TrendingUp, Crown, Sparkles, Calendar
+  TrendingUp, Crown, Sparkles, Calendar, CheckCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AnimatedCounter } from './AnimatedCounter';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface DailyQuestsPanelProps {
   xp: number;
@@ -17,7 +18,19 @@ interface DailyQuestsPanelProps {
   streak: number;
 }
 
-const QUESTS = [
+interface Quest {
+  id: number;
+  title: string;
+  xp: number;
+  icon: any;
+  progress: number;
+  target: number;
+  type: string;
+  completed?: boolean;
+  claimed?: boolean;
+}
+
+const INITIAL_QUESTS: Quest[] = [
   { id: 1, title: 'First Trade of the Day', xp: 50, icon: Zap, progress: 0, target: 1, type: 'trade' },
   { id: 2, title: 'Add 3 Items to Watchlist', xp: 25, icon: Star, progress: 2, target: 3, type: 'watchlist' },
   { id: 3, title: 'View 5 Market Items', xp: 15, icon: Target, progress: 5, target: 5, type: 'view', completed: true },
@@ -25,16 +38,28 @@ const QUESTS = [
 ];
 
 const ACHIEVEMENTS = [
-  { id: 1, title: 'First Steps', icon: '🚀', unlocked: true },
-  { id: 2, title: 'Collector', icon: '💎', unlocked: true },
-  { id: 3, title: 'Trader', icon: '📈', unlocked: false },
-  { id: 4, title: 'Whale', icon: '🐋', unlocked: false },
+  { id: 1, title: 'First Steps', icon: '🚀', unlocked: true, description: 'Complete your first trade' },
+  { id: 2, title: 'Collector', icon: '💎', unlocked: true, description: 'Add 10 items to portfolio' },
+  { id: 3, title: 'Trader', icon: '📈', unlocked: false, description: 'Complete 50 trades' },
+  { id: 4, title: 'Whale', icon: '🐋', unlocked: false, description: 'Trade over $10,000 in volume' },
 ];
 
 export const DailyQuestsPanel = ({ xp, level, streak }: DailyQuestsPanelProps) => {
   const [timeLeft, setTimeLeft] = useState('');
-  const dailyXPEarned = 90;
+  const [quests, setQuests] = useState<Quest[]>(INITIAL_QUESTS);
+  const [dailyXPEarned, setDailyXPEarned] = useState(90);
   const dailyXPGoal = 200;
+
+  const handleClaimReward = (questId: number) => {
+    const quest = quests.find(q => q.id === questId);
+    if (!quest || !quest.completed || quest.claimed) return;
+    
+    setQuests(prev => prev.map(q => 
+      q.id === questId ? { ...q, claimed: true } : q
+    ));
+    setDailyXPEarned(prev => prev + quest.xp);
+    toast.success(`+${quest.xp} XP claimed!`);
+  };
 
   useEffect(() => {
     const updateTimer = () => {
@@ -51,7 +76,8 @@ export const DailyQuestsPanel = ({ xp, level, streak }: DailyQuestsPanelProps) =
     return () => clearInterval(interval);
   }, []);
 
-  const completedQuests = QUESTS.filter(q => q.completed).length;
+  const completedQuests = quests.filter(q => q.completed).length;
+  const claimedQuests = quests.filter(q => q.claimed).length;
 
   return (
     <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-card to-card/50">
@@ -77,7 +103,7 @@ export const DailyQuestsPanel = ({ xp, level, streak }: DailyQuestsPanelProps) =
                   </Badge>
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {completedQuests}/{QUESTS.length} completed
+                  {completedQuests}/{quests.length} completed
                 </p>
               </div>
             </div>
@@ -94,7 +120,7 @@ export const DailyQuestsPanel = ({ xp, level, streak }: DailyQuestsPanelProps) =
         {/* Quests List */}
         <div className="p-4 space-y-3">
           <AnimatePresence>
-            {QUESTS.map((quest, index) => (
+            {quests.map((quest, index) => (
               <motion.div
                 key={quest.id}
                 initial={{ opacity: 0, x: -20 }}
@@ -102,24 +128,30 @@ export const DailyQuestsPanel = ({ xp, level, streak }: DailyQuestsPanelProps) =
                 transition={{ delay: index * 0.1 }}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-xl transition-all",
-                  quest.completed 
-                    ? "bg-gain/10 border border-gain/20" 
-                    : "bg-muted/50 hover:bg-muted border border-transparent"
+                  quest.claimed 
+                    ? "bg-gain/10 border border-gain/20 opacity-60" 
+                    : quest.completed 
+                      ? "bg-gold/10 border border-gold/20" 
+                      : "bg-muted/50 hover:bg-muted border border-transparent"
                 )}
               >
                 <div className={cn(
                   "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
-                  quest.completed ? "bg-gain/20" : "bg-secondary"
+                  quest.claimed ? "bg-gain/20" : quest.completed ? "bg-gold/20" : "bg-secondary"
                 )}>
-                  <quest.icon className={cn(
-                    "w-5 h-5",
-                    quest.completed ? "text-gain" : "text-muted-foreground"
-                  )} />
+                  {quest.claimed ? (
+                    <CheckCircle className="w-5 h-5 text-gain" />
+                  ) : (
+                    <quest.icon className={cn(
+                      "w-5 h-5",
+                      quest.completed ? "text-gold" : "text-muted-foreground"
+                    )} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className={cn(
                     "font-medium text-sm",
-                    quest.completed && "line-through text-muted-foreground"
+                    quest.claimed && "line-through text-muted-foreground"
                   )}>
                     {quest.title}
                   </p>
@@ -130,15 +162,26 @@ export const DailyQuestsPanel = ({ xp, level, streak }: DailyQuestsPanelProps) =
                     />
                   )}
                 </div>
-                <Badge 
-                  variant={quest.completed ? "default" : "secondary"}
-                  className={cn(
-                    "shrink-0",
-                    quest.completed && "bg-gain text-gain-foreground"
-                  )}
-                >
-                  +{quest.xp} XP
-                </Badge>
+                {quest.completed && !quest.claimed ? (
+                  <Button 
+                    size="sm" 
+                    variant="default"
+                    className="shrink-0 bg-gold hover:bg-gold/90 text-background"
+                    onClick={() => handleClaimReward(quest.id)}
+                  >
+                    Claim +{quest.xp} XP
+                  </Button>
+                ) : (
+                  <Badge 
+                    variant={quest.claimed ? "default" : "secondary"}
+                    className={cn(
+                      "shrink-0",
+                      quest.claimed && "bg-gain text-gain-foreground"
+                    )}
+                  >
+                    {quest.claimed ? 'Claimed' : `+${quest.xp} XP`}
+                  </Badge>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>

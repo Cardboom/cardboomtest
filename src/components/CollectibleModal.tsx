@@ -1,9 +1,12 @@
-import { X, TrendingUp, TrendingDown, ShoppingCart, Heart } from 'lucide-react';
+import { useState } from 'react';
+import { X, TrendingUp, TrendingDown, ShoppingCart, Heart, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
 import { PriceChart } from './PriceChart';
 import { cn } from '@/lib/utils';
 import { ShareButton } from './ShareButton';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface CollectibleModalProps {
   collectible: Collectible | null;
@@ -12,9 +15,22 @@ interface CollectibleModalProps {
 }
 
 export const CollectibleModal = ({ collectible, onClose, onAddToCart }: CollectibleModalProps) => {
+  const navigate = useNavigate();
+  const [isFavorited, setIsFavorited] = useState(false);
+  
   if (!collectible) return null;
 
   const isPositive = collectible.priceChange >= 0;
+  
+  const handleFavorite = () => {
+    setIsFavorited(!isFavorited);
+    toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites');
+  };
+
+  const handleViewDetails = () => {
+    onClose();
+    navigate(`/item/${collectible.id}`);
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -123,13 +139,21 @@ export const CollectibleModal = ({ collectible, onClose, onAddToCart }: Collecti
                 <ShoppingCart className="w-5 h-5" />
                 Add to Cart
               </Button>
-              <Button variant="glass" size="lg">
-                <Heart className="w-5 h-5" />
+              <Button 
+                variant="glass" 
+                size="lg"
+                onClick={handleFavorite}
+                className={cn(isFavorited && "text-red-500")}
+              >
+                <Heart className={cn("w-5 h-5", isFavorited && "fill-current")} />
               </Button>
               <ShareButton 
                 title={collectible.name}
                 text={`Check out ${collectible.name} on CardBoom - $${collectible.price.toLocaleString()}`}
               />
+              <Button variant="outline" size="lg" onClick={handleViewDetails}>
+                <ExternalLink className="w-5 h-5" />
+              </Button>
             </div>
 
             {/* Trust Badges */}
