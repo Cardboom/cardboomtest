@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   Plus, TrendingUp, TrendingDown, Search, Trash2, 
-  Edit, ExternalLink, Package, DollarSign
+  Edit, ExternalLink, Package, DollarSign, PieChart, Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AddToPortfolioDialog } from '@/components/portfolio/AddToPortfolioDialog';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatDistanceToNow } from 'date-fns';
 
 // Mock portfolio data
 const MOCK_PORTFOLIO = [
@@ -60,6 +65,7 @@ const MOCK_PORTFOLIO = [
 
 const Portfolio = () => {
   const navigate = useNavigate();
+  const { formatPrice: formatCurrencyPrice } = useCurrency();
   const [cartItems, setCartItems] = useState([]);
   const [user, setUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,6 +76,36 @@ const Portfolio = () => {
       setUser(session?.user ?? null);
     });
   }, []);
+
+  // Fetch user's fractional holdings
+  const { data: fractionalHoldings } = useQuery({
+    queryKey: ['portfolio-fractional-holdings', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from('fractional_ownership')
+        .select(`
+          *,
+          fractional_listing:fractional_listings(
+            *,
+            listing:listings(title, image_url, price),
+            market_item:market_items(name, image_url, current_price)
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const fractionalTotalInvested = fractionalHoldings?.reduce((sum, h) => sum + h.total_invested, 0) || 0;
+  const fractionalCurrentValue = fractionalHoldings?.reduce((sum, h) => {
+    const sharePrice = h.fractional_listing?.share_price || 0;
+    return sum + (h.shares_owned * sharePrice);
+  }, 0) || 0;
+  const fractionalPnL = fractionalCurrentValue - fractionalTotalInvested;
 
   const formatPrice = (price: number) => {
     if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
@@ -109,9 +145,19 @@ const Portfolio = () => {
       <main className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-foreground">My Portfolio</h1>
-            <p className="text-muted-foreground">Track your collection and performance</p>
+          <div className="flex items-center gap-4">
+            <div>
+              <h1 className="font-display text-3xl font-bold text-foreground">My Portfolio</h1>
+              <p className="text-muted-foreground">Track your collection and performance</p>
+            </div>
+            {fractionalHoldings && fractionalHoldings.length > 0 && (
+              <Link to="/fractional">
+                <Badge variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80">
+                  <PieChart className="w-3 h-3" />
+                  {fractionalHoldings.length} Fractional Holdings
+                </Badge>
+              </Link>
+            )}
           </div>
           <Button onClick={() => setShowAddDialog(true)} className="gap-2">
             <Plus className="w-4 h-4" />
@@ -120,22 +166,22 @@ const Portfolio = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <div className="glass rounded-xl p-4">
             <p className="text-muted-foreground text-sm mb-1">Total Value</p>
-            <p className="font-display text-2xl font-bold text-foreground">{formatPrice(totalValue)}</p>
+            <p className="font-display text-2xl font-bold text-foreground">{formatPrice(totalValue + fractionalCurrentValue)}</p>
           </div>
           <div className="glass rounded-xl p-4">
             <p className="text-muted-foreground text-sm mb-1">Total Cost</p>
-            <p className="font-display text-2xl font-bold text-foreground">{formatPrice(totalCost)}</p>
+            <p className="font-display text-2xl font-bold text-foreground">{formatPrice(totalCost + fractionalTotalInvested)}</p>
           </div>
           <div className="glass rounded-xl p-4">
             <p className="text-muted-foreground text-sm mb-1">Unrealized P/L</p>
             <p className={cn(
               "font-display text-2xl font-bold",
-              totalPnL >= 0 ? "text-gain" : "text-loss"
+              (totalPnL + fractionalPnL) >= 0 ? "text-gain" : "text-loss"
             )}>
-              {totalPnL >= 0 ? '+' : ''}{formatPrice(totalPnL)}
+              {(totalPnL + fractionalPnL) >= 0 ? '+' : ''}{formatPrice(totalPnL + fractionalPnL)}
             </p>
           </div>
           <div className="glass rounded-xl p-4">
@@ -148,6 +194,18 @@ const Portfolio = () => {
               {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(1)}%
             </p>
           </div>
+          <Link to="/fractional" className="glass rounded-xl p-4 hover:border-primary/50 transition-colors border border-transparent">
+            <p className="text-muted-foreground text-sm mb-1 flex items-center gap-1">
+              <PieChart className="w-3 h-3" />
+              Fractional
+            </p>
+            <p className="font-display text-2xl font-bold text-primary">{formatPrice(fractionalCurrentValue)}</p>
+            {fractionalPnL !== 0 && (
+              <p className={cn("text-xs", fractionalPnL >= 0 ? "text-gain" : "text-loss")}>
+                {fractionalPnL >= 0 ? '+' : ''}{formatPrice(fractionalPnL)}
+              </p>
+            )}
+          </Link>
         </div>
 
         {/* Search */}
