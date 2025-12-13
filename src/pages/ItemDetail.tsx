@@ -412,7 +412,11 @@ const ItemDetail = () => {
           </TabsList>
 
           <TabsContent value="chart">
-            <ItemPriceChart itemId={id || ''} />
+            <ItemPriceChart 
+              itemId={id || ''} 
+              productId={item.external_id || id || ''} 
+              currentPrice={item.current_price}
+            />
           </TabsContent>
 
           <TabsContent value="grades">

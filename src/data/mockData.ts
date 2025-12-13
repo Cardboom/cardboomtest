@@ -401,15 +401,15 @@ export const mockCollectibles: Collectible[] = [
     brand: 'Medicom',
     trending: true,
   },
-  // Game Points - Valorant (5% markup)
+  // Game Points - Valorant (2% markup)
   {
     id: '24',
     priceId: 'valorant-1000vp',
     name: 'Valorant 1000 VP',
     category: 'gamepoints',
     image: valorantVp,
-    price: 10.50, // 5% above $10
-    previousPrice: 10.50,
+    price: 10.20, // 2% above $10
+    previousPrice: 10.20,
     priceChange: 0,
     rarity: 'common',
     seller: 'Cardboom',
@@ -424,8 +424,8 @@ export const mockCollectibles: Collectible[] = [
     name: 'Valorant 2050 VP',
     category: 'gamepoints',
     image: valorantVp,
-    price: 21.00, // 5% above $20
-    previousPrice: 21.00,
+    price: 20.40, // 2% above $20
+    previousPrice: 20.40,
     priceChange: 0,
     rarity: 'common',
     seller: 'Cardboom',
@@ -440,8 +440,8 @@ export const mockCollectibles: Collectible[] = [
     name: 'Valorant 5350 VP',
     category: 'gamepoints',
     image: valorantVp,
-    price: 52.50, // 5% above $50
-    previousPrice: 52.50,
+    price: 51.00, // 2% above $50
+    previousPrice: 51.00,
     priceChange: 0,
     rarity: 'common',
     seller: 'Cardboom',
@@ -450,15 +450,15 @@ export const mockCollectibles: Collectible[] = [
     brand: 'Valorant',
     trending: false,
   },
-  // Game Points - PUBG UC (5% markup)
+  // Game Points - PUBG UC (2% markup)
   {
     id: '27',
     priceId: 'pubg-600uc',
     name: 'PUBG 600 UC',
     category: 'gamepoints',
     image: pubgUc,
-    price: 10.50, // 5% above $10
-    previousPrice: 10.50,
+    price: 10.20, // 2% above $10
+    previousPrice: 10.20,
     priceChange: 0,
     rarity: 'common',
     seller: 'Cardboom',
@@ -473,8 +473,8 @@ export const mockCollectibles: Collectible[] = [
     name: 'PUBG 1500 UC',
     category: 'gamepoints',
     image: pubgUc,
-    price: 26.25, // 5% above $25
-    previousPrice: 26.25,
+    price: 25.50, // 2% above $25
+    previousPrice: 25.50,
     priceChange: 0,
     rarity: 'common',
     seller: 'Cardboom',
@@ -489,8 +489,8 @@ export const mockCollectibles: Collectible[] = [
     name: 'PUBG 3850 UC',
     category: 'gamepoints',
     image: pubgUc,
-    price: 52.50, // 5% above $50
-    previousPrice: 52.50,
+    price: 51.00, // 2% above $50
+    previousPrice: 51.00,
     priceChange: 0,
     rarity: 'common',
     seller: 'Cardboom',
@@ -508,23 +508,6 @@ export const marketStats: MarketStats = {
   activeTraders: 892456,
 };
 
-export const generatePriceHistory = (): PricePoint[] => {
-  const points: PricePoint[] = [];
-  let price = 100;
-  const now = new Date();
-
-  for (let i = 30; i >= 0; i--) {
-    const date = new Date(now);
-    date.setDate(date.getDate() - i);
-    price = price + (Math.random() - 0.45) * 10;
-    points.push({
-      date: date.toISOString().split('T')[0],
-      price: Math.max(50, price),
-    });
-  }
-
-  return points;
-};
 
 export const categories = [
   { id: 'all', name: 'All Items', icon: '🏆' },

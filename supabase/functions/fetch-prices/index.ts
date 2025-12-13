@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -6,6 +7,8 @@ const corsHeaders = {
 };
 
 const PRICECHARTING_API_KEY = Deno.env.get('PRICECHARTING_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 // Apply Cardboom markup: $1-3 for < $100, 1-2% for >= $100
 function applyMarkup(price: number): number {
@@ -47,6 +50,14 @@ const priceChartingMap: Record<string, { query: string; console?: string }> = {
   // Figures
   'figure-kaws-companion': { query: 'KAWS Companion', console: 'Toys' },
   'figure-bearbrick-1000': { query: 'Bearbrick 1000%', console: 'Toys' },
+  // Game Points - PUBG (2% markup)
+  'pubg-600uc': { query: 'PUBG 600 UC', console: 'Game Points' },
+  'pubg-1500uc': { query: 'PUBG 1500 UC', console: 'Game Points' },
+  'pubg-3850uc': { query: 'PUBG 3850 UC', console: 'Game Points' },
+  // Valorant
+  'valorant-1000vp': { query: 'Valorant 1000 VP', console: 'Game Points' },
+  'valorant-2050vp': { query: 'Valorant 2050 VP', console: 'Game Points' },
+  'valorant-5350vp': { query: 'Valorant 5350 VP', console: 'Game Points' },
 };
 
 // Base prices fallback
@@ -74,6 +85,13 @@ const basePrices: Record<string, { price: number; change: number; category: stri
   'dbz-goku-secret': { price: 250, change: 13.6, category: 'dragonball' },
   'starwars-vader-showcase': { price: 120, change: 20.0, category: 'starwars' },
   'riftbound-genesis': { price: 75, change: 15.4, category: 'riftbound' },
+  // Game Points with 2% markup
+  'pubg-600uc': { price: 10.20, change: 0, category: 'gamepoints' },
+  'pubg-1500uc': { price: 25.50, change: 0, category: 'gamepoints' },
+  'pubg-3850uc': { price: 51.00, change: 0, category: 'gamepoints' },
+  'valorant-1000vp': { price: 10.20, change: 0, category: 'gamepoints' },
+  'valorant-2050vp': { price: 20.40, change: 0, category: 'gamepoints' },
+  'valorant-5350vp': { price: 51.00, change: 0, category: 'gamepoints' },
 };
 
 // Fetch from PriceCharting API
@@ -221,7 +239,7 @@ async function fetchFromPokemonTCG(cardName: string): Promise<{ price: number; c
 
 function getFluctuatedPrice(basePrice: number): number {
   const fluctuation = (Math.random() - 0.5) * 0.02;
-  return Math.round(basePrice * (1 + fluctuation));
+  return Math.round(basePrice * (1 + fluctuation) * 100) / 100;
 }
 
 function getFluctuatedChange(baseChange: number): number {
@@ -271,9 +289,12 @@ async function fetchPrice(productId: string): Promise<{
   const baseData = basePrices[productId];
   if (baseData) {
     const fluctuatedPrice = getFluctuatedPrice(baseData.price);
-    const markedUpPrice = applyMarkup(fluctuatedPrice);
+    // Game points get 2% markup, others get standard markup
+    const finalPrice = baseData.category === 'gamepoints' 
+      ? fluctuatedPrice 
+      : applyMarkup(fluctuatedPrice);
     return {
-      price: markedUpPrice,
+      price: finalPrice,
       change: getFluctuatedChange(baseData.change),
       source: 'cardboom',
     };
@@ -282,13 +303,39 @@ async function fetchPrice(productId: string): Promise<{
   return null;
 }
 
+// Record price to history table
+async function recordPriceHistory(
+  supabase: any,
+  productId: string, 
+  price: number, 
+  source: string
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('price_history')
+      .insert({
+        product_id: productId,
+        price: price,
+        source: source,
+      });
+    
+    if (error) {
+      console.error(`[Price History] Error recording price for ${productId}:`, error.message);
+    } else {
+      console.log(`[Price History] Recorded: ${productId} = $${price}`);
+    }
+  } catch (err) {
+    console.error('[Price History] Exception:', err);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { productIds, source = 'all' } = await req.json();
+    const { productIds, source = 'all', recordHistory = true } = await req.json();
     console.log(`[fetch-prices] Fetching prices for ${productIds?.length || 0} products (PriceCharting: ${PRICECHARTING_API_KEY ? 'enabled' : 'disabled'})`);
 
     if (!productIds || !Array.isArray(productIds)) {
@@ -296,6 +343,12 @@ serve(async (req) => {
         JSON.stringify({ error: 'productIds array required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Initialize Supabase client for recording history
+    let supabase = null;
+    if (recordHistory && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     }
 
     const prices: Record<string, { 
@@ -315,6 +368,11 @@ serve(async (req) => {
           ...priceData,
           timestamp: new Date().toISOString(),
         };
+        
+        // Record to history if enabled
+        if (supabase && recordHistory) {
+          await recordPriceHistory(supabase, productId, priceData.price, priceData.source);
+        }
       }
       
       // Rate limit: PriceCharting allows reasonable usage
