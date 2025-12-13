@@ -2,10 +2,11 @@ import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { mockCollectibles } from '@/data/mockData';
-import { useLivePrices } from '@/hooks/useLivePrices';
+import { useRealtimePrices } from '@/hooks/useRealtimePrices';
+import { ScrollReveal } from '@/components/ScrollReveal';
 import { 
   TrendingUp, TrendingDown, Clock, RefreshCw, Search, 
-  Flame, Zap, Users, BarChart3, Star, ExternalLink,
+  Flame, Zap, Users, BarChart3, Star,
   ArrowUpDown, ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,17 +47,22 @@ const Markets = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
+  // Real-time prices with 3 second refresh
   const productIds = useMemo(() => mockCollectibles.map(c => c.priceId), []);
-  const { prices, lastUpdated, isLoading, refetch } = useLivePrices({ productIds, refreshInterval: 15000 });
+  const { prices, lastUpdated, isLoading, refetch } = useRealtimePrices({ 
+    productIds, 
+    refreshInterval: 3000 
+  });
 
-  // Generate mock data for enhanced display
+  // Generate data with live prices from database
   const collectiblesWithPrices = useMemo(() => {
     return mockCollectibles.map((collectible, idx) => {
       const livePrice = prices[collectible.priceId];
       const basePrice = livePrice?.price ?? collectible.price;
       const change = livePrice?.change ?? collectible.priceChange;
+      const priceUpdated = livePrice?.updated ?? false;
       
-      // Generate random but consistent mock data
+      // Generate consistent mock data based on collectible
       const seed = collectible.id.charCodeAt(0) + idx;
       const liquidity = Math.floor((seed * 12345) % 500000) + 50000;
       const holders = Math.floor((seed * 789) % 5000) + 100;
@@ -64,7 +70,7 @@ const Markets = () => {
       const txns = Math.floor((seed * 234) % 500) + 10;
       const age = Math.floor((seed * 56) % 365) + 1;
       
-      // Generate sparkline data
+      // Generate sparkline data based on current price
       const sparklineData = Array.from({ length: 12 }, (_, i) => 
         basePrice * (1 + (Math.sin(seed + i) * 0.1))
       );
@@ -73,6 +79,7 @@ const Markets = () => {
         ...collectible,
         price: basePrice,
         priceChange: change,
+        priceUpdated,
         change1h: change * (0.3 + Math.random() * 0.4),
         change7d: change * (1.5 + Math.random()),
         change30d: change * (2 + Math.random() * 2),
@@ -88,22 +95,18 @@ const Markets = () => {
     });
   }, [prices]);
 
-  // Get unique categories
   const categories = useMemo(() => {
     const cats = [...new Set(mockCollectibles.map(c => c.category))];
     return ['all', ...cats];
   }, []);
 
-  // Filter and sort collectibles
   const filteredCollectibles = useMemo(() => {
     let items = [...collectiblesWithPrices];
     
-    // Category filter
     if (selectedCategory !== 'all') {
       items = items.filter(item => item.category === selectedCategory);
     }
     
-    // Search filter
     if (searchQuery) {
       items = items.filter(item => 
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,7 +114,6 @@ const Markets = () => {
       );
     }
 
-    // Tab filter
     switch (activeTab) {
       case 'trending':
         items = items.filter(c => c.trending);
@@ -127,7 +129,6 @@ const Markets = () => {
         break;
     }
 
-    // Sort
     const dir = sortDir === 'asc' ? 1 : -1;
     switch (sortField) {
       case 'price':
@@ -180,313 +181,326 @@ const Markets = () => {
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Header with Stats Bar */}
-        <div className="flex flex-col gap-4 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <h1 className="font-display text-2xl font-bold text-foreground">Markets</h1>
-              <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                <Clock className="w-3 h-3" />
-                {lastUpdated ? (
-                  <span>Updated {lastUpdated.toLocaleTimeString()}</span>
-                ) : (
-                  <span className="animate-pulse">Syncing...</span>
-                )}
+        {/* Header with Stats */}
+        <ScrollReveal>
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <h1 className="font-display text-2xl font-bold text-foreground">Markets</h1>
+                <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                  <Clock className="w-3 h-3" />
+                  {lastUpdated ? (
+                    <span>Updated {lastUpdated.toLocaleTimeString()}</span>
+                  ) : (
+                    <span className="animate-pulse">Syncing...</span>
+                  )}
+                  <span className="w-2 h-2 rounded-full bg-gain animate-pulse" />
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Search assets..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-64 bg-secondary/30 border-border/50 h-9"
+                  />
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => refetch()}
+                  className={cn("h-9", isLoading && 'animate-spin')}
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </Button>
               </div>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Search assets..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-64 bg-secondary/30 border-border/50 h-9"
-                />
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => refetch()}
-                className={cn("h-9", isLoading && 'animate-spin')}
-              >
-                <RefreshCw className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
 
-          {/* Quick Stats */}
-          <div className="flex items-center gap-6 text-sm overflow-x-auto pb-2">
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <span className="text-muted-foreground">Market Cap:</span>
-              <span className="font-semibold text-foreground">$847.2M</span>
-              <span className="text-gain text-xs">+2.34%</span>
-            </div>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <span className="text-muted-foreground">24h Vol:</span>
-              <span className="font-semibold text-foreground">$5.2M</span>
-            </div>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <span className="text-muted-foreground">Active Traders:</span>
-              <span className="font-semibold text-foreground">50.2K</span>
-            </div>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <span className="text-muted-foreground">Assets:</span>
-              <span className="font-semibold text-foreground">{mockCollectibles.length}</span>
+            {/* Quick Stats */}
+            <div className="flex items-center gap-6 text-sm overflow-x-auto pb-2">
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span className="text-muted-foreground">Market Cap:</span>
+                <span className="font-semibold text-foreground">$847.2M</span>
+                <span className="text-gain text-xs">+2.34%</span>
+              </div>
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span className="text-muted-foreground">24h Vol:</span>
+                <span className="font-semibold text-foreground">$5.2M</span>
+              </div>
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span className="text-muted-foreground">Active Traders:</span>
+                <span className="font-semibold text-foreground">50.2K</span>
+              </div>
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span className="text-muted-foreground">Assets:</span>
+                <span className="font-semibold text-foreground">{mockCollectibles.length}</span>
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Tabs and Filters */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as MarketTab)}>
-            <TabsList className="bg-secondary/30 p-1 h-auto gap-1">
-              <TabsTrigger 
-                value="trending" 
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5"
-              >
-                <Flame className="w-4 h-4" />
-                Trending
-              </TabsTrigger>
-              <TabsTrigger 
-                value="gainers" 
-                className="data-[state=active]:bg-gain/20 data-[state=active]:text-gain gap-1.5"
-              >
-                <TrendingUp className="w-4 h-4" />
-                Gainers
-              </TabsTrigger>
-              <TabsTrigger 
-                value="losers" 
-                className="data-[state=active]:bg-loss/20 data-[state=active]:text-loss gap-1.5"
-              >
-                <TrendingDown className="w-4 h-4" />
-                Losers
-              </TabsTrigger>
-              <TabsTrigger 
-                value="new" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-1.5"
-              >
-                <Zap className="w-4 h-4" />
-                New
-              </TabsTrigger>
-              <TabsTrigger 
-                value="watchlist" 
-                className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold gap-1.5"
-              >
-                <Star className="w-4 h-4" />
-                Watchlist
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          <div className="flex items-center gap-2">
-            {/* Category Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 gap-1.5">
-                  <BarChart3 className="w-4 h-4" />
-                  {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {categories.map((cat) => (
-                  <DropdownMenuItem 
-                    key={cat} 
-                    onClick={() => setSelectedCategory(cat)}
-                    className={cn(selectedCategory === cat && "bg-accent")}
-                  >
-                    {cat === 'all' ? 'All Categories' : cat}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Time Interval Selector */}
-            <div className="flex items-center bg-secondary/30 rounded-lg p-0.5">
-              {(['1h', '4h', '24h', '7d', '30d'] as TimeInterval[]).map((interval) => (
-                <button
-                  key={interval}
-                  onClick={() => setTimeInterval(interval)}
-                  className={cn(
-                    "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-                    timeInterval === interval 
-                      ? "bg-primary text-primary-foreground" 
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
+        <ScrollReveal delay={100}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as MarketTab)}>
+              <TabsList className="bg-secondary/30 p-1 h-auto gap-1">
+                <TabsTrigger 
+                  value="trending" 
+                  className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5"
                 >
-                  {interval}
-                </button>
-              ))}
+                  <Flame className="w-4 h-4" />
+                  Trending
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="gainers" 
+                  className="data-[state=active]:bg-gain/20 data-[state=active]:text-gain gap-1.5"
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  Gainers
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="losers" 
+                  className="data-[state=active]:bg-loss/20 data-[state=active]:text-loss gap-1.5"
+                >
+                  <TrendingDown className="w-4 h-4" />
+                  Losers
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="new" 
+                  className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-1.5"
+                >
+                  <Zap className="w-4 h-4" />
+                  New
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="watchlist" 
+                  className="data-[state=active]:bg-gold/20 data-[state=active]:text-gold gap-1.5"
+                >
+                  <Star className="w-4 h-4" />
+                  Watchlist
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 gap-1.5">
+                    <BarChart3 className="w-4 h-4" />
+                    {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {categories.map((cat) => (
+                    <DropdownMenuItem 
+                      key={cat} 
+                      onClick={() => setSelectedCategory(cat)}
+                      className={cn(selectedCategory === cat && "bg-accent")}
+                    >
+                      {cat === 'all' ? 'All Categories' : cat}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <div className="flex items-center bg-secondary/30 rounded-lg p-0.5">
+                {(['1h', '4h', '24h', '7d', '30d'] as TimeInterval[]).map((interval) => (
+                  <button
+                    key={interval}
+                    onClick={() => setTimeInterval(interval)}
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
+                      timeInterval === interval 
+                        ? "bg-primary text-primary-foreground" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {interval}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Market Table */}
-        <div className="rounded-xl border border-border/50 overflow-hidden bg-card/50">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-secondary/30 hover:bg-secondary/30">
-                <TableHead className="w-12 text-center">#</TableHead>
-                <TableHead className="min-w-[200px]">Asset</TableHead>
-                <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('liquidity')}>
-                  <div className="flex items-center justify-end gap-1">
-                    Liquidity
-                    <ArrowUpDown className="w-3 h-3" />
-                  </div>
-                </TableHead>
-                <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('holders')}>
-                  <div className="flex items-center justify-end gap-1">
-                    Holders
-                    <ArrowUpDown className="w-3 h-3" />
-                  </div>
-                </TableHead>
-                <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('price')}>
-                  <div className="flex items-center justify-end gap-1">
-                    Price
-                    <ArrowUpDown className="w-3 h-3" />
-                  </div>
-                </TableHead>
-                <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('change')}>
-                  <div className="flex items-center justify-end gap-1">
-                    {timeInterval} %
-                    <ArrowUpDown className="w-3 h-3" />
-                  </div>
-                </TableHead>
-                <TableHead className="text-right hidden lg:table-cell cursor-pointer hover:text-foreground" onClick={() => handleSort('volume')}>
-                  <div className="flex items-center justify-end gap-1">
-                    {timeInterval} Vol
-                    <ArrowUpDown className="w-3 h-3" />
-                  </div>
-                </TableHead>
-                <TableHead className="text-right hidden lg:table-cell">Txns</TableHead>
-                <TableHead className="text-center hidden md:table-cell w-20">{timeInterval} Chart</TableHead>
-                <TableHead className="w-10"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCollectibles.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
-                    No assets found matching your criteria
-                  </TableCell>
+        <ScrollReveal delay={200}>
+          <div className="rounded-xl border border-border/50 overflow-hidden bg-card/50">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary/30 hover:bg-secondary/30">
+                  <TableHead className="w-12 text-center">#</TableHead>
+                  <TableHead className="min-w-[200px]">Asset</TableHead>
+                  <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('liquidity')}>
+                    <div className="flex items-center justify-end gap-1">
+                      Liquidity
+                      <ArrowUpDown className="w-3 h-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('holders')}>
+                    <div className="flex items-center justify-end gap-1">
+                      Holders
+                      <ArrowUpDown className="w-3 h-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('price')}>
+                    <div className="flex items-center justify-end gap-1">
+                      Price
+                      <ArrowUpDown className="w-3 h-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('change')}>
+                    <div className="flex items-center justify-end gap-1">
+                      {timeInterval} %
+                      <ArrowUpDown className="w-3 h-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right hidden lg:table-cell cursor-pointer hover:text-foreground" onClick={() => handleSort('volume')}>
+                    <div className="flex items-center justify-end gap-1">
+                      {timeInterval} Vol
+                      <ArrowUpDown className="w-3 h-3" />
+                    </div>
+                  </TableHead>
+                  <TableHead className="text-right hidden lg:table-cell">Txns</TableHead>
+                  <TableHead className="text-center hidden md:table-cell w-20">{timeInterval} Chart</TableHead>
+                  <TableHead className="w-10"></TableHead>
                 </TableRow>
-              ) : (
-                filteredCollectibles.map((item, i) => {
-                  const changeValue = getChangeValue(item);
-                  const isPositive = changeValue >= 0;
-                  
-                  return (
-                    <TableRow 
-                      key={item.id}
-                      onClick={() => navigate(`/item/${item.id}`)}
-                      className="cursor-pointer hover:bg-secondary/50"
-                    >
-                      <TableCell className="text-center text-muted-foreground text-sm font-medium">
-                        {i + 1}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <img 
-                              src={item.image} 
-                              alt={item.name} 
-                              className="w-10 h-10 rounded-lg object-cover"
-                            />
-                            {item.isVerified && (
-                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                                <span className="text-[8px] text-primary-foreground">✓</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-foreground font-medium text-sm truncate max-w-[140px]">
-                                {item.name}
-                              </p>
-                              {item.isNew && (
-                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-accent/50">
-                                  NEW
-                                </Badge>
+              </TableHeader>
+              <TableBody>
+                {filteredCollectibles.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
+                      No assets found matching your criteria
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredCollectibles.map((item, i) => {
+                    const changeValue = getChangeValue(item);
+                    const isPositive = changeValue >= 0;
+                    
+                    return (
+                      <TableRow 
+                        key={item.id}
+                        onClick={() => navigate(`/item/${item.id}`)}
+                        className={cn(
+                          "cursor-pointer hover:bg-secondary/50 transition-all duration-300",
+                          item.priceUpdated && "bg-primary/5"
+                        )}
+                      >
+                        <TableCell className="text-center text-muted-foreground text-sm font-medium">
+                          {i + 1}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              <img 
+                                src={item.image} 
+                                alt={item.name} 
+                                className="w-10 h-10 rounded-lg object-cover"
+                              />
+                              {item.isVerified && (
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                                  <span className="text-[8px] text-primary-foreground">✓</span>
+                                </div>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span>{item.category}</span>
-                              <span className="text-border">•</span>
-                              <span>{item.age}d</span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-foreground font-medium text-sm truncate max-w-[140px]">
+                                  {item.name}
+                                </p>
+                                {item.isNew && (
+                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-accent/50">
+                                    NEW
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>{item.category}</span>
+                                <span className="text-border">•</span>
+                                <span>{item.age}d</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className="text-foreground font-medium">
-                          ${formatNumber(item.liquidity)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Users className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-foreground">{formatNumber(item.holders)}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className="text-foreground font-semibold">
-                          {formatPrice(item.price)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className={cn(
-                          "inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium",
-                          isPositive ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss"
-                        )}>
-                          {isPositive ? '+' : ''}{changeValue.toFixed(2)}%
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right hidden lg:table-cell text-muted-foreground">
-                        ${formatNumber(item.volume24h)}
-                      </TableCell>
-                      <TableCell className="text-right hidden lg:table-cell text-muted-foreground">
-                        {item.txns}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <div className="flex justify-center">
-                          <MiniSparkline 
-                            data={item.sparklineData} 
-                            positive={isPositive}
-                            width={50}
-                            height={20}
-                          />
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            // Add to watchlist logic
-                          }}
-                        >
-                          <Star className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className="text-foreground font-medium">
+                            ${formatNumber(item.liquidity)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Users className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-foreground">{formatNumber(item.holders)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className={cn(
+                            "text-foreground font-semibold transition-all duration-300",
+                            item.priceUpdated && "text-primary scale-105"
+                          )}>
+                            {formatPrice(item.price)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className={cn(
+                            "inline-flex items-center gap-1 px-2 py-1 rounded-md text-sm font-medium transition-all duration-300",
+                            isPositive ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss",
+                            item.priceUpdated && "scale-105"
+                          )}>
+                            {isPositive ? '+' : ''}{changeValue.toFixed(2)}%
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right hidden lg:table-cell text-muted-foreground">
+                          ${formatNumber(item.volume24h)}
+                        </TableCell>
+                        <TableCell className="text-right hidden lg:table-cell text-muted-foreground">
+                          {item.txns}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <div className="flex justify-center">
+                            <MiniSparkline 
+                              data={item.sparklineData} 
+                              positive={isPositive}
+                              width={50}
+                              height={20}
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                          >
+                            <Star className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollReveal>
 
-        {/* Pagination / Load More */}
-        <div className="flex items-center justify-center mt-6">
-          <Button variant="outline" className="gap-2">
-            Load More Assets
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        </div>
+        {/* Load More */}
+        <ScrollReveal delay={300}>
+          <div className="flex items-center justify-center mt-6">
+            <Button variant="outline" className="gap-2">
+              Load More Assets
+              <ChevronDown className="w-4 h-4" />
+            </Button>
+          </div>
+        </ScrollReveal>
       </main>
 
       <Footer />
