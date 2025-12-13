@@ -26,6 +26,8 @@ import { ShareButton } from '@/components/ShareButton';
 import { useGenerateItemImage } from '@/hooks/useGenerateItemImage';
 import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
 import { ItemBids } from '@/components/item/ItemBids';
+import { FractionalOwnershipCard } from '@/components/fractional/FractionalOwnershipCard';
+import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -472,9 +474,18 @@ const ItemDetail = () => {
           </div>
         </div>
 
-        {/* Active Bids Section */}
-        <div className="mb-8">
+        {/* Fractional Ownership & Bids Section */}
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           <ItemBids itemId={item.id} itemName={item.name} />
+          <div className="space-y-4">
+            <FractionalOwnershipCard marketItemId={item.id} />
+            <CreateFractionalDialog
+              marketItemId={item.id}
+              itemName={item.name}
+              totalValue={item.current_price || 0}
+              imageUrl={item.image_url || undefined}
+            />
+          </div>
         </div>
 
         {/* Investment Intelligence Section */}
