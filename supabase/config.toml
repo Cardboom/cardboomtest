@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.generate-item-image]
 verify_jwt = false
+
+[functions.fetch-ebay-sales]
+verify_jwt = false
+
+[functions.market-insights]
+verify_jwt = false
