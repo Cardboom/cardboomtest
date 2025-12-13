@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye } from 'lucide-react';
+import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Listing {
@@ -27,17 +27,22 @@ interface Listing {
   allows_trade: boolean;
   allows_shipping: boolean;
   created_at: string;
+  image_url: string | null;
 }
 
-const categories = ['nba', 'football', 'tcg', 'figures'];
+const categories = ['nba', 'football', 'tcg', 'figures', 'pokemon', 'mtg', 'yugioh', 'onepiece', 'lorcana', 'gamepoints'];
 const conditions = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Fair', 'Poor'];
 
 const SellPage = () => {
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [listings, setListings] = useState<Listing[]>([]);
   const [activeTab, setActiveTab] = useState('create');
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -63,9 +68,13 @@ const SellPage = () => {
 
   const fetchListings = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
       const { data, error } = await supabase
         .from('listings')
         .select('*')
+        .eq('seller_id', session.user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -74,6 +83,60 @@ const SellPage = () => {
       console.error('Error fetching listings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image must be less than 10MB');
+      return;
+    }
+
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const clearImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadImage = async (userId: string): Promise<string | null> => {
+    if (!imageFile) return null;
+    
+    setUploading(true);
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${userId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('listing-images')
+        .upload(filePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('listing-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+      return null;
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -102,6 +165,9 @@ const SellPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
+      // Upload image if selected
+      const imageUrl = await uploadImage(session.user.id);
+
       const { error } = await supabase
         .from('listings')
         .insert({
@@ -114,6 +180,7 @@ const SellPage = () => {
           allows_vault: formData.allowsVault,
           allows_trade: formData.allowsTrade,
           allows_shipping: formData.allowsShipping,
+          image_url: imageUrl,
         });
 
       if (error) throw error;
@@ -129,6 +196,7 @@ const SellPage = () => {
         allowsTrade: true,
         allowsShipping: true,
       });
+      clearImage();
       fetchListings();
       setActiveTab('listings');
     } catch (error: any) {
@@ -155,6 +223,10 @@ const SellPage = () => {
       console.error('Error deleting listing:', error);
       toast.error('Failed to delete listing');
     }
+  };
+
+  const handleViewListing = (listingId: string) => {
+    navigate(`/listing/${listingId}`);
   };
 
   const formatCurrency = (amount: number) => {
@@ -298,6 +370,49 @@ const SellPage = () => {
                           rows={4}
                         />
                       </div>
+
+                      {/* Image Upload */}
+                      <div className="sm:col-span-2">
+                        <Label>Card Image</Label>
+                        <div className="mt-1.5">
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageSelect}
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            className="hidden"
+                          />
+                          {imagePreview ? (
+                            <div className="relative w-full max-w-xs">
+                              <img 
+                                src={imagePreview} 
+                                alt="Preview" 
+                                className="w-full h-48 object-cover rounded-lg border border-border"
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8"
+                                onClick={clearImage}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full max-w-xs h-48 flex flex-col gap-2 border-dashed"
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <Upload className="h-8 w-8 text-muted-foreground" />
+                              <span className="text-muted-foreground">Click to upload image</span>
+                              <span className="text-xs text-muted-foreground">JPG, PNG, GIF up to 10MB</span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     {/* Delivery Options */}
@@ -372,8 +487,9 @@ const SellPage = () => {
                       </div>
                     </div>
 
-                    <Button type="submit" disabled={submitting} className="w-full">
-                      {submitting ? 'Creating...' : 'Create Listing'}
+                    <Button type="submit" disabled={submitting || uploading} className="w-full gap-2">
+                      {(submitting || uploading) && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {uploading ? 'Uploading Image...' : submitting ? 'Creating...' : 'Create Listing'}
                     </Button>
                   </form>
                 </CardContent>
@@ -434,11 +550,31 @@ const SellPage = () => {
                               )}
                             </div>
                           </div>
+                          {listing.image_url && (
+                            <img 
+                              src={listing.image_url} 
+                              alt={listing.title}
+                              className="w-16 h-16 object-cover rounded-lg mr-4 flex-shrink-0"
+                            />
+                          )}
+                          {!listing.image_url && (
+                            <div className="w-16 h-16 bg-secondary rounded-lg mr-4 flex-shrink-0 flex items-center justify-center">
+                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
                           <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="icon">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleViewListing(listing.id)}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              onClick={() => handleViewListing(listing.id)}
+                            >
                               <Pencil className="h-4 w-4" />
                             </Button>
                             <Button 
