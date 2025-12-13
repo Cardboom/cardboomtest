@@ -778,21 +778,59 @@ export type Database = {
           },
         ]
       }
+      profile_backgrounds: {
+        Row: {
+          created_at: string
+          css_value: string
+          id: string
+          is_premium: boolean | null
+          name: string
+          type: string
+          unlock_level: number | null
+          xp_cost: number | null
+        }
+        Insert: {
+          created_at?: string
+          css_value: string
+          id?: string
+          is_premium?: boolean | null
+          name: string
+          type?: string
+          unlock_level?: number | null
+          xp_cost?: number | null
+        }
+        Update: {
+          created_at?: string
+          css_value?: string
+          id?: string
+          is_premium?: boolean | null
+          name?: string
+          type?: string
+          unlock_level?: number | null
+          xp_cost?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
           avatar_url: string | null
+          badges: Json | null
           bio: string | null
           created_at: string
           display_name: string | null
           email: string | null
           id: string
+          is_beta_tester: boolean | null
           level: number | null
           national_id: string | null
           phone: string | null
           phone_verified: boolean | null
+          profile_background: string | null
           referral_code: string | null
           referred_by: string | null
+          showcase_items: string[] | null
+          title: string | null
           updated_at: string
           wire_transfer_code: string | null
           xp: number | null
@@ -800,17 +838,22 @@ export type Database = {
         Insert: {
           account_type?: Database["public"]["Enums"]["account_type"]
           avatar_url?: string | null
+          badges?: Json | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           id: string
+          is_beta_tester?: boolean | null
           level?: number | null
           national_id?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          profile_background?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          showcase_items?: string[] | null
+          title?: string | null
           updated_at?: string
           wire_transfer_code?: string | null
           xp?: number | null
@@ -818,17 +861,22 @@ export type Database = {
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
           avatar_url?: string | null
+          badges?: Json | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
           id?: string
+          is_beta_tester?: boolean | null
           level?: number | null
           national_id?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          profile_background?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          showcase_items?: string[] | null
+          title?: string | null
           updated_at?: string
           wire_transfer_code?: string | null
           xp?: number | null
@@ -1218,6 +1266,35 @@ export type Database = {
             columns: ["reward_id"]
             isOneToOne: false
             referencedRelation: "rewards_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_unlocked_backgrounds: {
+        Row: {
+          background_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          background_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          background_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_unlocked_backgrounds_background_id_fkey"
+            columns: ["background_id"]
+            isOneToOne: false
+            referencedRelation: "profile_backgrounds"
             referencedColumns: ["id"]
           },
         ]
