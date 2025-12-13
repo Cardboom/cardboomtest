@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { 
   Settings, 
@@ -19,9 +20,13 @@ import {
   Save,
   X,
   Database,
-  Zap
+  Zap,
+  Banknote,
+  ShieldCheck
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { useAdminRole } from '@/hooks/useAdminRole';
+import { WireTransferManagement } from '@/components/admin/WireTransferManagement';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -44,6 +49,7 @@ interface MarketItem {
 const Admin = () => {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
+  const { isAdmin, isLoading: isCheckingAdmin } = useAdminRole();
   const [items, setItems] = useState<MarketItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,22 +57,15 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedItem, setEditedItem] = useState<Partial<MarketItem>>({});
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [activeTab, setActiveTab] = useState('prices');
 
-  // Check if user is admin (for now, check if logged in)
+  // Redirect if not admin
   useEffect(() => {
-    const checkAdmin = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('Please login to access admin panel');
-        navigate('/auth');
-        return;
-      }
-      // For now, allow any logged in user - you can add role check later
-      setIsAdmin(true);
-    };
-    checkAdmin();
-  }, [navigate]);
+    if (!isCheckingAdmin && !isAdmin) {
+      toast.error('Access denied. Admin privileges required.');
+      navigate('/');
+    }
+  }, [isAdmin, isCheckingAdmin, navigate]);
 
   // Fetch market items
   const fetchItems = async () => {
@@ -89,10 +88,10 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAdmin && activeTab === 'prices') {
       fetchItems();
     }
-  }, [isAdmin]);
+  }, [isAdmin, activeTab]);
 
   // Get unique categories
   const categories = [...new Set(items.map(item => item.category))];
@@ -175,10 +174,13 @@ const Admin = () => {
     losers: items.filter(i => (i.change_24h || 0) < 0).length,
   };
 
-  if (!isAdmin) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">
-      <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-    </div>;
+  if (isCheckingAdmin || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Checking admin privileges...</p>
+      </div>
+    );
   }
 
   return (
@@ -201,25 +203,46 @@ const Admin = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Settings className="w-8 h-8 text-primary" />
-              Price Admin Panel
+              <ShieldCheck className="w-8 h-8 text-primary" />
+              Admin Panel
             </h1>
-            <p className="text-muted-foreground mt-1">Manage market item prices and sync with external APIs</p>
+            <p className="text-muted-foreground mt-1">Manage wire transfers, prices, and platform settings</p>
           </div>
-          
-          <Button 
-            onClick={handleSyncPrices} 
-            disabled={isSyncing}
-            className="gap-2"
-          >
-            {isSyncing ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Zap className="w-4 h-4" />
-            )}
-            Sync PriceCharting API
-          </Button>
         </div>
+
+        {/* Admin Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-card/50 border border-border/50">
+            <TabsTrigger value="wire-transfers" className="gap-2">
+              <Banknote className="w-4 h-4" />
+              Wire Transfers
+            </TabsTrigger>
+            <TabsTrigger value="prices" className="gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Price Management
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="wire-transfers">
+            <WireTransferManagement />
+          </TabsContent>
+
+          <TabsContent value="prices" className="space-y-6">
+            {/* Sync Button */}
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleSyncPrices} 
+                disabled={isSyncing}
+                className="gap-2"
+              >
+                {isSyncing ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Zap className="w-4 h-4" />
+                )}
+                Sync PriceCharting API
+              </Button>
+            </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -493,6 +516,8 @@ const Admin = () => {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </main>
       
       {/* Simple footer */}
