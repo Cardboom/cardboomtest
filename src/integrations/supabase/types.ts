@@ -150,6 +150,154 @@ export type Database = {
         }
         Relationships: []
       }
+      fractional_listings: {
+        Row: {
+          allows_fractional: boolean
+          available_shares: number
+          created_at: string
+          daily_verification_required: boolean
+          id: string
+          last_verified_at: string | null
+          listing_id: string | null
+          market_item_id: string | null
+          min_shares: number
+          next_verification_due: string | null
+          owner_id: string
+          share_price: number
+          status: string
+          total_shares: number
+          updated_at: string
+        }
+        Insert: {
+          allows_fractional?: boolean
+          available_shares?: number
+          created_at?: string
+          daily_verification_required?: boolean
+          id?: string
+          last_verified_at?: string | null
+          listing_id?: string | null
+          market_item_id?: string | null
+          min_shares?: number
+          next_verification_due?: string | null
+          owner_id: string
+          share_price: number
+          status?: string
+          total_shares?: number
+          updated_at?: string
+        }
+        Update: {
+          allows_fractional?: boolean
+          available_shares?: number
+          created_at?: string
+          daily_verification_required?: boolean
+          id?: string
+          last_verified_at?: string | null
+          listing_id?: string | null
+          market_item_id?: string | null
+          min_shares?: number
+          next_verification_due?: string | null
+          owner_id?: string
+          share_price?: number
+          status?: string
+          total_shares?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fractional_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fractional_listings_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fractional_ownership: {
+        Row: {
+          fractional_listing_id: string
+          id: string
+          purchase_price_per_share: number
+          purchased_at: string
+          shares_owned: number
+          total_invested: number
+          user_id: string
+        }
+        Insert: {
+          fractional_listing_id: string
+          id?: string
+          purchase_price_per_share: number
+          purchased_at?: string
+          shares_owned: number
+          total_invested: number
+          user_id: string
+        }
+        Update: {
+          fractional_listing_id?: string
+          id?: string
+          purchase_price_per_share?: number
+          purchased_at?: string
+          shares_owned?: number
+          total_invested?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fractional_ownership_fractional_listing_id_fkey"
+            columns: ["fractional_listing_id"]
+            isOneToOne: false
+            referencedRelation: "fractional_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fractional_verifications: {
+        Row: {
+          fractional_listing_id: string
+          id: string
+          notes: string | null
+          photo_url: string | null
+          status: string
+          verification_type: string
+          verified_at: string
+          verified_by: string
+        }
+        Insert: {
+          fractional_listing_id: string
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          status?: string
+          verification_type?: string
+          verified_at?: string
+          verified_by: string
+        }
+        Update: {
+          fractional_listing_id?: string
+          id?: string
+          notes?: string | null
+          photo_url?: string | null
+          status?: string
+          verification_type?: string
+          verified_at?: string
+          verified_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fractional_verifications_fractional_listing_id_fkey"
+            columns: ["fractional_listing_id"]
+            isOneToOne: false
+            referencedRelation: "fractional_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       item_views: {
         Row: {
           id: string
