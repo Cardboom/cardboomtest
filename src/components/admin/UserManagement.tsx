@@ -1,0 +1,874 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { 
+  RefreshCw, 
+  Search, 
+  User,
+  Mail,
+  Phone,
+  Shield,
+  ShieldX,
+  Pause,
+  Play,
+  Eye,
+  MessageSquare,
+  Wallet,
+  CheckCircle,
+  XCircle,
+  AlertTriangle
+} from 'lucide-react';
+import { format } from 'date-fns';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+interface UserProfile {
+  id: string;
+  display_name: string | null;
+  email: string | null;
+  phone: string | null;
+  phone_verified: boolean | null;
+  is_id_verified: boolean | null;
+  account_status: string;
+  account_type: string;
+  created_at: string;
+  xp: number | null;
+  level: number | null;
+  banned_at: string | null;
+  banned_reason: string | null;
+  paused_at: string | null;
+  paused_until: string | null;
+}
+
+interface WalletData {
+  id: string;
+  balance: number;
+  user_id: string;
+}
+
+interface Transaction {
+  id: string;
+  type: string;
+  amount: number;
+  fee: number | null;
+  description: string | null;
+  created_at: string;
+}
+
+interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  listing_id: string;
+}
+
+interface WireTransfer {
+  id: string;
+  amount: number;
+  status: string;
+  created_at: string;
+  sender_name: string | null;
+}
+
+export const UserManagement = () => {
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [wallets, setWallets] = useState<Record<string, WalletData>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  // User detail dialog
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [userDetailOpen, setUserDetailOpen] = useState(false);
+  const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
+  const [userComments, setUserComments] = useState<Comment[]>([]);
+  const [userTransfers, setUserTransfers] = useState<WireTransfer[]>([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  
+  // Ban/Pause dialogs
+  const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
+  const [actionReason, setActionReason] = useState('');
+  const [pauseDuration, setPauseDuration] = useState('7');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    try {
+      const { data: profilesData, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setUsers(profilesData || []);
+
+      // Fetch all wallets
+      const { data: walletsData } = await supabase
+        .from('wallets')
+        .select('*');
+
+      if (walletsData) {
+        const walletMap: Record<string, WalletData> = {};
+        walletsData.forEach(w => {
+          walletMap[w.user_id] = w;
+        });
+        setWallets(walletMap);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast.error('Failed to fetch users');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUserDetails = async (user: UserProfile) => {
+    setLoadingDetails(true);
+    try {
+      // Fetch transactions
+      const wallet = wallets[user.id];
+      if (wallet) {
+        const { data: txData } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('wallet_id', wallet.id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        setUserTransactions(txData || []);
+      }
+
+      // Fetch comments
+      const { data: commentsData } = await supabase
+        .from('listing_comments')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      setUserComments(commentsData || []);
+
+      // Fetch wire transfers
+      const { data: transfersData } = await supabase
+        .from('wire_transfers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      setUserTransfers(transfersData || []);
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleViewUser = async (user: UserProfile) => {
+    setSelectedUser(user);
+    setUserDetailOpen(true);
+    await fetchUserDetails(user);
+  };
+
+  const handleBanUser = async () => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          account_status: 'banned',
+          banned_at: new Date().toISOString(),
+          banned_reason: actionReason || 'Violation of terms of service',
+        })
+        .eq('id', selectedUser.id);
+
+      if (error) throw error;
+
+      toast.success(`User ${selectedUser.display_name} has been banned`);
+      setBanDialogOpen(false);
+      setActionReason('');
+      fetchUsers();
+      
+      // Update selected user
+      setSelectedUser({
+        ...selectedUser,
+        account_status: 'banned',
+        banned_at: new Date().toISOString(),
+        banned_reason: actionReason,
+      });
+    } catch (error) {
+      console.error('Error banning user:', error);
+      toast.error('Failed to ban user');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePauseUser = async () => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const pausedUntil = new Date();
+      pausedUntil.setDate(pausedUntil.getDate() + parseInt(pauseDuration));
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          account_status: 'paused',
+          paused_at: new Date().toISOString(),
+          paused_until: pausedUntil.toISOString(),
+        })
+        .eq('id', selectedUser.id);
+
+      if (error) throw error;
+
+      toast.success(`User ${selectedUser.display_name} has been paused for ${pauseDuration} days`);
+      setPauseDialogOpen(false);
+      setPauseDuration('7');
+      fetchUsers();
+      
+      setSelectedUser({
+        ...selectedUser,
+        account_status: 'paused',
+        paused_at: new Date().toISOString(),
+        paused_until: pausedUntil.toISOString(),
+      });
+    } catch (error) {
+      console.error('Error pausing user:', error);
+      toast.error('Failed to pause user');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleUnbanUser = async () => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          account_status: 'active',
+          banned_at: null,
+          banned_reason: null,
+          paused_at: null,
+          paused_until: null,
+        })
+        .eq('id', selectedUser.id);
+
+      if (error) throw error;
+
+      toast.success(`User ${selectedUser.display_name} account has been restored`);
+      fetchUsers();
+      
+      setSelectedUser({
+        ...selectedUser,
+        account_status: 'active',
+        banned_at: null,
+        banned_reason: null,
+        paused_at: null,
+        paused_until: null,
+      });
+    } catch (error) {
+      console.error('Error unbanning user:', error);
+      toast.error('Failed to restore user');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('listing_comments')
+        .delete()
+        .eq('id', commentId);
+
+      if (error) throw error;
+
+      toast.success('Comment deleted');
+      setUserComments(prev => prev.filter(c => c.id !== commentId));
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+      toast.error('Failed to delete comment');
+    }
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = 
+      (user.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+      (user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+      (user.phone?.includes(searchQuery) ?? false);
+    
+    const matchesStatus = statusFilter === 'all' || user.account_status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+      case 'paused':
+        return <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30"><Pause className="w-3 h-3 mr-1" />Paused</Badge>;
+      case 'banned':
+        return <Badge className="bg-red-500/10 text-red-500 border-red-500/30"><ShieldX className="w-3 h-3 mr-1" />Banned</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  const stats = {
+    total: users.length,
+    active: users.filter(u => u.account_status === 'active').length,
+    paused: users.filter(u => u.account_status === 'paused').length,
+    banned: users.filter(u => u.account_status === 'banned').length,
+    verified: users.filter(u => u.is_id_verified).length,
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <CheckCircle className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Active</p>
+                <p className="text-2xl font-bold text-foreground">{stats.active}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-yellow-500/10">
+                <Pause className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Paused</p>
+                <p className="text-2xl font-bold text-foreground">{stats.paused}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-500/10">
+                <ShieldX className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Banned</p>
+                <p className="text-2xl font-bold text-foreground">{stats.banned}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-500/10">
+                <Shield className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">ID Verified</p>
+                <p className="text-2xl font-bold text-foreground">{stats.verified}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="bg-card/50 border-border/50">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, email, or phone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-background/50"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              {['all', 'active', 'paused', 'banned'].map(status => (
+                <Button
+                  key={status}
+                  variant={statusFilter === status ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter(status)}
+                  className="capitalize"
+                >
+                  {status}
+                </Button>
+              ))}
+            </div>
+
+            <Button variant="outline" onClick={fetchUsers} className="gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Users Table */}
+      <Card className="bg-card/50 border-border/50">
+        <CardHeader>
+          <CardTitle>Users ({filteredUsers.length})</CardTitle>
+          <CardDescription>Manage user accounts, verify status, and view activity</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No users found
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead className="text-center">Email</TableHead>
+                    <TableHead className="text-center">Phone</TableHead>
+                    <TableHead className="text-center">ID Verified</TableHead>
+                    <TableHead className="text-right">Balance</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <User className="w-4 h-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{user.display_name || 'No name'}</p>
+                            <p className="text-xs text-muted-foreground">Level {user.level || 1}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <p className="text-sm">{user.email || '-'}</p>
+                          <p className="text-xs text-muted-foreground">{user.phone || 'No phone'}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {user.email ? (
+                          <CheckCircle className="w-4 h-4 text-emerald-500 mx-auto" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-red-500 mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {user.phone_verified ? (
+                          <CheckCircle className="w-4 h-4 text-emerald-500 mx-auto" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-muted-foreground mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {user.is_id_verified ? (
+                          <Shield className="w-4 h-4 text-blue-500 mx-auto" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-muted-foreground mx-auto" />
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-mono">
+                        ₺{(wallets[user.id]?.balance || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(user.account_status)}</TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                        {format(new Date(user.created_at), 'dd MMM yyyy')}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewUser(user)}
+                          className="gap-1"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* User Detail Dialog */}
+      <Dialog open={userDetailOpen} onOpenChange={setUserDetailOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <span>{selectedUser?.display_name || 'User Details'}</span>
+                <p className="text-sm font-normal text-muted-foreground">{selectedUser?.email}</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {selectedUser && (
+            <div className="flex-1 overflow-hidden">
+              {/* User Info Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Balance</p>
+                  <p className="text-lg font-bold">₺{(wallets[selectedUser.id]?.balance || 0).toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <div className="mt-1">{getStatusBadge(selectedUser.account_status)}</div>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Phone Verified</p>
+                  <p className="text-lg font-bold flex items-center gap-1">
+                    {selectedUser.phone_verified ? (
+                      <><CheckCircle className="w-4 h-4 text-emerald-500" /> Yes</>
+                    ) : (
+                      <><XCircle className="w-4 h-4 text-muted-foreground" /> No</>
+                    )}
+                  </p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">ID Verified</p>
+                  <p className="text-lg font-bold flex items-center gap-1">
+                    {selectedUser.is_id_verified ? (
+                      <><Shield className="w-4 h-4 text-blue-500" /> Yes</>
+                    ) : (
+                      <><XCircle className="w-4 h-4 text-muted-foreground" /> No</>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 mb-4">
+                {selectedUser.account_status === 'active' && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPauseDialogOpen(true)}
+                      className="gap-1 text-yellow-500 hover:text-yellow-600"
+                    >
+                      <Pause className="w-4 h-4" />
+                      Pause Account
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBanDialogOpen(true)}
+                      className="gap-1 text-red-500 hover:text-red-600"
+                    >
+                      <ShieldX className="w-4 h-4" />
+                      Ban User
+                    </Button>
+                  </>
+                )}
+                {(selectedUser.account_status === 'banned' || selectedUser.account_status === 'paused') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUnbanUser}
+                    disabled={isProcessing}
+                    className="gap-1 text-emerald-500 hover:text-emerald-600"
+                  >
+                    <Play className="w-4 h-4" />
+                    Restore Account
+                  </Button>
+                )}
+              </div>
+
+              {/* Banned/Paused Info */}
+              {selectedUser.account_status === 'banned' && selectedUser.banned_reason && (
+                <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
+                  <p className="text-sm text-red-500 font-medium">Ban Reason:</p>
+                  <p className="text-sm text-muted-foreground">{selectedUser.banned_reason}</p>
+                  {selectedUser.banned_at && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Banned on {format(new Date(selectedUser.banned_at), 'dd MMM yyyy HH:mm')}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {selectedUser.account_status === 'paused' && selectedUser.paused_until && (
+                <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg mb-4">
+                  <p className="text-sm text-yellow-500 font-medium">Account Paused</p>
+                  <p className="text-sm text-muted-foreground">
+                    Until {format(new Date(selectedUser.paused_until), 'dd MMM yyyy HH:mm')}
+                  </p>
+                </div>
+              )}
+
+              {/* Activity Tabs */}
+              <Tabs defaultValue="transactions" className="flex-1">
+                <TabsList className="mb-2">
+                  <TabsTrigger value="transactions" className="gap-1">
+                    <Wallet className="w-4 h-4" />
+                    Transactions
+                  </TabsTrigger>
+                  <TabsTrigger value="transfers" className="gap-1">
+                    <Wallet className="w-4 h-4" />
+                    Transfers
+                  </TabsTrigger>
+                  <TabsTrigger value="comments" className="gap-1">
+                    <MessageSquare className="w-4 h-4" />
+                    Comments
+                  </TabsTrigger>
+                </TabsList>
+
+                <ScrollArea className="h-[200px]">
+                  <TabsContent value="transactions" className="mt-0">
+                    {loadingDetails ? (
+                      <div className="flex items-center justify-center py-8">
+                        <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                      </div>
+                    ) : userTransactions.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">No transactions</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {userTransactions.map(tx => (
+                          <div key={tx.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                            <div>
+                              <p className="text-sm font-medium capitalize">{tx.type}</p>
+                              <p className="text-xs text-muted-foreground">{tx.description || 'No description'}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className={`font-mono ${tx.amount >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                {tx.amount >= 0 ? '+' : ''}₺{tx.amount.toLocaleString()}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(tx.created_at), 'dd MMM HH:mm')}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="transfers" className="mt-0">
+                    {loadingDetails ? (
+                      <div className="flex items-center justify-center py-8">
+                        <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                      </div>
+                    ) : userTransfers.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">No wire transfers</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {userTransfers.map(transfer => (
+                          <div key={transfer.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                            <div>
+                              <p className="text-sm font-medium">{transfer.sender_name || 'Unknown'}</p>
+                              <p className="text-xs text-muted-foreground capitalize">{transfer.status}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-mono">₺{transfer.amount.toLocaleString()}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(transfer.created_at), 'dd MMM HH:mm')}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="comments" className="mt-0">
+                    {loadingDetails ? (
+                      <div className="flex items-center justify-center py-8">
+                        <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                      </div>
+                    ) : userComments.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">No comments</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {userComments.map(comment => (
+                          <div key={comment.id} className="flex items-start justify-between p-2 bg-muted/30 rounded gap-2">
+                            <div className="flex-1">
+                              <p className="text-sm">{comment.content}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(comment.created_at), 'dd MMM HH:mm')}
+                              </p>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="h-6 w-6 text-red-500 hover:text-red-600"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+                </ScrollArea>
+              </Tabs>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Ban Dialog */}
+      <Dialog open={banDialogOpen} onOpenChange={setBanDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-500">
+              <ShieldX className="w-5 h-5" />
+              Ban User
+            </DialogTitle>
+            <DialogDescription>
+              This will permanently ban {selectedUser?.display_name} from the platform.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  Banned users will not be able to login, trade, or access their wallet. This action can be reversed.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="ban-reason">Reason for ban</Label>
+              <Textarea
+                id="ban-reason"
+                placeholder="Enter the reason for banning this user..."
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBanDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleBanUser}
+              disabled={isProcessing}
+            >
+              {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+              Ban User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Pause Dialog */}
+      <Dialog open={pauseDialogOpen} onOpenChange={setPauseDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-yellow-500">
+              <Pause className="w-5 h-5" />
+              Pause Account
+            </DialogTitle>
+            <DialogDescription>
+              Temporarily suspend {selectedUser?.display_name}'s account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="pause-duration">Pause Duration (days)</Label>
+              <Input
+                id="pause-duration"
+                type="number"
+                min="1"
+                max="365"
+                value={pauseDuration}
+                onChange={(e) => setPauseDuration(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPauseDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handlePauseUser}
+              disabled={isProcessing}
+              className="bg-yellow-500 hover:bg-yellow-600"
+            >
+              {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+              Pause Account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};

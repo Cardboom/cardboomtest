@@ -22,11 +22,13 @@ import {
   Database,
   Zap,
   Banknote,
-  ShieldCheck
+  ShieldCheck,
+  Users
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { WireTransferManagement } from '@/components/admin/WireTransferManagement';
+import { UserManagement } from '@/components/admin/UserManagement';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -57,7 +59,7 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedItem, setEditedItem] = useState<Partial<MarketItem>>({});
   const [isSyncing, setIsSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState('prices');
+  const [activeTab, setActiveTab] = useState('users');
 
   // Redirect if not admin
   useEffect(() => {
@@ -213,6 +215,10 @@ const Admin = () => {
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-card/50 border border-border/50">
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="w-4 h-4" />
+              Users
+            </TabsTrigger>
             <TabsTrigger value="wire-transfers" className="gap-2">
               <Banknote className="w-4 h-4" />
               Wire Transfers
@@ -222,6 +228,10 @@ const Admin = () => {
               Price Management
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
 
           <TabsContent value="wire-transfers">
             <WireTransferManagement />

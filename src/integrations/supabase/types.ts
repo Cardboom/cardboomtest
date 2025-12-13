@@ -1017,9 +1017,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
           account_type: Database["public"]["Enums"]["account_type"]
           avatar_url: string | null
           badges: Json | null
+          banned_at: string | null
+          banned_reason: string | null
           bio: string | null
           created_at: string
           custom_guru: string | null
@@ -1032,6 +1035,8 @@ export type Database = {
           is_id_verified: boolean | null
           level: number | null
           national_id: string | null
+          paused_at: string | null
+          paused_until: string | null
           phone: string | null
           phone_verified: boolean | null
           profile_background: string | null
@@ -1044,9 +1049,12 @@ export type Database = {
           xp: number | null
         }
         Insert: {
+          account_status?: string
           account_type?: Database["public"]["Enums"]["account_type"]
           avatar_url?: string | null
           badges?: Json | null
+          banned_at?: string | null
+          banned_reason?: string | null
           bio?: string | null
           created_at?: string
           custom_guru?: string | null
@@ -1059,6 +1067,8 @@ export type Database = {
           is_id_verified?: boolean | null
           level?: number | null
           national_id?: string | null
+          paused_at?: string | null
+          paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           profile_background?: string | null
@@ -1071,9 +1081,12 @@ export type Database = {
           xp?: number | null
         }
         Update: {
+          account_status?: string
           account_type?: Database["public"]["Enums"]["account_type"]
           avatar_url?: string | null
           badges?: Json | null
+          banned_at?: string | null
+          banned_reason?: string | null
           bio?: string | null
           created_at?: string
           custom_guru?: string | null
@@ -1086,6 +1099,8 @@ export type Database = {
           is_id_verified?: boolean | null
           level?: number | null
           national_id?: string | null
+          paused_at?: string | null
+          paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           profile_background?: string | null
