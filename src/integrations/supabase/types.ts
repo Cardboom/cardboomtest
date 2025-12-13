@@ -1522,6 +1522,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_unlocked_backgrounds: {
         Row: {
           background_id: string
@@ -1880,9 +1901,17 @@ export type Database = {
           review_count: number
         }[]
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       account_type: "buyer" | "seller" | "both"
+      app_role: "admin" | "moderator" | "user"
       card_condition:
         | "raw"
         | "psa1"
@@ -2082,6 +2111,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["buyer", "seller", "both"],
+      app_role: ["admin", "moderator", "user"],
       card_condition: [
         "raw",
         "psa1",
