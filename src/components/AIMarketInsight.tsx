@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
 
 interface MarketInsight {
   text: string;
@@ -22,7 +20,6 @@ const fallbackInsights: MarketInsight[] = [
 
 export const AIMarketInsight = () => {
   const [insight, setInsight] = useState<MarketInsight>(fallbackInsights[0]);
-  const [loading, setLoading] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Rotate through insights
@@ -35,31 +32,8 @@ export const AIMarketInsight = () => {
     return () => clearInterval(interval);
   }, [currentIndex]);
 
-  // Try to fetch AI insight on mount
-  useEffect(() => {
-    const fetchInsight = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase.functions.invoke('market-insights', {
-          body: { type: 'quick_insight' },
-        });
-
-        if (!error && data?.insight) {
-          setInsight({
-            text: data.insight,
-            type: data.sentiment || 'neutral',
-          });
-        }
-      } catch (err) {
-        // Use fallback insights
-        console.log('Using fallback insights');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInsight();
-  }, []);
+  // Use fallback insights - no API call needed for the ticker
+  // The AI edge function is only used for detailed item analysis
 
   const getIcon = () => {
     switch (insight.type) {
@@ -74,7 +48,7 @@ export const AIMarketInsight = () => {
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/20">
-      <Sparkles className={cn("w-3.5 h-3.5 text-primary", loading && "animate-pulse")} />
+      <Sparkles className="w-3.5 h-3.5 text-primary" />
       <span className="text-xs font-medium text-muted-foreground">AI Insight:</span>
       <span className="text-xs text-foreground font-medium truncate max-w-[200px] md:max-w-[400px]">
         {insight.text}
