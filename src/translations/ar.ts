@@ -78,6 +78,7 @@ export const ar: Translations = {
     football: "كرة القدم",
     tcg: "TCG",
     figures: "مجسمات",
+    gaming: "ألعاب",
   },
   // Cart
   cart: {
@@ -98,6 +99,47 @@ export const ar: Translations = {
     viewDetails: "عرض التفاصيل",
     close: "إغلاق",
     loading: "جارٍ التحميل...",
+    level: "المستوى",
+    verified: "موثق",
+    guru: "خبير",
+  },
+  // Profile
+  profile: {
+    level: "المستوى",
+    xp: "XP",
+    memberSince: "عضو منذ",
+    badges: "الشارات",
+    verified: "هوية موثقة",
+    uploadId: "رفع الهوية للتحقق",
+    guruExpertise: "خبرة المجموعة",
+    selectExpertise: "اختر خبرتك",
+    customGuru: "خبرة مخصصة",
+    expertiseCategories: {
+      pokemon: "خبير بوكيمون",
+      onepiece: "خبير ون بيس",
+      yugioh: "خبير يو غي أو",
+      nba: "خبير بطاقات NBA",
+      football: "خبير بطاقات كرة القدم",
+      gaming: "خبير ألعاب",
+      figures: "خبير مجسمات",
+    },
+  },
+  // Leaderboard
+  leaderboard: {
+    title: "أفضل الجامعين",
+    description: "تنافس مع جامعين آخرين. اكسب XP من التداول والشراء والتسجيل اليومي.",
+    xpLeaders: "قادة XP",
+    streakKings: "ملوك السلسلة",
+    gamingLeaders: "قادة الألعاب",
+    rankings: "التصنيفات",
+    topCollector: "الجامع #1",
+    totalXP: "إجمالي XP",
+    topStreak: "أعلى سلسلة",
+    activeUsers: "المستخدمون النشطون",
+    noUsers: "لا يوجد مستخدمون بعد. كن الأول!",
+    noStreaks: "لا توجد سلاسل بعد. سجل دخولك يومياً!",
+    noGaming: "لا يوجد قادة ألعاب بعد!",
+    gamingPoints: "نقاط الألعاب",
   },
   // Footer
   footer: {
@@ -107,6 +149,7 @@ export const ar: Translations = {
     footballCards: "بطاقات كرة القدم",
     tcg: "TCG",
     figures: "مجسمات",
+    gaming: "ألعاب",
     company: "الشركة",
     about: "من نحن",
     careers: "الوظائف",

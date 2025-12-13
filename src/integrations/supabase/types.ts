@@ -818,10 +818,14 @@ export type Database = {
           badges: Json | null
           bio: string | null
           created_at: string
+          custom_guru: string | null
           display_name: string | null
           email: string | null
+          guru_expertise: string[] | null
           id: string
+          id_document_url: string | null
           is_beta_tester: boolean | null
+          is_id_verified: boolean | null
           level: number | null
           national_id: string | null
           phone: string | null
@@ -841,10 +845,14 @@ export type Database = {
           badges?: Json | null
           bio?: string | null
           created_at?: string
+          custom_guru?: string | null
           display_name?: string | null
           email?: string | null
+          guru_expertise?: string[] | null
           id: string
+          id_document_url?: string | null
           is_beta_tester?: boolean | null
+          is_id_verified?: boolean | null
           level?: number | null
           national_id?: string | null
           phone?: string | null
@@ -864,10 +872,14 @@ export type Database = {
           badges?: Json | null
           bio?: string | null
           created_at?: string
+          custom_guru?: string | null
           display_name?: string | null
           email?: string | null
+          guru_expertise?: string[] | null
           id?: string
+          id_document_url?: string | null
           is_beta_tester?: boolean | null
+          is_id_verified?: boolean | null
           level?: number | null
           national_id?: string | null
           phone?: string | null

@@ -76,6 +76,7 @@ export const en = {
     football: "Football",
     tcg: "TCG",
     figures: "Figures",
+    gaming: "Gaming",
   },
   // Cart
   cart: {
@@ -96,6 +97,47 @@ export const en = {
     viewDetails: "View Details",
     close: "Close",
     loading: "Loading...",
+    level: "Level",
+    verified: "Verified",
+    guru: "Guru",
+  },
+  // Profile
+  profile: {
+    level: "Level",
+    xp: "XP",
+    memberSince: "Member since",
+    badges: "Badges",
+    verified: "ID Verified",
+    uploadId: "Upload ID for Verification",
+    guruExpertise: "Collection Expertise",
+    selectExpertise: "Select your expertise",
+    customGuru: "Custom expertise",
+    expertiseCategories: {
+      pokemon: "Pokémon Guru",
+      onepiece: "One Piece Guru",
+      yugioh: "Yu-Gi-Oh! Guru",
+      nba: "NBA Cards Guru",
+      football: "Football Cards Guru",
+      gaming: "Gaming Guru",
+      figures: "Figures Guru",
+    },
+  },
+  // Leaderboard
+  leaderboard: {
+    title: "Top Collectors",
+    description: "Compete with other collectors. Earn XP through trades, purchases, and daily logins.",
+    xpLeaders: "XP Leaders",
+    streakKings: "Streak Kings",
+    gamingLeaders: "Gaming Leaders",
+    rankings: "Rankings",
+    topCollector: "#1 Collector",
+    totalXP: "Total XP",
+    topStreak: "Top Streak",
+    activeUsers: "Active Users",
+    noUsers: "No users yet. Be the first to claim the top spot!",
+    noStreaks: "No streaks yet. Log in daily to start your streak!",
+    noGaming: "No gaming leaders yet!",
+    gamingPoints: "Gaming Points",
   },
   // Footer
   footer: {
@@ -105,6 +147,7 @@ export const en = {
     footballCards: "Football Cards",
     tcg: "TCG",
     figures: "Figures",
+    gaming: "Gaming",
     company: "Company",
     about: "About",
     careers: "Careers",
