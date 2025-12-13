@@ -19,6 +19,7 @@ import { XPProgressBar } from '@/components/XPProgressBar';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
+import { AIMarketInsight } from '@/components/AIMarketInsight';
 
 interface HeaderProps {
   cartCount: number;
@@ -77,6 +78,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
   return (
     <header className="sticky top-0 z-50 glass border-b border-border/30">
+      {/* AI Insight Banner */}
+      <div className="hidden md:flex items-center justify-center py-1.5 bg-muted/30 border-b border-border/20">
+        <AIMarketInsight />
+      </div>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

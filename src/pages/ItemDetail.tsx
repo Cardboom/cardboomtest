@@ -5,9 +5,11 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   TrendingUp, TrendingDown, Eye, Heart, 
-  Clock, Users, ChevronLeft, Plus, Loader2, ImagePlus
+  Clock, Users, ChevronLeft, Plus, Loader2, ImagePlus,
+  BarChart3, DollarSign, Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +24,8 @@ import { TimeToSell } from '@/components/item/TimeToSell';
 import { SentimentIndicator } from '@/components/item/SentimentIndicator';
 import { ShareButton } from '@/components/ShareButton';
 import { useGenerateItemImage } from '@/hooks/useGenerateItemImage';
+import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
+import { ItemBids } from '@/components/item/ItemBids';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -49,7 +53,6 @@ const ItemDetail = () => {
         user_id: user?.id || null,
         session_id: sessionId,
       }).then(() => {
-        // Refetch views after logging
         queryClient.invalidateQueries({ queryKey: ['item-views', id] });
       });
     }
@@ -123,7 +126,7 @@ const ItemDetail = () => {
     enabled: !!id && !!user?.id,
   });
 
-  // Fetch sales count (from orders related to listings with this item name)
+  // Fetch sales count
   const { data: salesCount30d } = useQuery({
     queryKey: ['sales-count', id],
     queryFn: async () => {
@@ -132,6 +135,20 @@ const ItemDetail = () => {
         .from('orders')
         .select('id', { count: 'exact', head: true })
         .gte('created_at', thirtyDaysAgo.toISOString());
+      return count || 0;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch active bids count
+  const { data: bidCount } = useQuery({
+    queryKey: ['bid-count', id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('bids')
+        .select('id', { count: 'exact', head: true })
+        .eq('market_item_id', id)
+        .eq('status', 'active');
       return count || 0;
     },
     enabled: !!id,
@@ -213,14 +230,69 @@ const ItemDetail = () => {
     );
   }
 
+  // Show card info page even if item doesn't exist in our database
   if (!item) {
     return (
       <div className="min-h-screen bg-background">
         <Header cartCount={0} onCartClick={() => {}} />
-        <main className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Item Not Found</h1>
-          <p className="text-muted-foreground mb-6">This item doesn't exist in our database.</p>
-          <Button onClick={() => navigate('/explorer')}>Browse Items</Button>
+        <main className="container mx-auto px-4 py-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="mb-4 gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </Button>
+
+          <div className="grid lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-1">
+              <div className="glass rounded-2xl p-4 aspect-square flex items-center justify-center">
+                <div className="text-center">
+                  <ImagePlus className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="text-muted-foreground">No image available</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 space-y-6">
+              <div>
+                <Badge variant="secondary" className="mb-2">Unknown Card</Badge>
+                <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+                  Card Not in Database
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  This card isn't in our database yet, but you can still place a bid!
+                </p>
+              </div>
+
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Activity className="w-6 h-6 text-primary" />
+                    <h3 className="font-semibold text-lg">Want this card?</h3>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    Place a bid and we'll notify sellers when someone wants to sell this card.
+                  </p>
+                  <PlaceBidDialog
+                    itemName="Unknown Card"
+                    category="unknown"
+                    user={user}
+                  />
+                </CardContent>
+              </Card>
+
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={() => navigate('/explorer')} variant="outline">
+                  Browse Cards
+                </Button>
+                <Button onClick={() => navigate('/sell')} variant="outline">
+                  List Your Cards
+                </Button>
+              </div>
+            </div>
+          </div>
         </main>
         <Footer />
       </div>
@@ -256,7 +328,6 @@ const ItemDetail = () => {
                 alt={item.name}
                 className="w-full h-full object-contain rounded-xl"
               />
-              {/* Generate Image Button */}
               {(!item.image_url || item.image_url === '/placeholder.svg') && (
                 <Button
                   variant="secondary"
@@ -342,8 +413,8 @@ const ItemDetail = () => {
               </div>
             </div>
 
-            {/* Stats Row - Real Data */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Stats Row */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="glass rounded-xl p-4 text-center">
                 <Eye className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
                 <p className="text-foreground font-semibold">{(viewStats?.views24h || 0).toLocaleString()}</p>
@@ -364,10 +435,22 @@ const ItemDetail = () => {
                 <p className="text-foreground font-semibold">{salesCount30d || 0}</p>
                 <p className="text-muted-foreground text-xs">Sales (30d)</p>
               </div>
+              <div className="glass rounded-xl p-4 text-center">
+                <DollarSign className="w-5 h-5 mx-auto mb-2 text-primary" />
+                <p className="text-foreground font-semibold">{bidCount || 0}</p>
+                <p className="text-muted-foreground text-xs">Active Bids</p>
+              </div>
             </div>
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
+              <PlaceBidDialog
+                itemId={item.id}
+                itemName={item.name}
+                category={item.category}
+                currentPrice={item.current_price}
+                user={user}
+              />
               <Button 
                 onClick={toggleWatchlist}
                 variant={isWatching ? "secondary" : "outline"}
@@ -387,6 +470,11 @@ const ItemDetail = () => {
               />
             </div>
           </div>
+        </div>
+
+        {/* Active Bids Section */}
+        <div className="mb-8">
+          <ItemBids itemId={item.id} itemName={item.name} />
         </div>
 
         {/* Investment Intelligence Section */}
