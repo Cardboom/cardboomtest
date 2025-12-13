@@ -20,6 +20,8 @@ import onepieceShanks from '@/assets/cards/onepiece-shanks.jpg';
 import lorcanaElsa from '@/assets/cards/lorcana-elsa.jpg';
 import lorcanaMickey from '@/assets/cards/lorcana-mickey.jpg';
 
+// Prices are fetched from database via useLivePrices hook
+// These are default values that get overwritten by live data
 export const mockCollectibles: Collectible[] = [
   // NBA Cards
   {
@@ -28,7 +30,7 @@ export const mockCollectibles: Collectible[] = [
     name: 'LeBron James Rookie PSA 10',
     category: 'nba',
     image: lebronRookie,
-    price: 245000,
+    price: 245000, // Default - overwritten by database
     previousPrice: 232000,
     priceChange: 5.2,
     rarity: 'grail',
@@ -93,9 +95,9 @@ export const mockCollectibles: Collectible[] = [
     name: 'Tom Brady Contenders Auto',
     category: 'football',
     image: bradyContenders,
-    price: 125000,
-    previousPrice: 121600,
-    priceChange: 2.8,
+    price: 85000, // Updated to match database
+    previousPrice: 80000,
+    priceChange: 3.5,
     rarity: 'grail',
     seller: 'NFLElite',
     condition: 'PSA 10',
@@ -109,9 +111,9 @@ export const mockCollectibles: Collectible[] = [
     name: "Ja'Marr Chase Optic Auto",
     category: 'football',
     image: chaseOptic,
-    price: 8900,
-    previousPrice: 9035,
-    priceChange: -1.5,
+    price: 4500, // Updated to match database
+    previousPrice: 4200,
+    priceChange: 7.1,
     rarity: 'legendary',
     seller: 'BengalsVault',
     condition: 'PSA 10',
@@ -127,8 +129,8 @@ export const mockCollectibles: Collectible[] = [
     category: 'pokemon',
     image: charizard1st,
     price: 420000,
-    previousPrice: 374000,
-    priceChange: 12.3,
+    previousPrice: 400000,
+    priceChange: 5.0,
     rarity: 'grail',
     seller: 'PokéVault',
     condition: 'BGS 9.5',
@@ -159,7 +161,7 @@ export const mockCollectibles: Collectible[] = [
     category: 'pokemon',
     image: mewtwoRainbow,
     price: 28000,
-    previousPrice: 28225,
+    previousPrice: 27000,
     priceChange: -0.8,
     rarity: 'legendary',
     seller: 'PokéElite',
@@ -176,27 +178,11 @@ export const mockCollectibles: Collectible[] = [
     category: 'mtg',
     image: blackLotus,
     price: 185000,
-    previousPrice: 173700,
+    previousPrice: 175000,
     priceChange: 6.5,
     rarity: 'grail',
     seller: 'MTGLegends',
     condition: 'BGS 8.5',
-    year: 1993,
-    brand: 'Magic: The Gathering',
-    trending: true,
-  },
-  {
-    id: '13',
-    priceId: 'mtg-mox-sapphire',
-    name: 'Mox Sapphire Alpha',
-    category: 'mtg',
-    image: blackLotus,
-    price: 95000,
-    previousPrice: 92000,
-    priceChange: 3.3,
-    rarity: 'grail',
-    seller: 'MTGLegends',
-    condition: 'BGS 9',
     year: 1993,
     brand: 'Magic: The Gathering',
     trending: true,
@@ -208,9 +194,9 @@ export const mockCollectibles: Collectible[] = [
     name: 'Blue-Eyes White Dragon LOB',
     category: 'yugioh',
     image: yugiohBlueEyes,
-    price: 15000,
-    previousPrice: 14200,
-    priceChange: 5.6,
+    price: 35000, // Updated to match database
+    previousPrice: 33000,
+    priceChange: 3.5,
     rarity: 'legendary',
     seller: 'DuelistPro',
     condition: 'PSA 10',
@@ -224,9 +210,9 @@ export const mockCollectibles: Collectible[] = [
     name: 'Dark Magician SDY 1st Ed',
     category: 'yugioh',
     image: yugiohDarkMagician,
-    price: 8500,
-    previousPrice: 8200,
-    priceChange: 3.7,
+    price: 18000, // Updated to match database
+    previousPrice: 17000,
+    priceChange: 4.2,
     rarity: 'legendary',
     seller: 'DuelistPro',
     condition: 'PSA 9',
@@ -241,9 +227,9 @@ export const mockCollectibles: Collectible[] = [
     name: 'Monkey D. Luffy Alt Art',
     category: 'onepiece',
     image: onepieceLuffy,
-    price: 450,
-    previousPrice: 380,
-    priceChange: 18.4,
+    price: 850, // Updated to match database
+    previousPrice: 650,
+    priceChange: 15.2,
     rarity: 'legendary',
     seller: 'GrandLineCards',
     condition: 'PSA 10',
@@ -257,9 +243,9 @@ export const mockCollectibles: Collectible[] = [
     name: 'Shanks Manga Art SP',
     category: 'onepiece',
     image: onepieceShanks,
-    price: 890,
-    previousPrice: 750,
-    priceChange: 18.7,
+    price: 425, // Updated to match database
+    previousPrice: 380,
+    priceChange: 8.5,
     rarity: 'legendary',
     seller: 'GrandLineCards',
     condition: 'PSA 10',
@@ -274,9 +260,9 @@ export const mockCollectibles: Collectible[] = [
     name: 'Elsa Spirit of Winter Enchanted',
     category: 'lorcana',
     image: lorcanaElsa,
-    price: 320,
-    previousPrice: 290,
-    priceChange: 10.3,
+    price: 450, // Updated to match database
+    previousPrice: 480,
+    priceChange: -5.2,
     rarity: 'legendary',
     seller: 'LorcanaVault',
     condition: 'Gem Mint',
@@ -290,82 +276,14 @@ export const mockCollectibles: Collectible[] = [
     name: 'Mickey Mouse Enchanted',
     category: 'lorcana',
     image: lorcanaMickey,
-    price: 280,
-    previousPrice: 250,
-    priceChange: 12.0,
+    price: 320, // Updated to match database
+    previousPrice: 290,
+    priceChange: 6.8,
     rarity: 'legendary',
     seller: 'LorcanaVault',
     condition: 'PSA 10',
     year: 2024,
     brand: 'Disney Lorcana',
-    trending: false,
-  },
-  // Digimon TCG
-  {
-    id: '20',
-    priceId: 'digimon-omnimon-alt',
-    name: 'Omnimon Alternative Art',
-    category: 'digimon',
-    image: jordanFleer,
-    price: 180,
-    previousPrice: 165,
-    priceChange: 9.1,
-    rarity: 'legendary',
-    seller: 'DigiCollect',
-    condition: 'PSA 10',
-    year: 2023,
-    brand: 'Digimon TCG',
-    trending: true,
-  },
-  // Dragon Ball Z
-  {
-    id: '21',
-    priceId: 'dbz-goku-secret',
-    name: 'Son Goku Secret Rare',
-    category: 'dragonball',
-    image: mahomesPrizm,
-    price: 250,
-    previousPrice: 220,
-    priceChange: 13.6,
-    rarity: 'legendary',
-    seller: 'SaiyanCards',
-    condition: 'PSA 10',
-    year: 2024,
-    brand: 'Dragon Ball Super',
-    trending: true,
-  },
-  // Star Wars Unlimited
-  {
-    id: '22',
-    priceId: 'starwars-vader-showcase',
-    name: 'Darth Vader Showcase',
-    category: 'starwars',
-    image: bradyContenders,
-    price: 120,
-    previousPrice: 100,
-    priceChange: 20.0,
-    rarity: 'legendary',
-    seller: 'GalacticCards',
-    condition: 'Gem Mint',
-    year: 2024,
-    brand: 'Star Wars Unlimited',
-    trending: true,
-  },
-  // Riftbound
-  {
-    id: '23',
-    priceId: 'riftbound-genesis',
-    name: 'Riftbound Genesis Pack',
-    category: 'riftbound',
-    image: bearbrickKaws,
-    price: 75,
-    previousPrice: 65,
-    priceChange: 15.4,
-    rarity: 'rare',
-    seller: 'RiftMaster',
-    condition: 'Sealed',
-    year: 2024,
-    brand: 'Riftbound',
     trending: false,
   },
   // Figures
@@ -391,9 +309,9 @@ export const mockCollectibles: Collectible[] = [
     name: 'Be@rbrick 1000% Kaws',
     category: 'figures',
     image: bearbrickKaws,
-    price: 12000,
-    previousPrice: 11640,
-    priceChange: 3.1,
+    price: 28000, // Updated to match database
+    previousPrice: 26000,
+    priceChange: 5.8,
     rarity: 'legendary',
     seller: 'ArtToys',
     condition: 'New',
@@ -401,14 +319,14 @@ export const mockCollectibles: Collectible[] = [
     brand: 'Medicom',
     trending: true,
   },
-  // Game Points - Valorant (2% markup)
+  // Game Points - Valorant
   {
     id: '24',
     priceId: 'valorant-1000vp',
     name: 'Valorant 1000 VP',
     category: 'gamepoints',
     image: valorantVp,
-    price: 10.20, // 2% above $10
+    price: 10.20,
     previousPrice: 10.20,
     priceChange: 0,
     rarity: 'common',
@@ -424,7 +342,7 @@ export const mockCollectibles: Collectible[] = [
     name: 'Valorant 2050 VP',
     category: 'gamepoints',
     image: valorantVp,
-    price: 20.40, // 2% above $20
+    price: 20.40,
     previousPrice: 20.40,
     priceChange: 0,
     rarity: 'common',
@@ -440,7 +358,7 @@ export const mockCollectibles: Collectible[] = [
     name: 'Valorant 5350 VP',
     category: 'gamepoints',
     image: valorantVp,
-    price: 51.00, // 2% above $50
+    price: 51.00,
     previousPrice: 51.00,
     priceChange: 0,
     rarity: 'common',
@@ -450,14 +368,14 @@ export const mockCollectibles: Collectible[] = [
     brand: 'Valorant',
     trending: false,
   },
-  // Game Points - PUBG UC (2% markup)
+  // Game Points - PUBG UC
   {
     id: '27',
     priceId: 'pubg-600uc',
     name: 'PUBG 600 UC',
     category: 'gamepoints',
     image: pubgUc,
-    price: 10.20, // 2% above $10
+    price: 10.20,
     previousPrice: 10.20,
     priceChange: 0,
     rarity: 'common',
@@ -473,7 +391,7 @@ export const mockCollectibles: Collectible[] = [
     name: 'PUBG 1500 UC',
     category: 'gamepoints',
     image: pubgUc,
-    price: 25.50, // 2% above $25
+    price: 25.50,
     previousPrice: 25.50,
     priceChange: 0,
     rarity: 'common',
@@ -489,7 +407,7 @@ export const mockCollectibles: Collectible[] = [
     name: 'PUBG 3850 UC',
     category: 'gamepoints',
     image: pubgUc,
-    price: 51.00, // 2% above $50
+    price: 51.00,
     previousPrice: 51.00,
     priceChange: 0,
     rarity: 'common',
@@ -501,55 +419,54 @@ export const mockCollectibles: Collectible[] = [
   },
 ];
 
-export const marketStats: MarketStats = {
-  totalVolume: 2847593000,
-  dailyVolume: 45892000,
-  activeListings: 1248593,
-  activeTraders: 892456,
-};
-
-
+// Categories for filtering
 export const categories = [
-  { id: 'all', name: 'All Items', icon: '🏆' },
-  { id: 'nba', name: 'NBA Cards', icon: '🏀' },
-  { id: 'football', name: 'Football Cards', icon: '🏈' },
+  { id: 'all', name: 'All', icon: '🎯' },
   { id: 'pokemon', name: 'Pokémon', icon: '⚡' },
-  { id: 'mtg', name: 'Magic: The Gathering', icon: '🔮' },
-  { id: 'yugioh', name: 'Yu-Gi-Oh!', icon: '🃏' },
+  { id: 'yugioh', name: 'Yu-Gi-Oh!', icon: '🎴' },
   { id: 'onepiece', name: 'One Piece', icon: '🏴‍☠️' },
-  { id: 'lorcana', name: 'Disney Lorcana', icon: '✨' },
-  { id: 'digimon', name: 'Digimon', icon: '🦖' },
-  { id: 'dragonball', name: 'Dragon Ball', icon: '🐉' },
-  { id: 'starwars', name: 'Star Wars', icon: '⭐' },
-  { id: 'riftbound', name: 'Riftbound', icon: '🌀' },
-  { id: 'figures', name: 'Figures', icon: '🎭' },
+  { id: 'lorcana', name: 'Lorcana', icon: '✨' },
+  { id: 'mtg', name: 'MTG', icon: '🧙' },
+  { id: 'nba', name: 'NBA', icon: '🏀' },
+  { id: 'football', name: 'Football', icon: '🏈' },
+  { id: 'figures', name: 'Figures', icon: '🎨' },
   { id: 'gamepoints', name: 'Game Points', icon: '🎮' },
 ];
 
-export const rarityColors = {
-  common: 'text-platinum',
-  rare: 'text-blue-400',
-  legendary: 'text-purple-400',
-  grail: 'text-gold',
-};
-
-// XP earning rates
-export const xpRates = {
-  purchase: 1, // 1 XP per $1 spent
-  sale: 1, // 1 XP per $1 earned
-  listing: 10, // 10 XP per listing created
-  referral: 100, // 100 XP per successful referral
-  daily_login: 5, // 5 XP per daily login
-  review: 15, // 15 XP per review left
-  first_purchase: 50, // 50 XP bonus for first purchase
-  streak_bonus: 10, // 10 XP per day streak (cumulative)
-};
-
-// Level thresholds
+// XP/Level calculations
 export const getLevelFromXP = (xp: number): number => {
-  return Math.max(1, Math.floor(Math.sqrt(xp / 100)) + 1);
+  return Math.floor(Math.sqrt(xp / 100)) + 1;
 };
 
 export const getXPForLevel = (level: number): number => {
   return Math.pow(level - 1, 2) * 100;
+};
+
+// Historical price data generator
+export const generatePriceHistory = (basePrice: number, days: number = 30): PricePoint[] => {
+  const history: PricePoint[] = [];
+  let currentPrice = basePrice * 0.9;
+  const now = new Date();
+
+  for (let i = days; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    
+    const change = (Math.random() - 0.45) * 0.03;
+    currentPrice = currentPrice * (1 + change);
+    
+    history.push({
+      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      price: Math.round(currentPrice),
+    });
+  }
+  
+  return history;
+};
+
+export const mockMarketStats: MarketStats = {
+  totalVolume: 2450000000,
+  dailyVolume: 45600000,
+  activeListings: 125000,
+  activeTraders: 89000,
 };
