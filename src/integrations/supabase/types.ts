@@ -1674,6 +1674,53 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_audit_log: {
+        Row: {
+          action: string
+          change_amount: number
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_balance: number | null
+          old_balance: number | null
+          reference_id: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          action: string
+          change_amount: number
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_balance?: number | null
+          old_balance?: number | null
+          reference_id?: string | null
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          action?: string
+          change_amount?: number
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_balance?: number | null
+          old_balance?: number | null
+          reference_id?: string | null
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_audit_log_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallets: {
         Row: {
           balance: number
