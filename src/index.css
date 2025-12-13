@@ -250,6 +250,15 @@
   .animate-shimmer {
     animation: shimmer 2.5s ease-in-out infinite;
   }
+
+  /* Scrollbar hide for horizontal scrolling on mobile */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @keyframes ticker {

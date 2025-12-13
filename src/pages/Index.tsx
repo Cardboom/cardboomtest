@@ -174,21 +174,21 @@ const Index = () => {
               </div>
 
               <Tabs defaultValue="insights" className="space-y-6">
-                <TabsList className="glass">
-                  <TabsTrigger value="insights" className="gap-2">
-                    <Brain className="w-4 h-4" />
-                    AI Insights
+                <TabsList className="glass w-full sm:w-auto overflow-x-auto flex-nowrap justify-start sm:justify-center p-1 h-auto">
+                  <TabsTrigger value="insights" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                    <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">AI</span> Insights
                   </TabsTrigger>
-                  <TabsTrigger value="social" className="gap-2">
-                    <Users className="w-4 h-4" />
-                    Top Traders
+                  <TabsTrigger value="social" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                    <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden xs:inline">Top</span> Traders
                   </TabsTrigger>
-                  <TabsTrigger value="quests" className="gap-2">
-                    <Trophy className="w-4 h-4" />
-                    Daily Quests
+                  <TabsTrigger value="quests" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                    <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    Quests
                   </TabsTrigger>
-                  <TabsTrigger value="alerts" className="gap-2">
-                    <Bell className="w-4 h-4" />
+                  <TabsTrigger value="alerts" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
+                    <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     Alerts
                   </TabsTrigger>
                 </TabsList>
