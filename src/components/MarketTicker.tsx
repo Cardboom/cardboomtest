@@ -2,19 +2,26 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 import { mockCollectibles } from '@/data/mockData';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useMemo } from 'react';
+import { useLivePrices } from '@/hooks/useLivePrices';
 
 export const MarketTicker = () => {
   const { formatPrice } = useCurrency();
+  const trendingMock = useMemo(() => mockCollectibles.filter(item => item.trending), []);
   
-  // Use stable mock data - no live price fetching to prevent jumping
+  const productIds = useMemo(() => trendingMock.map(item => item.id), []);
+  const { prices } = useLivePrices({ productIds, refreshInterval: 30000 });
+  
   const trendingItems = useMemo(() => 
-    mockCollectibles.filter(item => item.trending).map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      change: item.priceChange,
-    })), 
-  []);
+    trendingMock.map(item => {
+      const livePrice = prices[item.id];
+      return {
+        id: item.id,
+        name: item.name,
+        price: livePrice?.price ?? item.price,
+        change: livePrice?.change ?? item.priceChange,
+      };
+    }), 
+  [prices]);
 
   const duplicatedItems = useMemo(() => 
     [...trendingItems, ...trendingItems], 

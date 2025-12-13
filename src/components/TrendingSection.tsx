@@ -2,9 +2,25 @@ import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockCollectibles } from '@/data/mockData';
 import { cn } from '@/lib/utils';
+import { useLivePrices } from '@/hooks/useLivePrices';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useMemo } from 'react';
 
 export const TrendingSection = () => {
-  const trending = mockCollectibles.filter(item => item.trending).slice(0, 5);
+  const { formatPrice } = useCurrency();
+  const trendingMock = mockCollectibles.filter(item => item.trending).slice(0, 5);
+  
+  const productIds = useMemo(() => trendingMock.map(item => item.id), []);
+  const { prices } = useLivePrices({ productIds, refreshInterval: 30000 });
+  
+  const trending = useMemo(() => trendingMock.map(item => {
+    const livePrice = prices[item.id];
+    return {
+      ...item,
+      price: livePrice?.price ?? item.price,
+      priceChange: livePrice?.change ?? item.priceChange,
+    };
+  }), [prices]);
 
   return (
     <section className="py-12">
@@ -49,7 +65,7 @@ export const TrendingSection = () => {
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
                     <span className="font-bold text-foreground">
-                      ${item.price.toLocaleString()}
+                      {formatPrice(item.price)}
                     </span>
                     <span className={cn(
                       'flex items-center gap-1 text-sm font-medium',
