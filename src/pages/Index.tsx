@@ -13,14 +13,19 @@ import { LiveMarketTable } from '@/components/LiveMarketTable';
 import { Footer } from '@/components/Footer';
 import { WaitlistBanner } from '@/components/WaitlistBanner';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { DailyQuestsPanel } from '@/components/DailyQuestsPanel';
+import { AIInsightsPanel } from '@/components/AIInsightsPanel';
+import { SocialTradingPanel } from '@/components/SocialTradingPanel';
+import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
 import { useRealtimePrices } from '@/hooks/useRealtimePrices';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDailyStreak } from '@/hooks/useDailyStreak';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Shield, Zap, Wallet, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
@@ -101,7 +106,9 @@ const Index = () => {
     { icon: Shield, title: 'Secure Vault', desc: 'Store your cards safely with insurance coverage' },
     { icon: Zap, title: 'Instant Trades', desc: 'Fast P2P trading with escrow protection' },
     { icon: Wallet, title: 'Easy Payments', desc: 'Multiple payment methods including crypto' },
-    { icon: Users, title: 'Verified Sellers', desc: 'Trade with confidence from verified accounts' }
+    { icon: Users, title: 'Verified Sellers', desc: 'Trade with confidence from verified accounts' },
+    { icon: PieChart, title: 'Fractional Shares', desc: 'Own pieces of grails starting from $10' },
+    { icon: Brain, title: 'AI Insights', desc: 'Smart predictions and market analysis' },
   ];
 
   return (
@@ -146,6 +153,66 @@ const Index = () => {
           </section>
         </ScrollReveal>
 
+        {/* 2026 Features: AI Insights + Social + Gamification */}
+        <ScrollReveal>
+          <section className="py-12 border-t border-border/50">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
+                    <Brain className="h-7 w-7 text-primary" />
+                    Smart Trading Hub
+                  </h2>
+                  <p className="text-muted-foreground mt-1">AI-powered insights, social trading & gamification</p>
+                </div>
+                <Link to="/fractional">
+                  <Button variant="outline" className="gap-2">
+                    <PieChart className="w-4 h-4" />
+                    Fractional Market
+                  </Button>
+                </Link>
+              </div>
+
+              <Tabs defaultValue="insights" className="space-y-6">
+                <TabsList className="glass">
+                  <TabsTrigger value="insights" className="gap-2">
+                    <Brain className="w-4 h-4" />
+                    AI Insights
+                  </TabsTrigger>
+                  <TabsTrigger value="social" className="gap-2">
+                    <Users className="w-4 h-4" />
+                    Top Traders
+                  </TabsTrigger>
+                  <TabsTrigger value="quests" className="gap-2">
+                    <Trophy className="w-4 h-4" />
+                    Daily Quests
+                  </TabsTrigger>
+                  <TabsTrigger value="alerts" className="gap-2">
+                    <Bell className="w-4 h-4" />
+                    Alerts
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="insights">
+                  <AIInsightsPanel />
+                </TabsContent>
+
+                <TabsContent value="social">
+                  <SocialTradingPanel />
+                </TabsContent>
+
+                <TabsContent value="quests">
+                  <DailyQuestsPanel xp={1250} level={5} streak={7} />
+                </TabsContent>
+
+                <TabsContent value="alerts">
+                  <SmartAlertsPanel />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </section>
+        </ScrollReveal>
+
         <ScrollReveal>
           <TrendingSection />
         </ScrollReveal>
@@ -180,7 +247,7 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                 {platformFeatures.map((feature, index) => (
                   <ScrollReveal key={feature.title} delay={index * 100} direction="scale">
                     <div className="p-6 rounded-2xl bg-card/80 border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 text-center h-full">
