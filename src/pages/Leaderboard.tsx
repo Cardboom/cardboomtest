@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Flame, Star, TrendingUp, Medal, Crown, Gamepad2 } from 'lucide-react';
+import { Trophy, Flame, Star, TrendingUp, Medal, Crown, Gamepad2, Target } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { TournamentBanner } from '@/components/leaderboard/TournamentBanner';
+import { TournamentLeaderboard } from '@/components/leaderboard/TournamentLeaderboard';
 
 interface LeaderboardEntry {
   id: string;
@@ -69,9 +71,7 @@ const Leaderboard = () => {
           setStreakLeaders(mergedStreakLeaders);
         }
 
-        // Fetch gaming leaderboard (users with gaming-related activity)
-        // For now, we'll use XP leaders as gaming leaders since there's no specific gaming points table
-        // This can be updated when a dedicated gaming points system is implemented
+        // Fetch gaming leaderboard
         const { data: gamingData } = await supabase
           .from('profiles')
           .select('id, display_name, avatar_url, xp, level, is_beta_tester')
@@ -198,6 +198,9 @@ const Leaderboard = () => {
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} items={[]} onRemoveItem={() => {}} />
 
       <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Tournament Banner */}
+        <TournamentBanner />
+
         {/* Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
@@ -243,19 +246,22 @@ const Leaderboard = () => {
           </Card>
           <Card>
             <CardContent className="p-4 text-center">
-              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-gain" />
+              <Target className="h-8 w-8 mx-auto mb-2 text-primary" />
               <p className="text-2xl font-bold text-foreground">
-                {xpLeaders.length}
+                ₺50,000
               </p>
-              <p className="text-sm text-muted-foreground">{t.leaderboard.activeUsers}</p>
+              <p className="text-sm text-muted-foreground">Grand Prize</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Leaderboard Tabs */}
+        {/* Tournament Leaderboard */}
+        <TournamentLeaderboard />
+
+        {/* Regular Leaderboard Tabs */}
         <Card>
           <CardHeader>
-            <CardTitle>{t.leaderboard.rankings}</CardTitle>
+            <CardTitle>Community Rankings</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="xp" className="space-y-6">

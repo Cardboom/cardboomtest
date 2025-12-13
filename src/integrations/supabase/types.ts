@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      bids: {
+        Row: {
+          bid_amount: number
+          category: string
+          created_at: string
+          expires_at: string | null
+          grade: string | null
+          id: string
+          item_name: string
+          market_item_id: string | null
+          max_bid: number | null
+          notes: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bid_amount: number
+          category: string
+          created_at?: string
+          expires_at?: string | null
+          grade?: string | null
+          id?: string
+          item_name: string
+          market_item_id?: string | null
+          max_bid?: number | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bid_amount?: number
+          category?: string
+          created_at?: string
+          expires_at?: string | null
+          grade?: string | null
+          id?: string
+          item_name?: string
+          market_item_id?: string | null
+          max_bid?: number | null
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bids_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -1061,6 +1117,42 @@ export type Database = {
           type?: Database["public"]["Enums"]["reward_type"]
           value_amount?: number | null
           xp_cost?: number
+        }
+        Relationships: []
+      }
+      tournament_entries: {
+        Row: {
+          cards_sold: number
+          created_at: string
+          id: string
+          prize_won: number | null
+          rank: number | null
+          tournament_month: string
+          updated_at: string
+          user_id: string
+          volume_amount: number
+        }
+        Insert: {
+          cards_sold?: number
+          created_at?: string
+          id?: string
+          prize_won?: number | null
+          rank?: number | null
+          tournament_month: string
+          updated_at?: string
+          user_id: string
+          volume_amount?: number
+        }
+        Update: {
+          cards_sold?: number
+          created_at?: string
+          id?: string
+          prize_won?: number | null
+          rank?: number | null
+          tournament_month?: string
+          updated_at?: string
+          user_id?: string
+          volume_amount?: number
         }
         Relationships: []
       }
