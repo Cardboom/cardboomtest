@@ -109,7 +109,10 @@ export const SmartAlertsPanel = () => {
                   <Button variant="outline" className="flex-1">Above Price</Button>
                 </div>
                 <Input type="number" placeholder="Target price" />
-                <Button className="w-full">Create Alert</Button>
+                <Button className="w-full" onClick={() => {
+                  setShowAddForm(false);
+                  // In production, this would save to database
+                }}>Create Alert</Button>
               </div>
             </motion.div>
           )}

@@ -89,7 +89,7 @@ export const SocialTradingPanel = () => {
             </div>
             <span>Top Traders</span>
           </div>
-          <Button variant="ghost" size="sm" className="gap-1 text-primary">
+          <Button variant="ghost" size="sm" className="gap-1 text-primary" onClick={() => window.location.href = '/leaderboard'}>
             View All
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -187,13 +187,13 @@ export const SocialTradingPanel = () => {
         })}
         
         <div className="grid grid-cols-2 gap-2 pt-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => window.open('https://discord.gg/cardboom', '_blank')}>
             <MessageCircle className="w-4 h-4" />
             Community
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => window.location.href = '/leaderboard'}>
             <TrendingUp className="w-4 h-4" />
-            Copy Trading
+            View Leaderboard
           </Button>
         </div>
       </CardContent>

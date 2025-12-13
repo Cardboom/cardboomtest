@@ -6,9 +6,11 @@ import { useRealtimePrices } from '@/hooks/useRealtimePrices';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useMemo } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { useNavigate } from 'react-router-dom';
 
 export const TrendingSection = () => {
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const trendingMock = mockCollectibles.filter(item => item.trending).slice(0, 5);
   
   const productIds = useMemo(() => trendingMock.map(item => item.id), []);
@@ -31,7 +33,11 @@ export const TrendingSection = () => {
           <h2 className="font-display text-2xl font-bold text-foreground">
             Trending Now 🔥
           </h2>
-          <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+          <Button 
+            variant="ghost" 
+            className="text-muted-foreground hover:text-foreground"
+            onClick={() => navigate('/markets')}
+          >
             View All
             <ArrowRight className="w-4 h-4 ml-1" />
           </Button>
@@ -48,6 +54,7 @@ export const TrendingSection = () => {
                       "glass rounded-xl p-4 w-72 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:scale-[1.02]",
                       item.priceUpdated && "ring-2 ring-primary/50"
                     )}
+                    onClick={() => navigate(`/item/${item.id}`)}
                   >
                     <div className="flex items-center gap-3">
                       <div className="text-2xl font-bold text-muted-foreground font-display">

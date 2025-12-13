@@ -175,7 +175,7 @@ export const AIInsightsPanel = () => {
                           ))}
                         </div>
                       )}
-                      <Button size="sm" className="mt-3 w-full gap-2">
+                      <Button size="sm" className="mt-3 w-full gap-2" onClick={() => window.location.href = '/markets'}>
                         View Analysis
                         <ChevronRight className="w-4 h-4" />
                       </Button>
@@ -187,7 +187,7 @@ export const AIInsightsPanel = () => {
           );
         })}
         
-        <Button variant="outline" className="w-full gap-2">
+        <Button variant="outline" className="w-full gap-2" onClick={() => window.location.href = '/auth'}>
           <Brain className="w-4 h-4" />
           Get Personalized Insights
         </Button>
