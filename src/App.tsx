@@ -25,6 +25,7 @@ import Deals from "./pages/Deals";
 import Referrals from "./pages/Referrals";
 import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/:userId" element={<Profile />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/admin" element={<Admin />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
