@@ -103,25 +103,25 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
           {/* Desktop Nav */}
           <nav className="hidden lg:flex items-center gap-6">
-            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            <Link to="/" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
               {t.nav.marketplace}
             </Link>
-            <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium flex items-center gap-1.5">
+            <Link to="/markets" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <TrendingUp className="w-4 h-4" />
               Markets
             </Link>
-            <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium flex items-center gap-1.5">
+            <Link to="/deals" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
               Deals
             </Link>
-            <Link to="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium flex items-center gap-1.5">
+            <Link to="/leaderboard" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <Trophy className="w-4 h-4" />
               Leaderboard
             </Link>
-            <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            <Link to="/sell" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
               {t.nav.sell}
             </Link>
-            <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium">
+            <Link to="/vault" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
               {t.nav.portfolio}
             </Link>
           </nav>

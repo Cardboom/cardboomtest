@@ -1,15 +1,18 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, Users, Layers, DollarSign } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, TrendingUp, Users, Layers, DollarSign, Shield, Zap, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 
 export const HeroSection = () => {
   const { t } = useLanguage();
-  const { currency, formatPrice } = useCurrency();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   
   const { data: realStats } = useQuery({
     queryKey: ['hero-stats'],
@@ -56,57 +59,113 @@ export const HeroSection = () => {
     { label: t.hero.traders, value: formatValue(realStats?.traders || 0, 'number'), icon: Users }
   ];
 
-  const scrollToListings = () => {
-    const listingsSection = document.querySelector('section:last-of-type');
-    listingsSection?.scrollIntoView({ behavior: 'smooth' });
+  const features = [
+    { icon: Shield, title: 'Secure Trading', desc: 'Vault storage & escrow protection' },
+    { icon: Zap, title: 'Instant Deals', desc: 'Real-time price tracking' },
+    { icon: Globe, title: 'Global Market', desc: 'Trade with collectors worldwide' }
+  ];
+
+  const handleGetStarted = () => {
+    navigate('/auth');
   };
 
   return (
-    <section className="relative py-20 lg:py-28 overflow-hidden">
-      {/* Subtle Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.02] to-transparent dark:from-primary/[0.05]" />
+    <section className="relative overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 dark:from-primary/10 dark:to-accent/10" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
       
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center mb-14">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
-            <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            {t.hero.badge}
-          </div>
-          
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
-            <span className="text-gradient-primary">Boom</span> your collection.
-            <br />
-            <span className="text-foreground">Collect Smarter.</span>
-          </h1>
-          
-          <p className="text-muted-foreground text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-            {t.hero.description}
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-4">
-            <Button size="xl" onClick={scrollToListings} className="shadow-md hover:shadow-lg">
-              {t.hero.startTrading}
-              <ArrowRight className="w-5 h-5" />
-            </Button>
-            <Button variant="outline" size="xl" onClick={() => navigate('/markets')}>
-              {t.hero.exploreMarket}
-            </Button>
-          </div>
-        </div>
+      <div className="container mx-auto px-4 py-16 lg:py-24 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-semibold">
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              {t.hero.badge}
+            </div>
+            
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+              The World's Leading
+              <br />
+              <span className="text-gradient-primary">TCG Marketplace</span>
+            </h1>
+            
+            <p className="text-muted-foreground text-lg md:text-xl max-w-lg leading-relaxed">
+              {t.hero.description}
+            </p>
+            
+            {/* CTA Form - Binance style */}
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md">
+              <Input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-14 px-5 bg-secondary/50 border-border/50 rounded-xl text-base"
+              />
+              <Button 
+                size="lg" 
+                onClick={handleGetStarted}
+                className="h-14 px-8 rounded-xl font-bold text-base shadow-glow hover:shadow-lg transition-all"
+              >
+                Get Started
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-          {stats.map(stat => (
-            <div key={stat.label} className="rounded-xl border border-border/50 bg-card/50 p-5 text-center hover:border-primary/30 hover:shadow-md transition-all duration-300">
-              <stat.icon className="w-5 h-5 text-primary mx-auto mb-3" />
-              <div className="text-2xl md:text-3xl font-bold font-display text-foreground mb-1">
-                {stat.value}
-              </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider">
-                {stat.label}
+            {/* Stats Row - Compact */}
+            <div className="flex flex-wrap gap-8 pt-4">
+              {stats.map(stat => (
+                <div key={stat.label} className="text-center">
+                  <div className="text-2xl md:text-3xl font-bold font-display text-foreground">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Content - Feature Cards */}
+          <div className="hidden lg:block">
+            <div className="grid gap-4">
+              {features.map((feature, index) => (
+                <div 
+                  key={feature.title}
+                  className="flex items-center gap-5 p-6 rounded-2xl bg-card/80 border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <feature.icon className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-foreground">{feature.title}</h3>
+                    <p className="text-muted-foreground text-sm">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Quick Action Buttons */}
+              <div className="flex gap-3 mt-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-12 rounded-xl font-semibold"
+                  onClick={() => navigate('/markets')}
+                >
+                  {t.hero.exploreMarket}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-12 rounded-xl font-semibold"
+                  onClick={() => navigate('/sell')}
+                >
+                  Start Selling
+                </Button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
