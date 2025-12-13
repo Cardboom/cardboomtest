@@ -9,12 +9,12 @@ export const MarketTicker = () => {
   const { formatPrice } = useCurrency();
   const trendingMock = useMemo(() => mockCollectibles.filter(item => item.trending), []);
   
-  const productIds = useMemo(() => trendingMock.map(item => item.id), []);
+  const productIds = useMemo(() => trendingMock.map(item => item.priceId), [trendingMock]);
   const { prices } = useRealtimePrices({ productIds, refreshInterval: 3000 });
   
   const trendingItems = useMemo(() => 
     trendingMock.map(item => {
-      const livePrice = prices[item.id];
+      const livePrice = prices[item.priceId];
       return {
         id: item.id,
         name: item.name,
@@ -23,7 +23,7 @@ export const MarketTicker = () => {
         updated: livePrice?.updated ?? false,
       };
     }), 
-  [prices]);
+  [trendingMock, prices]);
 
   const duplicatedItems = useMemo(() => 
     [...trendingItems, ...trendingItems], 

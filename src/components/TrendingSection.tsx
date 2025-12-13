@@ -13,18 +13,18 @@ export const TrendingSection = () => {
   const navigate = useNavigate();
   const trendingMock = mockCollectibles.filter(item => item.trending).slice(0, 5);
   
-  const productIds = useMemo(() => trendingMock.map(item => item.id), []);
+  const productIds = useMemo(() => trendingMock.map(item => item.priceId), [trendingMock]);
   const { prices } = useRealtimePrices({ productIds, refreshInterval: 3000 });
   
   const trending = useMemo(() => trendingMock.map(item => {
-    const livePrice = prices[item.id];
+    const livePrice = prices[item.priceId];
     return {
       ...item,
       price: livePrice?.price ?? item.price,
       priceChange: livePrice?.change ?? item.priceChange,
       priceUpdated: livePrice?.updated ?? false,
     };
-  }), [prices]);
+  }), [trendingMock, prices]);
 
   return (
     <section className="py-12">
