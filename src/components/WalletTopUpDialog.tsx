@@ -368,6 +368,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
               ref={iframeRef}
               className="w-full h-full border-0 rounded-lg"
               title="3D Secure Verification"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation"
             />
           </div>
         )}

@@ -54,16 +54,39 @@ serve(async (req) => {
 
     console.log('iyzico callback received:', { status, paymentId, conversationId, mdStatus });
 
+    // SECURITY: Validate required fields
+    if (!conversationId || !paymentId) {
+      console.error('Missing required callback parameters');
+      return redirectWithError(frontendUrl, 'Invalid callback');
+    }
+
+    // SECURITY: Validate conversationId format (UUID pattern)
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidPattern.test(conversationId.replace('CB-', ''))) {
+      console.error('Invalid conversationId format');
+      return redirectWithError(frontendUrl, 'Invalid request');
+    }
+
     // Get pending payment
     const { data: pendingPayment, error: fetchError } = await supabase
       .from('pending_payments')
       .select('*')
       .eq('conversation_id', conversationId)
+      .eq('status', 'pending') // Only allow pending payments
       .single();
 
     if (fetchError || !pendingPayment) {
-      console.error('Pending payment not found:', conversationId);
+      console.error('Pending payment not found or already processed:', conversationId);
       return redirectWithError(frontendUrl, 'Payment record not found');
+    }
+
+    // SECURITY: Check if payment was already processed (idempotency)
+    if (pendingPayment.status !== 'pending') {
+      console.log('Payment already processed:', conversationId);
+      return new Response(null, {
+        status: 302,
+        headers: { 'Location': `${frontendUrl}/wallet?payment=already-processed` }
+      });
     }
 
     // Check if 3DS was successful (mdStatus = 1 means success)
@@ -73,7 +96,8 @@ serve(async (req) => {
       await supabase
         .from('pending_payments')
         .update({ status: 'failed' })
-        .eq('conversation_id', conversationId);
+        .eq('conversation_id', conversationId)
+        .eq('status', 'pending'); // Only update if still pending
 
       return redirectWithError(frontendUrl, '3DS verification failed');
     }
