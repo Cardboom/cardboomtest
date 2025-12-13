@@ -15,6 +15,7 @@ import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
 import { useLivePrices } from '@/hooks/useLivePrices';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useDailyStreak } from '@/hooks/useDailyStreak';
 
 const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
 
@@ -25,7 +26,9 @@ const Index = () => {
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
-
+  
+  // Initialize daily streak tracking for logged-in users
+  useDailyStreak();
   useEffect(() => {
     const dismissed = sessionStorage.getItem(WAITLIST_DISMISSED_KEY);
     if (!dismissed) {
