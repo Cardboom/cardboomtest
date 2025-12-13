@@ -27,6 +27,10 @@ interface Profile {
   showcase_items: string[];
   referral_code: string | null;
   created_at: string;
+  is_id_verified: boolean;
+  id_document_url: string | null;
+  guru_expertise: string[];
+  custom_guru: string | null;
 }
 
 export const useProfile = (userId?: string) => {
@@ -66,7 +70,11 @@ export const useProfile = (userId?: string) => {
         title: profileData.title,
         showcase_items: (profileData.showcase_items as string[]) || [],
         referral_code: profileData.referral_code,
-        created_at: profileData.created_at
+        created_at: profileData.created_at,
+        is_id_verified: profileData.is_id_verified || false,
+        id_document_url: profileData.id_document_url,
+        guru_expertise: (profileData.guru_expertise as string[]) || [],
+        custom_guru: profileData.custom_guru
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -119,7 +127,10 @@ export const useProfile = (userId?: string) => {
           avatar_url: updates.avatar_url,
           title: updates.title,
           profile_background: updates.profile_background,
-          showcase_items: updates.showcase_items
+          showcase_items: updates.showcase_items,
+          id_document_url: updates.id_document_url,
+          guru_expertise: updates.guru_expertise,
+          custom_guru: updates.custom_guru
         })
         .eq('id', user.id);
 

@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Flame, Star, TrendingUp, Medal, Crown } from 'lucide-react';
+import { Trophy, Flame, Star, TrendingUp, Medal, Crown, Gamepad2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface LeaderboardEntry {
   id: string;
@@ -26,7 +27,9 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
   const [xpLeaders, setXpLeaders] = useState<LeaderboardEntry[]>([]);
   const [streakLeaders, setStreakLeaders] = useState<LeaderboardEntry[]>([]);
+  const [gamingLeaders, setGamingLeaders] = useState<LeaderboardEntry[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchLeaderboards = async () => {
@@ -66,6 +69,17 @@ const Leaderboard = () => {
           setStreakLeaders(mergedStreakLeaders);
         }
 
+        // Fetch gaming leaderboard (users with gaming-related activity)
+        // For now, we'll use XP leaders as gaming leaders since there's no specific gaming points table
+        // This can be updated when a dedicated gaming points system is implemented
+        const { data: gamingData } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, xp, level, is_beta_tester')
+          .order('xp', { ascending: false })
+          .limit(50);
+
+        setGamingLeaders(gamingData || []);
+
       } catch (error) {
         console.error('Error fetching leaderboards:', error);
       } finally {
@@ -95,7 +109,7 @@ const Leaderboard = () => {
     type 
   }: { 
     entries: LeaderboardEntry[]; 
-    type: 'xp' | 'streak' 
+    type: 'xp' | 'streak' | 'gaming'
   }) => (
     <div className="space-y-2">
       {entries.map((entry, index) => {
@@ -136,7 +150,7 @@ const Leaderboard = () => {
                 )}
               </div>
               <div className="text-sm text-muted-foreground">
-                Level {entry.level}
+                {t.common.level} {entry.level}
               </div>
             </div>
 
@@ -149,13 +163,21 @@ const Leaderboard = () => {
                   </span>
                   <span className="text-sm text-muted-foreground">XP</span>
                 </div>
-              ) : (
+              ) : type === 'streak' ? (
                 <div className="flex items-center gap-2">
                   <Flame className="h-4 w-4 text-orange-500" />
                   <span className="font-bold text-lg text-foreground">
                     {entry.streak || 0}
                   </span>
                   <span className="text-sm text-muted-foreground">days</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Gamepad2 className="h-4 w-4 text-purple-500" />
+                  <span className="font-bold text-lg text-foreground">
+                    {entry.xp?.toLocaleString() || 0}
+                  </span>
+                  <span className="text-sm text-muted-foreground">{t.leaderboard.gamingPoints}</span>
                 </div>
               )}
             </div>
@@ -168,8 +190,8 @@ const Leaderboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Leaderboard | CardBoom</title>
-        <meta name="description" content="See the top collectors and traders on CardBoom. Compete for XP and maintain your daily streak!" />
+        <title>{t.leaderboard.title} | CardBoom</title>
+        <meta name="description" content={t.leaderboard.description} />
       </Helmet>
 
       <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
@@ -180,13 +202,13 @@ const Leaderboard = () => {
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
             <Trophy className="h-5 w-5" />
-            <span className="font-medium">Leaderboard</span>
+            <span className="font-medium">{t.leaderboard.rankings}</span>
           </div>
           <h1 className="text-4xl font-display font-bold text-foreground">
-            Top Collectors
+            {t.leaderboard.title}
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Compete with other collectors. Earn XP through trades, purchases, and daily logins.
+            {t.leaderboard.description}
           </p>
         </div>
 
@@ -198,7 +220,7 @@ const Leaderboard = () => {
               <p className="text-2xl font-bold text-foreground">
                 {xpLeaders[0]?.display_name || 'TBD'}
               </p>
-              <p className="text-sm text-muted-foreground">#1 Collector</p>
+              <p className="text-sm text-muted-foreground">{t.leaderboard.topCollector}</p>
             </CardContent>
           </Card>
           <Card>
@@ -207,7 +229,7 @@ const Leaderboard = () => {
               <p className="text-2xl font-bold text-foreground">
                 {xpLeaders.reduce((sum, e) => sum + (e.xp || 0), 0).toLocaleString()}
               </p>
-              <p className="text-sm text-muted-foreground">Total XP</p>
+              <p className="text-sm text-muted-foreground">{t.leaderboard.totalXP}</p>
             </CardContent>
           </Card>
           <Card>
@@ -216,7 +238,7 @@ const Leaderboard = () => {
               <p className="text-2xl font-bold text-foreground">
                 {streakLeaders[0]?.streak || 0}
               </p>
-              <p className="text-sm text-muted-foreground">Top Streak</p>
+              <p className="text-sm text-muted-foreground">{t.leaderboard.topStreak}</p>
             </CardContent>
           </Card>
           <Card>
@@ -225,7 +247,7 @@ const Leaderboard = () => {
               <p className="text-2xl font-bold text-foreground">
                 {xpLeaders.length}
               </p>
-              <p className="text-sm text-muted-foreground">Active Users</p>
+              <p className="text-sm text-muted-foreground">{t.leaderboard.activeUsers}</p>
             </CardContent>
           </Card>
         </div>
@@ -233,18 +255,25 @@ const Leaderboard = () => {
         {/* Leaderboard Tabs */}
         <Card>
           <CardHeader>
-            <CardTitle>Rankings</CardTitle>
+            <CardTitle>{t.leaderboard.rankings}</CardTitle>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="xp" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="xp" className="gap-2">
                   <Star className="h-4 w-4" />
-                  XP Leaders
+                  <span className="hidden sm:inline">{t.leaderboard.xpLeaders}</span>
+                  <span className="sm:hidden">XP</span>
                 </TabsTrigger>
                 <TabsTrigger value="streak" className="gap-2">
                   <Flame className="h-4 w-4" />
-                  Streak Kings
+                  <span className="hidden sm:inline">{t.leaderboard.streakKings}</span>
+                  <span className="sm:hidden">Streak</span>
+                </TabsTrigger>
+                <TabsTrigger value="gaming" className="gap-2">
+                  <Gamepad2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t.leaderboard.gamingLeaders}</span>
+                  <span className="sm:hidden">Gaming</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -259,7 +288,7 @@ const Leaderboard = () => {
                   <LeaderboardList entries={xpLeaders} type="xp" />
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    No users yet. Be the first to claim the top spot!
+                    {t.leaderboard.noUsers}
                   </div>
                 )}
               </TabsContent>
@@ -275,7 +304,23 @@ const Leaderboard = () => {
                   <LeaderboardList entries={streakLeaders} type="streak" />
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    No streaks yet. Log in daily to start your streak!
+                    {t.leaderboard.noStreaks}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="gaming">
+                {loading ? (
+                  <div className="space-y-2">
+                    {[...Array(10)].map((_, i) => (
+                      <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />
+                    ))}
+                  </div>
+                ) : gamingLeaders.length > 0 ? (
+                  <LeaderboardList entries={gamingLeaders} type="gaming" />
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    {t.leaderboard.noGaming}
                   </div>
                 )}
               </TabsContent>

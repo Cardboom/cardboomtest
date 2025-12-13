@@ -1,13 +1,16 @@
 import { useState, useRef } from 'react';
-import { Edit2, Camera, Save, X } from 'lucide-react';
+import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { XPProgressBar } from '@/components/XPProgressBar';
 import { ProfileBadges } from './ProfileBadges';
 import { ProfileBackgroundSelector } from './ProfileBackgroundSelector';
+import { ProfileGuruSelector } from './ProfileGuruSelector';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ProfileHeaderProps {
   profile: {
@@ -23,6 +26,9 @@ interface ProfileHeaderProps {
     title: string | null;
     referral_code: string | null;
     created_at: string;
+    is_id_verified?: boolean;
+    guru_expertise?: string[];
+    custom_guru?: string | null;
   };
   backgrounds: any[];
   unlockedBackgrounds: string[];
@@ -46,7 +52,9 @@ export const ProfileHeader = ({
     title: profile.title || ''
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const idFileInputRef = useRef<HTMLInputElement>(null);
   const { uploadAvatar, uploading } = useAvatarUpload();
+  const { t } = useLanguage();
 
   const selectedBackground = backgrounds.find(b => b.id === profile.profile_background);
   const backgroundStyle = selectedBackground?.css_value || 'hsl(240, 10%, 4%)';
@@ -79,6 +87,20 @@ export const ProfileHeader = ({
     }
   };
 
+  const handleIdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newUrl = await uploadAvatar(file);
+      if (newUrl) {
+        await onUpdate({ id_document_url: newUrl });
+      }
+    }
+  };
+
+  const handleGuruUpdate = async (expertise: string[], customGuru: string | null) => {
+    await onUpdate({ guru_expertise: expertise, custom_guru: customGuru });
+  };
+
   const memberSince = new Date(profile.created_at).toLocaleDateString('en-US', {
     month: 'long',
     year: 'numeric'
@@ -86,13 +108,20 @@ export const ProfileHeader = ({
 
   return (
     <div className="relative rounded-xl overflow-hidden">
-      {/* Hidden file input */}
+      {/* Hidden file inputs */}
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
         className="hidden"
         onChange={handleFileChange}
+      />
+      <input
+        ref={idFileInputRef}
+        type="file"
+        accept="image/*,.pdf"
+        className="hidden"
+        onChange={handleIdUpload}
       />
 
       {/* Background */}
@@ -150,22 +179,51 @@ export const ProfileHeader = ({
                   </div>
                 ) : (
                   <>
-                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                      {profile.display_name || 'Anonymous'}
-                    </h1>
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                        {profile.display_name || 'Anonymous'}
+                      </h1>
+                      {profile.is_id_verified && (
+                        <Badge variant="secondary" className="gap-1 bg-green-500/20 text-green-400">
+                          <ShieldCheck className="h-3 w-3" />
+                          {t.profile.verified}
+                        </Badge>
+                      )}
+                    </div>
                     {profile.title && (
                       <p className="text-sm text-muted-foreground italic">{profile.title}</p>
                     )}
                   </>
                 )}
                 
-                <p className="text-sm text-muted-foreground mt-1">
-                  Member since {memberSince}
-                </p>
+                <div className="flex items-center gap-4 mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    {t.profile.memberSince} {memberSince}
+                  </p>
+                  <Badge variant="outline" className="gap-1">
+                    {t.profile.level}: {profile.level}
+                  </Badge>
+                </div>
+
+                {/* Guru Expertise Tags */}
+                {(profile.guru_expertise?.length > 0 || profile.custom_guru) && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {profile.guru_expertise?.map((guru) => (
+                      <Badge key={guru} variant="secondary" className="bg-primary/20 text-primary">
+                        {t.profile.expertiseCategories[guru as keyof typeof t.profile.expertiseCategories] || guru}
+                      </Badge>
+                    ))}
+                    {profile.custom_guru && (
+                      <Badge variant="secondary" className="bg-purple-500/20 text-purple-400">
+                        {profile.custom_guru}
+                      </Badge>
+                    )}
+                  </div>
+                )}
               </div>
 
               {isOwnProfile && (
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {editing ? (
                     <>
                       <Button size="sm" onClick={handleSave} className="gap-2">
@@ -191,6 +249,22 @@ export const ProfileHeader = ({
                         onSelect={handleBackgroundSelect}
                         onUnlock={onUnlockBackground}
                       />
+                      <ProfileGuruSelector
+                        currentExpertise={profile.guru_expertise || []}
+                        customGuru={profile.custom_guru || ''}
+                        onUpdate={handleGuruUpdate}
+                      />
+                      {!profile.is_id_verified && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="gap-2"
+                          onClick={() => idFileInputRef.current?.click()}
+                        >
+                          <Upload className="h-4 w-4" />
+                          {t.profile.uploadId}
+                        </Button>
+                      )}
                     </>
                   )}
                 </div>

@@ -78,6 +78,7 @@ export const it: Translations = {
     football: "Football",
     tcg: "TCG",
     figures: "Figure",
+    gaming: "Gaming",
   },
   // Cart
   cart: {
@@ -98,6 +99,47 @@ export const it: Translations = {
     viewDetails: "Vedi Dettagli",
     close: "Chiudi",
     loading: "Caricamento...",
+    level: "Livello",
+    verified: "Verificato",
+    guru: "Esperto",
+  },
+  // Profile
+  profile: {
+    level: "Livello",
+    xp: "XP",
+    memberSince: "Membro dal",
+    badges: "Badge",
+    verified: "ID Verificato",
+    uploadId: "Carica ID per Verifica",
+    guruExpertise: "Esperienza Collezione",
+    selectExpertise: "Seleziona la tua esperienza",
+    customGuru: "Esperienza personalizzata",
+    expertiseCategories: {
+      pokemon: "Esperto Pokémon",
+      onepiece: "Esperto One Piece",
+      yugioh: "Esperto Yu-Gi-Oh!",
+      nba: "Esperto Carte NBA",
+      football: "Esperto Carte Football",
+      gaming: "Esperto Gaming",
+      figures: "Esperto Figure",
+    },
+  },
+  // Leaderboard
+  leaderboard: {
+    title: "Top Collezionisti",
+    description: "Competi con altri collezionisti. Guadagna XP tramite scambi, acquisti e login giornalieri.",
+    xpLeaders: "Leader XP",
+    streakKings: "Re delle Serie",
+    gamingLeaders: "Leader Gaming",
+    rankings: "Classifiche",
+    topCollector: "Collezionista #1",
+    totalXP: "XP Totale",
+    topStreak: "Top Serie",
+    activeUsers: "Utenti Attivi",
+    noUsers: "Nessun utente ancora. Sii il primo!",
+    noStreaks: "Nessuna serie ancora. Accedi ogni giorno!",
+    noGaming: "Nessun leader gaming ancora!",
+    gamingPoints: "Punti Gaming",
   },
   // Footer
   footer: {
@@ -107,6 +149,7 @@ export const it: Translations = {
     footballCards: "Carte Football",
     tcg: "TCG",
     figures: "Figure",
+    gaming: "Gaming",
     company: "Azienda",
     about: "Chi siamo",
     careers: "Lavora con noi",
