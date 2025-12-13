@@ -12,14 +12,16 @@ import { PriceChart } from '@/components/PriceChart';
 import { LiveMarketTable } from '@/components/LiveMarketTable';
 import { Footer } from '@/components/Footer';
 import { WaitlistBanner } from '@/components/WaitlistBanner';
+import { ScrollReveal } from '@/components/ScrollReveal';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
-import { useLivePrices } from '@/hooks/useLivePrices';
+import { useRealtimePrices } from '@/hooks/useRealtimePrices';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDailyStreak } from '@/hooks/useDailyStreak';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Shield, Zap, Wallet, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
 
@@ -46,8 +48,9 @@ const Index = () => {
     setShowWaitlist(false);
   };
 
+  // Use realtime prices with 3 second refresh
   const productIds = useMemo(() => mockCollectibles.map(c => c.priceId), []);
-  const { prices } = useLivePrices({ productIds, refreshInterval: 15000 });
+  const { prices } = useRealtimePrices({ productIds, refreshInterval: 3000 });
 
   const collectiblesWithLivePrices = useMemo(() => {
     return mockCollectibles.map(collectible => {
@@ -58,6 +61,7 @@ const Index = () => {
           price: livePrice.price,
           priceChange: livePrice.change,
           previousPrice: Math.round(livePrice.price / (1 + livePrice.change / 100)),
+          priceUpdated: livePrice.updated,
         };
       }
       return collectible;
@@ -109,110 +113,127 @@ const Index = () => {
       <main>
         <HeroSection />
         
-        {/* Live Market Section - Binance Style */}
-        <section className="py-12 border-t border-border/50 bg-muted/20">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  Popular Collections
-                </h2>
-                <p className="text-muted-foreground mt-1">Real-time prices from the market</p>
+        {/* Live Market Section */}
+        <ScrollReveal>
+          <section className="py-12 border-t border-border/50 bg-muted/20">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                    Popular Collections
+                  </h2>
+                  <p className="text-muted-foreground mt-1">Real-time prices from the market</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/markets')}
+                  className="hidden sm:flex"
+                >
+                  See All Markets
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/markets')}
-                className="hidden sm:flex"
-              >
-                See All Markets
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              
+              <div className="grid lg:grid-cols-2 gap-6">
+                <ScrollReveal delay={100}>
+                  <LiveMarketTable items={topGainers} title={`${t.market.topGainers} 📈`} />
+                </ScrollReveal>
+                <ScrollReveal delay={200}>
+                  <LiveMarketTable items={topLosers} title={`${t.market.topLosers} 📉`} />
+                </ScrollReveal>
+              </div>
             </div>
-            
-            <div className="grid lg:grid-cols-2 gap-6">
-              <LiveMarketTable items={topGainers} title={`${t.market.topGainers} 📈`} />
-              <LiveMarketTable items={topLosers} title={`${t.market.topLosers} 📉`} />
-            </div>
-          </div>
-        </section>
+          </section>
+        </ScrollReveal>
 
-        <TrendingSection />
+        <ScrollReveal>
+          <TrendingSection />
+        </ScrollReveal>
 
         {/* Market Overview with Chart */}
-        <section className="py-12 border-t border-border/50">
-          <div className="container mx-auto px-4">
-            <div className="mb-8">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                Market Overview
-              </h2>
-              <p className="text-muted-foreground mt-1">Track collectible market trends</p>
-            </div>
-            <div className="max-w-4xl">
-              <PriceChart title={t.market.index} />
-            </div>
-          </div>
-        </section>
-
-        {/* Platform Features - Binance Style */}
-        <section className="py-16 border-t border-border/50 bg-gradient-to-b from-muted/30 to-transparent">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                Why Trade on CardBoom?
-              </h2>
-              <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-                The most trusted platform for TCG collectors and traders
-              </p>
-            </div>
-            
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {platformFeatures.map((feature, index) => (
-                <div 
-                  key={feature.title}
-                  className="p-6 rounded-2xl bg-card/80 border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 text-center animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <feature.icon className="w-7 h-7 text-primary" />
-                  </div>
-                  <h3 className="font-display text-lg font-bold text-foreground mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Listings */}
-        <section className="py-12 border-t border-border/50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <div>
+        <ScrollReveal>
+          <section className="py-12 border-t border-border/50">
+            <div className="container mx-auto px-4">
+              <div className="mb-8">
                 <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  {t.market.explore}
+                  Market Overview
                 </h2>
-                <p className="text-muted-foreground mt-1">Browse all available listings</p>
+                <p className="text-muted-foreground mt-1">Track collectible market trends</p>
+              </div>
+              <div className="max-w-4xl">
+                <PriceChart title={t.market.index} />
               </div>
             </div>
-            
-            <CategoryFilter
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
+          </section>
+        </ScrollReveal>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredCollectibles.map((collectible, index) => (
-                <div key={collectible.id} style={{ animationDelay: `${index * 50}ms` }}>
-                  <CollectibleCard
-                    collectible={collectible}
-                    onAddToCart={handleAddToCart}
-                    onClick={setSelectedCollectible}
-                  />
-                </div>
-              ))}
+        {/* Platform Features */}
+        <ScrollReveal>
+          <section className="py-16 border-t border-border/50 bg-gradient-to-b from-muted/30 to-transparent">
+            <div className="container mx-auto px-4">
+              <div className="text-center mb-12">
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                  Why Trade on CardBoom?
+                </h2>
+                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                  The most trusted platform for TCG collectors and traders
+                </p>
+              </div>
+              
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {platformFeatures.map((feature, index) => (
+                  <ScrollReveal key={feature.title} delay={index * 100} direction="scale">
+                    <div className="p-6 rounded-2xl bg-card/80 border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 text-center h-full">
+                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <feature.icon className="w-7 h-7 text-primary" />
+                      </div>
+                      <h3 className="font-display text-lg font-bold text-foreground mb-2">{feature.title}</h3>
+                      <p className="text-muted-foreground text-sm">{feature.desc}</p>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </ScrollReveal>
+
+        {/* Listings */}
+        <ScrollReveal>
+          <section className="py-12 border-t border-border/50">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                    {t.market.explore}
+                  </h2>
+                  <p className="text-muted-foreground mt-1">Browse all available listings</p>
+                </div>
+              </div>
+              
+              <CategoryFilter
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredCollectibles.map((collectible, index) => (
+                  <ScrollReveal key={collectible.id} delay={Math.min(index * 50, 400)}>
+                    <div className={cn(
+                      "transition-transform duration-300",
+                      (collectible as any).priceUpdated && "animate-pulse"
+                    )}>
+                      <CollectibleCard
+                        collectible={collectible}
+                        onAddToCart={handleAddToCart}
+                        onClick={setSelectedCollectible}
+                      />
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
       </main>
 
       <Footer />

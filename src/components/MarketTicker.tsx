@@ -2,14 +2,15 @@ import { TrendingUp, TrendingDown } from 'lucide-react';
 import { mockCollectibles } from '@/data/mockData';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useMemo } from 'react';
-import { useLivePrices } from '@/hooks/useLivePrices';
+import { useRealtimePrices } from '@/hooks/useRealtimePrices';
+import { cn } from '@/lib/utils';
 
 export const MarketTicker = () => {
   const { formatPrice } = useCurrency();
   const trendingMock = useMemo(() => mockCollectibles.filter(item => item.trending), []);
   
   const productIds = useMemo(() => trendingMock.map(item => item.id), []);
-  const { prices } = useLivePrices({ productIds, refreshInterval: 30000 });
+  const { prices } = useRealtimePrices({ productIds, refreshInterval: 3000 });
   
   const trendingItems = useMemo(() => 
     trendingMock.map(item => {
@@ -19,6 +20,7 @@ export const MarketTicker = () => {
         name: item.name,
         price: livePrice?.price ?? item.price,
         change: livePrice?.change ?? item.priceChange,
+        updated: livePrice?.updated ?? false,
       };
     }), 
   [prices]);
@@ -33,15 +35,25 @@ export const MarketTicker = () => {
         {duplicatedItems.map((item, index) => (
           <div
             key={`${item.id}-${index}`}
-            className="flex items-center gap-2 px-6 py-2.5 whitespace-nowrap border-r border-border/20"
+            className={cn(
+              "flex items-center gap-2 px-6 py-2.5 whitespace-nowrap border-r border-border/20 transition-all duration-300",
+              item.updated && "bg-primary/5"
+            )}
           >
             <span className="text-sm text-muted-foreground font-medium">
               {item.name.slice(0, 25)}...
             </span>
-            <span className="text-sm font-semibold text-foreground">
+            <span className={cn(
+              "text-sm font-semibold text-foreground transition-all duration-300",
+              item.updated && "text-primary scale-105"
+            )}>
               {formatPrice(item.price)}
             </span>
-            <span className={`flex items-center gap-1 text-xs font-medium ${item.change >= 0 ? 'text-gain' : 'text-loss'}`}>
+            <span className={cn(
+              'flex items-center gap-1 text-xs font-medium transition-all duration-300',
+              item.change >= 0 ? 'text-gain' : 'text-loss',
+              item.updated && "scale-105"
+            )}>
               {item.change >= 0 ? (
                 <TrendingUp className="w-3 h-3" />
               ) : (
