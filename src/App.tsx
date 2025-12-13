@@ -26,6 +26,7 @@ import Referrals from "./pages/Referrals";
 import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
 import Admin from "./pages/Admin";
+import FractionalMarket from "./pages/FractionalMarket";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ const App = () => (
                   <Route path="/profile/:userId" element={<Profile />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/admin" element={<Admin />} />
+                  <Route path="/fractional" element={<FractionalMarket />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
