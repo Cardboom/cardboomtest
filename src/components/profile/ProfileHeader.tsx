@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Edit2, Camera, Save, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { XPProgressBar } from '@/components/XPProgressBar';
 import { ProfileBadges } from './ProfileBadges';
 import { ProfileBackgroundSelector } from './ProfileBackgroundSelector';
+import { useAvatarUpload } from '@/hooks/useAvatarUpload';
 
 interface ProfileHeaderProps {
   profile: {
@@ -44,6 +45,8 @@ export const ProfileHeader = ({
     bio: profile.bio || '',
     title: profile.title || ''
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadAvatar, uploading } = useAvatarUpload();
 
   const selectedBackground = backgrounds.find(b => b.id === profile.profile_background);
   const backgroundStyle = selectedBackground?.css_value || 'hsl(240, 10%, 4%)';
@@ -60,6 +63,22 @@ export const ProfileHeader = ({
     await onUpdate({ profile_background: backgroundId });
   };
 
+  const handleAvatarClick = () => {
+    if (isOwnProfile && fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newUrl = await uploadAvatar(file);
+      if (newUrl) {
+        await onUpdate({ avatar_url: newUrl });
+      }
+    }
+  };
+
   const memberSince = new Date(profile.created_at).toLocaleDateString('en-US', {
     month: 'long',
     year: 'numeric'
@@ -67,6 +86,15 @@ export const ProfileHeader = ({
 
   return (
     <div className="relative rounded-xl overflow-hidden">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
       {/* Background */}
       <div
         className="h-48 md:h-64"
@@ -93,8 +121,10 @@ export const ProfileHeader = ({
                 size="icon"
                 variant="secondary"
                 className="absolute bottom-0 right-0 h-8 w-8 rounded-full"
+                onClick={handleAvatarClick}
+                disabled={uploading}
               >
-                <Camera className="h-4 w-4" />
+                <Camera className={`h-4 w-4 ${uploading ? 'animate-pulse' : ''}`} />
               </Button>
             )}
           </div>

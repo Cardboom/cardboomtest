@@ -367,6 +367,32 @@ const Auth = () => {
                 {/* Register Tab */}
                 <TabsContent value="register">
                   <form onSubmit={handleSignUp} className="space-y-4">
+                    {/* Early Access Benefits Banner */}
+                    <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-purple-400 font-semibold">
+                        <Sparkles className="w-5 h-5" />
+                        Early Access Benefits
+                      </div>
+                      <ul className="grid grid-cols-2 gap-2 text-xs">
+                        <li className="flex items-center gap-2 text-foreground/80">
+                          <span className="text-green-400">✓</span>
+                          <strong>2x XP Bonus</strong>
+                        </li>
+                        <li className="flex items-center gap-2 text-foreground/80">
+                          <span className="text-green-400">✓</span>
+                          <strong>Beta Tester Badge</strong>
+                        </li>
+                        <li className="flex items-center gap-2 text-foreground/80">
+                          <span className="text-green-400">✓</span>
+                          <strong>Reduced Fees</strong>
+                        </li>
+                        <li className="flex items-center gap-2 text-foreground/80">
+                          <span className="text-green-400">✓</span>
+                          <strong>Daily Streak Bonuses</strong>
+                        </li>
+                      </ul>
+                    </div>
+
                     {/* Security Notice */}
                     <div className="bg-primary/10 border border-primary/30 rounded-xl p-3 flex items-start gap-3">
                       <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
