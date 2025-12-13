@@ -191,9 +191,13 @@ export const useProfile = (userId?: string) => {
   };
 
   useEffect(() => {
-    fetchProfile();
-    fetchBackgrounds();
-    fetchUnlockedBackgrounds();
+    const init = async () => {
+      await fetchProfile();
+      await fetchBackgrounds();
+      await fetchUnlockedBackgrounds();
+    };
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   return {
