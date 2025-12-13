@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
@@ -15,6 +15,7 @@ import { TrendingUp, Package, Star, Clock } from 'lucide-react';
 
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
+  const navigate = useNavigate();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
   const { profile, backgrounds, unlockedBackgrounds, loading, updateProfile, unlockBackground } = useProfile(userId);
@@ -58,7 +59,7 @@ const Profile = () => {
                   : 'This user profile does not exist.'}
               </p>
               {isOwnProfile && (
-                <Button onClick={() => window.location.href = '/auth'}>
+                <Button onClick={() => navigate('/auth')}>
                   Sign In
                 </Button>
               )}
