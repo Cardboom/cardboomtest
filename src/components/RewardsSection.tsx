@@ -60,7 +60,7 @@ export const RewardsSection = ({ userXP, onRewardClaimed }: RewardsSectionProps)
   const getRewardColor = (type: string) => {
     switch (type) {
       case 'voucher':
-        return 'from-green-500 to-emerald-600';
+        return 'from-cyan-500 to-teal-600';
       case 'free_shipping':
         return 'from-blue-500 to-cyan-600';
       case 'early_access':

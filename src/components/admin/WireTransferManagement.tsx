@@ -284,9 +284,9 @@ export const WireTransferManagement = () => {
       case 'matched':
         return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30"><AlertCircle className="w-3 h-3 mr-1" />Matched</Badge>;
       case 'confirmed':
-        return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30"><Check className="w-3 h-3 mr-1" />Confirmed</Badge>;
+        return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30"><Check className="w-3 h-3 mr-1" />Confirmed</Badge>;
       case 'rejected':
-        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30"><X className="w-3 h-3 mr-1" />Rejected</Badge>;
+        return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30"><X className="w-3 h-3 mr-1" />Rejected</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

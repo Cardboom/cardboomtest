@@ -375,19 +375,19 @@ const Auth = () => {
                       </div>
                       <ul className="grid grid-cols-2 gap-2 text-xs">
                         <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-green-400">✓</span>
+                          <span className="text-primary">✓</span>
                           <strong>2x XP Bonus</strong>
                         </li>
                         <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-green-400">✓</span>
+                          <span className="text-primary">✓</span>
                           <strong>Beta Tester Badge</strong>
                         </li>
                         <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-green-400">✓</span>
+                          <span className="text-primary">✓</span>
                           <strong>Reduced Fees</strong>
                         </li>
                         <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-green-400">✓</span>
+                          <span className="text-primary">✓</span>
                           <strong>Daily Streak Bonuses</strong>
                         </li>
                       </ul>

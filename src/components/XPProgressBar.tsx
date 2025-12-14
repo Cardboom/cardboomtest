@@ -28,7 +28,7 @@ export const XPProgressBar = ({ xp, compact = false }: XPProgressBarProps) => {
     if (lvl >= 50) return 'from-yellow-400 via-orange-500 to-red-500';
     if (lvl >= 30) return 'from-purple-400 via-pink-500 to-red-500';
     if (lvl >= 20) return 'from-blue-400 via-purple-500 to-pink-500';
-    if (lvl >= 10) return 'from-green-400 via-teal-500 to-blue-500';
+    if (lvl >= 10) return 'from-cyan-400 via-teal-500 to-blue-500';
     if (lvl >= 5) return 'from-yellow-400 via-gold to-orange-500';
     return 'from-gray-400 via-gray-500 to-gray-600';
   };
@@ -116,8 +116,8 @@ export const XPProgressBar = ({ xp, compact = false }: XPProgressBarProps) => {
           <p className="text-platinum/50 text-xs">Rewards Earned</p>
         </div>
         <div className="text-center">
-          <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-green-500/20 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-green-400" />
+          <div className="w-10 h-10 mx-auto mb-2 rounded-lg bg-primary/20 flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-primary" />
           </div>
           <p className="text-platinum font-semibold text-sm">#{Math.max(1, 1000 - level * 10)}</p>
           <p className="text-platinum/50 text-xs">Ranking</p>

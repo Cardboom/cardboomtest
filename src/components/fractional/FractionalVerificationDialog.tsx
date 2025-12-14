@@ -187,7 +187,7 @@ export function FractionalVerificationDialog({
           {/* Guidelines */}
           <div className="rounded-lg bg-muted/50 p-4 space-y-2 text-sm">
             <p className="font-medium flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
+              <CheckCircle className="h-4 w-4 text-primary" />
               Photo Guidelines
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-1">
@@ -200,7 +200,7 @@ export function FractionalVerificationDialog({
 
           {/* Last Verification */}
           {lastVerifiedAt && (
-            <div className={`p-3 rounded-lg ${isOverdue ? 'bg-destructive/10' : 'bg-green-500/10'}`}>
+            <div className={`p-3 rounded-lg ${isOverdue ? 'bg-destructive/10' : 'bg-primary/10'}`}>
               <p className="text-sm">
                 <span className="font-medium">Last verified: </span>
                 {new Date(lastVerifiedAt).toLocaleString()}

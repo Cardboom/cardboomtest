@@ -110,8 +110,8 @@ export const PriceChart = ({ title = 'Market Index' }: PriceChartProps) => {
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(142, 76%, 45%)" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(142, 76%, 45%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(188 85% 40%)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="hsl(188 85% 40%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -139,7 +139,7 @@ export const PriceChart = ({ title = 'Market Index' }: PriceChartProps) => {
               <Area
                 type="monotone"
                 dataKey="price"
-                stroke="hsl(142, 76%, 45%)"
+                stroke="hsl(188 85% 40%)"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorPrice)"

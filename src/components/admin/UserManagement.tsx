@@ -326,11 +326,11 @@ export const UserManagement = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/30"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
+        return <Badge className="bg-primary/10 text-primary border-primary/30"><CheckCircle className="w-3 h-3 mr-1" />Active</Badge>;
       case 'paused':
         return <Badge className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30"><Pause className="w-3 h-3 mr-1" />Paused</Badge>;
       case 'banned':
-        return <Badge className="bg-red-500/10 text-red-500 border-red-500/30"><ShieldX className="w-3 h-3 mr-1" />Banned</Badge>;
+        return <Badge className="bg-destructive/10 text-destructive border-destructive/30"><ShieldX className="w-3 h-3 mr-1" />Banned</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -365,8 +365,8 @@ export const UserManagement = () => {
         <Card className="bg-card/50 border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <CheckCircle className="w-5 h-5 text-primary" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Active</p>

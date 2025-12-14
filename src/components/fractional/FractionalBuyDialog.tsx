@@ -206,12 +206,12 @@ export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogPr
 
           {/* Verification Status */}
           {fractionalListing.daily_verification_required && (
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-500/10">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10">
               <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-green-500" />
+                <Shield className="h-4 w-4 text-primary" />
                 <span className="text-sm">Daily Verified</span>
               </div>
-              <Badge variant="secondary" className="bg-green-500/20 text-green-600">
+              <Badge variant="secondary" className="bg-primary/20 text-primary">
                 {fractionalListing.last_verified_at 
                   ? `Last verified ${new Date(fractionalListing.last_verified_at).toLocaleDateString()}`
                   : "Pending first verification"

@@ -362,19 +362,19 @@ const Profile = () => {
             <CardContent>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-primary">✓</span>
                   <strong>2x XP Bonus</strong> - Earn double XP on all actions
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-primary">✓</span>
                   <strong>Beta Tester Badge</strong> - Exclusive profile badge
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-primary">✓</span>
                   <strong>Early Access</strong> - First access to new features
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="text-green-400">✓</span>
+                  <span className="text-primary">✓</span>
                   <strong>Reduced Fees</strong> - Lower platform fees during beta
                 </li>
               </ul>
