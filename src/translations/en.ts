@@ -13,8 +13,8 @@ export const en = {
   // Hero
   hero: {
     badge: "The Future of TCG Investing",
-    title: "Invest in your",
-    titleHighlight: "TCG collection",
+    title: "Your collections value goes",
+    titleHighlight: "boom!",
     subtitle: "Real-Time Pricing • Portfolio Tracking • Smart Investing",
     description: "The home of TCG investing. Track real-time prices, build your portfolio, and turn your passion into profit.",
     startTrading: "Start Investing",
