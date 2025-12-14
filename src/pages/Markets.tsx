@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { mockCollectibles } from '@/data/mockData';
-import { useRealtimePrices } from '@/hooks/useRealtimePrices';
+import { usePrices } from '@/contexts/PriceContext';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { 
   TrendingUp, TrendingDown, Clock, RefreshCw, Search, 
@@ -47,12 +47,8 @@ const Markets = () => {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Real-time prices with 3 second refresh
-  const productIds = useMemo(() => mockCollectibles.map(c => c.priceId), []);
-  const { prices, lastUpdated, isLoading, refetch } = useRealtimePrices({ 
-    productIds, 
-    refreshInterval: 3000 
-  });
+  // Use shared price context
+  const { prices, lastUpdated, isLoading, refetch } = usePrices();
 
   // Generate data with live prices from database
   const collectiblesWithPrices = useMemo(() => {

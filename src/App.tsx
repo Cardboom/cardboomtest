@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { PriceProvider } from "@/contexts/PriceContext";
 import { CookieConsent } from "@/components/CookieConsent";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
@@ -45,8 +46,9 @@ const App = () => (
     <HelmetProvider>
       <LanguageProvider>
         <CurrencyProvider>
-          <QueryClientProvider client={queryClient}>
-            <TooltipProvider>
+          <PriceProvider>
+            <QueryClientProvider client={queryClient}>
+              <TooltipProvider>
               <Toaster />
               <Sonner />
               <BrowserRouter>
@@ -86,7 +88,8 @@ const App = () => (
               </BrowserRouter>
               <CookieConsent />
             </TooltipProvider>
-          </QueryClientProvider>
+            </QueryClientProvider>
+          </PriceProvider>
         </CurrencyProvider>
       </LanguageProvider>
     </HelmetProvider>

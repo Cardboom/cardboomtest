@@ -18,7 +18,7 @@ import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
-import { useRealtimePrices } from '@/hooks/useRealtimePrices';
+import { usePrices } from '@/contexts/PriceContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDailyStreak } from '@/hooks/useDailyStreak';
 import { Button } from '@/components/ui/button';
@@ -52,9 +52,8 @@ const Index = () => {
     setShowWaitlist(false);
   };
 
-  // Use realtime prices with 3 second refresh
-  const productIds = useMemo(() => mockCollectibles.map(c => c.priceId), []);
-  const { prices } = useRealtimePrices({ productIds, refreshInterval: 3000 });
+  // Use shared price context
+  const { prices } = usePrices();
 
   const collectiblesWithLivePrices = useMemo(() => {
     return mockCollectibles.map(collectible => {
