@@ -286,18 +286,20 @@ const Index = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredCollectibles.map((collectible, index) => (
-                    <ScrollReveal key={collectible.id} delay={Math.min(index * 50, 400)}>
-                      <div className={cn(
-                        "transition-transform duration-300",
+                    <div
+                      key={collectible.id}
+                      className={cn(
+                        "transition-transform duration-300 animate-fade-in hover:scale-[1.02]",
                         (collectible as any).priceUpdated && "animate-pulse"
-                      )}>
-                        <CollectibleCard
-                          collectible={collectible}
-                          onAddToCart={handleAddToCart}
-                          onClick={setSelectedCollectible}
-                        />
-                      </div>
-                    </ScrollReveal>
+                      )}
+                      style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
+                    >
+                      <CollectibleCard
+                        collectible={collectible}
+                        onAddToCart={handleAddToCart}
+                        onClick={setSelectedCollectible}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
