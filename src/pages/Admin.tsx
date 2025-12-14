@@ -23,12 +23,15 @@ import {
   Zap,
   Banknote,
   ShieldCheck,
-  Users
+  Users,
+  PieChart,
+  Truck
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { WireTransferManagement } from '@/components/admin/WireTransferManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { FractionalManagement } from '@/components/admin/FractionalManagement';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -214,7 +217,7 @@ const Admin = () => {
 
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-card/50 border border-border/50">
+          <TabsList className="bg-card/50 border border-border/50 flex-wrap h-auto gap-1">
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               Users
@@ -222,6 +225,10 @@ const Admin = () => {
             <TabsTrigger value="wire-transfers" className="gap-2">
               <Banknote className="w-4 h-4" />
               Wire Transfers
+            </TabsTrigger>
+            <TabsTrigger value="fractional" className="gap-2">
+              <PieChart className="w-4 h-4" />
+              Fractional Shares
             </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
@@ -235,6 +242,10 @@ const Admin = () => {
 
           <TabsContent value="wire-transfers">
             <WireTransferManagement />
+          </TabsContent>
+
+          <TabsContent value="fractional">
+            <FractionalManagement />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">

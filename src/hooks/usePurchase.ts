@@ -12,6 +12,14 @@ interface PurchaseParams {
   category: string;
   condition: string;
   imageUrl?: string | null;
+  shippingAddress?: {
+    name: string;
+    phone: string;
+    address: string;
+    city: string;
+    district: string;
+    postalCode: string;
+  };
 }
 
 export const usePurchase = () => {
