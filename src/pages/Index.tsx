@@ -17,6 +17,7 @@ import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
 import { useMarketItems } from '@/hooks/useMarketItems';
+import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDailyStreak } from '@/hooks/useDailyStreak';
@@ -52,7 +53,8 @@ const Index = () => {
   };
 
   // Fetch items from database instead of mockData
-  const { items: marketItems, isLoading } = useMarketItems({ limit: 100 });
+  // Fetch items from database with real-time updates
+  const { items: marketItems, isLoading, lastUpdated, updateCount } = useMarketItems({ limit: 100, refreshInterval: 30000 });
 
   // Transform database items to Collectible format
   const collectiblesWithLivePrices = useMemo(() => {
@@ -134,7 +136,11 @@ const Index = () => {
                   <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
                     Popular Collections
                   </h2>
-                  <p className="text-muted-foreground mt-1">Real-time prices from the market</p>
+                  <LiveUpdateIndicator 
+                    lastUpdated={lastUpdated} 
+                    updateCount={updateCount}
+                    className="mt-1"
+                  />
                 </div>
                 <Button 
                   variant="outline" 
