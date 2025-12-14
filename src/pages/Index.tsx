@@ -103,10 +103,10 @@ const Index = () => {
     .slice(0, 5);
 
   const platformFeatures = [
-    { icon: Shield, title: 'Secure Vault', desc: 'Store your cards safely with insurance coverage' },
+    { icon: Shield, title: 'Secure Vault', desc: 'Insured storage for your investments' },
     { icon: Zap, title: 'Instant Trades', desc: 'Fast P2P trading with escrow protection' },
     { icon: Wallet, title: 'Easy Payments', desc: 'Multiple payment methods including crypto' },
-    { icon: Users, title: 'Verified Sellers', desc: 'Trade with confidence from verified accounts' },
+    { icon: Users, title: 'Verified Investors', desc: 'Trade with confidence from verified accounts' },
     { icon: PieChart, title: 'Fractional Shares', desc: 'Own pieces of grails starting from $10' },
     { icon: Brain, title: 'AI Insights', desc: 'Smart predictions and market analysis' },
   ];
@@ -240,10 +240,10 @@ const Index = () => {
             <div className="container mx-auto px-4">
               <div className="text-center mb-12">
                 <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  Why Trade on CardBoom?
+                  Why Invest with CardBoom?
                 </h2>
                 <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-                  The most trusted platform for TCG collectors and traders
+                  The most trusted platform for TCG investors and collectors
                 </p>
               </div>
               
