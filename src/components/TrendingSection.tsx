@@ -1,28 +1,69 @@
-import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockCollectibles } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { usePrices } from '@/contexts/PriceContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { useNavigate } from 'react-router-dom';
+import { useEbayProducts } from '@/hooks/useEbayProducts';
 
 export const TrendingSection = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const { prices } = usePrices();
-  const trendingMock = mockCollectibles.filter(item => item.trending).slice(0, 5);
+  const { products: ebayProducts, isLoading, populateProducts } = useEbayProducts(undefined, 20);
+  const [isPopulating, setIsPopulating] = useState(false);
   
-  const trending = useMemo(() => trendingMock.map(item => {
-    const livePrice = prices[item.priceId];
-    return {
-      ...item,
-      price: livePrice?.price ?? item.price,
-      priceChange: livePrice?.change ?? item.priceChange,
-      priceUpdated: livePrice?.updated ?? false,
-    };
-  }), [trendingMock, prices]);
+  // Combine mock data with eBay products for trending
+  const trendingMock = mockCollectibles.filter(item => item.trending).slice(0, 3);
+  
+  const trending = useMemo(() => {
+    // Get trending eBay products
+    const ebayTrending = ebayProducts
+      .filter(p => p.is_trending)
+      .slice(0, 5)
+      .map(p => ({
+        id: p.id,
+        priceId: p.external_id || p.id,
+        name: p.name,
+        category: p.category,
+        image: p.image_url || '/placeholder.svg',
+        price: p.current_price,
+        previousPrice: p.base_price,
+        priceChange: p.change_24h || 0,
+        rarity: 'legendary' as const,
+        seller: 'eBay',
+        condition: 'PSA 10',
+        year: 2024,
+        brand: p.subcategory || p.category,
+        trending: true,
+        priceUpdated: false,
+        isEbay: true,
+      }));
+
+    // Combine with mock data
+    const mockTrending = trendingMock.map(item => {
+      const livePrice = prices[item.priceId];
+      return {
+        ...item,
+        price: livePrice?.price ?? item.price,
+        priceChange: livePrice?.change ?? item.priceChange,
+        priceUpdated: livePrice?.updated ?? false,
+        isEbay: false,
+      };
+    });
+
+    // Prioritize eBay products, then mock
+    return [...ebayTrending, ...mockTrending].slice(0, 8);
+  }, [trendingMock, prices, ebayProducts]);
+
+  const handlePopulate = async () => {
+    setIsPopulating(true);
+    await populateProducts();
+    setIsPopulating(false);
+  };
 
   return (
     <section className="py-12">
@@ -31,14 +72,26 @@ export const TrendingSection = () => {
           <h2 className="font-display text-2xl font-bold text-foreground">
             Trending Now 🔥
           </h2>
-          <Button 
-            variant="ghost" 
-            className="text-muted-foreground hover:text-foreground"
-            onClick={() => navigate('/markets')}
-          >
-            View All
-            <ArrowRight className="w-4 h-4 ml-1" />
-          </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handlePopulate}
+                disabled={isPopulating}
+                className="gap-2"
+              >
+                <RefreshCw className={cn("w-4 h-4", isPopulating && "animate-spin")} />
+                {isPopulating ? 'Loading...' : 'Fetch eBay'}
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="text-muted-foreground hover:text-foreground"
+                onClick={() => navigate('/markets')}
+              >
+                View All
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
         </div>
 
         <div className="overflow-x-auto pb-4">
