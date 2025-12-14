@@ -62,7 +62,7 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
 
   return (
     <div
-      className="group glass rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 hover:scale-[1.02] cursor-pointer animate-fade-in"
+      className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 hover:scale-[1.02] cursor-pointer animate-fade-in shadow-sm"
       onClick={() => onClick(collectible)}
     >
       {/* Image */}
