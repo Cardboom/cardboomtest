@@ -229,6 +229,50 @@ const mockIdToPriceChartingQuery: Record<string, string> = {
   'vg-zelda-nes-sealed': 'Legend of Zelda Sealed NES',
   'vg-mario-64-sealed': 'Super Mario 64 Sealed N64',
   'vg-chrono-trigger-sealed': 'Chrono Trigger Sealed SNES',
+  
+  // League of Legends Riftbound TCG - Alt Art & Signature Cards
+  'riftbound-kaisa-alt': 'Kai\'Sa Daughter of the Void Alternate Art Riftbound',
+  'riftbound-ahri-alt': 'Ahri Nine-Tailed Fox Alternate Art Riftbound',
+  'riftbound-ahri-sig': 'Ahri Nine-Tailed Fox Signature Riftbound',
+  'riftbound-teemo-alt': 'Teemo Swift Scout Alternate Art Riftbound',
+  'riftbound-teemo-sig': 'Teemo Swift Scout Signature Riftbound',
+  'riftbound-leesin-alt': 'Lee Sin Blind Monk Alternate Art Riftbound',
+  'riftbound-leesin-sig': 'Lee Sin Blind Monk Signature Riftbound',
+  'riftbound-leona-alt': 'Leona Radiant Dawn Alternate Art Riftbound',
+  'riftbound-missfortune-alt': 'Miss Fortune Bounty Hunter Alternate Art Riftbound',
+  'riftbound-volibear-alt': 'Volibear Relentless Storm Alternate Art Riftbound',
+  'riftbound-sett-alt': 'Sett The Boss Alternate Art Riftbound',
+  'riftbound-yasuo-alt': 'Yasuo Unforgiven Alternate Art Riftbound',
+  'riftbound-darius-alt': 'Darius Hand of Noxus Alternate Art Riftbound',
+  'riftbound-viktor-alt': 'Viktor Herald of the Arcane Alternate Art Riftbound',
+  
+  // League of Legends Riftbound TCG - Regular Champion Cards
+  'riftbound-ahri': 'Ahri Nine-Tailed Fox Riftbound',
+  'riftbound-kaisa': 'Kai\'Sa Daughter of the Void Riftbound',
+  'riftbound-sett': 'Sett The Boss Riftbound',
+  'riftbound-viktor': 'Viktor Herald of the Arcane Riftbound',
+  'riftbound-missfortune': 'Miss Fortune Bounty Hunter Riftbound',
+  'riftbound-yasuo': 'Yasuo Unforgiven Riftbound',
+  'riftbound-darius': 'Darius Hand of Noxus Riftbound',
+  'riftbound-leesin': 'Lee Sin Blind Monk Riftbound',
+  'riftbound-teemo': 'Teemo Swift Scout Riftbound',
+  'riftbound-leona': 'Leona Radiant Dawn Riftbound',
+  'riftbound-volibear': 'Volibear Relentless Storm Riftbound',
+  'riftbound-jinx': 'Jinx Loose Cannon Riftbound',
+  'riftbound-garen': 'Garen Might of Demacia Riftbound',
+  'riftbound-lux': 'Lux Lady of Luminosity Riftbound',
+  'riftbound-thresh': 'Thresh Chain Warden Riftbound',
+  'riftbound-vayne': 'Vayne Night Hunter Riftbound',
+  'riftbound-zed': 'Zed Master of Shadows Riftbound',
+  
+  // League of Legends Riftbound TCG - Sealed Products
+  'riftbound-booster-box': 'Riftbound Origins Booster Box',
+  'riftbound-proving-grounds': 'Riftbound Proving Grounds Box Set',
+  'riftbound-jinx-deck': 'Riftbound Jinx Champion Deck',
+  'riftbound-leesin-deck': 'Riftbound Lee Sin Champion Deck',
+  'riftbound-viktor-deck': 'Riftbound Viktor Champion Deck',
+  'riftbound-booster-pack': 'Riftbound Origins Booster Pack',
+  'riftbound-sleeved-booster': 'Riftbound Origins Sleeved Booster',
 };
 
 // Fetch price from PriceCharting API
