@@ -66,12 +66,15 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
       onClick={() => onClick(collectible)}
     >
       {/* Image */}
-      <div className="relative aspect-square bg-secondary/50 overflow-hidden">
+      <div className="relative aspect-square bg-gradient-to-br from-secondary to-muted overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent z-10" />
         <img
-          src={collectible.image}
+          src={collectible.image || '/placeholder.svg'}
           alt={collectible.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.src = '/placeholder.svg';
+          }}
         />
         
         {/* Rarity Badge */}
