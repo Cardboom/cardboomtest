@@ -5,6 +5,7 @@ import { useMarketItems } from '@/hooks/useMarketItems';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { ItemBadges } from '@/components/market/ItemBadges';
+import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
 import { 
   TrendingUp, TrendingDown, RefreshCw, Search, 
   Flame, Zap, Users, BarChart3, Star,
@@ -304,18 +305,19 @@ const Markets = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="h-9 gap-1.5">
                     <BarChart3 className="w-4 h-4" />
-                    {selectedCategory === 'all' ? 'All Categories' : selectedCategory}
+                    {getCategoryLabel(selectedCategory)}
                     <ChevronDown className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
                   {categories.map((cat) => (
                     <DropdownMenuItem 
                       key={cat} 
                       onClick={() => setSelectedCategory(cat)}
                       className={cn(selectedCategory === cat && "bg-accent")}
                     >
-                      {cat === 'all' ? 'All Categories' : cat}
+                      <span className="mr-2">{getCategoryIcon(cat)}</span>
+                      {getCategoryLabel(cat)}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
