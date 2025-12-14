@@ -1,15 +1,13 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { mockCollectibles } from '@/data/mockData';
 import { useMemo } from 'react';
-import { useRealtimePrices } from '@/hooks/useRealtimePrices';
+import { usePrices } from '@/contexts/PriceContext';
 import { cn } from '@/lib/utils';
 import { LiveTickerPrice } from './LiveTickerPrice';
 
 export const MarketTicker = () => {
   const trendingMock = useMemo(() => mockCollectibles.filter(item => item.trending), []);
-  
-  const productIds = useMemo(() => trendingMock.map(item => item.priceId), [trendingMock]);
-  const { prices } = useRealtimePrices({ productIds, refreshInterval: 3000 });
+  const { prices } = usePrices();
   
   const trendingItems = useMemo(() => 
     trendingMock.map(item => {

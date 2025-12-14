@@ -2,7 +2,7 @@ import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { mockCollectibles } from '@/data/mockData';
 import { cn } from '@/lib/utils';
-import { useRealtimePrices } from '@/hooks/useRealtimePrices';
+import { usePrices } from '@/contexts/PriceContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useMemo } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
@@ -11,10 +11,8 @@ import { useNavigate } from 'react-router-dom';
 export const TrendingSection = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+  const { prices } = usePrices();
   const trendingMock = mockCollectibles.filter(item => item.trending).slice(0, 5);
-  
-  const productIds = useMemo(() => trendingMock.map(item => item.priceId), [trendingMock]);
-  const { prices } = useRealtimePrices({ productIds, refreshInterval: 3000 });
   
   const trending = useMemo(() => trendingMock.map(item => {
     const livePrice = prices[item.priceId];
