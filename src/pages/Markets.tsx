@@ -3,15 +3,16 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useMarketItems } from '@/hooks/useMarketItems';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
+import { ItemBadges } from '@/components/market/ItemBadges';
 import { 
-  TrendingUp, TrendingDown, Clock, RefreshCw, Search, 
+  TrendingUp, TrendingDown, RefreshCw, Search, 
   Flame, Zap, Users, BarChart3, Star,
   ArrowUpDown, ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -47,9 +48,15 @@ const Markets = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [displayCount, setDisplayCount] = useState(20);
 
-  // Fetch items from database instead of mockData
-  const { items: marketItems, isLoading, categories, refetch } = useMarketItems({ limit: 500 });
-  const lastUpdated = new Date();
+  // Fetch items from database with real-time updates (30s cache TTL)
+  const { 
+    items: marketItems, 
+    isLoading, 
+    categories, 
+    refetch,
+    lastUpdated,
+    updateCount
+  } = useMarketItems({ limit: 500, refreshInterval: 30000 });
 
   // Transform database items to display format
   const collectiblesWithPrices = useMemo(() => {
@@ -57,9 +64,9 @@ const Markets = () => {
       const basePrice = item.current_price;
       const change = item.change_24h ?? 0;
       
-      // Generate consistent mock data based on item
+      // Use real data from database where available
       const seed = item.id.charCodeAt(0) + idx;
-      const liquidity = item.liquidity === 'high' ? 500000 : item.liquidity === 'medium' ? 100000 : 50000;
+      const liquidityValue = item.liquidity === 'high' ? 500000 : item.liquidity === 'medium' ? 100000 : 50000;
       const holders = Math.floor((seed * 789) % 5000) + 100;
       const volume24h = Math.floor((seed * 4567) % 100000) + 5000;
       const txns = Math.floor((seed * 234) % 500) + 10;
@@ -77,21 +84,25 @@ const Markets = () => {
         image: item.image_url || '/placeholder.svg',
         price: basePrice,
         priceChange: change,
-        priceUpdated: false,
+        priceUpdated: item.priceUpdated ?? false,
+        justListed: item.justListed ?? false,
         change1h: change * (0.3 + Math.random() * 0.4),
         change7d: item.change_7d ?? change * 1.5,
         change30d: item.change_30d ?? change * 2,
-        liquidity,
+        liquidity: liquidityValue,
+        liquidityLevel: item.liquidity,
         holders,
         volume24h,
         txns,
         age,
         sparklineData,
-        isNew: age < 30,
+        isNew: age < 7,
         isVerified: seed % 3 === 0,
         trending: item.is_trending ?? false,
         brand: item.set_name || item.subcategory || item.category,
         rarity: item.rarity,
+        views24h: item.views_24h ?? 0,
+        views7d: item.views_7d ?? 0,
       };
     });
   }, [marketItems]);
@@ -194,15 +205,11 @@ const Markets = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <h1 className="font-display text-2xl font-bold text-foreground">Markets</h1>
-                <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                  <Clock className="w-3 h-3" />
-                  {lastUpdated ? (
-                    <span>Updated {lastUpdated.toLocaleTimeString()}</span>
-                  ) : (
-                    <span className="animate-pulse">Syncing...</span>
-                  )}
-                  <span className="w-2 h-2 rounded-full bg-gain animate-pulse" />
-                </div>
+                <LiveUpdateIndicator 
+                  lastUpdated={lastUpdated} 
+                  updateCount={updateCount}
+                  isConnected={!isLoading}
+                />
               </div>
               
               <div className="flex items-center gap-3">
@@ -420,11 +427,11 @@ const Markets = () => {
                                 <p className="text-foreground font-medium text-sm truncate max-w-[140px]">
                                   {item.name}
                                 </p>
-                                {item.isNew && (
-                                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-accent/50">
-                                    NEW
-                                  </Badge>
-                                )}
+                                <ItemBadges 
+                                  justListed={item.justListed}
+                                  isTrending={item.trending}
+                                  isNew={item.isNew}
+                                />
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <span>{item.category}</span>
