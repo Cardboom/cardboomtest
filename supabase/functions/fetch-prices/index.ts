@@ -138,27 +138,97 @@ const mockIdToSearchQuery: Record<string, { query: string; category: string }> =
   'figure-bearbrick-1000': { query: 'Bearbrick 1000% KAWS', category: 'figures' },
 };
 
-// PriceCharting search query mappings
+// PriceCharting search query mappings - expanded catalog
 const mockIdToPriceChartingQuery: Record<string, string> = {
+  // Pokemon TCG
   'tcg-charizard-1st': 'Charizard Base Set 1st Edition Pokemon',
   'tcg-pikachu-illustrator': 'Pikachu Illustrator Pokemon',
   'tcg-psa10-mewtwo': 'Mewtwo GX Rainbow Pokemon',
+  'tcg-blastoise-1st': 'Blastoise Base Set 1st Edition Pokemon',
+  'tcg-venusaur-1st': 'Venusaur Base Set 1st Edition Pokemon',
+  'tcg-lugia-neo': 'Lugia Neo Genesis 1st Edition Pokemon',
+  'tcg-umbreon-vmax': 'Umbreon VMAX Alternate Art Pokemon',
+  'tcg-rayquaza-gold': 'Rayquaza VMAX Alternate Art Pokemon',
+  'tcg-mew-celebration': 'Mew Celebrations 25th Anniversary Pokemon',
+  'tcg-gengar-vmax': 'Gengar VMAX Alternate Art Pokemon',
+  
+  // Magic: The Gathering
   'tcg-black-lotus': 'Black Lotus Alpha Magic',
   'mtg-mox-sapphire': 'Mox Sapphire Alpha Magic',
+  'mtg-mox-ruby': 'Mox Ruby Alpha Magic',
+  'mtg-mox-pearl': 'Mox Pearl Alpha Magic',
+  'mtg-mox-jet': 'Mox Jet Alpha Magic',
+  'mtg-mox-emerald': 'Mox Emerald Alpha Magic',
+  'mtg-timetwister': 'Timetwister Alpha Magic',
+  'mtg-ancestral-recall': 'Ancestral Recall Alpha Magic',
+  'mtg-time-walk': 'Time Walk Alpha Magic',
+  'mtg-underground-sea': 'Underground Sea Revised Magic',
+  'mtg-force-of-will': 'Force of Will Alliances Magic',
+  
+  // Yu-Gi-Oh!
   'yugioh-blue-eyes': 'Blue-Eyes White Dragon LOB Yu-Gi-Oh',
   'yugioh-dark-magician': 'Dark Magician Starter Deck Yu-Gi-Oh',
+  'yugioh-exodia-head': 'Exodia the Forbidden One LOB Yu-Gi-Oh',
+  'yugioh-red-eyes': 'Red-Eyes Black Dragon LOB Yu-Gi-Oh',
+  'yugioh-dark-magician-girl': 'Dark Magician Girl MFC Yu-Gi-Oh',
+  'yugioh-stardust-dragon': 'Stardust Dragon Ghost Rare Yu-Gi-Oh',
+  'yugioh-ghost-rare-rainbow': 'Rainbow Dragon Ghost Rare Yu-Gi-Oh',
+  
+  // NBA Basketball Cards
   'nba-lebron-2003': 'LeBron James Topps Chrome Rookie',
   'nba-jordan-fleer': 'Michael Jordan Fleer Rookie',
   'nba-luka-prizm': 'Luka Doncic Prizm Silver',
+  'nba-kobe-topps': 'Kobe Bryant Topps Chrome Rookie',
+  'nba-giannis-prizm': 'Giannis Antetokounmpo Prizm Silver Rookie',
+  'nba-zion-prizm': 'Zion Williamson Prizm Silver Rookie',
+  'nba-ja-morant-prizm': 'Ja Morant Prizm Silver Rookie',
+  'nba-wemby-prizm': 'Victor Wembanyama Prizm Rookie',
+  'nba-curry-topps': 'Stephen Curry Topps Chrome Rookie',
+  'nba-durant-topps': 'Kevin Durant Topps Chrome Rookie',
+  
+  // NFL Football Cards
   'football-mahomes-prizm': 'Patrick Mahomes Prizm Silver',
   'football-brady-rookie': 'Tom Brady Contenders Auto',
   'football-chase-auto': "Ja'Marr Chase Optic Auto",
+  'football-burrow-prizm': 'Joe Burrow Prizm Silver Rookie',
+  'football-herbert-prizm': 'Justin Herbert Prizm Silver Rookie',
+  'football-allen-prizm': 'Josh Allen Prizm Silver Rookie',
+  'football-cj-stroud-prizm': 'CJ Stroud Prizm Rookie',
+  'football-lamar-prizm': 'Lamar Jackson Prizm Silver Rookie',
+  
+  // MLB Baseball Cards
+  'mlb-trout-bowman': 'Mike Trout Bowman Chrome Rookie',
+  'mlb-ohtani-bowman': 'Shohei Ohtani Bowman Chrome Rookie',
+  'mlb-jeter-sp': 'Derek Jeter SP Foil Rookie',
+  'mlb-griffey-upper': 'Ken Griffey Jr Upper Deck Rookie',
+  'mlb-mantle-topps': 'Mickey Mantle Topps',
+  
+  // One Piece TCG
   'onepiece-luffy-alt': 'Monkey D Luffy Alt Art One Piece',
   'onepiece-shanks-manga': 'Shanks Manga Art One Piece',
+  'onepiece-nami-alt': 'Nami Alternate Art One Piece',
+  'onepiece-zoro-manga': 'Roronoa Zoro Manga Art One Piece',
+  'onepiece-ace-alt': 'Portgas D Ace Alternate Art One Piece',
+  'onepiece-law-manga': 'Trafalgar Law Manga Art One Piece',
+  
+  // Disney Lorcana
   'lorcana-elsa-enchanted': 'Elsa Spirit of Winter Enchanted Disney Lorcana',
   'lorcana-mickey-enchanted': 'Mickey Mouse Enchanted Disney Lorcana',
+  'lorcana-stitch-enchanted': 'Stitch Enchanted Disney Lorcana',
+  'lorcana-belle-enchanted': 'Belle Enchanted Disney Lorcana',
+  'lorcana-maleficent-enchanted': 'Maleficent Enchanted Disney Lorcana',
+  
+  // Figures & Collectibles
   'figure-kaws-companion': 'KAWS Companion',
   'figure-bearbrick-1000': 'Bearbrick 1000%',
+  'figure-funko-chase': 'Funko Pop Chase',
+  
+  // Video Games (Graded/Sealed)
+  'vg-pokemon-red-sealed': 'Pokemon Red Sealed GameBoy',
+  'vg-pokemon-blue-sealed': 'Pokemon Blue Sealed GameBoy',
+  'vg-zelda-nes-sealed': 'Legend of Zelda Sealed NES',
+  'vg-mario-64-sealed': 'Super Mario 64 Sealed N64',
+  'vg-chrono-trigger-sealed': 'Chrono Trigger Sealed SNES',
 };
 
 // Fetch price from PriceCharting API
