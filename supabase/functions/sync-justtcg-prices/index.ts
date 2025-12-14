@@ -16,24 +16,25 @@ const categoryToGame: Record<string, string> = {
   'yugioh': 'yugioh',
   'lorcana': 'lorcana',
   'onepiece': 'onepiece',
+  'one-piece': 'onepiece',
   'digimon': 'digimon',
 };
 
-interface PriceStats {
-  avgPrice?: number;
-  priceChange?: number;
-  minPrice?: number;
-  maxPrice?: number;
-  volatility?: number;
-  trendSlope?: number;
+interface HistoryPoint {
+  p: number; // price
+  t: number; // unix timestamp
 }
 
 interface CardPriceData {
   price: number | null;
-  stats7d: PriceStats | null;
-  stats30d: PriceStats | null;
-  stats90d: PriceStats | null;
-  stats1y: PriceStats | null;
+  avgPrice7d: number | null;
+  avgPrice30d: number | null;
+  avgPrice90d: number | null;
+  priceChange7d: number | null;
+  priceChange30d: number | null;
+  priceHistory: HistoryPoint[];
+  priceHistory30d: HistoryPoint[];
+  priceHistory90d: HistoryPoint[];
   cardName: string | null;
   setName: string | null;
 }
@@ -62,22 +63,30 @@ async function fetchJustTCGPrice(game: string, query: string): Promise<CardPrice
       return null;
     }
 
-    const data = await response.json();
+    const responseData = await response.json();
+    console.log(`[sync-justtcg] Response keys: ${Object.keys(responseData).join(', ')}`);
     
-    if (!data.cards || data.cards.length === 0) {
+    // JustTCG returns { data: Card[], meta: ... }
+    const cards = responseData.data || responseData.cards || [];
+    
+    if (!cards || cards.length === 0) {
       console.log(`[sync-justtcg] No cards found for: ${query}`);
       return null;
     }
 
-    const card = data.cards[0];
-    console.log(`[sync-justtcg] Found card: ${card.name} from set ${card.setName || 'unknown'}`);
+    const card = cards[0];
+    console.log(`[sync-justtcg] Found card: ${card.name} from set ${card.setName || card.set?.name || 'unknown'}`);
     
     // Get price from variants - prefer Near Mint condition
     let price: number | null = null;
-    let stats7d: PriceStats | null = null;
-    let stats30d: PriceStats | null = null;
-    let stats90d: PriceStats | null = null;
-    let stats1y: PriceStats | null = null;
+    let avgPrice7d: number | null = null;
+    let avgPrice30d: number | null = null;
+    let avgPrice90d: number | null = null;
+    let priceChange7d: number | null = null;
+    let priceChange30d: number | null = null;
+    let priceHistory: HistoryPoint[] = [];
+    let priceHistory30d: HistoryPoint[] = [];
+    let priceHistory90d: HistoryPoint[] = [];
 
     if (card.variants && card.variants.length > 0) {
       // Find Near Mint variant or use first available
@@ -86,63 +95,39 @@ async function fetchJustTCGPrice(game: string, query: string): Promise<CardPrice
         v.condition?.toLowerCase() === 'nm'
       ) || card.variants[0];
 
+      console.log(`[sync-justtcg] Using variant: ${nmVariant.condition} - ${nmVariant.printing}`);
+      console.log(`[sync-justtcg] Variant keys: ${Object.keys(nmVariant).join(', ')}`);
+
+      // Price is at top level of variant
       price = nmVariant.price || null;
       
-      // Extract statistical data for each timeframe
-      if (nmVariant.stats) {
-        if (nmVariant.stats['7d']) {
-          stats7d = {
-            avgPrice: nmVariant.stats['7d'].avgPrice,
-            priceChange: nmVariant.stats['7d'].priceChange,
-            minPrice: nmVariant.stats['7d'].minPrice,
-            maxPrice: nmVariant.stats['7d'].maxPrice,
-            volatility: nmVariant.stats['7d'].stddevPopPrice,
-            trendSlope: nmVariant.stats['7d'].trendSlope,
-          };
-        }
-        if (nmVariant.stats['30d']) {
-          stats30d = {
-            avgPrice: nmVariant.stats['30d'].avgPrice,
-            priceChange: nmVariant.stats['30d'].priceChange,
-            minPrice: nmVariant.stats['30d'].minPrice,
-            maxPrice: nmVariant.stats['30d'].maxPrice,
-            volatility: nmVariant.stats['30d'].stddevPopPrice,
-            trendSlope: nmVariant.stats['30d'].trendSlope,
-          };
-        }
-        if (nmVariant.stats['90d']) {
-          stats90d = {
-            avgPrice: nmVariant.stats['90d'].avgPrice,
-            priceChange: nmVariant.stats['90d'].priceChange,
-            minPrice: nmVariant.stats['90d'].minPrice,
-            maxPrice: nmVariant.stats['90d'].maxPrice,
-            volatility: nmVariant.stats['90d'].stddevPopPrice,
-            trendSlope: nmVariant.stats['90d'].trendSlope,
-          };
-        }
-        if (nmVariant.stats['1y']) {
-          stats1y = {
-            avgPrice: nmVariant.stats['1y'].avgPrice,
-            priceChange: nmVariant.stats['1y'].priceChange,
-            minPrice: nmVariant.stats['1y'].minPrice,
-            maxPrice: nmVariant.stats['1y'].maxPrice,
-            volatility: nmVariant.stats['1y'].stddevPopPrice,
-            trendSlope: nmVariant.stats['1y'].trendSlope,
-          };
-        }
-      }
+      // Stats are at top level of variant (not nested)
+      avgPrice7d = nmVariant.avgPrice7d || nmVariant.avgPrice || null;
+      avgPrice30d = nmVariant.avgPrice30d || null;
+      avgPrice90d = nmVariant.avgPrice90d || null;
+      priceChange7d = nmVariant.priceChange7d || null;
+      priceChange30d = nmVariant.priceChange30d || null;
+      
+      // Price history arrays
+      priceHistory = nmVariant.priceHistory || [];
+      priceHistory30d = nmVariant.priceHistory30d || [];
+      priceHistory90d = nmVariant.priceHistory90d || [];
     }
 
-    console.log(`[sync-justtcg] Price for ${query}: $${price}, 7d change: ${stats7d?.priceChange}%, 30d change: ${stats30d?.priceChange}%`);
+    console.log(`[sync-justtcg] Price for ${query}: $${price}, 7d avg: $${avgPrice7d}, 30d avg: $${avgPrice30d}, history points: ${priceHistory.length + priceHistory30d.length + priceHistory90d.length}`);
     
     return { 
       price, 
-      stats7d, 
-      stats30d, 
-      stats90d, 
-      stats1y,
+      avgPrice7d,
+      avgPrice30d,
+      avgPrice90d,
+      priceChange7d,
+      priceChange30d,
+      priceHistory,
+      priceHistory30d,
+      priceHistory90d,
       cardName: card.name,
-      setName: card.setName,
+      setName: card.setName || card.set?.name,
     };
   } catch (error) {
     console.error(`[sync-justtcg] Error fetching ${query}:`, error);
@@ -181,7 +166,7 @@ serve(async (req) => {
       skipped: 0,
       errors: 0,
       historyRecords: 0,
-      items: [] as { name: string; oldPrice: number; newPrice: number | null; status: string; hasHistory: boolean }[],
+      items: [] as { name: string; oldPrice: number; newPrice: number | null; status: string; historyCount: number }[],
     };
 
     for (const item of marketItems || []) {
@@ -205,11 +190,11 @@ serve(async (req) => {
         };
 
         // Add percentage changes if available
-        if (priceData.stats7d?.priceChange !== undefined) {
-          updateData.change_7d = priceData.stats7d.priceChange;
+        if (priceData.priceChange7d !== null) {
+          updateData.change_7d = priceData.priceChange7d;
         }
-        if (priceData.stats30d?.priceChange !== undefined) {
-          updateData.change_30d = priceData.stats30d.priceChange;
+        if (priceData.priceChange30d !== null) {
+          updateData.change_30d = priceData.priceChange30d;
         }
         if (priceData.setName) {
           updateData.set_name = priceData.setName;
@@ -223,64 +208,83 @@ serve(async (req) => {
         if (updateError) {
           console.error(`[sync-justtcg] Error updating ${item.name}:`, updateError);
           results.errors++;
-          results.items.push({ name: item.name, oldPrice: item.current_price, newPrice: null, status: 'error', hasHistory: false });
+          results.items.push({ name: item.name, oldPrice: item.current_price, newPrice: null, status: 'error', historyCount: 0 });
         } else {
           console.log(`[sync-justtcg] Updated ${item.name}: $${item.current_price} -> $${priceData.price}`);
           results.updated++;
 
-          // Store current price in history
-          await supabase.from('price_history').insert({
+          // Store all price history from API
+          const historyPoints = [];
+
+          // Add current price
+          historyPoints.push({
             product_id: item.id,
             price: priceData.price,
             source: 'justtcg',
           });
-          results.historyRecords++;
 
-          // Store historical avg prices for charting (create synthetic history points)
+          // Add 7-day history points
+          for (const point of priceData.priceHistory) {
+            historyPoints.push({
+              product_id: item.id,
+              price: point.p,
+              source: 'justtcg-history',
+              recorded_at: new Date(point.t * 1000).toISOString(),
+            });
+          }
+
+          // Add 30-day history points
+          for (const point of priceData.priceHistory30d) {
+            historyPoints.push({
+              product_id: item.id,
+              price: point.p,
+              source: 'justtcg-history-30d',
+              recorded_at: new Date(point.t * 1000).toISOString(),
+            });
+          }
+
+          // Add 90-day history points
+          for (const point of priceData.priceHistory90d) {
+            historyPoints.push({
+              product_id: item.id,
+              price: point.p,
+              source: 'justtcg-history-90d',
+              recorded_at: new Date(point.t * 1000).toISOString(),
+            });
+          }
+
+          // Also store avg price points for charting fallback
           const now = new Date();
-          const historyPoints = [];
-
-          if (priceData.stats7d?.avgPrice) {
+          if (priceData.avgPrice7d) {
             const date7d = new Date(now);
             date7d.setDate(date7d.getDate() - 7);
             historyPoints.push({
               product_id: item.id,
-              price: priceData.stats7d.avgPrice,
+              price: priceData.avgPrice7d,
               source: 'justtcg-7d-avg',
               recorded_at: date7d.toISOString(),
             });
           }
 
-          if (priceData.stats30d?.avgPrice) {
+          if (priceData.avgPrice30d) {
             const date30d = new Date(now);
             date30d.setDate(date30d.getDate() - 30);
             historyPoints.push({
               product_id: item.id,
-              price: priceData.stats30d.avgPrice,
+              price: priceData.avgPrice30d,
               source: 'justtcg-30d-avg',
               recorded_at: date30d.toISOString(),
             });
           }
 
-          if (priceData.stats90d?.avgPrice) {
+          if (priceData.avgPrice90d) {
             const date90d = new Date(now);
             date90d.setDate(date90d.getDate() - 90);
             historyPoints.push({
               product_id: item.id,
-              price: priceData.stats90d.avgPrice,
+              price: priceData.avgPrice90d,
               source: 'justtcg-90d-avg',
               recorded_at: date90d.toISOString(),
-            });
-          }
-
-          if (priceData.stats1y?.avgPrice) {
-            const date1y = new Date(now);
-            date1y.setFullYear(date1y.getFullYear() - 1);
-            historyPoints.push({
-              product_id: item.id,
-              price: priceData.stats1y.avgPrice,
-              source: 'justtcg-1y-avg',
-              recorded_at: date1y.toISOString(),
             });
           }
 
@@ -302,13 +306,13 @@ serve(async (req) => {
             oldPrice: item.current_price, 
             newPrice: priceData.price, 
             status: 'updated',
-            hasHistory: historyPoints.length > 0,
+            historyCount: historyPoints.length,
           });
         }
       } else {
         console.log(`[sync-justtcg] No price found for: ${item.name}`);
         results.skipped++;
-        results.items.push({ name: item.name, oldPrice: item.current_price, newPrice: null, status: 'not_found', hasHistory: false });
+        results.items.push({ name: item.name, oldPrice: item.current_price, newPrice: null, status: 'not_found', historyCount: 0 });
       }
 
       // Rate limiting - 10 requests/min on free plan = 6.5 seconds between requests
