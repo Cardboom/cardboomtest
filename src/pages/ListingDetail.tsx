@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { PurchaseDialog } from '@/components/purchase/PurchaseDialog';
 
 interface Listing {
   id: string;
@@ -55,6 +56,7 @@ const ListingDetail = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [votes, setVotes] = useState<VoteCounts>({ up: 0, down: 0, userVote: null });
   const [voting, setVoting] = useState(false);
+  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -345,7 +347,7 @@ const ListingDetail = () => {
             {/* Actions */}
             {user?.id !== listing.seller_id && listing.status === 'active' && (
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="gap-2">
+                <Button size="lg" className="gap-2" onClick={() => setPurchaseDialogOpen(true)}>
                   <ShoppingCart className="w-4 h-4" />
                   Buy Now
                 </Button>
@@ -355,6 +357,13 @@ const ListingDetail = () => {
                 </Button>
               </div>
             )}
+
+            {/* Purchase Dialog */}
+            <PurchaseDialog
+              open={purchaseDialogOpen}
+              onOpenChange={setPurchaseDialogOpen}
+              listing={listing}
+            />
 
             {user?.id === listing.seller_id && (
               <Badge className="bg-primary/20 text-primary">This is your listing</Badge>
