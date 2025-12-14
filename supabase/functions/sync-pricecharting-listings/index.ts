@@ -94,49 +94,28 @@ const productCatalog = [
   { id: 'vg-zelda-nes-sealed', name: 'Legend of Zelda NES Sealed', category: 'videogames', search: 'Legend of Zelda Sealed NES' },
   { id: 'vg-mario-64-sealed', name: 'Super Mario 64 Sealed', category: 'videogames', search: 'Super Mario 64 Sealed N64' },
   
-  // League of Legends Riftbound TCG - Alt Art & Signature Cards
-  { id: 'riftbound-kaisa-alt', name: "Kai'Sa Alt Art", category: 'riftbound', search: "Kai'Sa Daughter of the Void Alternate Art Riftbound" },
-  { id: 'riftbound-ahri-alt', name: 'Ahri Alt Art', category: 'riftbound', search: 'Ahri Nine-Tailed Fox Alternate Art Riftbound' },
-  { id: 'riftbound-ahri-sig', name: 'Ahri Signature', category: 'riftbound', search: 'Ahri Nine-Tailed Fox Signature Riftbound' },
-  { id: 'riftbound-teemo-alt', name: 'Teemo Alt Art', category: 'riftbound', search: 'Teemo Swift Scout Alternate Art Riftbound' },
-  { id: 'riftbound-teemo-sig', name: 'Teemo Signature', category: 'riftbound', search: 'Teemo Swift Scout Signature Riftbound' },
-  { id: 'riftbound-leesin-alt', name: 'Lee Sin Alt Art', category: 'riftbound', search: 'Lee Sin Blind Monk Alternate Art Riftbound' },
-  { id: 'riftbound-leesin-sig', name: 'Lee Sin Signature', category: 'riftbound', search: 'Lee Sin Blind Monk Signature Riftbound' },
-  { id: 'riftbound-leona-alt', name: 'Leona Alt Art', category: 'riftbound', search: 'Leona Radiant Dawn Alternate Art Riftbound' },
-  { id: 'riftbound-missfortune-alt', name: 'Miss Fortune Alt Art', category: 'riftbound', search: 'Miss Fortune Bounty Hunter Alternate Art Riftbound' },
-  { id: 'riftbound-volibear-alt', name: 'Volibear Alt Art', category: 'riftbound', search: 'Volibear Relentless Storm Alternate Art Riftbound' },
-  { id: 'riftbound-sett-alt', name: 'Sett Alt Art', category: 'riftbound', search: 'Sett The Boss Alternate Art Riftbound' },
-  { id: 'riftbound-yasuo-alt', name: 'Yasuo Alt Art', category: 'riftbound', search: 'Yasuo Unforgiven Alternate Art Riftbound' },
-  { id: 'riftbound-darius-alt', name: 'Darius Alt Art', category: 'riftbound', search: 'Darius Hand of Noxus Alternate Art Riftbound' },
-  { id: 'riftbound-viktor-alt', name: 'Viktor Alt Art', category: 'riftbound', search: 'Viktor Herald of the Arcane Alternate Art Riftbound' },
-  
-  // League of Legends Riftbound TCG - Regular Champion Cards
-  { id: 'riftbound-ahri', name: 'Ahri Nine-Tailed Fox', category: 'riftbound', search: 'Ahri Nine-Tailed Fox Riftbound' },
-  { id: 'riftbound-kaisa', name: "Kai'Sa Daughter of the Void", category: 'riftbound', search: "Kai'Sa Daughter of the Void Riftbound" },
-  { id: 'riftbound-sett', name: 'Sett The Boss', category: 'riftbound', search: 'Sett The Boss Riftbound' },
-  { id: 'riftbound-viktor', name: 'Viktor Herald of the Arcane', category: 'riftbound', search: 'Viktor Herald of the Arcane Riftbound' },
-  { id: 'riftbound-missfortune', name: 'Miss Fortune Bounty Hunter', category: 'riftbound', search: 'Miss Fortune Bounty Hunter Riftbound' },
-  { id: 'riftbound-yasuo', name: 'Yasuo Unforgiven', category: 'riftbound', search: 'Yasuo Unforgiven Riftbound' },
-  { id: 'riftbound-darius', name: 'Darius Hand of Noxus', category: 'riftbound', search: 'Darius Hand of Noxus Riftbound' },
-  { id: 'riftbound-leesin', name: 'Lee Sin Blind Monk', category: 'riftbound', search: 'Lee Sin Blind Monk Riftbound' },
-  { id: 'riftbound-teemo', name: 'Teemo Swift Scout', category: 'riftbound', search: 'Teemo Swift Scout Riftbound' },
-  { id: 'riftbound-leona', name: 'Leona Radiant Dawn', category: 'riftbound', search: 'Leona Radiant Dawn Riftbound' },
-  { id: 'riftbound-volibear', name: 'Volibear Relentless Storm', category: 'riftbound', search: 'Volibear Relentless Storm Riftbound' },
-  { id: 'riftbound-jinx', name: 'Jinx Loose Cannon', category: 'riftbound', search: 'Jinx Loose Cannon Riftbound' },
-  { id: 'riftbound-garen', name: 'Garen Might of Demacia', category: 'riftbound', search: 'Garen Might of Demacia Riftbound' },
-  { id: 'riftbound-lux', name: 'Lux Lady of Luminosity', category: 'riftbound', search: 'Lux Lady of Luminosity Riftbound' },
-  { id: 'riftbound-thresh', name: 'Thresh Chain Warden', category: 'riftbound', search: 'Thresh Chain Warden Riftbound' },
-  { id: 'riftbound-vayne', name: 'Vayne Night Hunter', category: 'riftbound', search: 'Vayne Night Hunter Riftbound' },
-  { id: 'riftbound-zed', name: 'Zed Master of Shadows', category: 'riftbound', search: 'Zed Master of Shadows Riftbound' },
+  // League of Legends Riftbound TCG - Origins Set Champions (12 actual champions)
+  { id: 'riftbound-jinx', name: 'Jinx Loose Cannon', category: 'lol-riftbound', search: 'Jinx Loose Cannon Riftbound Origins' },
+  { id: 'riftbound-leesin', name: 'Lee Sin Blind Monk', category: 'lol-riftbound', search: 'Lee Sin Blind Monk Riftbound Origins' },
+  { id: 'riftbound-viktor', name: 'Viktor Machine Herald', category: 'lol-riftbound', search: 'Viktor Machine Herald Riftbound Origins' },
+  { id: 'riftbound-annie', name: 'Annie Dark Child', category: 'lol-riftbound', search: 'Annie Dark Child Riftbound Origins' },
+  { id: 'riftbound-garen', name: 'Garen Might of Demacia', category: 'lol-riftbound', search: 'Garen Might of Demacia Riftbound Origins' },
+  { id: 'riftbound-lux', name: 'Lux Lady of Luminosity', category: 'lol-riftbound', search: 'Lux Lady of Luminosity Riftbound Origins' },
+  { id: 'riftbound-masteryi', name: 'Master Yi Wuju Bladesman', category: 'lol-riftbound', search: 'Master Yi Wuju Bladesman Riftbound Origins' },
+  { id: 'riftbound-ahri', name: 'Ahri Nine-Tailed Fox', category: 'lol-riftbound', search: 'Ahri Nine-Tailed Fox Riftbound Origins' },
+  { id: 'riftbound-kaisa', name: "Kai'Sa Daughter of the Void", category: 'lol-riftbound', search: "Kai'Sa Daughter Void Riftbound Origins" },
+  { id: 'riftbound-teemo', name: 'Teemo Swift Scout', category: 'lol-riftbound', search: 'Teemo Swift Scout Riftbound Origins' },
+  { id: 'riftbound-yasuo', name: 'Yasuo Unforgiven', category: 'lol-riftbound', search: 'Yasuo Unforgiven Riftbound Origins' },
+  { id: 'riftbound-volibear', name: 'Volibear Relentless Storm', category: 'lol-riftbound', search: 'Volibear Relentless Storm Riftbound Origins' },
   
   // League of Legends Riftbound TCG - Sealed Products
-  { id: 'riftbound-booster-box', name: 'Riftbound Origins Booster Box', category: 'riftbound', search: 'Riftbound Origins Booster Box' },
-  { id: 'riftbound-proving-grounds', name: 'Riftbound Proving Grounds Box', category: 'riftbound', search: 'Riftbound Proving Grounds Box Set' },
-  { id: 'riftbound-jinx-deck', name: 'Jinx Champion Deck', category: 'riftbound', search: 'Riftbound Jinx Champion Deck' },
-  { id: 'riftbound-leesin-deck', name: 'Lee Sin Champion Deck', category: 'riftbound', search: 'Riftbound Lee Sin Champion Deck' },
-  { id: 'riftbound-viktor-deck', name: 'Viktor Champion Deck', category: 'riftbound', search: 'Riftbound Viktor Champion Deck' },
-  { id: 'riftbound-booster-pack', name: 'Riftbound Booster Pack', category: 'riftbound', search: 'Riftbound Origins Booster Pack' },
-  { id: 'riftbound-sleeved-booster', name: 'Riftbound Sleeved Booster', category: 'riftbound', search: 'Riftbound Origins Sleeved Booster' },
+  { id: 'riftbound-booster-box', name: 'Riftbound Origins Booster Box', category: 'lol-riftbound', search: 'Riftbound Origins Booster Box' },
+  { id: 'riftbound-proving-grounds', name: 'Riftbound Proving Grounds Box', category: 'lol-riftbound', search: 'Riftbound Proving Grounds Box Set' },
+  { id: 'riftbound-jinx-deck', name: 'Jinx Champion Deck', category: 'lol-riftbound', search: 'Riftbound Jinx Champion Deck' },
+  { id: 'riftbound-leesin-deck', name: 'Lee Sin Champion Deck', category: 'lol-riftbound', search: 'Riftbound Lee Sin Champion Deck' },
+  { id: 'riftbound-viktor-deck', name: 'Viktor Champion Deck', category: 'lol-riftbound', search: 'Riftbound Viktor Champion Deck' },
+  { id: 'riftbound-booster-pack', name: 'Riftbound Booster Pack', category: 'lol-riftbound', search: 'Riftbound Origins Booster Pack' },
+  { id: 'riftbound-sleeved-booster', name: 'Riftbound Sleeved Booster', category: 'lol-riftbound', search: 'Riftbound Origins Sleeved Booster' },
 ];
 
 // Markup percentage (3-4% spread)
@@ -292,6 +271,25 @@ serve(async (req) => {
           } else {
             console.log(`[sync-listings] Created ${product.name}: $${listingPrice}`)
             results.created++
+          }
+        }
+        
+        // Also update market_items table if this is a riftbound product
+        if (product.category === 'riftbound') {
+          const { error: marketUpdateError } = await supabase
+            .from('market_items')
+            .update({
+              current_price: Math.round(priceData.price * 100) / 100,
+              base_price: Math.round(priceData.price * 100) / 100,
+              updated_at: new Date().toISOString(),
+              data_source: 'pricecharting',
+            })
+            .eq('external_id', product.id)
+          
+          if (marketUpdateError) {
+            console.log(`[sync-listings] Could not update market_item ${product.id}: ${marketUpdateError.message}`)
+          } else {
+            console.log(`[sync-listings] Updated market_item ${product.id}: $${priceData.price}`)
           }
         }
         
