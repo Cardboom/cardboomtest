@@ -10,28 +10,90 @@ const PRICECHARTING_API_KEY = Deno.env.get('PRICECHARTING_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-// Product catalog to sync from PriceCharting
+// Expanded product catalog to sync from PriceCharting
 const productCatalog = [
-  { id: 'tcg-charizard-1st', name: 'Charizard 1st Edition Base Set', category: 'pokemon', search: 'Charizard Base Set 1st Edition Pokemon', image: '/placeholder.svg' },
-  { id: 'tcg-pikachu-illustrator', name: 'Pikachu Illustrator', category: 'pokemon', search: 'Pikachu Illustrator Pokemon', image: '/placeholder.svg' },
-  { id: 'tcg-mewtwo-rainbow', name: 'Mewtwo GX Rainbow', category: 'pokemon', search: 'Mewtwo GX Rainbow Pokemon', image: '/placeholder.svg' },
-  { id: 'tcg-black-lotus', name: 'Black Lotus Alpha', category: 'tcg', search: 'Black Lotus Alpha Magic', image: '/placeholder.svg' },
-  { id: 'mtg-mox-sapphire', name: 'Mox Sapphire Alpha', category: 'tcg', search: 'Mox Sapphire Alpha Magic', image: '/placeholder.svg' },
-  { id: 'yugioh-blue-eyes', name: 'Blue-Eyes White Dragon LOB', category: 'tcg', search: 'Blue-Eyes White Dragon LOB Yu-Gi-Oh', image: '/placeholder.svg' },
-  { id: 'yugioh-dark-magician', name: 'Dark Magician Starter Deck', category: 'tcg', search: 'Dark Magician Starter Deck Yu-Gi-Oh', image: '/placeholder.svg' },
-  { id: 'onepiece-luffy-alt', name: 'Monkey D Luffy Alt Art', category: 'tcg', search: 'Monkey D Luffy Alt Art One Piece', image: '/placeholder.svg' },
-  { id: 'onepiece-shanks-manga', name: 'Shanks Manga Art', category: 'tcg', search: 'Shanks Manga Art One Piece', image: '/placeholder.svg' },
-  { id: 'lorcana-elsa-enchanted', name: 'Elsa Spirit of Winter Enchanted', category: 'tcg', search: 'Elsa Spirit of Winter Enchanted Disney Lorcana', image: '/placeholder.svg' },
-  { id: 'lorcana-mickey-enchanted', name: 'Mickey Mouse Enchanted', category: 'tcg', search: 'Mickey Mouse Enchanted Disney Lorcana', image: '/placeholder.svg' },
-  { id: 'nba-lebron-2003', name: 'LeBron James 2003 Topps Chrome Rookie', category: 'nba', search: 'LeBron James Topps Chrome Rookie Trading Cards', image: '/placeholder.svg' },
-  { id: 'nba-jordan-fleer', name: 'Michael Jordan 1986 Fleer Rookie', category: 'nba', search: 'Michael Jordan Fleer Rookie Trading Cards', image: '/placeholder.svg' },
-  { id: 'nba-luka-prizm', name: 'Luka Doncic Prizm Silver', category: 'nba', search: 'Luka Doncic Prizm Silver Trading Cards', image: '/placeholder.svg' },
-  { id: 'football-mahomes-prizm', name: 'Patrick Mahomes Prizm Silver', category: 'nfl', search: 'Patrick Mahomes Prizm Silver Trading Cards', image: '/placeholder.svg' },
-  { id: 'football-brady-rookie', name: 'Tom Brady 2000 Contenders Auto', category: 'nfl', search: 'Tom Brady Contenders Auto Trading Cards', image: '/placeholder.svg' },
-  { id: 'football-chase-auto', name: "Ja'Marr Chase Optic Auto", category: 'nfl', search: "Ja'Marr Chase Optic Auto Trading Cards", image: '/placeholder.svg' },
-  { id: 'figure-kaws-companion', name: 'KAWS Companion', category: 'figures', search: 'KAWS Companion Toys', image: '/placeholder.svg' },
-  { id: 'figure-bearbrick-1000', name: 'Bearbrick 1000%', category: 'figures', search: 'Bearbrick 1000% Toys', image: '/placeholder.svg' },
-]
+  // Pokemon TCG
+  { id: 'tcg-charizard-1st', name: 'Charizard 1st Edition Base Set', category: 'pokemon', search: 'Charizard Base Set 1st Edition Pokemon' },
+  { id: 'tcg-pikachu-illustrator', name: 'Pikachu Illustrator', category: 'pokemon', search: 'Pikachu Illustrator Pokemon' },
+  { id: 'tcg-psa10-mewtwo', name: 'Mewtwo GX Rainbow', category: 'pokemon', search: 'Mewtwo GX Rainbow Pokemon' },
+  { id: 'tcg-blastoise-1st', name: 'Blastoise 1st Edition Base Set', category: 'pokemon', search: 'Blastoise Base Set 1st Edition Pokemon' },
+  { id: 'tcg-venusaur-1st', name: 'Venusaur 1st Edition Base Set', category: 'pokemon', search: 'Venusaur Base Set 1st Edition Pokemon' },
+  { id: 'tcg-lugia-neo', name: 'Lugia Neo Genesis 1st Edition', category: 'pokemon', search: 'Lugia Neo Genesis 1st Edition Pokemon' },
+  { id: 'tcg-umbreon-vmax', name: 'Umbreon VMAX Alt Art', category: 'pokemon', search: 'Umbreon VMAX Alternate Art Pokemon' },
+  { id: 'tcg-rayquaza-gold', name: 'Rayquaza VMAX Alt Art', category: 'pokemon', search: 'Rayquaza VMAX Alternate Art Pokemon' },
+  { id: 'tcg-mew-celebration', name: 'Mew Celebrations 25th', category: 'pokemon', search: 'Mew Celebrations 25th Anniversary Pokemon' },
+  { id: 'tcg-gengar-vmax', name: 'Gengar VMAX Alt Art', category: 'pokemon', search: 'Gengar VMAX Alternate Art Pokemon' },
+  
+  // Magic: The Gathering - Power Nine
+  { id: 'tcg-black-lotus', name: 'Black Lotus Alpha', category: 'mtg', search: 'Black Lotus Alpha Magic' },
+  { id: 'mtg-mox-sapphire', name: 'Mox Sapphire Alpha', category: 'mtg', search: 'Mox Sapphire Alpha Magic' },
+  { id: 'mtg-mox-ruby', name: 'Mox Ruby Alpha', category: 'mtg', search: 'Mox Ruby Alpha Magic' },
+  { id: 'mtg-mox-pearl', name: 'Mox Pearl Alpha', category: 'mtg', search: 'Mox Pearl Alpha Magic' },
+  { id: 'mtg-mox-jet', name: 'Mox Jet Alpha', category: 'mtg', search: 'Mox Jet Alpha Magic' },
+  { id: 'mtg-mox-emerald', name: 'Mox Emerald Alpha', category: 'mtg', search: 'Mox Emerald Alpha Magic' },
+  { id: 'mtg-timetwister', name: 'Timetwister Alpha', category: 'mtg', search: 'Timetwister Alpha Magic' },
+  { id: 'mtg-ancestral-recall', name: 'Ancestral Recall Alpha', category: 'mtg', search: 'Ancestral Recall Alpha Magic' },
+  { id: 'mtg-time-walk', name: 'Time Walk Alpha', category: 'mtg', search: 'Time Walk Alpha Magic' },
+  { id: 'mtg-underground-sea', name: 'Underground Sea Revised', category: 'mtg', search: 'Underground Sea Revised Magic' },
+  
+  // Yu-Gi-Oh!
+  { id: 'yugioh-blue-eyes', name: 'Blue-Eyes White Dragon LOB', category: 'yugioh', search: 'Blue-Eyes White Dragon LOB Yu-Gi-Oh' },
+  { id: 'yugioh-dark-magician', name: 'Dark Magician Starter Deck', category: 'yugioh', search: 'Dark Magician Starter Deck Yu-Gi-Oh' },
+  { id: 'yugioh-exodia-head', name: 'Exodia the Forbidden One LOB', category: 'yugioh', search: 'Exodia the Forbidden One LOB Yu-Gi-Oh' },
+  { id: 'yugioh-red-eyes', name: 'Red-Eyes Black Dragon LOB', category: 'yugioh', search: 'Red-Eyes Black Dragon LOB Yu-Gi-Oh' },
+  { id: 'yugioh-dark-magician-girl', name: 'Dark Magician Girl MFC', category: 'yugioh', search: 'Dark Magician Girl MFC Yu-Gi-Oh' },
+  { id: 'yugioh-stardust-dragon', name: 'Stardust Dragon Ghost Rare', category: 'yugioh', search: 'Stardust Dragon Ghost Rare Yu-Gi-Oh' },
+  
+  // NBA Basketball Cards
+  { id: 'nba-lebron-2003', name: 'LeBron James 2003 Topps Chrome Rookie', category: 'nba', search: 'LeBron James Topps Chrome Rookie' },
+  { id: 'nba-jordan-fleer', name: 'Michael Jordan 1986 Fleer Rookie', category: 'nba', search: 'Michael Jordan Fleer Rookie' },
+  { id: 'nba-luka-prizm', name: 'Luka Doncic Prizm Silver', category: 'nba', search: 'Luka Doncic Prizm Silver' },
+  { id: 'nba-kobe-topps', name: 'Kobe Bryant Topps Chrome Rookie', category: 'nba', search: 'Kobe Bryant Topps Chrome Rookie' },
+  { id: 'nba-giannis-prizm', name: 'Giannis Antetokounmpo Prizm Silver', category: 'nba', search: 'Giannis Antetokounmpo Prizm Silver Rookie' },
+  { id: 'nba-zion-prizm', name: 'Zion Williamson Prizm Silver', category: 'nba', search: 'Zion Williamson Prizm Silver Rookie' },
+  { id: 'nba-ja-morant-prizm', name: 'Ja Morant Prizm Silver', category: 'nba', search: 'Ja Morant Prizm Silver Rookie' },
+  { id: 'nba-wemby-prizm', name: 'Victor Wembanyama Prizm Rookie', category: 'nba', search: 'Victor Wembanyama Prizm Rookie' },
+  { id: 'nba-curry-topps', name: 'Stephen Curry Topps Chrome Rookie', category: 'nba', search: 'Stephen Curry Topps Chrome Rookie' },
+  
+  // NFL Football Cards
+  { id: 'football-mahomes-prizm', name: 'Patrick Mahomes Prizm Silver', category: 'nfl', search: 'Patrick Mahomes Prizm Silver' },
+  { id: 'football-brady-rookie', name: 'Tom Brady 2000 Contenders Auto', category: 'nfl', search: 'Tom Brady Contenders Auto' },
+  { id: 'football-chase-auto', name: "Ja'Marr Chase Optic Auto", category: 'nfl', search: "Ja'Marr Chase Optic Auto" },
+  { id: 'football-burrow-prizm', name: 'Joe Burrow Prizm Silver Rookie', category: 'nfl', search: 'Joe Burrow Prizm Silver Rookie' },
+  { id: 'football-herbert-prizm', name: 'Justin Herbert Prizm Silver Rookie', category: 'nfl', search: 'Justin Herbert Prizm Silver Rookie' },
+  { id: 'football-allen-prizm', name: 'Josh Allen Prizm Silver Rookie', category: 'nfl', search: 'Josh Allen Prizm Silver Rookie' },
+  { id: 'football-lamar-prizm', name: 'Lamar Jackson Prizm Silver Rookie', category: 'nfl', search: 'Lamar Jackson Prizm Silver Rookie' },
+  
+  // MLB Baseball Cards
+  { id: 'mlb-trout-bowman', name: 'Mike Trout Bowman Chrome Rookie', category: 'mlb', search: 'Mike Trout Bowman Chrome Rookie' },
+  { id: 'mlb-ohtani-bowman', name: 'Shohei Ohtani Bowman Chrome Rookie', category: 'mlb', search: 'Shohei Ohtani Bowman Chrome Rookie' },
+  { id: 'mlb-jeter-sp', name: 'Derek Jeter SP Foil Rookie', category: 'mlb', search: 'Derek Jeter SP Foil Rookie' },
+  { id: 'mlb-griffey-upper', name: 'Ken Griffey Jr Upper Deck Rookie', category: 'mlb', search: 'Ken Griffey Jr Upper Deck Rookie' },
+  
+  // One Piece TCG
+  { id: 'onepiece-luffy-alt', name: 'Monkey D Luffy Alt Art', category: 'onepiece', search: 'Monkey D Luffy Alt Art One Piece' },
+  { id: 'onepiece-shanks-manga', name: 'Shanks Manga Art', category: 'onepiece', search: 'Shanks Manga Art One Piece' },
+  { id: 'onepiece-nami-alt', name: 'Nami Alternate Art', category: 'onepiece', search: 'Nami Alternate Art One Piece' },
+  { id: 'onepiece-zoro-manga', name: 'Roronoa Zoro Manga Art', category: 'onepiece', search: 'Roronoa Zoro Manga Art One Piece' },
+  { id: 'onepiece-ace-alt', name: 'Portgas D Ace Alt Art', category: 'onepiece', search: 'Portgas D Ace Alternate Art One Piece' },
+  
+  // Disney Lorcana
+  { id: 'lorcana-elsa-enchanted', name: 'Elsa Spirit of Winter Enchanted', category: 'lorcana', search: 'Elsa Spirit of Winter Enchanted Disney Lorcana' },
+  { id: 'lorcana-mickey-enchanted', name: 'Mickey Mouse Enchanted', category: 'lorcana', search: 'Mickey Mouse Enchanted Disney Lorcana' },
+  { id: 'lorcana-stitch-enchanted', name: 'Stitch Enchanted', category: 'lorcana', search: 'Stitch Enchanted Disney Lorcana' },
+  { id: 'lorcana-belle-enchanted', name: 'Belle Enchanted', category: 'lorcana', search: 'Belle Enchanted Disney Lorcana' },
+  { id: 'lorcana-maleficent-enchanted', name: 'Maleficent Enchanted', category: 'lorcana', search: 'Maleficent Enchanted Disney Lorcana' },
+  
+  // Figures
+  { id: 'figure-kaws-companion', name: 'KAWS Companion', category: 'figures', search: 'KAWS Companion' },
+  { id: 'figure-bearbrick-1000', name: 'Bearbrick 1000%', category: 'figures', search: 'Bearbrick 1000%' },
+  
+  // Video Games (Graded/Sealed)
+  { id: 'vg-pokemon-red-sealed', name: 'Pokemon Red Sealed', category: 'videogames', search: 'Pokemon Red Sealed GameBoy' },
+  { id: 'vg-pokemon-blue-sealed', name: 'Pokemon Blue Sealed', category: 'videogames', search: 'Pokemon Blue Sealed GameBoy' },
+  { id: 'vg-zelda-nes-sealed', name: 'Legend of Zelda NES Sealed', category: 'videogames', search: 'Legend of Zelda Sealed NES' },
+  { id: 'vg-mario-64-sealed', name: 'Super Mario 64 Sealed', category: 'videogames', search: 'Super Mario 64 Sealed N64' },
+];
 
 // Markup percentage (3-4% spread)
 const MARKUP_PERCENT = 0.035 // 3.5%
@@ -177,7 +239,7 @@ serve(async (req) => {
               allows_trade: true,
               allows_vault: true,
               status: 'active',
-              image_url: product.image,
+              image_url: null, // Images fetched separately
             })
           
           if (insertError) {
