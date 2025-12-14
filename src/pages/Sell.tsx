@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart } from 'lucide-react';
+import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search } from 'lucide-react';
+import { CardScanner } from '@/components/CardScanner';
 import { toast } from 'sonner';
 import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
 
@@ -273,6 +274,10 @@ const SellPage = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6">
+              <TabsTrigger value="scanner" className="gap-2">
+                <Search className="h-4 w-4" />
+                Card Scanner
+              </TabsTrigger>
               <TabsTrigger value="create" className="gap-2">
                 <Plus className="h-4 w-4" />
                 Create Listing
@@ -282,6 +287,19 @@ const SellPage = () => {
                 My Listings ({listings.length})
               </TabsTrigger>
             </TabsList>
+
+            <TabsContent value="scanner">
+              <CardScanner
+                onSelectPrice={(price, imageUrl) => {
+                  setFormData({ ...formData, price: price.toString() });
+                  if (imageUrl) {
+                    setImagePreview(imageUrl);
+                  }
+                  setActiveTab('create');
+                  toast.success('Price applied! Complete your listing details.');
+                }}
+              />
+            </TabsContent>
 
             <TabsContent value="create">
               <Card>

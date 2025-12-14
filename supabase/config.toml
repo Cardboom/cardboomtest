@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.geliver-shipping]
 verify_jwt = false
+
+[functions.scan-card]
+verify_jwt = false

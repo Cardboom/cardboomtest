@@ -129,6 +129,66 @@ export type Database = {
         }
         Relationships: []
       }
+      ebay_card_cache: {
+        Row: {
+          active_listings_count: number | null
+          avg_price: number | null
+          cached_image_path: string | null
+          card_name: string
+          card_number: string | null
+          created_at: string | null
+          ebay_item_ids: string[] | null
+          id: string
+          image_url: string | null
+          last_updated: string | null
+          liquidity: string | null
+          max_price: number | null
+          min_price: number | null
+          search_query: string
+          set_name: string | null
+          sold_avg_price: number | null
+          sold_listings_count: number | null
+        }
+        Insert: {
+          active_listings_count?: number | null
+          avg_price?: number | null
+          cached_image_path?: string | null
+          card_name: string
+          card_number?: string | null
+          created_at?: string | null
+          ebay_item_ids?: string[] | null
+          id?: string
+          image_url?: string | null
+          last_updated?: string | null
+          liquidity?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          search_query: string
+          set_name?: string | null
+          sold_avg_price?: number | null
+          sold_listings_count?: number | null
+        }
+        Update: {
+          active_listings_count?: number | null
+          avg_price?: number | null
+          cached_image_path?: string | null
+          card_name?: string
+          card_number?: string | null
+          created_at?: string | null
+          ebay_item_ids?: string[] | null
+          id?: string
+          image_url?: string | null
+          last_updated?: string | null
+          liquidity?: string | null
+          max_price?: number | null
+          min_price?: number | null
+          search_query?: string
+          set_name?: string | null
+          sold_avg_price?: number | null
+          sold_listings_count?: number | null
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           created_at: string
