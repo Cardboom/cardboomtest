@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { mockCollectibles } from '@/data/mockData';
-import { usePrices } from '@/contexts/PriceContext';
+import { useMarketItems } from '@/hooks/useMarketItems';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { 
   TrendingUp, TrendingDown, Clock, RefreshCw, Search, 
@@ -48,24 +47,23 @@ const Markets = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [displayCount, setDisplayCount] = useState(20);
 
-  // Use shared price context
-  const { prices, lastUpdated, isLoading, refetch } = usePrices();
+  // Fetch items from database instead of mockData
+  const { items: marketItems, isLoading, categories, refetch } = useMarketItems({ limit: 500 });
+  const lastUpdated = new Date();
 
-  // Generate data with live prices from database
+  // Transform database items to display format
   const collectiblesWithPrices = useMemo(() => {
-    return mockCollectibles.map((collectible, idx) => {
-      const livePrice = prices[collectible.priceId];
-      const basePrice = livePrice?.price ?? collectible.price;
-      const change = livePrice?.change ?? collectible.priceChange;
-      const priceUpdated = livePrice?.updated ?? false;
+    return marketItems.map((item, idx) => {
+      const basePrice = item.current_price;
+      const change = item.change_24h ?? 0;
       
-      // Generate consistent mock data based on collectible
-      const seed = collectible.id.charCodeAt(0) + idx;
-      const liquidity = Math.floor((seed * 12345) % 500000) + 50000;
+      // Generate consistent mock data based on item
+      const seed = item.id.charCodeAt(0) + idx;
+      const liquidity = item.liquidity === 'high' ? 500000 : item.liquidity === 'medium' ? 100000 : 50000;
       const holders = Math.floor((seed * 789) % 5000) + 100;
       const volume24h = Math.floor((seed * 4567) % 100000) + 5000;
       const txns = Math.floor((seed * 234) % 500) + 10;
-      const age = Math.floor((seed * 56) % 365) + 1;
+      const age = Math.floor((Date.now() - new Date(item.created_at).getTime()) / (1000 * 60 * 60 * 24));
       
       // Generate sparkline data based on current price
       const sparklineData = Array.from({ length: 12 }, (_, i) => 
@@ -73,13 +71,16 @@ const Markets = () => {
       );
 
       return {
-        ...collectible,
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        image: item.image_url || '/placeholder.svg',
         price: basePrice,
         priceChange: change,
-        priceUpdated,
+        priceUpdated: false,
         change1h: change * (0.3 + Math.random() * 0.4),
-        change7d: change * (1.5 + Math.random()),
-        change30d: change * (2 + Math.random() * 2),
+        change7d: item.change_7d ?? change * 1.5,
+        change30d: item.change_30d ?? change * 2,
         liquidity,
         holders,
         volume24h,
@@ -88,14 +89,12 @@ const Markets = () => {
         sparklineData,
         isNew: age < 30,
         isVerified: seed % 3 === 0,
+        trending: item.is_trending ?? false,
+        brand: item.set_name || item.subcategory || item.category,
+        rarity: item.rarity,
       };
     });
-  }, [prices]);
-
-  const categories = useMemo(() => {
-    const cats = [...new Set(mockCollectibles.map(c => c.category))];
-    return ['all', ...cats];
-  }, []);
+  }, [marketItems]);
 
   const filteredCollectibles = useMemo(() => {
     let items = [...collectiblesWithPrices];
@@ -244,7 +243,7 @@ const Markets = () => {
               </div>
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <span className="text-muted-foreground">Assets:</span>
-                <span className="font-semibold text-foreground">{mockCollectibles.length}</span>
+                <span className="font-semibold text-foreground">{marketItems.length}</span>
               </div>
             </div>
           </div>

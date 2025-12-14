@@ -419,18 +419,21 @@ export const mockCollectibles: Collectible[] = [
   },
 ];
 
-// Categories for filtering
+// Categories for filtering - these map to database category values
 export const categories = [
   { id: 'all', name: 'All', icon: '🎯' },
   { id: 'pokemon', name: 'Pokémon', icon: '⚡' },
   { id: 'yugioh', name: 'Yu-Gi-Oh!', icon: '🎴' },
-  { id: 'onepiece', name: 'One Piece', icon: '🏴‍☠️' },
+  { id: 'one-piece', name: 'One Piece', icon: '🏴‍☠️' },
   { id: 'lorcana', name: 'Lorcana', icon: '✨' },
+  { id: 'lol-riftbound', name: 'LoL Riftbound', icon: '🎮' },
   { id: 'mtg', name: 'MTG', icon: '🧙' },
-  { id: 'nba', name: 'NBA', icon: '🏀' },
-  { id: 'football', name: 'Football', icon: '🏈' },
+  { id: 'sports-nba', name: 'NBA', icon: '🏀' },
+  { id: 'sports-nfl', name: 'NFL', icon: '🏈' },
+  { id: 'sports-mlb', name: 'MLB', icon: '⚾' },
+  { id: 'sports-wnba', name: 'WNBA', icon: '🏀' },
   { id: 'figures', name: 'Figures', icon: '🎨' },
-  { id: 'gamepoints', name: 'Game Points', icon: '🎮' },
+  { id: 'gamepoints', name: 'Game Points', icon: '🕹️' },
 ];
 
 // XP/Level calculations
