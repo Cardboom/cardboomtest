@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.sync-tcgdex-images]
 verify_jwt = false
+
+[functions.sync-apitcg-images]
+verify_jwt = false
