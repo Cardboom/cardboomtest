@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, ArrowRight, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, Sparkles, Activity, Droplets } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,12 +15,33 @@ interface MarketItem {
   priceChange: number;
   category: string;
   priceUpdated?: boolean;
+  liquidity?: string;
+  salesCount?: number;
+  source?: string;
 }
 
 interface LiveMarketTableProps {
   items: MarketItem[];
   title: string;
 }
+
+const getLiquidityColor = (liquidity?: string) => {
+  switch (liquidity) {
+    case 'high': return 'text-gain bg-gain/10';
+    case 'medium': return 'text-gold bg-gold/10';
+    case 'low': return 'text-loss bg-loss/10';
+    default: return 'text-muted-foreground bg-muted/30';
+  }
+};
+
+const getLiquidityLabel = (liquidity?: string) => {
+  switch (liquidity) {
+    case 'high': return 'High';
+    case 'medium': return 'Med';
+    case 'low': return 'Low';
+    default: return '-';
+  }
+};
 
 export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
   const { formatPrice } = useCurrency();
@@ -51,9 +72,10 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
       <div className="divide-y divide-border/30">
         {/* Header */}
         <div className="grid grid-cols-12 gap-4 px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-muted/30">
-          <div className="col-span-5">Name</div>
+          <div className="col-span-4">Name</div>
           <div className="col-span-3 text-right">Price</div>
-          <div className="col-span-4 text-right">24h Change</div>
+          <div className="col-span-2 text-right">Liquidity</div>
+          <div className="col-span-3 text-right">24h Change</div>
         </div>
         
         {/* Rows */}
@@ -69,7 +91,7 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
               onClick={() => navigate(`/item/${item.id}`)}
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="col-span-5 flex items-center gap-3">
+              <div className="col-span-4 flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-secondary/50 shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   {index === 0 && (
@@ -77,16 +99,35 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
                       <Sparkles className="w-2.5 h-2.5 text-background" />
                     </div>
                   )}
+                  {item.source === 'ebay' && (
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                      <Activity className="w-2.5 h-2.5 text-primary-foreground" />
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="font-medium text-foreground text-sm truncate group-hover:text-primary transition-colors">{item.name}</p>
-                  <p className="text-xs text-muted-foreground">{item.category}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-xs text-muted-foreground">{item.category}</p>
+                    {item.salesCount && (
+                      <span className="text-xs text-muted-foreground">• {item.salesCount} listings</span>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="col-span-3 text-right flex items-center justify-end">
                 <LiveTickerPrice value={item.price} tickInterval={2500} volatility={0.002} className="text-sm font-semibold" />
               </div>
-              <div className="col-span-4 text-right flex items-center justify-end gap-1.5">
+              <div className="col-span-2 text-right flex items-center justify-end">
+                <div className={cn(
+                  'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold',
+                  getLiquidityColor(item.liquidity)
+                )}>
+                  <Droplets className="w-3 h-3" />
+                  {getLiquidityLabel(item.liquidity)}
+                </div>
+              </div>
+              <div className="col-span-3 text-right flex items-center justify-end gap-1.5">
                 <div className={cn(
                   'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold',
                   isPositive ? 'bg-gain/10 text-gain' : 'bg-loss/10 text-loss'

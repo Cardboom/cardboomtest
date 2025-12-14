@@ -65,6 +65,9 @@ const Index = () => {
           priceChange: livePrice.change,
           previousPrice: Math.round(livePrice.price / (1 + livePrice.change / 100)),
           priceUpdated: livePrice.updated,
+          liquidity: (livePrice as any).liquidity,
+          salesCount: (livePrice as any).salesCount,
+          source: livePrice.source,
         };
       }
       return collectible;
