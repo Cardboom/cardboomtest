@@ -61,6 +61,43 @@ export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogPr
         return;
       }
 
+      // Get user's wallet and check balance
+      const { data: wallet, error: walletError } = await supabase
+        .from("wallets")
+        .select("id, balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (walletError) throw walletError;
+
+      if (!wallet) {
+        toast.error("Wallet not found. Please contact support.");
+        return;
+      }
+
+      if (Number(wallet.balance) < totalCost) {
+        toast.error(`Insufficient balance. You need ${formatPrice(totalCost)} but have ${formatPrice(Number(wallet.balance))}`);
+        navigate("/wallet");
+        return;
+      }
+
+      // Deduct from wallet
+      const newBalance = Number(wallet.balance) - totalCost;
+      const { error: walletUpdateError } = await supabase
+        .from("wallets")
+        .update({ balance: newBalance })
+        .eq("id", wallet.id);
+
+      if (walletUpdateError) throw walletUpdateError;
+
+      // Create transaction record
+      await supabase.from("transactions").insert({
+        wallet_id: wallet.id,
+        type: "purchase",
+        amount: -totalCost,
+        description: `Fractional shares: ${sharesToBuy} shares of ${itemName}`,
+      });
+
       // Create ownership record
       const { error: ownershipError } = await supabase
         .from("fractional_ownership")
