@@ -4,7 +4,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { AnimatedPrice } from './AnimatedPrice';
+import { LiveTickerPrice } from './LiveTickerPrice';
 import { Badge } from '@/components/ui/badge';
 
 interface MarketItem {
@@ -84,7 +84,7 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
                 </div>
               </div>
               <div className="col-span-3 text-right flex items-center justify-end">
-                <AnimatedPrice value={item.price} showTrend={false} size="sm" />
+                <LiveTickerPrice value={item.price} tickInterval={2500} volatility={0.002} className="text-sm font-semibold" />
               </div>
               <div className="col-span-4 text-right flex items-center justify-end gap-1.5">
                 <div className={cn(

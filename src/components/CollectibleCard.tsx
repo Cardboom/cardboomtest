@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { LiveTickerPrice } from './LiveTickerPrice';
 
 interface CollectibleCardProps {
   collectible: Collectible;
@@ -124,24 +125,15 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
           <span>{collectible.condition}</span>
         </div>
 
-        {/* Price Section with Animation */}
+        {/* Price Section with Live Ticker */}
         <div className="flex items-end justify-between">
           <div>
-            <div className={cn(
-              "text-2xl font-bold font-display transition-all duration-300",
-              priceDirection === 'up' && "text-gain animate-pulse",
-              priceDirection === 'down' && "text-loss animate-pulse",
-              !priceDirection && "text-foreground"
-            )}>
-              <span className="inline-flex items-center gap-1">
-                ${displayPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                {priceDirection === 'up' && (
-                  <TrendingUp className="w-4 h-4 animate-bounce" />
-                )}
-                {priceDirection === 'down' && (
-                  <TrendingDown className="w-4 h-4 animate-bounce" />
-                )}
-              </span>
+            <div className="text-2xl font-bold font-display text-foreground">
+              <LiveTickerPrice 
+                value={collectible.price} 
+                tickInterval={3000}
+                volatility={0.003}
+              />
             </div>
             <div className={cn(
               'flex items-center gap-1 text-sm font-medium',
