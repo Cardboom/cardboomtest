@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.populate-ebay-products]
 verify_jwt = false
+
+[functions.ebay-oauth]
+verify_jwt = false

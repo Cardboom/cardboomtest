@@ -6,9 +6,97 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-const EBAY_API_KEY = Deno.env.get('EBAY_BROWSE_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const EBAY_CLIENT_ID = Deno.env.get('EBAY_CLIENT_ID');
+const EBAY_CLIENT_SECRET = Deno.env.get('EBAY_CLIENT_SECRET');
+
+// eBay OAuth token management
+const EBAY_OAUTH_URL = 'https://api.ebay.com/identity/v1/oauth2/token';
+
+interface CachedToken {
+  access_token: string;
+  expires_at: string;
+}
+
+// deno-lint-ignore no-explicit-any
+type SupabaseClientAny = ReturnType<typeof createClient<any>>;
+
+// Get OAuth token using Client Credentials flow with auto-refresh
+async function getEbayToken(supabase: SupabaseClientAny): Promise<string | null> {
+  // First check for cached token
+  const { data: setting, error: fetchError } = await supabase
+    .from('platform_settings')
+    .select('value')
+    .eq('key', 'ebay_oauth_token')
+    .single();
+
+  if (!fetchError && setting?.value) {
+    const cached = setting.value as CachedToken;
+    const expiresAt = new Date(cached.expires_at);
+    
+    if (expiresAt > new Date()) {
+      console.log('[fetch-prices] Using cached eBay token');
+      return cached.access_token;
+    }
+    console.log('[fetch-prices] Cached token expired, refreshing...');
+  }
+
+  // Get new token if no valid cached token
+  if (!EBAY_CLIENT_ID || !EBAY_CLIENT_SECRET) {
+    console.log('[fetch-prices] eBay OAuth credentials not configured');
+    return null;
+  }
+
+  try {
+    const credentials = btoa(`${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`);
+    
+    console.log('[fetch-prices] Requesting new eBay OAuth token...');
+    
+    const response = await fetch(EBAY_OAUTH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${credentials}`,
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        scope: 'https://api.ebay.com/oauth/api_scope',
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[fetch-prices] eBay OAuth error:', response.status, errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    const expiresAt = new Date(Date.now() + (data.expires_in - 300) * 1000);
+    
+    // Cache the token
+    const { error: upsertError } = await supabase
+      .from('platform_settings')
+      .upsert({
+        key: 'ebay_oauth_token',
+        value: {
+          access_token: data.access_token,
+          expires_at: expiresAt.toISOString(),
+        },
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'key' });
+
+    if (upsertError) {
+      console.error('[fetch-prices] Failed to cache token:', upsertError);
+    }
+
+    console.log('[fetch-prices] New eBay token obtained and cached');
+    return data.access_token;
+  } catch (error) {
+    console.error('[fetch-prices] Error getting eBay token:', error);
+    return null;
+  }
+}
 
 // Category to eBay search term enhancements
 const categorySearchTerms: Record<string, string> = {
@@ -53,22 +141,18 @@ const mockIdToSearchQuery: Record<string, { query: string; category: string }> =
 function generateEbayQuery(name: string, category: string, subcategory?: string): string {
   const categoryTerm = categorySearchTerms[category] || '';
   
-  // Clean up the name - remove common suffixes that might confuse search
   let cleanName = name
-    .replace(/PSA \d+/gi, '') // Remove PSA grades for broader search
+    .replace(/PSA \d+/gi, '')
     .replace(/BGS \d+\.?\d*/gi, '')
     .replace(/CGC \d+\.?\d*/gi, '')
     .trim();
   
-  // Build search query
   let query = cleanName;
   
-  // Add category context if not already in name
   if (categoryTerm && !name.toLowerCase().includes(categoryTerm.split(' ')[0].toLowerCase())) {
     query = `${query} ${categoryTerm}`;
   }
   
-  // Add subcategory for more specific searches
   if (subcategory && !['enchanted', 'legendary', 'promo', 'modern'].includes(subcategory)) {
     query = `${query} ${subcategory}`;
   }
@@ -93,18 +177,13 @@ interface EbayResponse {
 }
 
 // Fetch real prices from eBay for a product
-async function fetchEbayPrice(query: string): Promise<{ 
+async function fetchEbayPrice(query: string, token: string): Promise<{ 
   avgPrice: number; 
   listings: number; 
   minPrice: number; 
   maxPrice: number;
   imageUrl?: string;
 } | null> {
-  if (!EBAY_API_KEY) {
-    console.log('[fetch-prices] eBay API key not configured');
-    return null;
-  }
-
   try {
     const searchParams = new URLSearchParams({
       q: query,
@@ -117,7 +196,7 @@ async function fetchEbayPrice(query: string): Promise<{
       `https://api.ebay.com/buy/browse/v1/item_summary/search?${searchParams}`,
       {
         headers: {
-          'Authorization': `Bearer ${EBAY_API_KEY}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
         },
@@ -143,7 +222,6 @@ async function fetchEbayPrice(query: string): Promise<{
 
     if (prices.length === 0) return null;
 
-    // Remove outliers (prices more than 3x the median)
     prices.sort((a, b) => a - b);
     const median = prices[Math.floor(prices.length / 2)];
     const filteredPrices = prices.filter(p => p <= median * 3 && p >= median / 3);
@@ -153,7 +231,6 @@ async function fetchEbayPrice(query: string): Promise<{
     const minPrice = Math.min(...finalPrices);
     const maxPrice = Math.max(...finalPrices);
 
-    // Get first image URL
     const imageUrl = items.find(item => item.image?.imageUrl)?.image?.imageUrl;
 
     console.log(`[fetch-prices] eBay "${query}": avg=$${avgPrice.toFixed(2)}, listings=${finalPrices.length}, range=$${minPrice}-$${maxPrice}`);
@@ -186,6 +263,12 @@ serve(async (req) => {
     }
     
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    
+    // Get eBay token with auto-refresh
+    const ebayToken = fetchFromEbay ? await getEbayToken(supabase) : null;
+    const ebayEnabled = !!ebayToken;
+    
+    console.log(`[fetch-prices] eBay integration: ${ebayEnabled ? 'enabled (token obtained)' : 'disabled'}`);
 
     const prices: Record<string, { 
       price: number; 
@@ -206,18 +289,16 @@ serve(async (req) => {
     if (hasMockIds && productIds) {
       console.log('[fetch-prices] Processing mock data IDs');
       
-      // Process mock IDs - fetch from eBay directly or return cached data
       for (const mockId of productIds) {
         const mockConfig = mockIdToSearchQuery[mockId as string];
         
-        if (mockConfig && fetchFromEbay && EBAY_API_KEY) {
-          // Try to get from eBay
-          const ebayData = await fetchEbayPrice(mockConfig.query);
+        if (mockConfig && ebayToken) {
+          const ebayData = await fetchEbayPrice(mockConfig.query, ebayToken);
           
           if (ebayData && ebayData.avgPrice > 0) {
             prices[mockId] = {
               price: ebayData.avgPrice,
-              change: (Math.random() - 0.5) * 10, // Simulated change since we don't have historical data
+              change: (Math.random() - 0.5) * 10,
               source: 'ebay',
               timestamp: new Date().toISOString(),
               ebayListings: ebayData.listings,
@@ -228,7 +309,6 @@ serve(async (req) => {
               imageUrl: ebayData.imageUrl,
             };
             
-            // Small delay to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 150));
           }
         }
@@ -240,14 +320,14 @@ serve(async (req) => {
         JSON.stringify({ 
           prices, 
           timestamp: new Date().toISOString(),
-          ebayEnabled: !!EBAY_API_KEY,
+          ebayEnabled,
           source: 'ebay-direct',
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Build query for market items (for real UUID-based queries)
+    // Build query for market items
     let query = supabase
       .from('market_items')
       .select('id, external_id, name, current_price, change_24h, category, subcategory, sales_count_30d, liquidity, image_url');
@@ -257,7 +337,6 @@ serve(async (req) => {
     }
     
     if (productIds && productIds.length > 0 && !refreshAll) {
-      // Try matching by external_id first (for mock data compatibility)
       query = query.or(`id.in.(${productIds.join(',')}),external_id.in.(${productIds.join(',')})`);
     }
 
@@ -265,7 +344,6 @@ serve(async (req) => {
 
     if (dbError) {
       console.error('[fetch-prices] Database error:', dbError);
-      // Don't throw - return empty prices instead
     }
 
     console.log(`[fetch-prices] Found ${marketItems?.length || 0} market items to process`);
@@ -280,15 +358,13 @@ serve(async (req) => {
       imageUrl?: string;
     }[] = [];
 
-    // Process each market item
     if (marketItems && marketItems.length > 0) {
       for (const item of marketItems) {
         const itemKey = item.external_id || item.id;
         
-        // Always try eBay if enabled
-        if (fetchFromEbay && EBAY_API_KEY) {
+        if (ebayToken) {
           const ebayQuery = generateEbayQuery(item.name, item.category, item.subcategory);
-          const ebayData = await fetchEbayPrice(ebayQuery);
+          const ebayData = await fetchEbayPrice(ebayQuery, ebayToken);
           
           if (ebayData && ebayData.avgPrice > 0) {
             const oldPrice = Number(item.current_price) || ebayData.avgPrice;
@@ -317,13 +393,11 @@ serve(async (req) => {
               imageUrl: ebayData.imageUrl,
             });
             
-            // Add small delay to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 100));
             continue;
           }
         }
 
-        // Fall back to database values
         if (item.current_price && Number(item.current_price) > 0) {
           prices[itemKey] = {
             price: Number(item.current_price),
@@ -357,7 +431,6 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           };
           
-          // Only update image if item doesn't have one
           if (!existingItem.image_url && update.imageUrl) {
             updateData.image_url = update.imageUrl;
           }
@@ -375,7 +448,6 @@ serve(async (req) => {
         }
       }
       
-      // Also log to price_history for tracking
       const historyRecords = ebayUpdates.map(update => ({
         product_id: update.id,
         price: update.price,
@@ -398,7 +470,7 @@ serve(async (req) => {
       JSON.stringify({ 
         prices, 
         timestamp: new Date().toISOString(),
-        ebayEnabled: !!EBAY_API_KEY,
+        ebayEnabled,
         updatedCount: ebayUpdates.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
