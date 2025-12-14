@@ -94,19 +94,25 @@ const productCatalog = [
   { id: 'vg-zelda-nes-sealed', name: 'Legend of Zelda NES Sealed', category: 'videogames', search: 'Legend of Zelda Sealed NES' },
   { id: 'vg-mario-64-sealed', name: 'Super Mario 64 Sealed', category: 'videogames', search: 'Super Mario 64 Sealed N64' },
   
-  // League of Legends Riftbound TCG - Origins Set Champions (12 actual champions)
-  { id: 'riftbound-jinx', name: 'Jinx Loose Cannon', category: 'lol-riftbound', search: 'Jinx Loose Cannon Riftbound Origins' },
-  { id: 'riftbound-leesin', name: 'Lee Sin Blind Monk', category: 'lol-riftbound', search: 'Lee Sin Blind Monk Riftbound Origins' },
-  { id: 'riftbound-viktor', name: 'Viktor Machine Herald', category: 'lol-riftbound', search: 'Viktor Machine Herald Riftbound Origins' },
-  { id: 'riftbound-annie', name: 'Annie Dark Child', category: 'lol-riftbound', search: 'Annie Dark Child Riftbound Origins' },
-  { id: 'riftbound-garen', name: 'Garen Might of Demacia', category: 'lol-riftbound', search: 'Garen Might of Demacia Riftbound Origins' },
-  { id: 'riftbound-lux', name: 'Lux Lady of Luminosity', category: 'lol-riftbound', search: 'Lux Lady of Luminosity Riftbound Origins' },
-  { id: 'riftbound-masteryi', name: 'Master Yi Wuju Bladesman', category: 'lol-riftbound', search: 'Master Yi Wuju Bladesman Riftbound Origins' },
+  // League of Legends Riftbound TCG - Origins Booster Set (12 Champions)
   { id: 'riftbound-ahri', name: 'Ahri Nine-Tailed Fox', category: 'lol-riftbound', search: 'Ahri Nine-Tailed Fox Riftbound Origins' },
+  { id: 'riftbound-darius', name: 'Darius Hand of Noxus', category: 'lol-riftbound', search: 'Darius Hand of Noxus Riftbound Origins' },
+  { id: 'riftbound-jinx', name: 'Jinx Loose Cannon', category: 'lol-riftbound', search: 'Jinx Loose Cannon Riftbound Origins' },
   { id: 'riftbound-kaisa', name: "Kai'Sa Daughter of the Void", category: 'lol-riftbound', search: "Kai'Sa Daughter Void Riftbound Origins" },
+  { id: 'riftbound-leesin', name: 'Lee Sin Blind Monk', category: 'lol-riftbound', search: 'Lee Sin Blind Monk Riftbound Origins' },
+  { id: 'riftbound-leona', name: 'Leona Radiant Dawn', category: 'lol-riftbound', search: 'Leona Radiant Dawn Riftbound Origins' },
+  { id: 'riftbound-missfortune', name: 'Miss Fortune Bounty Hunter', category: 'lol-riftbound', search: 'Miss Fortune Bounty Hunter Riftbound Origins' },
+  { id: 'riftbound-sett', name: 'Sett Boss', category: 'lol-riftbound', search: 'Sett Boss Riftbound Origins' },
   { id: 'riftbound-teemo', name: 'Teemo Swift Scout', category: 'lol-riftbound', search: 'Teemo Swift Scout Riftbound Origins' },
-  { id: 'riftbound-yasuo', name: 'Yasuo Unforgiven', category: 'lol-riftbound', search: 'Yasuo Unforgiven Riftbound Origins' },
+  { id: 'riftbound-viktor', name: 'Viktor Machine Herald', category: 'lol-riftbound', search: 'Viktor Machine Herald Riftbound Origins' },
   { id: 'riftbound-volibear', name: 'Volibear Relentless Storm', category: 'lol-riftbound', search: 'Volibear Relentless Storm Riftbound Origins' },
+  { id: 'riftbound-yasuo', name: 'Yasuo Unforgiven', category: 'lol-riftbound', search: 'Yasuo Unforgiven Riftbound Origins' },
+  
+  // League of Legends Riftbound TCG - Proving Grounds Box Set (4 Champions)
+  { id: 'riftbound-annie', name: 'Annie Dark Child', category: 'lol-riftbound', search: 'Annie Dark Child Riftbound Proving Grounds' },
+  { id: 'riftbound-garen', name: 'Garen Might of Demacia', category: 'lol-riftbound', search: 'Garen Might of Demacia Riftbound Proving Grounds' },
+  { id: 'riftbound-lux', name: 'Lux Lady of Luminosity', category: 'lol-riftbound', search: 'Lux Lady of Luminosity Riftbound Proving Grounds' },
+  { id: 'riftbound-masteryi', name: 'Master Yi Wuju Bladesman', category: 'lol-riftbound', search: 'Master Yi Wuju Bladesman Riftbound Proving Grounds' },
   
   // League of Legends Riftbound TCG - Sealed Products
   { id: 'riftbound-booster-box', name: 'Riftbound Origins Booster Box', category: 'lol-riftbound', search: 'Riftbound Origins Booster Box' },
@@ -114,8 +120,6 @@ const productCatalog = [
   { id: 'riftbound-jinx-deck', name: 'Jinx Champion Deck', category: 'lol-riftbound', search: 'Riftbound Jinx Champion Deck' },
   { id: 'riftbound-leesin-deck', name: 'Lee Sin Champion Deck', category: 'lol-riftbound', search: 'Riftbound Lee Sin Champion Deck' },
   { id: 'riftbound-viktor-deck', name: 'Viktor Champion Deck', category: 'lol-riftbound', search: 'Riftbound Viktor Champion Deck' },
-  { id: 'riftbound-booster-pack', name: 'Riftbound Booster Pack', category: 'lol-riftbound', search: 'Riftbound Origins Booster Pack' },
-  { id: 'riftbound-sleeved-booster', name: 'Riftbound Sleeved Booster', category: 'lol-riftbound', search: 'Riftbound Origins Sleeved Booster' },
 ];
 
 // Markup percentage (3-4% spread)
@@ -275,7 +279,7 @@ serve(async (req) => {
         }
         
         // Also update market_items table if this is a riftbound product
-        if (product.category === 'riftbound') {
+        if (product.category === 'lol-riftbound') {
           const { error: marketUpdateError } = await supabase
             .from('market_items')
             .update({
