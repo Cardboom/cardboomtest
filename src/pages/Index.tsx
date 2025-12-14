@@ -275,22 +275,32 @@ const Index = () => {
                 onCategoryChange={setSelectedCategory}
               />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredCollectibles.map((collectible, index) => (
-                  <ScrollReveal key={collectible.id} delay={Math.min(index * 50, 400)}>
-                    <div className={cn(
-                      "transition-transform duration-300",
-                      (collectible as any).priceUpdated && "animate-pulse"
-                    )}>
-                      <CollectibleCard
-                        collectible={collectible}
-                        onAddToCart={handleAddToCart}
-                        onClick={setSelectedCollectible}
-                      />
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
+              {isLoading ? (
+                <div className="col-span-full flex items-center justify-center py-16">
+                  <div className="text-muted-foreground">Loading collectibles...</div>
+                </div>
+              ) : filteredCollectibles.length === 0 ? (
+                <div className="col-span-full flex items-center justify-center py-16">
+                  <div className="text-muted-foreground">No items found in this category</div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredCollectibles.map((collectible, index) => (
+                    <ScrollReveal key={collectible.id} delay={Math.min(index * 50, 400)}>
+                      <div className={cn(
+                        "transition-transform duration-300",
+                        (collectible as any).priceUpdated && "animate-pulse"
+                      )}>
+                        <CollectibleCard
+                          collectible={collectible}
+                          onAddToCart={handleAddToCart}
+                          onClick={setSelectedCollectible}
+                        />
+                      </div>
+                    </ScrollReveal>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </ScrollReveal>
