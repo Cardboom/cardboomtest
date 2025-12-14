@@ -1,19 +1,16 @@
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowRight, TrendingUp, Users, Layers, DollarSign, Shield, Zap, Globe } from 'lucide-react';
+import { ArrowRight, TrendingUp, Users, Layers, DollarSign } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
+import { Hero3DScene } from './Hero3DScene';
 
 export const HeroSection = () => {
   const { t } = useLanguage();
   const { currency } = useCurrency();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  
   const { data: realStats } = useQuery({
     queryKey: ['hero-stats'],
     queryFn: async () => {
@@ -52,76 +49,73 @@ export const HeroSection = () => {
     return value.toString();
   };
 
-  const stats = [
-    { label: t.hero.totalVolume, value: formatValue(realStats?.totalVolume || 0, 'currency'), icon: DollarSign },
-    { label: t.hero.volume24h, value: formatValue(realStats?.volume24h || 0, 'currency'), icon: TrendingUp },
-    { label: t.hero.activeListings, value: formatValue(realStats?.activeListings || 0, 'number'), icon: Layers },
-    { label: t.hero.traders, value: formatValue(realStats?.traders || 0, 'number'), icon: Users }
-  ];
-
-  const features = [
-    { icon: Shield, title: 'Secure Trading', desc: 'Vault storage & escrow protection' },
-    { icon: Zap, title: 'Instant Deals', desc: 'Real-time price tracking' },
-    { icon: Globe, title: 'Global Market', desc: 'Trade with collectors worldwide' }
-  ];
-
   const handleGetStarted = () => {
     navigate('/auth');
   };
 
+  const stats = [
+    { label: t.hero.totalVolume, value: formatValue(realStats?.totalVolume || 0, 'currency') },
+    { label: t.hero.volume24h, value: formatValue(realStats?.volume24h || 0, 'currency') },
+    { label: t.hero.activeListings, value: formatValue(realStats?.activeListings || 0, 'number') },
+    { label: t.hero.traders, value: formatValue(realStats?.traders || 0, 'number') }
+  ];
+
   return (
-    <section className="relative min-h-[90vh] flex items-center bg-background">
-      {/* Subtle gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] to-transparent" />
+    <section className="relative min-h-[100vh] flex items-center overflow-hidden">
+      {/* 3D Scene Background */}
+      <Hero3DScene />
+      
+      {/* Gradient overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background pointer-events-none" />
       
       <div className="container mx-auto px-4 py-20 lg:py-32 relative z-10">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="max-w-3xl mx-auto text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border text-xs font-medium text-muted-foreground">
-            <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary backdrop-blur-sm animate-fade-in">
+            <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
             {t.hero.badge}
           </div>
           
           {/* Headline */}
-          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.05]">
+          <h1 className="font-display text-5xl md:text-6xl lg:text-8xl font-bold tracking-tight text-foreground leading-[1] animate-fade-in" style={{ animationDelay: '100ms' }}>
             Trade collectibles
             <br />
             <span className="text-primary">with confidence</span>
           </h1>
           
           {/* Subtitle */}
-          <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
             The trusted marketplace for trading cards and collectibles. Buy, sell, and track your portfolio.
           </p>
           
           {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
             <Button 
               size="lg" 
               onClick={handleGetStarted}
-              className="h-12 px-8 rounded-full font-medium text-base"
+              className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
             >
               Get started
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             <Button 
               variant="outline"
               size="lg" 
               onClick={() => navigate('/markets')}
-              className="h-12 px-8 rounded-full font-medium text-base"
+              className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50"
             >
               Explore market
             </Button>
           </div>
 
           {/* Stats */}
-          <div className="flex flex-wrap justify-center gap-12 pt-12 border-t border-border mt-12">
+          <div className="flex flex-wrap justify-center gap-8 sm:gap-16 pt-16 animate-fade-in" style={{ animationDelay: '400ms' }}>
             {stats.map(stat => (
               <div key={stat.label} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold font-display text-foreground">
+                <div className="text-3xl md:text-5xl font-bold font-display text-foreground">
                   {stat.value}
                 </div>
-                <div className="text-xs text-muted-foreground uppercase tracking-widest mt-1">
+                <div className="text-xs text-muted-foreground uppercase tracking-widest mt-2">
                   {stat.label}
                 </div>
               </div>
@@ -129,6 +123,9 @@ export const HeroSection = () => {
           </div>
         </div>
       </div>
+      
+      {/* Bottom gradient fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </section>
   );
 };
