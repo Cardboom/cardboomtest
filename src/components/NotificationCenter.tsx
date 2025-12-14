@@ -17,7 +17,7 @@ import { formatDistanceToNow } from 'date-fns';
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case 'price_alert':
-      return <TrendingDown className="h-4 w-4 text-green-500" />;
+      return <TrendingDown className="h-4 w-4 text-primary" />;
     case 'new_offer':
       return <Package className="h-4 w-4 text-blue-500" />;
     case 'message':
@@ -27,9 +27,9 @@ const getNotificationIcon = (type: string) => {
     case 'follower':
       return <UserPlus className="h-4 w-4 text-pink-500" />;
     case 'review':
-      return <Star className="h-4 w-4 text-yellow-500" />;
+      return <Star className="h-4 w-4 text-gold" />;
     case 'referral':
-      return <Gift className="h-4 w-4 text-emerald-500" />;
+      return <Gift className="h-4 w-4 text-primary" />;
     default:
       return <Bell className="h-4 w-4" />;
   }

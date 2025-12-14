@@ -204,7 +204,7 @@ const ReferralsPage = () => {
               <p className="text-sm text-muted-foreground">Total Referrals</p>
             </Card>
             <Card className="p-6 text-center">
-              <Zap className="h-8 w-8 mx-auto mb-3 text-green-500" />
+              <Zap className="h-8 w-8 mx-auto mb-3 text-primary" />
               <p className="text-3xl font-bold text-foreground">{activeReferrals}</p>
               <p className="text-sm text-muted-foreground">Active Users</p>
             </Card>

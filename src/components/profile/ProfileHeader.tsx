@@ -184,7 +184,7 @@ export const ProfileHeader = ({
                         {profile.display_name || 'Anonymous'}
                       </h1>
                       {profile.is_id_verified && (
-                        <Badge variant="secondary" className="gap-1 bg-green-500/20 text-green-400">
+                        <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary">
                           <ShieldCheck className="h-3 w-3" />
                           {t.profile.verified}
                         </Badge>
