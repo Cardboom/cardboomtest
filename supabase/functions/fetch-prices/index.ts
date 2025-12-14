@@ -10,51 +10,49 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 const EBAY_API_KEY = Deno.env.get('EBAY_BROWSE_API_KEY');
 
-// Product ID to eBay search query mapping
-const productIdToEbayQuery: Record<string, string> = {
-  'tcg-charizard-1st': 'Charizard 1st Edition PSA 10 Base Set',
-  'tcg-pikachu-illustrator': 'Pikachu Illustrator promo card',
-  'tcg-psa10-mewtwo': 'Mewtwo GX Rainbow Rare PSA 10',
-  'tcg-black-lotus': 'MTG Black Lotus Alpha Beta',
-  'mtg-mox-sapphire': 'MTG Mox Sapphire Alpha Beta',
-  'yugioh-blue-eyes': 'Blue-Eyes White Dragon LOB 1st Edition',
-  'yugioh-dark-magician': 'Dark Magician LOB 1st Edition',
-  'nba-lebron-2003': 'LeBron James 2003 Topps Chrome Rookie PSA',
-  'nba-jordan-fleer': 'Michael Jordan 1986 Fleer Rookie PSA',
-  'nba-luka-prizm': 'Luka Doncic Prizm Silver Rookie PSA',
-  'football-mahomes-prizm': 'Patrick Mahomes Prizm Silver Rookie PSA',
-  'football-brady-rookie': 'Tom Brady 2000 Contenders Rookie Auto PSA',
-  'football-chase-auto': 'Jamarr Chase Optic Rookie Auto',
-  'onepiece-luffy-alt': 'One Piece Card Game Luffy Alternate Art',
-  'onepiece-shanks-manga': 'One Piece Card Game Shanks manga rare',
-  'lorcana-elsa-enchanted': 'Disney Lorcana Elsa Enchanted',
-  'lorcana-mickey-enchanted': 'Disney Lorcana Mickey Mouse Enchanted',
-  'figure-kaws-companion': 'KAWS Companion figure original',
-  'figure-bearbrick-1000': 'Bearbrick KAWS 1000%',
+// Category to eBay search term enhancements
+const categorySearchTerms: Record<string, string> = {
+  'pokemon': 'Pokemon TCG card',
+  'yugioh': 'Yu-Gi-Oh card',
+  'mtg': 'Magic The Gathering MTG',
+  'lorcana': 'Disney Lorcana card',
+  'one-piece': 'One Piece TCG card',
+  'sports-nba': 'basketball card',
+  'sports-nfl': 'football card',
+  'sports-mlb': 'baseball card',
+  'sports-wnba': 'WNBA basketball card',
+  'nba': 'basketball card',
+  'figures': 'figure collectible',
+  'lol-riftbound': 'League of Legends card',
 };
 
-// Product ID to market_items name mapping
-const productIdToMarketItem: Record<string, string> = {
-  'tcg-charizard-1st': 'Charizard 1st Edition',
-  'tcg-pikachu-illustrator': 'Pikachu Illustrator',
-  'tcg-psa10-mewtwo': 'Mewtwo Rainbow',
-  'tcg-black-lotus': 'Black Lotus',
-  'mtg-mox-sapphire': 'Black Lotus',
-  'yugioh-blue-eyes': 'Blue-Eyes White Dragon',
-  'yugioh-dark-magician': 'Dark Magician',
-  'nba-lebron-2003': 'LeBron James Rookie',
-  'nba-jordan-fleer': 'Michael Jordan Fleer',
-  'nba-luka-prizm': 'Luka Dončić Prizm',
-  'football-mahomes-prizm': 'Patrick Mahomes Prizm',
-  'football-brady-rookie': 'Tom Brady Contenders',
-  'football-chase-auto': "Ja'Marr Chase Optic",
-  'onepiece-luffy-alt': 'Monkey D. Luffy',
-  'onepiece-shanks-manga': 'Shanks',
-  'lorcana-elsa-enchanted': 'Elsa - Snow Queen',
-  'lorcana-mickey-enchanted': 'Mickey Mouse',
-  'figure-kaws-companion': 'KAWS Companion',
-  'figure-bearbrick-1000': 'Bearbrick KAWS',
-};
+// Generate eBay search query from item name and category
+function generateEbayQuery(name: string, category: string, subcategory?: string): string {
+  const categoryTerm = categorySearchTerms[category] || '';
+  
+  // Clean up the name - remove common suffixes that might confuse search
+  let cleanName = name
+    .replace(/PSA \d+/gi, '') // Remove PSA grades for broader search
+    .replace(/BGS \d+\.?\d*/gi, '')
+    .replace(/CGC \d+\.?\d*/gi, '')
+    .trim();
+  
+  // Build search query
+  let query = cleanName;
+  
+  // Add category context if not already in name
+  if (categoryTerm && !name.toLowerCase().includes(categoryTerm.split(' ')[0].toLowerCase())) {
+    query = `${query} ${categoryTerm}`;
+  }
+  
+  // Add subcategory for more specific searches
+  if (subcategory && !['enchanted', 'legendary', 'promo', 'modern'].includes(subcategory)) {
+    query = `${query} ${subcategory}`;
+  }
+  
+  console.log(`[fetch-prices] Generated eBay query for "${name}" (${category}): "${query}"`);
+  return query;
+}
 
 interface EbayItem {
   itemId: string;
@@ -72,7 +70,13 @@ interface EbayResponse {
 }
 
 // Fetch real prices from eBay for a product
-async function fetchEbayPrice(query: string): Promise<{ avgPrice: number; listings: number; minPrice: number; maxPrice: number } | null> {
+async function fetchEbayPrice(query: string): Promise<{ 
+  avgPrice: number; 
+  listings: number; 
+  minPrice: number; 
+  maxPrice: number;
+  imageUrl?: string;
+} | null> {
   if (!EBAY_API_KEY) {
     console.log('[fetch-prices] eBay API key not configured');
     return null;
@@ -81,7 +85,7 @@ async function fetchEbayPrice(query: string): Promise<{ avgPrice: number; listin
   try {
     const searchParams = new URLSearchParams({
       q: query,
-      limit: '20',
+      limit: '30',
       filter: 'buyingOptions:{FIXED_PRICE|AUCTION}',
       sort: 'price',
     });
@@ -98,7 +102,7 @@ async function fetchEbayPrice(query: string): Promise<{ avgPrice: number; listin
     );
 
     if (!response.ok) {
-      console.error(`[fetch-prices] eBay API error for "${query}":`, response.status);
+      console.error(`[fetch-prices] eBay API error for "${query}":`, response.status, await response.text());
       return null;
     }
 
@@ -116,17 +120,27 @@ async function fetchEbayPrice(query: string): Promise<{ avgPrice: number; listin
 
     if (prices.length === 0) return null;
 
-    const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
+    // Remove outliers (prices more than 3x the median)
+    prices.sort((a, b) => a - b);
+    const median = prices[Math.floor(prices.length / 2)];
+    const filteredPrices = prices.filter(p => p <= median * 3 && p >= median / 3);
+    const finalPrices = filteredPrices.length > 3 ? filteredPrices : prices;
 
-    console.log(`[fetch-prices] eBay "${query}": avg=$${avgPrice.toFixed(2)}, listings=${prices.length}`);
+    const avgPrice = finalPrices.reduce((a, b) => a + b, 0) / finalPrices.length;
+    const minPrice = Math.min(...finalPrices);
+    const maxPrice = Math.max(...finalPrices);
+
+    // Get first image URL
+    const imageUrl = items.find(item => item.image?.imageUrl)?.image?.imageUrl;
+
+    console.log(`[fetch-prices] eBay "${query}": avg=$${avgPrice.toFixed(2)}, listings=${finalPrices.length}, range=$${minPrice}-$${maxPrice}`);
 
     return {
       avgPrice: Math.round(avgPrice * 100) / 100,
-      listings: prices.length,
-      minPrice,
-      maxPrice,
+      listings: finalPrices.length,
+      minPrice: Math.round(minPrice * 100) / 100,
+      maxPrice: Math.round(maxPrice * 100) / 100,
+      imageUrl,
     };
   } catch (error) {
     console.error(`[fetch-prices] Error fetching eBay data for "${query}":`, error);
@@ -140,15 +154,9 @@ serve(async (req) => {
   }
 
   try {
-    const { productIds, fetchFromEbay = false } = await req.json();
-    console.log(`[fetch-prices] Fetching prices for ${productIds?.length || 0} products, eBay=${fetchFromEbay}`);
-
-    if (!productIds || !Array.isArray(productIds)) {
-      return new Response(
-        JSON.stringify({ error: 'productIds array required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const body = await req.json();
+    const { productIds, fetchFromEbay = false, refreshAll = false, category } = body;
+    console.log(`[fetch-prices] Request: productIds=${productIds?.length || 0}, eBay=${fetchFromEbay}, refreshAll=${refreshAll}, category=${category || 'all'}`);
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Supabase configuration missing');
@@ -156,36 +164,27 @@ serve(async (req) => {
     
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Get all market items from database
-    const { data: marketItems, error: dbError } = await supabase
+    // Build query for market items
+    let query = supabase
       .from('market_items')
-      .select('id, name, current_price, change_24h, category, sales_count_30d, liquidity');
+      .select('id, name, current_price, change_24h, category, subcategory, sales_count_30d, liquidity, image_url');
+    
+    if (category) {
+      query = query.eq('category', category);
+    }
+    
+    if (productIds && productIds.length > 0 && !refreshAll) {
+      query = query.in('id', productIds);
+    }
+
+    const { data: marketItems, error: dbError } = await query;
 
     if (dbError) {
       console.error('[fetch-prices] Database error:', dbError);
       throw dbError;
     }
 
-    // Create a map for quick lookup
-    const marketItemMap: Record<string, { 
-      id: string;
-      price: number; 
-      change: number; 
-      liquidity: string | null;
-      salesCount: number | null;
-    }> = {};
-    
-    if (marketItems) {
-      for (const item of marketItems) {
-        marketItemMap[item.name] = {
-          id: item.id,
-          price: Number(item.current_price) || 0,
-          change: Number(item.change_24h) || 0,
-          liquidity: item.liquidity,
-          salesCount: item.sales_count_30d,
-        };
-      }
-    }
+    console.log(`[fetch-prices] Found ${marketItems?.length || 0} market items to process`);
 
     const prices: Record<string, { 
       price: number; 
@@ -197,24 +196,34 @@ serve(async (req) => {
       maxPrice?: number;
       liquidity?: string;
       salesCount?: number;
+      imageUrl?: string;
     }> = {};
 
-    // Fetch from eBay if requested (limit to avoid rate limits)
-    const ebayUpdates: { name: string; price: number; listings: number }[] = [];
-    
-    for (const productId of productIds) {
-      const marketItemName = productIdToMarketItem[productId];
-      const dbData = marketItemName ? marketItemMap[marketItemName] : null;
-      
-      // Try to fetch from eBay if enabled
-      if (fetchFromEbay && EBAY_API_KEY) {
-        const ebayQuery = productIdToEbayQuery[productId];
-        if (ebayQuery) {
+    const ebayUpdates: { 
+      id: string; 
+      name: string; 
+      price: number; 
+      listings: number; 
+      minPrice: number;
+      maxPrice: number;
+      imageUrl?: string;
+    }[] = [];
+
+    // Process each market item
+    if (marketItems) {
+      for (const item of marketItems) {
+        // Always try eBay if enabled
+        if (fetchFromEbay && EBAY_API_KEY) {
+          const ebayQuery = generateEbayQuery(item.name, item.category, item.subcategory);
           const ebayData = await fetchEbayPrice(ebayQuery);
+          
           if (ebayData && ebayData.avgPrice > 0) {
-            prices[productId] = {
+            const oldPrice = Number(item.current_price) || ebayData.avgPrice;
+            const change = ((ebayData.avgPrice - oldPrice) / oldPrice) * 100;
+            
+            prices[item.id] = {
               price: ebayData.avgPrice,
-              change: dbData ? ((ebayData.avgPrice - dbData.price) / dbData.price) * 100 : 0,
+              change: Math.round(change * 100) / 100,
               source: 'ebay',
               timestamp: new Date().toISOString(),
               ebayListings: ebayData.listings,
@@ -222,54 +231,91 @@ serve(async (req) => {
               maxPrice: ebayData.maxPrice,
               liquidity: ebayData.listings > 15 ? 'high' : ebayData.listings > 5 ? 'medium' : 'low',
               salesCount: ebayData.listings,
+              imageUrl: ebayData.imageUrl,
             };
             
-            if (marketItemName) {
-              ebayUpdates.push({
-                name: marketItemName,
-                price: ebayData.avgPrice,
-                listings: ebayData.listings,
-              });
-            }
+            ebayUpdates.push({
+              id: item.id,
+              name: item.name,
+              price: ebayData.avgPrice,
+              listings: ebayData.listings,
+              minPrice: ebayData.minPrice,
+              maxPrice: ebayData.maxPrice,
+              imageUrl: ebayData.imageUrl,
+            });
+            
+            // Add small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 100));
             continue;
           }
         }
-      }
 
-      // Fall back to database
-      if (dbData && dbData.price > 0) {
-        prices[productId] = {
-          price: dbData.price,
-          change: dbData.change,
-          source: 'database',
-          timestamp: new Date().toISOString(),
-          liquidity: dbData.liquidity || undefined,
-          salesCount: dbData.salesCount || undefined,
-        };
+        // Fall back to database values
+        if (item.current_price && Number(item.current_price) > 0) {
+          prices[item.id] = {
+            price: Number(item.current_price),
+            change: Number(item.change_24h) || 0,
+            source: 'database',
+            timestamp: new Date().toISOString(),
+            liquidity: item.liquidity || undefined,
+            salesCount: item.sales_count_30d || undefined,
+            imageUrl: item.image_url || undefined,
+          };
+        }
       }
     }
 
-    // Update database with eBay prices if we fetched any
+    // Batch update database with eBay prices
     if (ebayUpdates.length > 0) {
+      console.log(`[fetch-prices] Updating ${ebayUpdates.length} items with eBay data`);
+      
       for (const update of ebayUpdates) {
-        const existingItem = marketItems?.find(m => m.name === update.name);
+        const existingItem = marketItems?.find(m => m.id === update.id);
         if (existingItem) {
           const oldPrice = Number(existingItem.current_price) || update.price;
           const change24h = ((update.price - oldPrice) / oldPrice) * 100;
           
-          await supabase
+          const updateData: Record<string, unknown> = {
+            current_price: update.price,
+            change_24h: Math.round(change24h * 100) / 100,
+            sales_count_30d: update.listings,
+            liquidity: update.listings > 15 ? 'high' : update.listings > 5 ? 'medium' : 'low',
+            data_source: 'ebay',
+            updated_at: new Date().toISOString(),
+          };
+          
+          // Only update image if item doesn't have one
+          if (!existingItem.image_url && update.imageUrl) {
+            updateData.image_url = update.imageUrl;
+          }
+          
+          const { error: updateError } = await supabase
             .from('market_items')
-            .update({
-              current_price: update.price,
-              change_24h: Math.round(change24h * 100) / 100,
-              sales_count_30d: update.listings,
-              liquidity: update.listings > 15 ? 'high' : update.listings > 5 ? 'medium' : 'low',
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', existingItem.id);
+            .update(updateData)
+            .eq('id', update.id);
             
-          console.log(`[fetch-prices] Updated ${update.name} to $${update.price}`);
+          if (updateError) {
+            console.error(`[fetch-prices] Failed to update ${update.name}:`, updateError);
+          } else {
+            console.log(`[fetch-prices] Updated ${update.name} to $${update.price} (${update.listings} listings)`);
+          }
         }
+      }
+      
+      // Also log to price_history for tracking
+      const historyRecords = ebayUpdates.map(update => ({
+        product_id: update.id,
+        price: update.price,
+        source: 'ebay',
+        recorded_at: new Date().toISOString(),
+      }));
+      
+      const { error: historyError } = await supabase
+        .from('price_history')
+        .insert(historyRecords);
+        
+      if (historyError) {
+        console.error('[fetch-prices] Failed to log price history:', historyError);
       }
     }
 
@@ -280,6 +326,7 @@ serve(async (req) => {
         prices, 
         timestamp: new Date().toISOString(),
         ebayEnabled: !!EBAY_API_KEY,
+        updatedCount: ebayUpdates.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
