@@ -16,9 +16,8 @@ import { DailyQuestsPanel } from '@/components/DailyQuestsPanel';
 import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
-import { mockCollectibles } from '@/data/mockData';
+import { useMarketItems } from '@/hooks/useMarketItems';
 import { Collectible } from '@/types/collectible';
-import { usePrices } from '@/contexts/PriceContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDailyStreak } from '@/hooks/useDailyStreak';
 import { Button } from '@/components/ui/button';
@@ -52,27 +51,32 @@ const Index = () => {
     setShowWaitlist(false);
   };
 
-  // Use shared price context
-  const { prices } = usePrices();
+  // Fetch items from database instead of mockData
+  const { items: marketItems, isLoading } = useMarketItems({ limit: 100 });
 
+  // Transform database items to Collectible format
   const collectiblesWithLivePrices = useMemo(() => {
-    return mockCollectibles.map(collectible => {
-      const livePrice = prices[collectible.priceId];
-      if (livePrice) {
-        return {
-          ...collectible,
-          price: livePrice.price,
-          priceChange: livePrice.change,
-          previousPrice: Math.round(livePrice.price / (1 + livePrice.change / 100)),
-          priceUpdated: livePrice.updated,
-          liquidity: (livePrice as any).liquidity,
-          salesCount: (livePrice as any).salesCount,
-          source: livePrice.source,
-        };
-      }
-      return collectible;
-    });
-  }, [prices]);
+    return marketItems.map(item => ({
+      id: item.id,
+      priceId: item.id,
+      name: item.name,
+      category: item.category,
+      image: item.image_url || '/placeholder.svg',
+      price: item.current_price,
+      previousPrice: item.base_price,
+      priceChange: item.change_24h ?? 0,
+      rarity: (item.rarity as 'common' | 'rare' | 'legendary' | 'grail') || 'rare',
+      seller: 'CardBoom',
+      condition: 'Mint',
+      year: new Date(item.created_at).getFullYear(),
+      brand: item.set_name || item.subcategory || item.category,
+      trending: item.is_trending ?? false,
+      priceUpdated: false,
+      liquidity: item.liquidity,
+      salesCount: item.sales_count_30d,
+      source: 'database',
+    } as Collectible));
+  }, [marketItems]);
 
   const filteredCollectibles = useMemo(() => {
     if (selectedCategory === 'all') return collectiblesWithLivePrices;
