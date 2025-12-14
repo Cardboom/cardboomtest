@@ -73,19 +73,19 @@ export const HeroSection = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary backdrop-blur-sm animate-fade-in">
             <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            {t.hero.badge}
+            The Future of TCG Investing
           </div>
           
           {/* Headline */}
           <h1 className="font-display text-5xl md:text-6xl lg:text-8xl font-bold tracking-tight text-foreground leading-[1] animate-fade-in" style={{ animationDelay: '100ms' }}>
-            Trade collectibles
+            Invest in your
             <br />
-            <span className="text-primary">with confidence</span>
+            <span className="text-primary">TCG collection</span>
           </h1>
           
           {/* Subtitle */}
           <p className="text-muted-foreground text-lg md:text-xl max-w-xl mx-auto animate-fade-in" style={{ animationDelay: '200ms' }}>
-            The trusted marketplace for trading cards and collectibles. Buy, sell, and track your portfolio.
+            The home of TCG investing. Track real-time prices, build your portfolio, and turn your passion into profit.
           </p>
           
           {/* CTA */}
@@ -95,7 +95,7 @@ export const HeroSection = () => {
               onClick={handleGetStarted}
               className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
             >
-              Get started
+              Start investing
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             <Button 
@@ -104,7 +104,7 @@ export const HeroSection = () => {
               onClick={() => navigate('/markets')}
               className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50"
             >
-              Explore market
+              View markets
             </Button>
           </div>
 

@@ -12,17 +12,17 @@ export const en = {
   },
   // Hero
   hero: {
-    badge: "Live Trading",
-    title: "Trade Premium",
-    titleHighlight: "Collectibles",
-    subtitle: "Real-Time Pricing • Instant Settlement",
-    description: "Join the premier marketplace for trading cards and rare collectibles. Real-time pricing, secure transactions, and a community of verified collectors.",
-    startTrading: "Start Trading",
-    exploreMarket: "Explore Market",
+    badge: "The Future of TCG Investing",
+    title: "Invest in your",
+    titleHighlight: "TCG collection",
+    subtitle: "Real-Time Pricing • Portfolio Tracking • Smart Investing",
+    description: "The home of TCG investing. Track real-time prices, build your portfolio, and turn your passion into profit.",
+    startTrading: "Start Investing",
+    exploreMarket: "View Markets",
     totalVolume: "Total Volume",
     volume24h: "24h Volume",
     activeListings: "Active Listings",
-    traders: "Traders",
+    traders: "Investors",
   },
   // Waitlist
   waitlist: {
@@ -141,7 +141,7 @@ export const en = {
   },
   // Footer
   footer: {
-    tagline: "The premier marketplace for collectible cards and figures.",
+    tagline: "The home of TCG investing. Build wealth from your collection.",
     marketplace: "Marketplace",
     nbaCards: "NBA Cards",
     footballCards: "Football Cards",
