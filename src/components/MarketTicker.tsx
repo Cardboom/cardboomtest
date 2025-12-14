@@ -1,12 +1,11 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { mockCollectibles } from '@/data/mockData';
-import { useCurrency } from '@/contexts/CurrencyContext';
 import { useMemo } from 'react';
 import { useRealtimePrices } from '@/hooks/useRealtimePrices';
 import { cn } from '@/lib/utils';
+import { LiveTickerPrice } from './LiveTickerPrice';
 
 export const MarketTicker = () => {
-  const { formatPrice } = useCurrency();
   const trendingMock = useMemo(() => mockCollectibles.filter(item => item.trending), []);
   
   const productIds = useMemo(() => trendingMock.map(item => item.priceId), [trendingMock]);
@@ -43,11 +42,8 @@ export const MarketTicker = () => {
             <span className="text-sm text-muted-foreground font-medium">
               {item.name.slice(0, 25)}...
             </span>
-            <span className={cn(
-              "text-sm font-semibold text-foreground transition-all duration-300",
-              item.updated && "text-primary scale-105"
-            )}>
-              {formatPrice(item.price)}
+            <span className="text-sm font-semibold">
+              <LiveTickerPrice value={item.price} tickInterval={2000} volatility={0.0015} />
             </span>
             <span className={cn(
               'flex items-center gap-1 text-xs font-medium transition-all duration-300',
