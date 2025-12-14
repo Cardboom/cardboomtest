@@ -46,6 +46,7 @@ const Markets = () => {
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [displayCount, setDisplayCount] = useState(20);
 
   // Use shared price context
   const { prices, lastUpdated, isLoading, refetch } = usePrices();
@@ -146,6 +147,17 @@ const Markets = () => {
 
     return items;
   }, [collectiblesWithPrices, searchQuery, activeTab, sortField, sortDir, selectedCategory]);
+
+  // Displayed items with pagination
+  const displayedCollectibles = useMemo(() => {
+    return filteredCollectibles.slice(0, displayCount);
+  }, [filteredCollectibles, displayCount]);
+
+  const hasMoreItems = displayCount < filteredCollectibles.length;
+
+  const handleLoadMore = () => {
+    setDisplayCount(prev => Math.min(prev + 20, filteredCollectibles.length));
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -367,14 +379,14 @@ const Markets = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCollectibles.length === 0 ? (
+                {displayedCollectibles.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                       No assets found matching your criteria
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredCollectibles.map((item, i) => {
+                  displayedCollectibles.map((item, i) => {
                     const changeValue = getChangeValue(item);
                     const isPositive = changeValue >= 0;
                     
@@ -489,14 +501,20 @@ const Markets = () => {
         </ScrollReveal>
 
         {/* Load More */}
-        <ScrollReveal delay={300}>
-          <div className="flex items-center justify-center mt-6">
-            <Button variant="outline" className="gap-2">
-              Load More Assets
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-          </div>
-        </ScrollReveal>
+        {hasMoreItems && (
+          <ScrollReveal delay={300}>
+            <div className="flex items-center justify-center mt-6">
+              <Button 
+                variant="outline" 
+                className="gap-2"
+                onClick={handleLoadMore}
+              >
+                Load More Assets ({filteredCollectibles.length - displayCount} remaining)
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </div>
+          </ScrollReveal>
+        )}
       </main>
 
       <Footer />
