@@ -78,9 +78,9 @@ export const HeroSection = () => {
           
           {/* Headline */}
           <h1 className="font-display text-5xl md:text-6xl lg:text-8xl font-bold tracking-tight text-foreground leading-[1] animate-fade-in" style={{ animationDelay: '100ms' }}>
-            Invest in your
+            Invest in your collection
             <br />
-            <span className="text-primary">TCG collection</span>
+            <span className="text-primary">make the value go boom!</span>
           </h1>
           
           {/* Subtitle */}
