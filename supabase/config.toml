@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.market-insights]
 verify_jwt = false
+
+[functions.geliver-shipping]
+verify_jwt = false
