@@ -258,54 +258,52 @@ const Index = () => {
         </ScrollReveal>
 
         {/* Listings */}
-        <ScrollReveal>
-          <section className="py-12 border-t border-border/50">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                    {t.market.explore}
-                  </h2>
-                  <p className="text-muted-foreground mt-1">Browse all available listings</p>
-                </div>
+        <section className="py-12 border-t border-border/50">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                  {t.market.explore}
+                </h2>
+                <p className="text-muted-foreground mt-1">Browse all available listings</p>
               </div>
-              
-              <CategoryFilter
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-              />
-
-              {isLoading ? (
-                <div className="col-span-full flex items-center justify-center py-16">
-                  <div className="text-muted-foreground">Loading collectibles...</div>
-                </div>
-              ) : filteredCollectibles.length === 0 ? (
-                <div className="col-span-full flex items-center justify-center py-16">
-                  <div className="text-muted-foreground">No items found in this category</div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {filteredCollectibles.map((collectible, index) => (
-                    <div
-                      key={collectible.id}
-                      className={cn(
-                        "transition-transform duration-300 animate-fade-in hover:scale-[1.02]",
-                        (collectible as any).priceUpdated && "animate-pulse"
-                      )}
-                      style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
-                    >
-                      <CollectibleCard
-                        collectible={collectible}
-                        onAddToCart={handleAddToCart}
-                        onClick={setSelectedCollectible}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
-          </section>
-        </ScrollReveal>
+            
+            <CategoryFilter
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
+
+            {isLoading ? (
+              <div className="col-span-full flex items-center justify-center py-16">
+                <div className="text-muted-foreground">Loading collectibles...</div>
+              </div>
+            ) : filteredCollectibles.length === 0 ? (
+              <div className="col-span-full flex items-center justify-center py-16">
+                <div className="text-muted-foreground">No items found in this category</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredCollectibles.map((collectible, index) => (
+                  <div
+                    key={collectible.id}
+                    className={cn(
+                      "transition-transform duration-300 animate-fade-in hover:scale-[1.02]",
+                      (collectible as any).priceUpdated && "animate-pulse"
+                    )}
+                    style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
+                  >
+                    <CollectibleCard
+                      collectible={collectible}
+                      onAddToCart={handleAddToCart}
+                      onClick={setSelectedCollectible}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
       </main>
 
       <Footer />
