@@ -8,7 +8,6 @@ import { CategoryFilter } from '@/components/CategoryFilter';
 import { CollectibleCard } from '@/components/CollectibleCard';
 import { CollectibleModal } from '@/components/CollectibleModal';
 import { CartDrawer } from '@/components/CartDrawer';
-import { PriceChart } from '@/components/PriceChart';
 import { LiveMarketTable } from '@/components/LiveMarketTable';
 import { Footer } from '@/components/Footer';
 import { WaitlistBanner } from '@/components/WaitlistBanner';
@@ -216,24 +215,6 @@ const Index = () => {
         <ScrollReveal>
           <TrendingSection />
         </ScrollReveal>
-
-        {/* Market Overview with Chart */}
-        <ScrollReveal>
-          <section className="py-12 border-t border-border/50">
-            <div className="container mx-auto px-4">
-              <div className="mb-8">
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  Market Overview
-                </h2>
-                <p className="text-muted-foreground mt-1">Track collectible market trends</p>
-              </div>
-              <div className="max-w-4xl">
-                <PriceChart title={t.market.index} />
-              </div>
-            </div>
-          </section>
-        </ScrollReveal>
-
         {/* Platform Features */}
         <ScrollReveal>
           <section className="py-16 border-t border-border/50 bg-gradient-to-b from-muted/30 to-transparent">
