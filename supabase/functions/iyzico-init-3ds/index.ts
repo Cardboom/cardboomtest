@@ -62,10 +62,11 @@ async function generateAuthorizationV1(
   const hashArray = new Uint8Array(hashBuffer);
   const hashHex = Array.from(hashArray).map(b => b.toString(16).padStart(2, '0')).join('');
   
-  const authString = apiKey + randomString + secretKey + hashHex;
-  const authBase64 = btoa(authString);
+  // Correct format: base64(apiKey:hash)
+  const authorizationString = `${apiKey}:${hashHex}`;
+  const authBase64 = btoa(authorizationString);
   
-  return `IYZWS ${apiKey}:${authBase64}`;
+  return `IYZWS ${authBase64}`;
 }
 
 serve(async (req) => {
