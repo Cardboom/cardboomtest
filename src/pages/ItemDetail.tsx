@@ -29,6 +29,7 @@ import { ItemBids } from '@/components/item/ItemBids';
 import { FractionalOwnershipCard } from '@/components/fractional/FractionalOwnershipCard';
 import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
 import { CardSocialProof } from '@/components/CardSocialProof';
+import { generateCardUrl } from '@/lib/seoSlug';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -76,6 +77,21 @@ const ItemDetail = () => {
     },
     enabled: !!id,
   });
+
+  // Redirect to SEO-friendly URL
+  useEffect(() => {
+    if (item && !itemLoading) {
+      const seoUrl = generateCardUrl({
+        name: item.name,
+        category: item.category,
+        set_name: item.set_name,
+        series: item.series,
+        external_id: item.external_id,
+      });
+      // Replace current URL with SEO-friendly version
+      navigate(seoUrl, { replace: true });
+    }
+  }, [item, itemLoading, navigate]);
 
   // Fetch view counts
   const { data: viewStats } = useQuery({

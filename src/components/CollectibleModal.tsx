@@ -8,6 +8,7 @@ import { ShareButton } from './ShareButton';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CardSocialProof } from './CardSocialProof';
+import { generateCardUrl } from '@/lib/seoSlug';
 
 interface CollectibleModalProps {
   collectible: Collectible | null;
@@ -30,7 +31,14 @@ export const CollectibleModal = ({ collectible, onClose, onAddToCart }: Collecti
 
   const handleViewDetails = () => {
     onClose();
-    navigate(`/item/${collectible.id}`);
+    // Use SEO-friendly URL
+    const seoUrl = generateCardUrl({
+      name: collectible.name,
+      category: collectible.category,
+      set_name: collectible.brand,
+      series: collectible.year?.toString(),
+    });
+    navigate(seoUrl);
   };
 
   return (
