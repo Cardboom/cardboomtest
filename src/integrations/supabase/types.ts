@@ -125,6 +125,97 @@ export type Database = {
         }
         Relationships: []
       }
+      auto_buy_config: {
+        Row: {
+          created_at: string
+          discount_threshold: number
+          id: string
+          is_enabled: boolean
+          max_buy_amount: number | null
+          system_buyer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_threshold?: number
+          id?: string
+          is_enabled?: boolean
+          max_buy_amount?: number | null
+          system_buyer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_threshold?: number
+          id?: string
+          is_enabled?: boolean
+          max_buy_amount?: number | null
+          system_buyer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      auto_buy_logs: {
+        Row: {
+          created_at: string
+          discount_percent: number
+          error_message: string | null
+          id: string
+          listing_id: string | null
+          listing_price: number
+          market_item_id: string | null
+          market_price: number
+          order_id: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percent: number
+          error_message?: string | null
+          id?: string
+          listing_id?: string | null
+          listing_price: number
+          market_item_id?: string | null
+          market_price: number
+          order_id?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          discount_percent?: number
+          error_message?: string | null
+          id?: string
+          listing_id?: string | null
+          listing_price?: number
+          market_item_id?: string | null
+          market_price?: number
+          order_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_buy_logs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_buy_logs_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_buy_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bids: {
         Row: {
           bid_amount: number
