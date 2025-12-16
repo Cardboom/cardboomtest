@@ -29,6 +29,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { AIMarketInsight } from '@/components/AIMarketInsight';
 import { cn } from '@/lib/utils';
+import cardboomLogo from '@/assets/cardboom-logo.png';
 
 interface HeaderProps {
   cartCount: number;
@@ -94,13 +95,12 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14 gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-2.5 cursor-pointer group flex-shrink-0" onClick={() => navigate('/')}>
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary via-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 group-hover:scale-105 transition-all duration-200">
-              <span className="text-primary-foreground font-display font-bold text-base">C</span>
-            </div>
-            <span className="font-display text-lg font-bold text-foreground hidden sm:block tracking-tight">
-              CARD<span className="text-primary">BOOM</span>
-            </span>
+          <div className="flex items-center gap-2 cursor-pointer group flex-shrink-0" onClick={() => navigate('/')}>
+            <img 
+              src={cardboomLogo} 
+              alt="CardBoom" 
+              className="h-8 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+            />
           </div>
 
           {/* Search Bar - Improved visibility */}
