@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Gamepad2, Trophy, Coins, Sword, Users, GraduationCap, Package } from 'lucide-react';
+import { Gamepad2, Trophy, Coins, Users, GraduationCap, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -81,6 +81,10 @@ const Gaming = () => {
     return gamingItems.filter(item => item.category === 'gamepoints');
   }, [gamingItems]);
 
+  const collectibleItems = useMemo(() => {
+    return gamingItems.filter(item => item.category === 'gaming');
+  }, [gamingItems]);
+
   const coachingItems = useMemo(() => {
     return gamingItems.filter(item => item.category === 'coaching');
   }, [gamingItems]);
@@ -88,13 +92,16 @@ const Gaming = () => {
   const filteredItems = useMemo(() => {
     if (activeTab === 'all') return gamingItems;
     if (activeTab === 'points') return gamePointsItems;
+    if (activeTab === 'collectibles') return collectibleItems;
     if (activeTab === 'coaching') return coachingItems;
     if (activeTab === 'valorant') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('valorant'));
     if (activeTab === 'lol') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('league'));
     if (activeTab === 'csgo') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('cs'));
     if (activeTab === 'pubg') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('pubg'));
+    if (activeTab === 'fortnite') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('fortnite'));
+    if (activeTab === 'genshin') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('genshin'));
     return gamingItems;
-  }, [activeTab, gamingItems, gamePointsItems, coachingItems]);
+  }, [activeTab, gamingItems, gamePointsItems, collectibleItems, coachingItems]);
 
   const handleRemoveFromCart = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
@@ -158,14 +165,14 @@ const Gaming = () => {
             <p className="text-sm text-muted-foreground">Game Points</p>
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
+            <Package className="w-5 h-5 text-purple-500 mb-2" />
+            <p className="text-2xl font-bold">{collectibleItems.length}</p>
+            <p className="text-sm text-muted-foreground">Collectibles</p>
+          </div>
+          <div className="p-4 rounded-xl bg-card border border-border">
             <Trophy className="w-5 h-5 text-primary mb-2" />
             <p className="text-2xl font-bold">{coachingItems.length}</p>
             <p className="text-sm text-muted-foreground">Coaching Services</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <Sword className="w-5 h-5 text-loss mb-2" />
-            <p className="text-2xl font-bold">{gamingItems.filter(i => i.subcategory?.toLowerCase().includes('cs')).length}</p>
-            <p className="text-sm text-muted-foreground">CS2 Skins</p>
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Users className="w-5 h-5 text-gain mb-2" />
@@ -186,6 +193,9 @@ const Gaming = () => {
             <TabsTrigger value="points" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               🎮 Game Points
             </TabsTrigger>
+            <TabsTrigger value="collectibles" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
+              📦 Collectibles
+            </TabsTrigger>
             <TabsTrigger value="coaching" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               🎓 Coaching
             </TabsTrigger>
@@ -195,11 +205,14 @@ const Gaming = () => {
             <TabsTrigger value="lol" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               League of Legends
             </TabsTrigger>
-            <TabsTrigger value="csgo" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              CS2
+            <TabsTrigger value="fortnite" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
+              Fortnite
             </TabsTrigger>
             <TabsTrigger value="pubg" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               PUBG
+            </TabsTrigger>
+            <TabsTrigger value="genshin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
+              Genshin Impact
             </TabsTrigger>
           </TabsList>
         </Tabs>
