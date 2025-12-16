@@ -226,19 +226,6 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                           </Link>
                         </NavigationMenuLink>
                       </li>
-                      <li>
-                        <NavigationMenuLink asChild>
-                          <Link to="/gaming" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                              <Gamepad2 className="w-4 h-4 text-accent" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-sm">{t.nav.gaming}</div>
-                              <div className="text-xs text-muted-foreground">Gaming hub</div>
-                            </div>
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
                       {user && (
                         <li>
                           <NavigationMenuLink asChild>
@@ -260,6 +247,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               </NavigationMenuList>
             </NavigationMenu>
 
+            <Link 
+              to="/gaming" 
+              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md flex items-center gap-1.5"
+            >
+              <Gamepad2 className="w-4 h-4" />
+              {t.nav.gaming}
+            </Link>
             <Link 
               to="/sell" 
               className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"

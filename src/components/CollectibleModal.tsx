@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { ShareButton } from './ShareButton';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { CardSocialProof } from './CardSocialProof';
 
 interface CollectibleModalProps {
   collectible: Collectible | null;
@@ -108,6 +109,14 @@ export const CollectibleModal = ({ collectible, onClose, onAddToCart }: Collecti
               </div>
             </div>
 
+            {/* Social Proof */}
+            <CardSocialProof
+              itemId={collectible.id}
+              views={Math.floor(Math.random() * 500) + 100}
+              watchlistCount={Math.floor(Math.random() * 100) + 20}
+              compact
+              className="mt-2"
+            />
             {/* Details Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div className="glass rounded-lg p-3">
