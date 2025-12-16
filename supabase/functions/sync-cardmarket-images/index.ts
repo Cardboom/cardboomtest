@@ -11,25 +11,38 @@ interface CardmarketCard {
   name: string;
   name_numbered?: string;
   slug?: string;
-  image?: string;
-  imageUrl?: string;
+  type?: string;
+  card_number?: number;
+  hp?: number;
+  rarity?: string;
+  supertype?: string;
+  tcgid?: string;
   prices?: {
     cardmarket_price?: number;
     tcgplayer_price?: number;
+    cardmarket?: {
+      averageSellPrice?: number;
+      lowPrice?: number;
+      trendPrice?: number;
+      avg1?: number;
+      avg7?: number;
+      avg30?: number;
+    };
   };
-  priceFrom?: number;
-  priceTrend?: number;
-  expansion?: string;
-  rarity?: string;
   images?: {
     small?: string;
     large?: string;
+  };
+  set?: {
+    id?: string;
+    name?: string;
+    series?: string;
   };
 }
 
 interface CardmarketResponse {
   data?: CardmarketCard[];
-  results?: number; // This is a count, not array!
+  results?: number;
   paging?: {
     current: number;
     total: number;
@@ -38,10 +51,11 @@ interface CardmarketResponse {
 }
 
 // Map our categories to Cardmarket game types
+// Note: Different APIs might use different game names
 const categoryToGame: Record<string, string> = {
   pokemon: "pokemon",
-  yugioh: "yugioh",
-  mtg: "magic",
+  yugioh: "yugioh", 
+  mtg: "mtg", // Try 'mtg' instead of 'magic'
   onepiece: "onepiece",
   lorcana: "lorcana",
   digimon: "digimon",
@@ -57,6 +71,8 @@ function cleanCardName(name: string): string {
     .replace(/Base\s*Set/gi, "")
     .replace(/Holo/gi, "")
     .replace(/Shadowless/gi, "")
+    .replace(/\[.*?\]/g, "") // Remove bracketed text
+    .replace(/#\d+/g, "") // Remove card numbers
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -101,20 +117,32 @@ async function searchCardmarket(game: string, query: string, apiKey: string): Pr
   }
   
   const data: CardmarketResponse = await response.json();
-  console.log(`[sync-cardmarket] Got ${JSON.stringify(data).substring(0, 200)}...`);
   
   // API returns { data: [...], results: <count>, paging: {...} }
-  // data.results is a NUMBER (count), data.data is the actual array
   return Array.isArray(data.data) ? data.data : [];
 }
 
 function getImageUrl(card: CardmarketCard): string | null {
-  // Check various image fields in the API response
-  return card.images?.large || card.images?.small || card.image || card.imageUrl || null;
+  return card.images?.large || card.images?.small || null;
+}
+
+function getPriceData(card: CardmarketCard): { price: number | null; trend: number | null } {
+  const prices = card.prices;
+  if (!prices) return { price: null, trend: null };
+  
+  const price = prices.cardmarket?.averageSellPrice || 
+                prices.cardmarket?.trendPrice || 
+                prices.cardmarket_price || 
+                prices.tcgplayer_price || 
+                null;
+  
+  const trend = prices.cardmarket?.trendPrice || null;
+  
+  return { price, trend };
 }
 
 function findBestMatch(cardName: string, results: CardmarketCard[]): CardmarketCard | null {
-  if (results.length === 0) return null;
+  if (!Array.isArray(results) || results.length === 0) return null;
   
   const normalizedName = cleanCardName(cardName).toLowerCase();
   
@@ -152,15 +180,26 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { limit = 20, offset = 0, category } = await req.json().catch(() => ({}));
+    const { 
+      limit = 50, 
+      offset = 0, 
+      category,
+      delay_ms = 200, // 200ms = 5 req/sec = 300/min
+      prioritize_valuable = true,
+      store_price_history = true
+    } = await req.json().catch(() => ({}));
 
-    // Build query for cards needing images
+    // Build query for cards needing images or price updates
     let query = supabase
       .from("market_items")
       .select("*")
       .or("image_url.is.null,image_url.like.%placeholder%,image_url.eq.")
-      .order("current_price", { ascending: false })
       .range(offset, offset + limit - 1);
+
+    // Order by value if prioritizing valuable cards
+    if (prioritize_valuable) {
+      query = query.order("current_price", { ascending: false });
+    }
 
     // Filter by category if specified
     if (category && categoryToGame[category]) {
@@ -176,14 +215,17 @@ serve(async (req) => {
       throw fetchError;
     }
 
-    console.log(`[sync-cardmarket] Processing ${items?.length || 0} items`);
+    console.log(`[sync-cardmarket] Processing ${items?.length || 0} items with ${delay_ms}ms delay`);
 
     const results = {
       processed: 0,
       updated: 0,
+      images_added: 0,
+      prices_updated: 0,
+      price_history_added: 0,
       notFound: 0,
       errors: 0,
-      items: [] as { name: string; status: string; image?: string }[],
+      items: [] as { name: string; status: string; image?: string; price?: number }[],
     };
 
     for (const item of items || []) {
@@ -199,12 +241,12 @@ serve(async (req) => {
         const searchQuery = getSearchQuery(item.name, item.category);
         console.log(`[sync-cardmarket] Searching "${searchQuery}" for "${item.name}" in ${game}`);
 
-        // Rate limiting - wait 500ms between requests (3000/day = ~2/min sustained, but can burst)
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Rate limiting - configurable delay
+        await new Promise(resolve => setTimeout(resolve, delay_ms));
 
         const cardResults = await searchCardmarket(game, searchQuery, CARDMARKET_API_KEY);
         
-        if (cardResults.length === 0) {
+        if (!Array.isArray(cardResults) || cardResults.length === 0) {
           results.notFound++;
           results.items.push({ name: item.name, status: "not_found" });
           console.log(`[sync-cardmarket] No results for: ${item.name}`);
@@ -219,37 +261,78 @@ serve(async (req) => {
         }
 
         const imageUrl = getImageUrl(bestMatch);
-        if (!imageUrl) {
-          results.notFound++;
-          results.items.push({ name: item.name, status: "no_image" });
-          console.log(`[sync-cardmarket] No image in result for: ${item.name}`);
-          continue;
-        }
-
-        // Update the market item with the new image
+        const priceData = getPriceData(bestMatch);
+        
+        // Build update data
         const updateData: Record<string, unknown> = {
-          image_url: imageUrl,
           updated_at: new Date().toISOString(),
         };
 
-        // Also update price trend if available
-        if (bestMatch.priceTrend && bestMatch.priceTrend > 0) {
-          updateData.data_source = "cardmarket";
+        // Add image if found
+        if (imageUrl) {
+          updateData.image_url = imageUrl;
+          results.images_added++;
         }
 
-        const { error: updateError } = await supabase
-          .from("market_items")
-          .update(updateData)
-          .eq("id", item.id);
+        // Add price data if available and different
+        if (priceData.price && priceData.price > 0) {
+          // Store old price for history
+          const oldPrice = item.current_price;
+          
+          // Only update price if significantly different (>5% change)
+          const priceDiff = Math.abs((priceData.price - oldPrice) / oldPrice);
+          if (priceDiff > 0.05 || oldPrice === 0) {
+            updateData.current_price = priceData.price;
+            updateData.base_price = priceData.price;
+            updateData.data_source = "cardmarket";
+            results.prices_updated++;
+            
+            // Store price history
+            if (store_price_history && oldPrice > 0) {
+              await supabase.from("price_history").insert({
+                product_id: item.id,
+                price: priceData.price,
+                source: "cardmarket",
+              });
+              results.price_history_added++;
+            }
+          }
+        }
 
-        if (updateError) {
-          console.error(`[sync-cardmarket] Update error for ${item.name}:`, updateError);
-          results.errors++;
-          results.items.push({ name: item.name, status: "error" });
+        // Update set info if available
+        if (bestMatch.set?.name) {
+          updateData.set_name = bestMatch.set.name;
+        }
+        if (bestMatch.set?.series) {
+          updateData.series = bestMatch.set.series;
+        }
+        if (bestMatch.rarity) {
+          updateData.rarity = bestMatch.rarity;
+        }
+
+        // Only update if we have something to update
+        if (Object.keys(updateData).length > 1) {
+          const { error: updateError } = await supabase
+            .from("market_items")
+            .update(updateData)
+            .eq("id", item.id);
+
+          if (updateError) {
+            console.error(`[sync-cardmarket] Update error for ${item.name}:`, updateError);
+            results.errors++;
+            results.items.push({ name: item.name, status: "error" });
+          } else {
+            results.updated++;
+            results.items.push({ 
+              name: item.name, 
+              status: "updated", 
+              image: imageUrl || undefined,
+              price: priceData.price || undefined
+            });
+            console.log(`[sync-cardmarket] Updated ${item.name} - image: ${!!imageUrl}, price: ${priceData.price}`);
+          }
         } else {
-          results.updated++;
-          results.items.push({ name: item.name, status: "updated", image: imageUrl });
-          console.log(`[sync-cardmarket] Updated ${item.name} with image: ${imageUrl.substring(0, 50)}...`);
+          results.items.push({ name: item.name, status: "no_update_needed" });
         }
 
       } catch (itemError) {
@@ -259,7 +342,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`[sync-cardmarket] Complete. Updated: ${results.updated}, Not found: ${results.notFound}, Errors: ${results.errors}`);
+    console.log(`[sync-cardmarket] Complete. Updated: ${results.updated}, Images: ${results.images_added}, Prices: ${results.prices_updated}, Not found: ${results.notFound}, Errors: ${results.errors}`);
 
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

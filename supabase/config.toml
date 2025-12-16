@@ -71,3 +71,12 @@ verify_jwt = false
 
 [functions.sync-cardmarket-images]
 verify_jwt = false
+
+[functions.bulk-sync-cards]
+verify_jwt = false
+
+[functions.market-api]
+verify_jwt = false
+
+[functions.sitemap]
+verify_jwt = false
