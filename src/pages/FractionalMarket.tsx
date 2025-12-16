@@ -11,12 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
   Search, PieChart, Users, Shield, TrendingUp, 
-  Clock, Filter, ArrowUpDown, ShoppingCart, Layers
+  Clock, Filter, ArrowUpDown, ShoppingCart, Layers, Tag
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { FractionalBuyDialog } from '@/components/fractional/FractionalBuyDialog';
+import { SellSharesDialog } from '@/components/fractional/SellSharesDialog';
+import { BuyShareListingDialog } from '@/components/fractional/BuyShareListingDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -107,6 +109,28 @@ const FractionalMarket = () => {
       return data;
     },
     enabled: !!user,
+  });
+
+  // Fetch secondary market listings
+  const { data: secondaryListings, isLoading: isLoadingSecondary } = useQuery({
+    queryKey: ['secondary-market'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('fractional_share_listings')
+        .select(`
+          *,
+          fractional_listing:fractional_listings(
+            *,
+            listing:listings(title, image_url, price, category),
+            market_item:market_items(name, image_url, current_price, category)
+          )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
   });
 
   // Calculate stats
@@ -214,7 +238,16 @@ const FractionalMarket = () => {
           <TabsList className="glass">
             <TabsTrigger value="marketplace" className="gap-2">
               <ShoppingCart className="h-4 w-4" />
-              Marketplace
+              Primary Market
+            </TabsTrigger>
+            <TabsTrigger value="secondary" className="gap-2">
+              <Tag className="h-4 w-4" />
+              Secondary Market
+              {secondaryListings && secondaryListings.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 px-1.5">
+                  {secondaryListings.length}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="holdings" className="gap-2">
               <PieChart className="h-4 w-4" />
@@ -361,7 +394,86 @@ const FractionalMarket = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="holdings" className="space-y-4">
+          {/* Secondary Market Tab */}
+          <TabsContent value="secondary" className="space-y-4">
+            {isLoadingSecondary ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[1, 2, 3].map(i => (
+                  <Card key={i}>
+                    <CardContent className="p-4">
+                      <Skeleton className="h-32 w-full mb-4 rounded-lg" />
+                      <Skeleton className="h-6 w-3/4 mb-2" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : !secondaryListings || secondaryListings.length === 0 ? (
+              <div className="text-center py-12">
+                <Tag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No shares listed for sale</h3>
+                <p className="text-muted-foreground">Check back later or list your own shares</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {secondaryListings.map((listing) => {
+                  const fl = listing.fractional_listing;
+                  const name = fl?.listing?.title || fl?.market_item?.name || 'Unknown Item';
+                  const image = fl?.listing?.image_url || fl?.market_item?.image_url || '/placeholder.svg';
+                  const category = fl?.listing?.category || fl?.market_item?.category || '';
+                  const isMine = user?.id === listing.seller_id;
+
+                  return (
+                    <Card key={listing.id} className="overflow-hidden hover:border-primary/50 transition-colors">
+                      <div className="relative h-32 bg-secondary">
+                        <img 
+                          src={image} 
+                          alt={name}
+                          className="w-full h-full object-cover"
+                        />
+                        <Badge className="absolute top-2 right-2 gap-1">
+                          <Tag className="h-3 w-3" />
+                          {listing.shares_for_sale} shares
+                        </Badge>
+                        {isMine && (
+                          <Badge variant="secondary" className="absolute top-2 left-2">
+                            Your Listing
+                          </Badge>
+                        )}
+                      </div>
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-foreground truncate">{name}</h3>
+                          <p className="text-sm text-muted-foreground">{category}</p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Price/Share</p>
+                            <p className="text-lg font-bold">{formatPrice(listing.price_per_share)}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Total Value</p>
+                            <p className="text-lg font-bold text-primary">
+                              {formatPrice(listing.shares_for_sale * listing.price_per_share)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          Listed {formatDistanceToNow(new Date(listing.created_at), { addSuffix: true })}
+                        </div>
+
+                        {!isMine && (
+                          <BuyShareListingDialog listing={listing} />
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
             {!user ? (
               <div className="text-center py-12">
                 <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -427,9 +539,7 @@ const FractionalMarket = () => {
                           Purchased {formatDistanceToNow(new Date(holding.purchased_at), { addSuffix: true })}
                         </div>
 
-                        <Button variant="outline" className="w-full" size="sm">
-                          List for Sale
-                        </Button>
+                        <SellSharesDialog holding={holding} />
                       </CardContent>
                     </Card>
                   );

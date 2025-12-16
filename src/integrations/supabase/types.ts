@@ -317,6 +317,47 @@ export type Database = {
           },
         ]
       }
+      fractional_share_listings: {
+        Row: {
+          created_at: string
+          fractional_listing_id: string
+          id: string
+          price_per_share: number
+          seller_id: string
+          shares_for_sale: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fractional_listing_id: string
+          id?: string
+          price_per_share: number
+          seller_id: string
+          shares_for_sale: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fractional_listing_id?: string
+          id?: string
+          price_per_share?: number
+          seller_id?: string
+          shares_for_sale?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fractional_share_listings_fractional_listing_id_fkey"
+            columns: ["fractional_listing_id"]
+            isOneToOne: false
+            referencedRelation: "fractional_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fractional_verifications: {
         Row: {
           fractional_listing_id: string
