@@ -34,8 +34,11 @@ Allow: /
 User-agent: *
 Allow: /
 
-# Sitemap location
-Sitemap: https://cardboom.com/sitemap.xml
+# Dynamic Sitemap Index (includes all cards)
+Sitemap: https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/sitemap?type=index
+
+# Static sitemap fallback
+Sitemap: https://cardboom.com/sitemap-static.xml
 
 # Disallow private/auth pages from indexing
 Disallow: /auth
@@ -66,9 +69,24 @@ Allow: /careers
 Allow: /press
 Allow: /terms
 Allow: /privacy
-Allow: /card/*
-Allow: /user/*
+
+# Allow all card category pages for SEO indexing
+Allow: /pokemon/*
+Allow: /mtg/*
+Allow: /yugioh/*
+Allow: /onepiece/*
+Allow: /lorcana/*
+Allow: /digimon/*
+Allow: /dragonball/*
+Allow: /starwars/*
+Allow: /nba/*
+Allow: /football/*
+Allow: /tcg/*
+Allow: /figures/*
+Allow: /riftbound/*
+
 Allow: /seller/*
+Allow: /listing/*
 
 # Host directive
 Host: https://cardboom.com
