@@ -27,11 +27,13 @@ const Auth = () => {
   const [phone, setPhone] = useState('');
   const [nationalId, setNationalId] = useState('');
   const [accountType, setAccountType] = useState<AccountType>('buyer');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [errors, setErrors] = useState<{ 
     email?: string; 
     password?: string; 
     phone?: string;
     nationalId?: string;
+    terms?: string;
   }>({});
 
   useEffect(() => {
@@ -75,6 +77,7 @@ const Auth = () => {
       password?: string; 
       phone?: string;
       nationalId?: string;
+      terms?: string;
     } = {};
     
     const emailResult = emailSchema.safeParse(email);
@@ -95,6 +98,10 @@ const Auth = () => {
     const nationalIdResult = nationalIdSchema.safeParse(nationalId);
     if (!nationalIdResult.success) {
       newErrors.nationalId = nationalIdResult.error.errors[0].message;
+    }
+
+    if (!acceptedTerms) {
+      newErrors.terms = 'You must accept the terms and conditions';
     }
     
     setErrors(newErrors);
@@ -511,6 +518,26 @@ const Auth = () => {
                       </RadioGroup>
                     </div>
 
+                    {/* Terms Checkbox */}
+                    <div className="space-y-2">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={acceptedTerms}
+                          onChange={(e) => setAcceptedTerms(e.target.checked)}
+                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50"
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          I have read and agree to the{' '}
+                          <a href="/terms" target="_blank" className="text-primary hover:underline">Terms of Service</a>,{' '}
+                          <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>,{' '}
+                          <a href="/kvkk" target="_blank" className="text-primary hover:underline">KVKK Aydınlatma Metni</a>, and{' '}
+                          <a href="/mesafeli-satis-sozlesmesi" target="_blank" className="text-primary hover:underline">Mesafeli Satış Sözleşmesi</a>
+                        </span>
+                      </label>
+                      {errors.terms && <p className="text-destructive text-xs">{errors.terms}</p>}
+                    </div>
+
                     <Button
                       type="submit"
                       disabled={loading}
@@ -525,7 +552,7 @@ const Auth = () => {
 
             {/* Footer Text */}
             <p className="text-center text-muted-foreground text-sm mt-6">
-              By continuing, you agree to Cardboom's Terms of Service and Privacy Policy
+              Operated by Brainbaby Bilişim A.Ş.
             </p>
           </motion.div>
         </div>

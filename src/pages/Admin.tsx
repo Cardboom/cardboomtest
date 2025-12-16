@@ -25,13 +25,19 @@ import {
   ShieldCheck,
   Users,
   PieChart,
-  Truck
+  Truck,
+  Key,
+  MessageCircle,
+  HelpCircle
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { WireTransferManagement } from '@/components/admin/WireTransferManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { FractionalManagement } from '@/components/admin/FractionalManagement';
+import { APIAnalytics } from '@/components/admin/APIAnalytics';
+import { SupportTickets } from '@/components/admin/SupportTickets';
+import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -194,10 +200,8 @@ const Admin = () => {
       <header className="border-b border-border/50 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">C</span>
-            </div>
-            <span className="font-bold text-xl">CARDBOOM <span className="text-primary">Admin</span></span>
+            <img src={cardboomLogo} alt="CardBoom" className="h-7 w-auto" />
+            <span className="font-bold text-xl text-primary">Admin</span>
           </div>
           <Button variant="outline" onClick={() => navigate('/')}>Back to Site</Button>
         </div>
@@ -222,6 +226,10 @@ const Admin = () => {
               <Users className="w-4 h-4" />
               Users
             </TabsTrigger>
+            <TabsTrigger value="support" className="gap-2">
+              <MessageCircle className="w-4 h-4" />
+              Support
+            </TabsTrigger>
             <TabsTrigger value="wire-transfers" className="gap-2">
               <Banknote className="w-4 h-4" />
               Wire Transfers
@@ -229,6 +237,10 @@ const Admin = () => {
             <TabsTrigger value="fractional" className="gap-2">
               <PieChart className="w-4 h-4" />
               Fractional Shares
+            </TabsTrigger>
+            <TabsTrigger value="api" className="gap-2">
+              <Key className="w-4 h-4" />
+              API Analytics
             </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
@@ -240,12 +252,20 @@ const Admin = () => {
             <UserManagement />
           </TabsContent>
 
+          <TabsContent value="support">
+            <SupportTickets />
+          </TabsContent>
+
           <TabsContent value="wire-transfers">
             <WireTransferManagement />
           </TabsContent>
 
           <TabsContent value="fractional">
             <FractionalManagement />
+          </TabsContent>
+
+          <TabsContent value="api">
+            <APIAnalytics />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">
