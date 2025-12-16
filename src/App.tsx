@@ -33,6 +33,7 @@ import Admin from "./pages/Admin";
 import FractionalMarket from "./pages/FractionalMarket";
 import Gaming from "./pages/Gaming";
 import CardPage from "./pages/CardPage";
+import LegacyCardRedirect from "./components/LegacyCardRedirect";
 import PublicProfile from "./pages/PublicProfile";
 import OrderSuccess from "./pages/OrderSuccess";
 import SellerProfile from "./pages/SellerProfile";
@@ -101,9 +102,11 @@ const AppContent = () => {
           <Route path="/gaming" element={<Gaming />} />
           <Route path="/seller/:sellerId" element={<SellerProfile />} />
           <Route path="/hall-of-fame" element={<HallOfFame />} />
-          {/* SEO Card Pages */}
-          <Route path="/:category/:slug" element={<CardPage />} />
-          <Route path="/:category/:slug/:grade" element={<CardPage />} />
+          {/* SEO Card Pages - New canonical structure */}
+          <Route path="/cards/:category/:slug" element={<CardPage />} />
+          {/* Legacy routes - redirect to canonical */}
+          <Route path="/:category/:slug" element={<LegacyCardRedirect />} />
+          <Route path="/:category/:slug/:grade" element={<LegacyCardRedirect />} />
           <Route path="/order-success/:orderId" element={<OrderSuccess />} />
           <Route path="/about" element={<About />} />
           <Route path="/careers" element={<Careers />} />

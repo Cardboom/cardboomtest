@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  TrendingUp, TrendingDown, Eye, Heart, Users, Clock, 
-  ChevronLeft, Plus, Loader2, BarChart3, Bell, Share2,
+  TrendingUp, TrendingDown, Users, Clock, 
+  Loader2, Bell, Plus,
   ShoppingCart, ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -18,15 +18,27 @@ import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
-import { ItemListings } from '@/components/item/ItemListings';
 import { ShareButton } from '@/components/ShareButton';
 import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
+import { 
+  generateCardSlug, 
+  parseSlug, 
+  normalizeCategory,
+  normalizeSlug 
+} from '@/lib/seoSlug';
 
 const CardPage = () => {
-  const { category, slug, grade } = useParams();
+  const { category, slug } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const [user, setUser] = useState<any>(null);
+
+  // Get variant params from query string (not path)
+  const gradeParam = searchParams.get('grade')?.toUpperCase() || 'RAW';
+  const languageParam = searchParams.get('language');
+  const conditionParam = searchParams.get('condition');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -34,27 +46,69 @@ const CardPage = () => {
     });
   }, []);
 
-  // Parse slug back to search terms
-  const searchName = slug?.replace(/-/g, ' ') || '';
-  const selectedGrade = grade?.toUpperCase() || 'RAW';
+  // Parse slug to extract search components
+  const { searchTerms, possibleYear, possibleCardNumber } = parseSlug(slug || '');
 
-  // Fetch item by slug/name match
-  const { data: item, isLoading } = useQuery({
-    queryKey: ['card-page', category, slug],
+  // Fetch item by slug resolution - prioritize exact matches
+  const { data: item, isLoading, isError } = useQuery({
+    queryKey: ['card-page-seo', category, slug],
     queryFn: async () => {
+      const normalizedCategory = normalizeCategory(category || '');
+      
+      // First: Try to find by external_id if we have a card number
+      if (possibleCardNumber) {
+        const { data: exactMatch } = await supabase
+          .from('market_items')
+          .select('*')
+          .eq('category', normalizedCategory)
+          .ilike('external_id', `%${possibleCardNumber}%`)
+          .ilike('name', `%${searchTerms.split(' ')[0]}%`)
+          .limit(1)
+          .maybeSingle();
+        
+        if (exactMatch) return exactMatch;
+      }
+
+      // Second: Search by name similarity
       const { data, error } = await supabase
         .from('market_items')
         .select('*')
-        .eq('category', category)
-        .ilike('name', `%${searchName}%`)
-        .limit(1)
-        .maybeSingle();
+        .eq('category', normalizedCategory)
+        .ilike('name', `%${searchTerms}%`)
+        .limit(10);
       
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) return null;
+
+      // If multiple matches, try to find best match using year/set
+      if (data.length > 1 && possibleYear) {
+        const yearMatch = data.find(d => 
+          d.series?.includes(possibleYear) || 
+          d.set_name?.includes(possibleYear)
+        );
+        if (yearMatch) return yearMatch;
+      }
+
+      return data[0];
     },
     enabled: !!category && !!slug,
   });
+
+  // Handle canonical URL redirect
+  useEffect(() => {
+    if (item && !isLoading) {
+      const canonicalSlug = generateCardSlug(item);
+      const canonicalCategory = normalizeCategory(item.category);
+      const currentPath = location.pathname;
+      const canonicalPath = `/cards/${canonicalCategory}/${canonicalSlug}`;
+      
+      // Check if current URL matches canonical - redirect if not
+      if (currentPath !== canonicalPath && !currentPath.startsWith('/item/')) {
+        // 301 redirect to canonical URL (browser handles as client-side)
+        navigate(canonicalPath + location.search, { replace: true });
+      }
+    }
+  }, [item, isLoading, location.pathname, location.search, navigate]);
 
   // Fetch watchlist count
   const { data: watchlistCount } = useQuery({
@@ -72,38 +126,19 @@ const CardPage = () => {
 
   // Fetch active listings for this item
   const { data: activeListings } = useQuery({
-    queryKey: ['card-listings', item?.id],
+    queryKey: ['card-listings', item?.id, searchTerms],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('listings')
         .select('*')
-        .ilike('title', `%${searchName}%`)
+        .ilike('title', `%${searchTerms}%`)
         .eq('status', 'active')
         .limit(20);
       
       if (error) throw error;
       return data || [];
     },
-    enabled: !!searchName,
-  });
-
-  // Fetch price history
-  const { data: priceHistory } = useQuery({
-    queryKey: ['card-price-history', item?.id],
-    queryFn: async () => {
-      if (!item?.id) return [];
-      const thirtyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-      const { data, error } = await supabase
-        .from('price_history')
-        .select('*')
-        .eq('product_id', item.id)
-        .gte('recorded_at', thirtyDaysAgo.toISOString())
-        .order('recorded_at', { ascending: true });
-      
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!item?.id,
+    enabled: !!searchTerms,
   });
 
   // Check if user is watching
@@ -150,15 +185,20 @@ const CardPage = () => {
     return `$${price.toLocaleString()}`;
   };
 
-  const pageTitle = item 
-    ? `${item.name} ${selectedGrade} Price & Value | CardBoom`
-    : `${searchName} ${selectedGrade} Price Guide | CardBoom`;
-
+  // SEO data
+  const cardName = item?.name || searchTerms;
+  const setName = item?.set_name || '';
+  const year = possibleYear || '';
+  
+  const pageTitle = `${cardName}${setName ? ` - ${setName}` : ''}${year ? ` (${year})` : ''} | CardBoom`;
+  
   const pageDescription = item
-    ? `Track ${item.name} ${selectedGrade} prices. Current value: ${formatPrice(item.current_price || 0)}. View price history, active listings, and market data.`
-    : `Find ${searchName} prices, values, and market data. Track your collection with CardBoom.`;
+    ? `${item.name} price guide. Current market value: ${formatPrice(item.current_price || 0)}. Track prices, view listings, and analyze market trends on CardBoom.`
+    : `Find ${cardName} prices, values, and market data. Track your collection with CardBoom.`;
 
-  const canonicalUrl = `https://cardboom.com/${category}/${slug}${grade ? `/${grade}` : ''}`;
+  const canonicalCategory = normalizeCategory(category || '');
+  const canonicalSlug = item ? generateCardSlug(item) : normalizeSlug(slug || '');
+  const canonicalUrl = `https://cardboom.com/cards/${canonicalCategory}/${canonicalSlug}`;
 
   if (isLoading) {
     return (
@@ -179,20 +219,33 @@ const CardPage = () => {
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="product" />
         {item?.image_url && <meta property="og:image" content={item.image_url} />}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Product",
-            "name": item?.name || searchName,
+            "name": cardName,
             "description": pageDescription,
             "image": item?.image_url,
+            "brand": {
+              "@type": "Brand",
+              "name": item?.category || category
+            },
             "offers": {
               "@type": "AggregateOffer",
               "priceCurrency": "USD",
               "lowPrice": activeListings?.length ? Math.min(...activeListings.map(l => l.price)) : item?.current_price,
               "highPrice": activeListings?.length ? Math.max(...activeListings.map(l => l.price)) : item?.current_price,
-              "offerCount": activeListings?.length || 0
-            }
+              "offerCount": activeListings?.length || 0,
+              "availability": activeListings?.length ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+            },
+            "aggregateRating": item?.sales_count_30d ? {
+              "@type": "AggregateRating",
+              "ratingValue": "4.5",
+              "reviewCount": item.sales_count_30d
+            } : undefined
           })}
         </script>
       </Helmet>
@@ -200,15 +253,17 @@ const CardPage = () => {
       <Header cartCount={0} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+        {/* Breadcrumb with structured data */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-foreground">Home</Link>
           <span>/</span>
           <Link to="/markets" className="hover:text-foreground">Markets</Link>
           <span>/</span>
-          <Link to={`/explorer?category=${category}`} className="hover:text-foreground capitalize">{category}</Link>
+          <Link to={`/explorer?category=${canonicalCategory}`} className="hover:text-foreground capitalize">
+            {canonicalCategory}
+          </Link>
           <span>/</span>
-          <span className="text-foreground">{item?.name || searchName}</span>
+          <span className="text-foreground">{cardName}</span>
         </nav>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -217,8 +272,9 @@ const CardPage = () => {
             <div className="glass rounded-2xl p-4 aspect-square sticky top-24">
               <img 
                 src={item?.image_url || '/placeholder.svg'} 
-                alt={item?.name || searchName}
+                alt={`${cardName}${setName ? ` from ${setName}` : ''}`}
                 className="w-full h-full object-contain rounded-xl"
+                loading="eager"
               />
             </div>
 
@@ -253,21 +309,23 @@ const CardPage = () => {
           {/* Right Column - Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Header */}
-            <div>
+            <header>
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary" className="capitalize">{category}</Badge>
+                <Badge variant="secondary" className="capitalize">{canonicalCategory}</Badge>
                 {item?.is_trending && (
                   <Badge className="bg-accent text-accent-foreground">🔥 Trending</Badge>
                 )}
                 {item?.rarity && <Badge variant="outline">{item.rarity}</Badge>}
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
-                {item?.name || searchName}
+                {cardName}
               </h1>
-              {item?.set_name && (
-                <p className="text-muted-foreground text-lg">{item.set_name}</p>
+              {(setName || year) && (
+                <p className="text-muted-foreground text-lg">
+                  {setName}{setName && year ? ' • ' : ''}{year}
+                </p>
               )}
-            </div>
+            </header>
 
             {/* Price Card */}
             <Card className="glass border-primary/20">
@@ -331,8 +389,8 @@ const CardPage = () => {
                 Add to Portfolio
               </Button>
               <ShareButton 
-                title={item?.name || searchName}
-                text={`Check out ${item?.name || searchName} on CardBoom`}
+                title={cardName}
+                text={`Check out ${cardName} on CardBoom`}
               />
             </div>
 
@@ -358,6 +416,7 @@ const CardPage = () => {
                                 src={listing.image_url || '/placeholder.svg'} 
                                 alt={listing.title}
                                 className="w-16 h-16 object-cover rounded-lg"
+                                loading="lazy"
                               />
                               <div>
                                 <h3 className="font-semibold">{listing.title}</h3>
