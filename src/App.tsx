@@ -29,6 +29,8 @@ import Leaderboard from "./pages/Leaderboard";
 import Admin from "./pages/Admin";
 import FractionalMarket from "./pages/FractionalMarket";
 import Gaming from "./pages/Gaming";
+import CardPage from "./pages/CardPage";
+import PublicProfile from "./pages/PublicProfile";
 import OrderSuccess from "./pages/OrderSuccess";
 import About from "./pages/About";
 import Careers from "./pages/Careers";
@@ -71,10 +73,14 @@ const App = () => (
                   <Route path="/referrals" element={<Referrals />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/profile/:userId" element={<Profile />} />
+                  <Route path="/u/:username" element={<PublicProfile />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/fractional" element={<FractionalMarket />} />
                   <Route path="/gaming" element={<Gaming />} />
+                  {/* SEO Card Pages */}
+                  <Route path="/:category/:slug" element={<CardPage />} />
+                  <Route path="/:category/:slug/:grade" element={<CardPage />} />
                   <Route path="/order-success/:orderId" element={<OrderSuccess />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/careers" element={<Careers />} />

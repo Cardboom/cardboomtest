@@ -10,12 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Plus, TrendingUp, TrendingDown, Search, Trash2, 
-  Edit, ExternalLink, Package, DollarSign, PieChart, Clock
+  Edit, ExternalLink, Package, DollarSign, PieChart, Clock, Upload, Share2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AddToPortfolioDialog } from '@/components/portfolio/AddToPortfolioDialog';
+import { PortfolioImport } from '@/components/portfolio/PortfolioImport';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatDistanceToNow } from 'date-fns';
 import { formatGrade, CardGrade } from '@/hooks/useGradePrices';
@@ -81,6 +82,7 @@ const Portfolio = () => {
   const [user, setUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -170,10 +172,16 @@ const Portfolio = () => {
               </Link>
             )}
           </div>
-          <Button onClick={() => setShowAddDialog(true)} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Item
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
+              <Upload className="w-4 h-4" />
+              Import
+            </Button>
+            <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Item
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -343,6 +351,11 @@ const Portfolio = () => {
       <Footer />
 
       <AddToPortfolioDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
+      <PortfolioImport 
+        open={showImportDialog} 
+        onOpenChange={setShowImportDialog}
+        onImportComplete={() => {}}
+      />
     </div>
   );
 };
