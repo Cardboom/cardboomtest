@@ -110,12 +110,12 @@ const Index = () => {
     .slice(0, 5);
 
   const platformFeatures = [
-    { icon: Shield, title: 'Secure Vault', desc: 'Insured storage for your investments' },
-    { icon: Zap, title: 'Instant Trades', desc: 'Fast P2P trading with escrow protection' },
-    { icon: Wallet, title: 'Easy Payments', desc: 'Multiple payment methods including crypto' },
-    { icon: Users, title: 'Verified Investors', desc: 'Trade with confidence from verified accounts' },
-    { icon: PieChart, title: 'Fractional Shares', desc: 'Own pieces of grails starting from $10' },
-    { icon: Brain, title: 'AI Insights', desc: 'Smart predictions and market analysis' },
+    { icon: Shield, title: t.whyInvest.secureVault, desc: t.whyInvest.secureVaultDesc },
+    { icon: Zap, title: t.whyInvest.instantTrades, desc: t.whyInvest.instantTradesDesc },
+    { icon: Wallet, title: t.whyInvest.easyPayments, desc: t.whyInvest.easyPaymentsDesc },
+    { icon: Users, title: t.whyInvest.verifiedInvestors, desc: t.whyInvest.verifiedInvestorsDesc },
+    { icon: PieChart, title: t.whyInvest.fractionalShares, desc: t.whyInvest.fractionalSharesDesc },
+    { icon: Brain, title: t.whyInvest.aiInsights, desc: t.whyInvest.aiInsightsDesc },
   ];
 
   return (
@@ -134,7 +134,7 @@ const Index = () => {
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                    Popular Collections
+                    {t.market.popularCollections}
                   </h2>
                   <LiveUpdateIndicator 
                     lastUpdated={lastUpdated} 
@@ -147,7 +147,7 @@ const Index = () => {
                   onClick={() => navigate('/markets')}
                   className="hidden sm:flex"
                 >
-                  See All Markets
+                  {t.market.seeAllMarkets}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
@@ -172,14 +172,14 @@ const Index = () => {
                 <div>
                   <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
                     <Brain className="h-7 w-7 text-primary" />
-                    Smart Trading Hub
+                    {t.smartHub.title}
                   </h2>
-                  <p className="text-muted-foreground mt-1">AI-powered insights, social trading & gamification</p>
+                  <p className="text-muted-foreground mt-1">{t.smartHub.subtitle}</p>
                 </div>
                 <Link to="/fractional">
                   <Button variant="outline" className="gap-2">
                     <PieChart className="w-4 h-4" />
-                    Fractional Market
+                    {t.smartHub.fractionalMarket}
                   </Button>
                 </Link>
               </div>
@@ -188,19 +188,19 @@ const Index = () => {
                 <TabsList className="glass w-full sm:w-auto overflow-x-auto flex-nowrap justify-start sm:justify-center p-1 h-auto">
                   <TabsTrigger value="insights" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                     <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden xs:inline">AI</span> Insights
+                    {t.smartHub.aiInsights}
                   </TabsTrigger>
                   <TabsTrigger value="social" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                     <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden xs:inline">Top</span> Traders
+                    {t.smartHub.topTraders}
                   </TabsTrigger>
                   <TabsTrigger value="quests" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                     <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    Quests
+                    {t.smartHub.quests}
                   </TabsTrigger>
                   <TabsTrigger value="alerts" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
                     <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    Alerts
+                    {t.smartHub.alerts}
                   </TabsTrigger>
                 </TabsList>
 
@@ -233,10 +233,10 @@ const Index = () => {
             <div className="container mx-auto px-4">
               <div className="text-center mb-12">
                 <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  Why Invest with CardBoom?
+                  {t.whyInvest.title}
                 </h2>
                 <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-                  The most trusted platform for TCG investors and collectors
+                  {t.whyInvest.subtitle}
                 </p>
               </div>
               
@@ -265,7 +265,7 @@ const Index = () => {
                 <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
                   {t.market.explore}
                 </h2>
-                <p className="text-muted-foreground mt-1">Browse all available listings</p>
+                <p className="text-muted-foreground mt-1">{t.market.browseListings}</p>
               </div>
             </div>
             
@@ -276,11 +276,11 @@ const Index = () => {
 
             {isLoading ? (
               <div className="col-span-full flex items-center justify-center py-16">
-                <div className="text-muted-foreground">Loading collectibles...</div>
+                <div className="text-muted-foreground">{t.market.loading}</div>
               </div>
             ) : filteredCollectibles.length === 0 ? (
               <div className="col-span-full flex items-center justify-center py-16">
-                <div className="text-muted-foreground">No items found in this category</div>
+                <div className="text-muted-foreground">{t.market.noItems}</div>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
