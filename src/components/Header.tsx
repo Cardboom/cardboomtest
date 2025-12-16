@@ -86,38 +86,52 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass border-b border-border/30">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
       {/* AI Insight Banner */}
-      <div className="hidden md:flex items-center justify-center py-1.5 bg-muted/30 border-b border-border/20">
+      <div className="hidden md:flex items-center justify-center py-1.5 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/20">
         <AIMarketInsight />
       </div>
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-glow group-hover:scale-105 transition-transform">
-              <span className="text-primary-foreground font-display font-bold text-lg">C</span>
+          <div className="flex items-center gap-2.5 cursor-pointer group flex-shrink-0" onClick={() => navigate('/')}>
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary via-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 group-hover:scale-105 transition-all duration-200">
+              <span className="text-primary-foreground font-display font-bold text-base">C</span>
             </div>
-            <span className="font-display text-xl font-bold text-foreground hidden sm:block tracking-tight">
+            <span className="font-display text-lg font-bold text-foreground hidden sm:block tracking-tight">
               CARD<span className="text-primary">BOOM</span>
             </span>
           </div>
 
-          {/* Search Bar */}
-          <div className={`hidden md:flex items-center flex-1 max-w-xl mx-8 relative transition-all duration-300 ${searchFocused ? 'scale-[1.02]' : ''}`}>
-            <Search className="absolute left-4 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={t.nav.search}
-              className="pl-11 bg-secondary/50 border-border/30 focus:border-primary/50 focus:ring-primary/20 rounded-xl h-11"
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-            />
+          {/* Search Bar - Improved visibility */}
+          <div className={cn(
+            "hidden md:flex items-center flex-1 max-w-md relative transition-all duration-200",
+            searchFocused && "max-w-lg"
+          )}>
+            <div className={cn(
+              "relative w-full group",
+              searchFocused && "ring-2 ring-primary/20 rounded-lg"
+            )}>
+              <Search className={cn(
+                "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
+                searchFocused ? "text-primary" : "text-muted-foreground"
+              )} />
+              <Input
+                type="text"
+                placeholder={t.nav.search}
+                className="w-full pl-10 pr-4 h-10 bg-muted/50 hover:bg-muted/70 border-border/50 focus:border-primary/50 focus:bg-background rounded-lg text-sm placeholder:text-muted-foreground/70 transition-all"
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+              />
+            </div>
           </div>
 
           {/* Desktop Nav with Grouped Menus */}
-          <nav className="hidden lg:flex items-center gap-1">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors text-sm font-bold px-3 py-2">
+          <nav className="hidden lg:flex items-center gap-0.5">
+            <Link 
+              to="/" 
+              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
+            >
               {t.nav.marketplace}
             </Link>
             
@@ -125,29 +139,33 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-bold bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                  <NavigationMenuTrigger className="text-sm font-medium text-foreground/80 hover:text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3">
                     <TrendingUp className="w-4 h-4 mr-1.5" />
                     Trading
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[300px] gap-1 p-2">
+                    <ul className="grid w-[280px] gap-1 p-2">
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/markets" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <TrendingUp className="w-5 h-5 text-primary" />
+                          <Link to="/markets" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                              <TrendingUp className="w-4 h-4 text-primary" />
+                            </div>
                             <div>
-                              <div className="font-semibold text-sm">{t.nav.markets}</div>
-                              <div className="text-xs text-muted-foreground">Live market prices & charts</div>
+                              <div className="font-medium text-sm">{t.nav.markets}</div>
+                              <div className="text-xs text-muted-foreground">Live prices & charts</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/deals" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <Sparkles className="w-5 h-5 text-gold" />
+                          <Link to="/deals" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                              <Sparkles className="w-4 h-4 text-amber-500" />
+                            </div>
                             <div>
-                              <div className="font-semibold text-sm">{t.nav.deals}</div>
+                              <div className="font-medium text-sm">{t.nav.deals}</div>
                               <div className="text-xs text-muted-foreground">Arbitrage & hot deals</div>
                             </div>
                           </Link>
@@ -155,10 +173,12 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/fractional" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <PieChart className="w-5 h-5 text-accent" />
+                          <Link to="/fractional" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                              <PieChart className="w-4 h-4 text-accent" />
+                            </div>
                             <div>
-                              <div className="font-semibold text-sm">{t.nav.fractional}</div>
+                              <div className="font-medium text-sm">{t.nav.fractional}</div>
                               <div className="text-xs text-muted-foreground">Own fractions of grails</div>
                             </div>
                           </Link>
@@ -174,41 +194,47 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-bold bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                  <NavigationMenuTrigger className="text-sm font-medium text-foreground/80 hover:text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3">
                     <Users className="w-4 h-4 mr-1.5" />
                     Community
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[300px] gap-1 p-2">
+                    <ul className="grid w-[280px] gap-1 p-2">
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/leaderboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <Trophy className="w-5 h-5 text-gold" />
+                          <Link to="/leaderboard" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                              <Trophy className="w-4 h-4 text-amber-500" />
+                            </div>
                             <div>
-                              <div className="font-semibold text-sm">Leaderboard</div>
-                              <div className="text-xs text-muted-foreground">Global rankings & tournaments</div>
+                              <div className="font-medium text-sm">Leaderboard</div>
+                              <div className="text-xs text-muted-foreground">Rankings & tournaments</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/hall-of-fame" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <Crown className="w-5 h-5 text-primary" />
+                          <Link to="/hall-of-fame" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                              <Crown className="w-4 h-4 text-primary" />
+                            </div>
                             <div>
-                              <div className="font-semibold text-sm">Hall of Fame</div>
-                              <div className="text-xs text-muted-foreground">Top collectors & achievements</div>
+                              <div className="font-medium text-sm">Hall of Fame</div>
+                              <div className="text-xs text-muted-foreground">Top collectors</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/gaming" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                            <Gamepad2 className="w-5 h-5 text-accent" />
+                          <Link to="/gaming" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                              <Gamepad2 className="w-4 h-4 text-accent" />
+                            </div>
                             <div>
-                              <div className="font-semibold text-sm">{t.nav.gaming}</div>
-                              <div className="text-xs text-muted-foreground">Gaming hub & coaching</div>
+                              <div className="font-medium text-sm">{t.nav.gaming}</div>
+                              <div className="text-xs text-muted-foreground">Gaming hub</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -216,10 +242,12 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       {user && (
                         <li>
                           <NavigationMenuLink asChild>
-                            <Link to="/messages" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
-                              <MessageCircle className="w-5 h-5 text-muted-foreground" />
+                            <Link to="/messages" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                              <div className="w-9 h-9 rounded-md bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors">
+                                <MessageCircle className="w-4 h-4 text-muted-foreground" />
+                              </div>
                               <div>
-                                <div className="font-semibold text-sm">Messages</div>
+                                <div className="font-medium text-sm">Messages</div>
                                 <div className="text-xs text-muted-foreground">Chat with traders</div>
                               </div>
                             </Link>
@@ -232,15 +260,21 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               </NavigationMenuList>
             </NavigationMenu>
 
-            <Link to="/sell" className="text-foreground hover:text-primary transition-colors text-sm font-bold px-3 py-2">
+            <Link 
+              to="/sell" 
+              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
+            >
               {t.nav.sell}
             </Link>
-            <Link to="/vault" className="text-foreground hover:text-primary transition-colors text-sm font-bold px-3 py-2">
+            <Link 
+              to="/vault" 
+              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
+            >
               {t.nav.portfolio}
             </Link>
           </nav>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <CurrencyToggle />
             <ThemeToggle />
             <LanguageSelector />
@@ -250,10 +284,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               </div>
             )}
             
-            <Button variant="ghost" size="icon" className="relative" onClick={onCartClick}>
-              <ShoppingCart className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="relative h-9 w-9" onClick={onCartClick}>
+              <ShoppingCart className="w-4 h-4" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center font-bold">
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground rounded-full text-[10px] flex items-center justify-center font-bold">
                   {cartCount}
                 </span>
               )}
