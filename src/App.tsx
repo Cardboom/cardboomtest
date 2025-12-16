@@ -48,6 +48,8 @@ import KVKK from "./pages/KVKK";
 import UserAgreement from "./pages/UserAgreement";
 import DistanceSalesContract from "./pages/DistanceSalesContract";
 import API from "./pages/API";
+import Article from "./pages/Article";
+import Achievements from "./pages/Achievements";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -114,6 +116,8 @@ const AppContent = () => {
           <Route path="/kullanici-sozlesmesi" element={<UserAgreement />} />
           <Route path="/mesafeli-satis-sozlesmesi" element={<DistanceSalesContract />} />
           <Route path="/api" element={<API />} />
+          <Route path="/blog/:slug" element={<Article />} />
+          <Route path="/achievements" element={<Achievements />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

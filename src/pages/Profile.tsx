@@ -13,9 +13,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TrendingUp, Package, Star, Clock, ShoppingBag, MessageSquare, Heart, Eye, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { TrendingUp, Package, Star, Clock, ShoppingBag, MessageSquare, Heart, Eye, ArrowUpRight, ArrowDownRight, Trophy } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { AchievementsShowcase } from '@/components/achievements/AchievementsShowcase';
 
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
@@ -158,10 +159,14 @@ const Profile = () => {
         />
 
         <Tabs defaultValue="showcase" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="showcase" className="gap-2">
               <Package className="h-4 w-4" />
               <span className="hidden md:inline">Showcase</span>
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="gap-2">
+              <Trophy className="h-4 w-4" />
+              <span className="hidden md:inline">Achievements</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -184,6 +189,10 @@ const Profile = () => {
               isOwnProfile={isOwnProfile}
               onUpdateShowcase={handleUpdateShowcase}
             />
+          </TabsContent>
+
+          <TabsContent value="achievements">
+            <AchievementsShowcase userId={profile.id} showAll />
           </TabsContent>
 
           <TabsContent value="stats">
