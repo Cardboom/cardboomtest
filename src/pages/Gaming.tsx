@@ -1,16 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CollectibleCard } from '@/components/CollectibleCard';
 import { CollectibleModal } from '@/components/CollectibleModal';
 import { CartDrawer } from '@/components/CartDrawer';
+import { CoachRegistrationDialog } from '@/components/gaming/CoachRegistrationDialog';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Gamepad2, Trophy, Coins, Sword, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Gamepad2, Trophy, Coins, Sword, Users, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 const Gaming = () => {
   const { t } = useLanguage();
@@ -18,6 +22,23 @@ const Gaming = () => {
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [showCoachDialog, setShowCoachDialog] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  // Check auth state
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Filter gaming items
   const gamingItems = useMemo(() => {
@@ -79,9 +100,22 @@ const Gaming = () => {
             <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">
               Gaming Hub
             </h1>
-            <p className="text-muted-foreground max-w-2xl text-lg">
+            <p className="text-muted-foreground max-w-2xl text-lg mb-6">
               Game points, skins, coaching services and more. Level up your gaming experience with CardBoom.
             </p>
+            <Button 
+              onClick={() => {
+                if (!user) {
+                  toast.error('Please log in to register as a coach');
+                  return;
+                }
+                setShowCoachDialog(true);
+              }}
+              className="bg-gradient-to-r from-gold to-gold/80 text-background hover:from-gold/90 hover:to-gold/70"
+            >
+              <GraduationCap className="w-4 h-4 mr-2" />
+              Become a Coach
+            </Button>
           </div>
         </div>
 
@@ -201,6 +235,11 @@ const Gaming = () => {
         onClose={() => setIsCartOpen(false)}
         items={cartItems}
         onRemoveItem={handleRemoveFromCart}
+      />
+
+      <CoachRegistrationDialog 
+        open={showCoachDialog} 
+        onOpenChange={setShowCoachDialog} 
       />
     </div>
   );
