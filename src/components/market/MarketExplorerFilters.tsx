@@ -31,6 +31,7 @@ const CATEGORIES = [
   { value: 'sports-mlb', label: 'MLB Cards' },
   { value: 'sports-soccer', label: 'Soccer Cards' },
   { value: 'figures', label: 'Figures & Collectibles' },
+  { value: 'gaming', label: 'Gaming Points' },
 ];
 
 const GRADES = [

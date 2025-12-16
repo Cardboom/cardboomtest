@@ -6,10 +6,11 @@ import { ScrollReveal } from '@/components/ScrollReveal';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { ItemBadges } from '@/components/market/ItemBadges';
 import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
+import { GRADE_LABELS } from '@/hooks/useGradePrices';
 import { 
   TrendingUp, TrendingDown, RefreshCw, Search, 
   Flame, Zap, Users, BarChart3, Star,
-  ArrowUpDown, ChevronDown
+  ArrowUpDown, ChevronDown, Award
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +48,21 @@ const Markets = () => {
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedGrade, setSelectedGrade] = useState<string>('all');
   const [displayCount, setDisplayCount] = useState(20);
+
+  const gradeOptions = [
+    { value: 'all', label: 'All Grades' },
+    { value: 'raw', label: 'Raw (Ungraded)' },
+    { value: 'psa10', label: 'PSA 10' },
+    { value: 'psa9', label: 'PSA 9' },
+    { value: 'psa8', label: 'PSA 8' },
+    { value: 'psa7', label: 'PSA 7' },
+    { value: 'psa6', label: 'PSA 6' },
+    { value: 'bgs10', label: 'BGS 10' },
+    { value: 'bgs9_5', label: 'BGS 9.5' },
+    { value: 'cgc10', label: 'CGC 10' },
+  ];
 
   // Fetch items from database with real-time updates (30s cache TTL)
   const { 
@@ -114,6 +129,25 @@ const Markets = () => {
     if (selectedCategory !== 'all') {
       items = items.filter(item => item.category === selectedCategory);
     }
+
+    // Filter by grade - check if name contains grade info
+    if (selectedGrade !== 'all') {
+      const gradeSearchTerms: Record<string, string[]> = {
+        'raw': ['raw', 'ungraded'],
+        'psa10': ['psa 10', 'psa10'],
+        'psa9': ['psa 9', 'psa9'],
+        'psa8': ['psa 8', 'psa8'],
+        'psa7': ['psa 7', 'psa7'],
+        'psa6': ['psa 6', 'psa6'],
+        'bgs10': ['bgs 10', 'bgs10'],
+        'bgs9_5': ['bgs 9.5', 'bgs9.5'],
+        'cgc10': ['cgc 10', 'cgc10'],
+      };
+      const terms = gradeSearchTerms[selectedGrade] || [];
+      items = items.filter(item => 
+        terms.some(term => item.name.toLowerCase().includes(term))
+      );
+    }
     
     if (searchQuery) {
       items = items.filter(item => 
@@ -157,7 +191,7 @@ const Markets = () => {
     }
 
     return items;
-  }, [collectiblesWithPrices, searchQuery, activeTab, sortField, sortDir, selectedCategory]);
+  }, [collectiblesWithPrices, searchQuery, activeTab, sortField, sortDir, selectedCategory, selectedGrade]);
 
   // Displayed items with pagination
   const displayedCollectibles = useMemo(() => {
@@ -318,6 +352,28 @@ const Markets = () => {
                     >
                       <span className="mr-2">{getCategoryIcon(cat)}</span>
                       {getCategoryLabel(cat)}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Grade Filter */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-9 gap-1.5">
+                    <Award className="w-4 h-4" />
+                    {gradeOptions.find(g => g.value === selectedGrade)?.label || 'All Grades'}
+                    <ChevronDown className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-h-80 overflow-y-auto">
+                  {gradeOptions.map((grade) => (
+                    <DropdownMenuItem 
+                      key={grade.value} 
+                      onClick={() => setSelectedGrade(grade.value)}
+                      className={cn(selectedGrade === grade.value && "bg-accent")}
+                    >
+                      {grade.label}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
