@@ -46,23 +46,41 @@ const countryToLocale: Record<string, Locale> = {
   // Default to English for all others
 };
 
+// ISO 639-1 language codes mapped to supported locales
+const ISO_639_1_TO_LOCALE: Record<string, Locale> = {
+  "tr": "tr", // Turkish
+  "de": "de", // German
+  "fr": "fr", // French
+  "it": "it", // Italian
+  "ar": "ar", // Arabic
+  "en": "en", // English
+};
+
+// BCP 47 / IETF language tag parser (ISO 639-1 + optional ISO 3166-1 country code)
+function parseLanguageTag(tag: string): { language: string; region?: string } {
+  const normalized = tag.toLowerCase().replace(/_/g, "-");
+  const [language, region] = normalized.split("-");
+  return { language: language || "en", region: region?.toUpperCase() };
+}
+
 function detectLocaleFromBrowser(): Locale {
   try {
-    // Use browser's language setting (more reliable and secure than IP-based detection)
-    const browserLang = navigator.language || (navigator as any).userLanguage || "en";
-    const langCode = browserLang.split("-")[0].toLowerCase();
+    // Get browser languages in order of preference (BCP 47 compliant)
+    const languages = navigator.languages?.length 
+      ? navigator.languages 
+      : [navigator.language || (navigator as any).userLanguage || "en"];
     
-    // Map browser language codes to our supported locales
-    const langToLocale: Record<string, Locale> = {
-      "tr": "tr",
-      "de": "de",
-      "fr": "fr",
-      "it": "it",
-      "ar": "ar",
-      "en": "en",
-    };
+    // Try each preferred language in order
+    for (const langTag of languages) {
+      const { language } = parseLanguageTag(langTag);
+      
+      // Check if we support this ISO 639-1 language code
+      if (ISO_639_1_TO_LOCALE[language]) {
+        return ISO_639_1_TO_LOCALE[language];
+      }
+    }
     
-    return langToLocale[langCode] || "en";
+    return "en";
   } catch {
     return "en";
   }
