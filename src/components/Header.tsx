@@ -133,13 +133,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20 gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-2 cursor-pointer group flex-shrink-0" onClick={() => navigate('/')}>
+          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
             <img 
               src={cardboomLogo} 
               alt="CardBoom" 
-              className="h-48 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-16 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
-          </div>
+          </Link>
 
           {/* Search Bar - Improved visibility */}
           <div className={cn(
