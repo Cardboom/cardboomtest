@@ -1,3 +1,5 @@
+export type CardGrade = 'raw' | 'psa10' | 'psa9' | 'psa8' | 'psa7' | 'psa6' | 'bgs10' | 'bgs9_5' | 'cgc10';
+
 export interface Collectible {
   id: string;
   priceId: string;
@@ -10,6 +12,7 @@ export interface Collectible {
   rarity: 'common' | 'rare' | 'legendary' | 'grail';
   seller: string;
   condition: string;
+  grade?: CardGrade;
   year: number;
   brand: string;
   trending: boolean;

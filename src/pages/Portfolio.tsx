@@ -18,15 +18,16 @@ import { toast } from 'sonner';
 import { AddToPortfolioDialog } from '@/components/portfolio/AddToPortfolioDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatDistanceToNow } from 'date-fns';
+import { formatGrade, CardGrade } from '@/hooks/useGradePrices';
 
-// Mock portfolio data
+// Mock portfolio data with grade-specific prices
 const MOCK_PORTFOLIO = [
   { 
     id: '1', 
     name: 'Charizard Base Set', 
-    grade: 'PSA 10',
+    grade: 'psa10' as CardGrade,
     purchasePrice: 380000, 
-    currentPrice: 420000, 
+    currentPrice: 420000, // PSA 10 price
     quantity: 1,
     inVault: true,
     image: '/placeholder.svg'
@@ -34,9 +35,9 @@ const MOCK_PORTFOLIO = [
   { 
     id: '2', 
     name: 'LeBron James Rookie', 
-    grade: 'PSA 10',
+    grade: 'psa10' as CardGrade,
     purchasePrice: 220000, 
-    currentPrice: 245000, 
+    currentPrice: 245000, // PSA 10 price
     quantity: 1,
     inVault: false,
     image: '/placeholder.svg'
@@ -44,9 +45,9 @@ const MOCK_PORTFOLIO = [
   { 
     id: '3', 
     name: 'Monkey D. Luffy Leader', 
-    grade: 'PSA 10',
+    grade: 'psa10' as CardGrade,
     purchasePrice: 500, 
-    currentPrice: 850, 
+    currentPrice: 850, // PSA 10 price
     quantity: 3,
     inVault: false,
     image: '/placeholder.svg'
@@ -54,11 +55,21 @@ const MOCK_PORTFOLIO = [
   { 
     id: '4', 
     name: 'Pikachu Illustrator', 
-    grade: 'PSA 9',
+    grade: 'psa9' as CardGrade,
     purchasePrice: 2200000, 
-    currentPrice: 2500000, 
+    currentPrice: 2500000, // PSA 9 price (lower than PSA 10 would be)
     quantity: 1,
     inVault: true,
+    image: '/placeholder.svg'
+  },
+  { 
+    id: '5', 
+    name: 'Michael Jordan Fleer Rookie', 
+    grade: 'psa8' as CardGrade,
+    purchasePrice: 45000, 
+    currentPrice: 52000, // PSA 8 price (lower than PSA 9/10)
+    quantity: 1,
+    inVault: false,
     image: '/placeholder.svg'
   },
 ];
@@ -257,10 +268,15 @@ const Portfolio = () => {
                           )}
                         </div>
                         <span className={cn(
-                          "text-xs px-2 py-0.5 rounded",
-                          item.grade === 'PSA 10' ? "bg-gold/20 text-gold" : "bg-purple-500/20 text-purple-400"
+                          "text-xs px-2 py-0.5 rounded font-semibold",
+                          item.grade === 'psa10' && "bg-gold/20 text-gold",
+                          item.grade === 'psa9' && "bg-purple-500/20 text-purple-400",
+                          item.grade === 'psa8' && "bg-blue-500/20 text-blue-400",
+                          item.grade === 'bgs10' && "bg-gold/20 text-gold",
+                          item.grade === 'bgs9_5' && "bg-purple-500/20 text-purple-400",
+                          !['psa10', 'psa9', 'psa8', 'bgs10', 'bgs9_5'].includes(item.grade) && "bg-secondary text-muted-foreground"
                         )}>
-                          {item.grade}
+                          {formatGrade(item.grade)}
                         </span>
                       </div>
                     </div>

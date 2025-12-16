@@ -5,6 +5,7 @@ import { Collectible } from '@/types/collectible';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { LiveTickerPrice } from './LiveTickerPrice';
+import { formatGrade } from '@/hooks/useGradePrices';
 
 interface CollectibleCardProps {
   collectible: Collectible;
@@ -120,12 +121,24 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
           </h3>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 flex-wrap">
+          {collectible.grade && (
+            <span className={cn(
+              "px-2 py-0.5 rounded font-semibold",
+              collectible.grade === 'psa10' && "bg-gold/20 text-gold",
+              collectible.grade === 'psa9' && "bg-purple-500/20 text-purple-400",
+              collectible.grade === 'psa8' && "bg-blue-500/20 text-blue-400",
+              collectible.grade === 'bgs10' && "bg-gold/20 text-gold",
+              collectible.grade === 'bgs9_5' && "bg-purple-500/20 text-purple-400",
+              collectible.grade === 'cgc10' && "bg-emerald-500/20 text-emerald-400",
+              !['psa10', 'psa9', 'psa8', 'bgs10', 'bgs9_5', 'cgc10'].includes(collectible.grade) && "bg-secondary text-muted-foreground"
+            )}>
+              {formatGrade(collectible.grade)}
+            </span>
+          )}
           <span>{collectible.brand}</span>
           <span>•</span>
           <span>{collectible.year}</span>
-          <span>•</span>
-          <span>{collectible.condition}</span>
         </div>
 
         {/* Price Section with Live Ticker */}
