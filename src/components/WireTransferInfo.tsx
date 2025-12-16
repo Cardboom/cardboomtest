@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, Check, Building2, AlertCircle, Clock } from 'lucide-react';
+import { Copy, Check, Building2, AlertCircle, Clock, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -7,9 +7,11 @@ interface WireTransferInfoProps {
   onClose?: () => void;
 }
 
-// Cardboom's bank details
-const CARDBOOM_IBAN = 'TR49 0086 4011 0000 8249 9298 45';
-const CARDBOOM_BANK = 'BRAINBABY BİLİŞİM ANONİM ŞİRKETİ';
+// Cardboom's bank details - EXACT as required
+const CARDBOOM_IBAN = 'TR490086401100008249929845';
+const CARDBOOM_IBAN_FORMATTED = 'TR49 0086 4011 0000 8249 9298 45';
+const CARDBOOM_BANK = 'BRAINBABY BILISIM ANONIM SIRKETI';
+const WIRE_TRANSFER_FEE = 3; // 3%
 
 export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
   const [copied, setCopied] = useState<string | null>(null);
@@ -28,26 +30,39 @@ export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
           <Building2 className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-platinum">Wire Transfer</h3>
-          <p className="text-platinum/60 text-sm">Add funds via bank transfer</p>
+          <h3 className="text-lg font-semibold text-platinum">Wire Transfer (EFT/Havale)</h3>
+          <p className="text-platinum/60 text-sm">Add funds via domestic bank transfer</p>
         </div>
       </div>
 
-      {/* Important Notice */}
-      <div className="bg-gold/10 border border-gold/30 rounded-lg p-4 space-y-2">
+      {/* Critical User Instruction */}
+      <div className="bg-gold/20 border-2 border-gold rounded-lg p-4 space-y-2">
         <div className="flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-gold shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="text-platinum font-medium">Important Instructions</p>
-            <ul className="text-platinum/70 text-sm space-y-1">
-              <li>• Include your <span className="text-gold font-semibold">Cardboom Username</span> in the transfer description</li>
-              <li>• IBAN transfers take <span className="text-gold font-semibold">1-2 business days</span> to process</li>
-              <li>• Commission: 1.25% of transfer amount</li>
-            </ul>
+          <div className="space-y-2">
+            <p className="text-platinum font-bold text-base">⚠️ IMPORTANT - READ CAREFULLY</p>
+            <p className="text-platinum font-medium">
+              After creating a custom name in your profile, you must write your <span className="text-gold font-bold">username</span> in the transfer description/reference so the balance can be credited correctly.
+            </p>
           </div>
         </div>
       </div>
 
+      {/* Transfer Restrictions */}
+      <div className="bg-loss/10 border border-loss/30 rounded-lg p-4 space-y-2">
+        <div className="flex items-start gap-2">
+          <Info className="w-5 h-5 text-loss shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="text-platinum font-medium">Transfer Requirements</p>
+            <ul className="text-platinum/70 text-sm space-y-1">
+              <li>• <span className="text-loss font-semibold">Currency: TRY only</span> (Turkish Lira)</li>
+              <li>• <span className="text-loss font-semibold">Domestic TR transfers only</span> (EFT/Havale)</li>
+              <li>• International transfers will NOT be credited</li>
+              <li>• Fee: <span className="text-platinum font-semibold">{WIRE_TRANSFER_FEE}%</span> of transfer amount</li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
       {/* Bank Details */}
       <div className="space-y-3">
@@ -56,32 +71,39 @@ export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
         <div className="space-y-2">
           <div className="flex items-center justify-between p-3 bg-obsidian/30 rounded-lg">
             <div>
-              <p className="text-platinum/50 text-xs">Account Name</p>
+              <p className="text-platinum/50 text-xs">Beneficiary Name (Alıcı Adı)</p>
               <p className="text-platinum font-medium text-sm">{CARDBOOM_BANK}</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => copyToClipboard(CARDBOOM_BANK, 'Account Name')}
+              onClick={() => copyToClipboard(CARDBOOM_BANK, 'Beneficiary Name')}
               className="text-platinum/60 hover:text-platinum"
             >
-              {copied === 'Account Name' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied === 'Beneficiary Name' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </Button>
           </div>
 
           <div className="flex items-center justify-between p-3 bg-obsidian/30 rounded-lg">
             <div>
               <p className="text-platinum/50 text-xs">IBAN</p>
-              <p className="text-platinum font-mono text-sm">{CARDBOOM_IBAN}</p>
+              <p className="text-platinum font-mono text-sm">{CARDBOOM_IBAN_FORMATTED}</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => copyToClipboard(CARDBOOM_IBAN.replace(/\s/g, ''), 'IBAN')}
+              onClick={() => copyToClipboard(CARDBOOM_IBAN, 'IBAN')}
               className="text-platinum/60 hover:text-platinum"
             >
               {copied === 'IBAN' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
             </Button>
+          </div>
+
+          <div className="flex items-center justify-between p-3 bg-obsidian/30 rounded-lg">
+            <div>
+              <p className="text-platinum/50 text-xs">Currency (Para Birimi)</p>
+              <p className="text-platinum font-medium text-sm">TRY (Turkish Lira) - ONLY</p>
+            </div>
           </div>
         </div>
       </div>
@@ -92,7 +114,17 @@ export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
           <Clock className="w-5 h-5 text-blue-400" />
           <span className="text-blue-400 font-medium">Processing Time</span>
         </div>
-        <p className="text-platinum/60 text-sm">1-2 business days</p>
+        <p className="text-platinum/60 text-sm">1-2 business days after username verification</p>
+      </div>
+
+      {/* Balance Will NOT Be Credited */}
+      <div className="bg-loss/10 border border-loss/30 rounded-lg p-4">
+        <p className="text-loss font-semibold mb-2">❌ Balance will NOT be credited if:</p>
+        <ul className="text-platinum/70 text-sm space-y-1">
+          <li>• Transfer reference does not include your username</li>
+          <li>• Transfer is sent in a non-TRY currency</li>
+          <li>• Transfer is international (non-TR domestic)</li>
+        </ul>
       </div>
 
       {/* Withdrawal Notice */}
