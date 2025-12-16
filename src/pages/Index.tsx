@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { MarketTicker } from '@/components/MarketTicker';
 import { HeroSection } from '@/components/HeroSection';
@@ -195,6 +196,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Cardboom - Premier Collectibles Trading Exchange | Buy & Sell Trading Cards</title>
+        <meta name="description" content="Trade NBA cards, football cards, Pokemon TCG, Yu-Gi-Oh!, and rare collectible figures with real-time pricing, secure transactions, and instant settlements. Join 10,000+ collectors on Cardboom." />
+        <meta name="keywords" content="trading cards, NBA cards, football cards, TCG, Pokemon cards, Yu-Gi-Oh cards, collectibles, figures, marketplace, live prices, card grading, PSA, BGS, sports cards" />
+        <link rel="canonical" href="https://cardboom.com/" />
+        <meta property="og:title" content="Cardboom - Premier Collectibles Trading Exchange" />
+        <meta property="og:description" content="Trade collectible cards and figures with real-time pricing, secure transactions, and instant settlements." />
+        <meta property="og:url" content="https://cardboom.com/" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       {showWaitlist && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
       <ActivityAnnouncementBanner />
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />

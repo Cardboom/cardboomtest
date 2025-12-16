@@ -1,7 +1,22 @@
+# Cardboom Robots.txt
+# https://cardboom.com
+
 User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Googlebot-Image
 Allow: /
 
 User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
 Allow: /
 
 User-agent: Twitterbot
@@ -10,5 +25,50 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Pinterest
+Allow: /
+
 User-agent: *
 Allow: /
+
+# Sitemap location
+Sitemap: https://cardboom.com/sitemap.xml
+
+# Disallow private/auth pages from indexing
+Disallow: /auth
+Disallow: /wallet
+Disallow: /vault
+Disallow: /sell
+Disallow: /profile
+Disallow: /messages
+Disallow: /trades
+Disallow: /portfolio
+Disallow: /admin
+Disallow: /order-success
+
+# Allow specific public pages
+Allow: /markets
+Allow: /explorer
+Allow: /blog
+Allow: /deals
+Allow: /fractional
+Allow: /gaming
+Allow: /leaderboard
+Allow: /hall-of-fame
+Allow: /api
+Allow: /help
+Allow: /about
+Allow: /safety
+Allow: /careers
+Allow: /press
+Allow: /terms
+Allow: /privacy
+Allow: /card/*
+Allow: /user/*
+Allow: /seller/*
+
+# Host directive
+Host: https://cardboom.com

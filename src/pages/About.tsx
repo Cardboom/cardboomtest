@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +19,15 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>About Us | Cardboom - The Future of TCG Trading</title>
+        <meta name="description" content="Cardboom is the world's leading marketplace for trading cards, collectibles, and figures. Built by collectors, for collectors with escrow protection and vault storage." />
+        <meta name="keywords" content="Cardboom about, trading card marketplace, collectibles platform, TCG trading, card collecting" />
+        <link rel="canonical" href="https://cardboom.com/about" />
+        <meta property="og:title" content="About Us | Cardboom" />
+        <meta property="og:description" content="The world's leading marketplace for trading cards and collectibles." />
+        <meta property="og:url" content="https://cardboom.com/about" />
+      </Helmet>
       <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} items={[]} onRemoveItem={() => {}} />
 

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CollectibleCard } from '@/components/CollectibleCard';
@@ -83,6 +84,16 @@ const Gaming = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Gaming Hub | Cardboom - Game Points, Skins & Coaching</title>
+        <meta name="description" content="Buy and sell game points, skins, and coaching services. Level up your gaming experience with Valorant VP, PUBG UC, and professional coaching from top players." />
+        <meta name="keywords" content="game points, gaming marketplace, Valorant VP, PUBG UC, gaming coaching, esports coaching, game skins" />
+        <link rel="canonical" href="https://cardboom.com/gaming" />
+        <meta property="og:title" content="Gaming Hub | Cardboom" />
+        <meta property="og:description" content="Buy and sell game points, skins, and coaching services. Level up your gaming experience." />
+        <meta property="og:url" content="https://cardboom.com/gaming" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       
       <main className="container mx-auto px-4 py-8">

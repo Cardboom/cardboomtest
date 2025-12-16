@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { useMarketItems } from '@/hooks/useMarketItems';
@@ -231,6 +232,16 @@ const Markets = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Live Market Prices | Cardboom - Trading Cards & Collectibles</title>
+        <meta name="description" content="Track real-time prices for Pokemon, NBA, football cards, and collectibles. View trending items, top gainers, losers, and market analytics on Cardboom." />
+        <meta name="keywords" content="trading card prices, Pokemon card prices, NBA card prices, sports card market, collectibles market, card price tracker, TCG prices" />
+        <link rel="canonical" href="https://cardboom.com/markets" />
+        <meta property="og:title" content="Live Market Prices | Cardboom" />
+        <meta property="og:description" content="Track real-time prices for trading cards and collectibles. View trending items and market analytics." />
+        <meta property="og:url" content="https://cardboom.com/markets" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">
