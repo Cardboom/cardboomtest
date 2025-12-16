@@ -480,12 +480,6 @@ const ItemDetail = () => {
           <ItemBids itemId={item.id} itemName={item.name} />
           <div className="space-y-4">
             <FractionalOwnershipCard marketItemId={item.id} />
-            <CreateFractionalDialog
-              marketItemId={item.id}
-              itemName={item.name}
-              totalValue={item.current_price || 0}
-              imageUrl={item.image_url || undefined}
-            />
           </div>
         </div>
 

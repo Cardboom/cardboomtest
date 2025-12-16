@@ -285,21 +285,6 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                           </Link>
                         </NavigationMenuLink>
                       </li>
-                      {user && (
-                        <li>
-                          <NavigationMenuLink asChild>
-                            <Link to="/messages" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                              <div className="w-9 h-9 rounded-md bg-muted flex items-center justify-center group-hover:bg-muted/80 transition-colors">
-                                <MessageCircle className="w-4 h-4 text-muted-foreground" />
-                              </div>
-                              <div>
-                                <div className="font-medium text-sm">Messages</div>
-                                <div className="text-xs text-muted-foreground">Chat with traders</div>
-                              </div>
-                            </Link>
-                          </NavigationMenuLink>
-                        </li>
-                      )}
                     </ul>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
