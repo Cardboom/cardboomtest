@@ -151,7 +151,8 @@ export const useDailyStreakWithAchievements = () => {
 
   useEffect(() => {
     checkAndLogDailyLogin();
-  }, [checkAndLogDailyLogin]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   return streakData;
 };

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import AchievementUnlockNotification from '@/components/achievements/AchievementUnlockNotification';
 
@@ -118,8 +118,14 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setUnlockedAchievement(null);
   };
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    showAchievementUnlock,
+    checkAndAwardAchievement,
+  }), [showAchievementUnlock, checkAndAwardAchievement]);
+
   return (
-    <AchievementContext.Provider value={{ showAchievementUnlock, checkAndAwardAchievement }}>
+    <AchievementContext.Provider value={contextValue}>
       {children}
       <AchievementUnlockNotification 
         achievement={unlockedAchievement} 
