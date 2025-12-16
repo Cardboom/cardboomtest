@@ -157,9 +157,12 @@ const Markets = () => {
     }
     
     if (searchQuery) {
+      const query = searchQuery.toLowerCase();
       items = items.filter(item => 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.brand.toLowerCase().includes(searchQuery.toLowerCase())
+        item.name?.toLowerCase().includes(query) ||
+        item.brand?.toLowerCase().includes(query) ||
+        item.category?.toLowerCase().includes(query) ||
+        item.rarity?.toLowerCase().includes(query)
       );
     }
 
