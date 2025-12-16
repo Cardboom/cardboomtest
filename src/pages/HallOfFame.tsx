@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TournamentBanner } from '@/components/leaderboard/TournamentBanner';
+import { TournamentFAQ } from '@/components/leaderboard/TournamentFAQ';
 import { 
   Trophy, Crown, Zap, Diamond, Gem, 
   TrendingUp, ShoppingBag, Star, Clock,
@@ -321,6 +323,9 @@ const HallOfFame = () => {
           </p>
         </motion.div>
 
+        {/* Tournament Banner */}
+        <TournamentBanner />
+
         {/* Featured Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border-yellow-500/30">
@@ -498,6 +503,9 @@ const HallOfFame = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Tournament FAQ */}
+        <TournamentFAQ />
       </main>
 
       <Footer />
