@@ -197,11 +197,17 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
     }
   }, [category, limit, trending]);
 
-  // Initial fetch and real-time subscription
+  // Initial fetch - run only once on mount or when category/trending changes
+  const initialFetchDone = useRef(false);
   useEffect(() => {
+    initialFetchDone.current = false;
     fetchItems();
+    initialFetchDone.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category, trending, limit]);
 
-    // Subscribe to real-time updates with efficient single-item handling
+  // Real-time subscription - separate from fetch to prevent re-subscription loops
+  useEffect(() => {
     const channel = supabase
       .channel(`market-items-${category || 'all'}-${trending ? 'trending' : 'all'}`)
       .on(
@@ -224,7 +230,7 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchItems, updateSingleItem, category, trending]);
+  }, [category, trending, updateSingleItem]);
 
   // Cache refresh interval (max 30 seconds TTL)
   useEffect(() => {
@@ -271,10 +277,13 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const isInitialLoad = useRef(true);
 
-  const fetchListings = useCallback(async () => {
+  const fetchListings = useCallback(async (silent = false) => {
     try {
-      setIsLoading(true);
+      if (!silent) {
+        setIsLoading(true);
+      }
       
       let query = supabase
         .from('listings')
@@ -295,26 +304,35 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
       console.error('Error fetching listings:', err);
     } finally {
       setIsLoading(false);
+      isInitialLoad.current = false;
     }
   }, [sellerId, status]);
 
+  // Initial fetch - only on mount or when sellerId/status changes
   useEffect(() => {
-    fetchListings();
+    isInitialLoad.current = true;
+    fetchListings(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sellerId, status]);
 
-    // Real-time subscription for listings
+  // Real-time subscription - separate effect to prevent re-subscription loops
+  useEffect(() => {
     const channel = supabase
-      .channel('listings-realtime')
+      .channel(`listings-realtime-${sellerId || 'all'}-${status}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'listings' },
-        () => fetchListings()
+        () => {
+          // Silent refresh - don't show loading state for realtime updates
+          fetchListings(true);
+        }
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchListings]);
+  }, [sellerId, status, fetchListings]);
 
-  return { listings, isLoading, lastUpdated, refetch: fetchListings };
+  return { listings, isLoading, lastUpdated, refetch: () => fetchListings(false) };
 };
