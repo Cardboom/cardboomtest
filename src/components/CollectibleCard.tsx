@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { LiveTickerPrice } from './LiveTickerPrice';
 import { formatGrade } from '@/hooks/useGradePrices';
-
+import { CardPlaceholder } from './market/CardPlaceholder';
 interface CollectibleCardProps {
   collectible: Collectible;
   onAddToCart: (collectible: Collectible) => void;
@@ -69,14 +69,28 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
       {/* Image */}
       <div className="relative aspect-square bg-gradient-to-br from-secondary to-muted overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent z-10" />
-        <img
-          src={collectible.image || '/placeholder.svg'}
-          alt={collectible.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          onError={(e) => {
-            e.currentTarget.src = '/placeholder.svg';
-          }}
-        />
+        {collectible.image ? (
+          <img
+            src={collectible.image}
+            alt={collectible.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            onError={(e) => {
+              // Hide broken image and show placeholder
+              e.currentTarget.style.display = 'none';
+              const placeholder = e.currentTarget.nextElementSibling;
+              if (placeholder) placeholder.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <div className={cn("w-full h-full", collectible.image ? "hidden" : "")}>
+          <CardPlaceholder
+            name={collectible.name}
+            category={collectible.category}
+            setName={collectible.brand}
+            rarity={collectible.rarity}
+            className="w-full h-full aspect-square"
+          />
+        </div>
         
         {/* Rarity Badge */}
         <div className={cn(
