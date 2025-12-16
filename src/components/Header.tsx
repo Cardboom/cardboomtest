@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -255,6 +255,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                             <div>
                               <div className="font-medium text-sm">Hall of Fame</div>
                               <div className="text-xs text-muted-foreground">Top collectors</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/achievements" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition-colors">
+                              <Award className="w-4 h-4 text-yellow-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">Achievements</div>
+                              <div className="text-xs text-muted-foreground">Earn bragging rights</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
