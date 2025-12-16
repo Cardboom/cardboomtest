@@ -32,6 +32,8 @@ import Gaming from "./pages/Gaming";
 import CardPage from "./pages/CardPage";
 import PublicProfile from "./pages/PublicProfile";
 import OrderSuccess from "./pages/OrderSuccess";
+import SellerProfile from "./pages/SellerProfile";
+import HallOfFame from "./pages/HallOfFame";
 import About from "./pages/About";
 import Careers from "./pages/Careers";
 import Blog from "./pages/Blog";
@@ -78,6 +80,8 @@ const App = () => (
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/fractional" element={<FractionalMarket />} />
                   <Route path="/gaming" element={<Gaming />} />
+                  <Route path="/seller/:sellerId" element={<SellerProfile />} />
+                  <Route path="/hall-of-fame" element={<HallOfFame />} />
                   {/* SEO Card Pages */}
                   <Route path="/:category/:slug" element={<CardPage />} />
                   <Route path="/:category/:slug/:grade" element={<CardPage />} />

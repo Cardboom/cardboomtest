@@ -12,6 +12,7 @@ import {
 import { motion } from 'framer-motion';
 import { DealCard } from '@/components/deals/DealCard';
 import { ArbitrageView } from '@/components/deals/ArbitrageView';
+import { AutoMatchEngine } from '@/components/marketplace/AutoMatchEngine';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
@@ -261,6 +262,10 @@ const Deals = () => {
                 <Sparkles className="w-4 h-4" />
                 Hot Deals
               </TabsTrigger>
+              <TabsTrigger value="match" className="rounded-lg gap-2">
+                <Search className="w-4 h-4" />
+                Auto-Match
+              </TabsTrigger>
               <TabsTrigger value="arbitrage" className="rounded-lg gap-2">
                 <ArrowLeftRight className="w-4 h-4" />
                 Arbitrage
@@ -320,6 +325,10 @@ const Deals = () => {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="match">
+            <AutoMatchEngine />
           </TabsContent>
 
           <TabsContent value="arbitrage">
