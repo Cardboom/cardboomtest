@@ -59,3 +59,12 @@ verify_jwt = false
 
 [functions.import-pricecharting-csv]
 verify_jwt = false
+
+[functions.sync-scryfall-images]
+verify_jwt = false
+
+[functions.sync-ygopro-images]
+verify_jwt = false
+
+[functions.sync-pokemon-images]
+verify_jwt = false

@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { InlinePlaceholder } from './CardPlaceholder';
 
 interface MarketItem {
   id: string;
@@ -219,9 +220,13 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
 
               {/* Name & Set */}
               <div className="col-span-12 lg:col-span-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-secondary overflow-hidden shrink-0">
-                  <img src={item.image_url || '/placeholder.svg'} alt={item.name} className="w-full h-full object-cover" />
-                </div>
+                {item.image_url && !item.image_url.includes('placeholder') ? (
+                  <div className="w-12 h-12 rounded-lg bg-secondary overflow-hidden shrink-0">
+                    <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <InlinePlaceholder category={item.category} className="shrink-0" />
+                )}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-foreground font-medium text-sm truncate">{item.name}</p>
