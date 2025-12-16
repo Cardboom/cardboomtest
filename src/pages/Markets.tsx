@@ -6,6 +6,7 @@ import { useMarketItems } from '@/hooks/useMarketItems';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { ItemBadges } from '@/components/market/ItemBadges';
+import { WantedBoard } from '@/components/market/WantedBoard';
 import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
 import { GRADE_LABELS } from '@/hooks/useGradePrices';
 import { 
@@ -590,6 +591,13 @@ const Markets = () => {
             </div>
           </ScrollReveal>
         )}
+
+        {/* Wanted Board / Auction House */}
+        <ScrollReveal delay={400}>
+          <div className="mt-12">
+            <WantedBoard />
+          </div>
+        </ScrollReveal>
       </main>
 
       <Footer />
