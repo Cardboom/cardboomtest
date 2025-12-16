@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2 } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -12,6 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import { toast } from 'sonner';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,6 +28,7 @@ import { NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { AIMarketInsight } from '@/components/AIMarketInsight';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   cartCount: number;
@@ -106,35 +115,127 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             />
           </div>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6">
-            <Link to="/" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
+          {/* Desktop Nav with Grouped Menus */}
+          <nav className="hidden lg:flex items-center gap-1">
+            <Link to="/" className="text-foreground hover:text-primary transition-colors text-sm font-bold px-3 py-2">
               {t.nav.marketplace}
             </Link>
-            <Link to="/markets" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4" />
-              {t.nav.markets}
-            </Link>
-            <Link to="/deals" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4" />
-              {t.nav.deals}
-            </Link>
-            <Link to="/leaderboard" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
-              <Trophy className="w-4 h-4" />
-              {t.nav.leaderboard}
-            </Link>
-            <Link to="/fractional" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
-              <PieChart className="w-4 h-4" />
-              {t.nav.fractional}
-            </Link>
-            <Link to="/gaming" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
-              <Gamepad2 className="w-4 h-4" />
-              {t.nav.gaming}
-            </Link>
-            <Link to="/sell" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
+            
+            {/* Trading Dropdown */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-sm font-bold bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                    <TrendingUp className="w-4 h-4 mr-1.5" />
+                    Trading
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[300px] gap-1 p-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/markets" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                            <TrendingUp className="w-5 h-5 text-primary" />
+                            <div>
+                              <div className="font-semibold text-sm">{t.nav.markets}</div>
+                              <div className="text-xs text-muted-foreground">Live market prices & charts</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/deals" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                            <Sparkles className="w-5 h-5 text-gold" />
+                            <div>
+                              <div className="font-semibold text-sm">{t.nav.deals}</div>
+                              <div className="text-xs text-muted-foreground">Arbitrage & hot deals</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/fractional" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                            <PieChart className="w-5 h-5 text-accent" />
+                            <div>
+                              <div className="font-semibold text-sm">{t.nav.fractional}</div>
+                              <div className="text-xs text-muted-foreground">Own fractions of grails</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
+            {/* Community Dropdown */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="text-sm font-bold bg-transparent hover:bg-transparent data-[state=open]:bg-transparent">
+                    <Users className="w-4 h-4 mr-1.5" />
+                    Community
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    <ul className="grid w-[300px] gap-1 p-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/leaderboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                            <Trophy className="w-5 h-5 text-gold" />
+                            <div>
+                              <div className="font-semibold text-sm">Leaderboard</div>
+                              <div className="text-xs text-muted-foreground">Global rankings & tournaments</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/hall-of-fame" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                            <Crown className="w-5 h-5 text-primary" />
+                            <div>
+                              <div className="font-semibold text-sm">Hall of Fame</div>
+                              <div className="text-xs text-muted-foreground">Top collectors & achievements</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/gaming" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                            <Gamepad2 className="w-5 h-5 text-accent" />
+                            <div>
+                              <div className="font-semibold text-sm">{t.nav.gaming}</div>
+                              <div className="text-xs text-muted-foreground">Gaming hub & coaching</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      {user && (
+                        <li>
+                          <NavigationMenuLink asChild>
+                            <Link to="/messages" className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+                              <MessageCircle className="w-5 h-5 text-muted-foreground" />
+                              <div>
+                                <div className="font-semibold text-sm">Messages</div>
+                                <div className="text-xs text-muted-foreground">Chat with traders</div>
+                              </div>
+                            </Link>
+                          </NavigationMenuLink>
+                        </li>
+                      )}
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+
+            <Link to="/sell" className="text-foreground hover:text-primary transition-colors text-sm font-bold px-3 py-2">
               {t.nav.sell}
             </Link>
-            <Link to="/vault" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
+            <Link to="/vault" className="text-foreground hover:text-primary transition-colors text-sm font-bold px-3 py-2">
               {t.nav.portfolio}
             </Link>
           </nav>
@@ -236,55 +337,78 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 className="pl-10 bg-secondary border-border/50 rounded-full"
               />
             </div>
-            <nav className="flex flex-col gap-3">
-              <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+            <nav className="flex flex-col gap-1">
+              <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.marketplace}
               </Link>
-              <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              
+              {/* Trading Section */}
+              <div className="py-2 px-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trading</span>
+              </div>
+              <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <TrendingUp className="w-4 h-4" />
                 {t.nav.markets}
               </Link>
-              <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Sparkles className="w-4 h-4" />
                 {t.nav.deals}
               </Link>
-              <Link to="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Trophy className="w-4 h-4" />
-                {t.nav.leaderboard}
-              </Link>
-              <Link to="/fractional" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/fractional" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <PieChart className="w-4 h-4" />
                 {t.nav.fractional}
               </Link>
-              <Link to="/gaming" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+              
+              {/* Community Section */}
+              <div className="py-2 px-2 mt-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</span>
+              </div>
+              <Link to="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Trophy className="w-4 h-4" />
+                Leaderboard
+              </Link>
+              <Link to="/hall-of-fame" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Crown className="w-4 h-4" />
+                Hall of Fame
+              </Link>
+              <Link to="/gaming" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Gamepad2 className="w-4 h-4" />
                 {t.nav.gaming}
               </Link>
-              <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+              
+              {/* Sell & Portfolio */}
+              <div className="py-2 px-2 mt-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">My Account</span>
+              </div>
+              <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.sell}
               </Link>
-              <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.portfolio}
               </Link>
               {user && (
                 <>
-                  <Link to="/wallet" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
-                    <Wallet className="w-4 h-4 inline mr-2" />
+                  <Link to="/wallet" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                    <Wallet className="w-4 h-4" />
                     {t.nav.wallet}
                   </Link>
-                  <Link to="/verified-seller" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
-                    <BadgeCheck className="w-4 h-4 inline mr-2" />
+                  <Link to="/messages" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                    <MessageCircle className="w-4 h-4" />
+                    Messages
+                  </Link>
+                  <Link to="/verified-seller" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                    <BadgeCheck className="w-4 h-4" />
                     {t.nav.verifiedSeller}
                   </Link>
-                  <Link to="/referrals" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
-                    <Gift className="w-4 h-4 inline mr-2" />
+                  <Link to="/referrals" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                    <Gift className="w-4 h-4" />
                     {t.nav.referrals}
                   </Link>
                 </>
               )}
               {user ? (
                 <>
-                  <div className="py-2 text-foreground font-medium">
+                  <div className="py-2 px-2 text-foreground font-medium mt-2">
                     {user.email}
                   </div>
                   <Button variant="destructive" onClick={handleSignOut} className="mt-2">
@@ -293,7 +417,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </Button>
                 </>
               ) : (
-                <Button variant="default" onClick={() => navigate('/auth')} className="mt-2">
+                <Button variant="default" onClick={() => navigate('/auth')} className="mt-4">
                   <User className="w-4 h-4 mr-2" />
                   {t.nav.signIn}
                 </Button>

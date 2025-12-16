@@ -16,7 +16,7 @@ import { DailyQuestsPanel } from '@/components/DailyQuestsPanel';
 import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
-import { useMarketItems } from '@/hooks/useMarketItems';
+import { useMarketItems, useListings } from '@/hooks/useMarketItems';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -80,12 +80,16 @@ const Index = () => {
     setShowWaitlist(false);
   };
 
-  // Fetch items from database instead of mockData
   // Fetch items from database with real-time updates
-  const { items: marketItems, isLoading, lastUpdated, updateCount } = useMarketItems({ limit: 100, refreshInterval: 30000 });
+  const { items: marketItems, isLoading: marketLoading, lastUpdated, updateCount } = useMarketItems({ limit: 100, refreshInterval: 30000 });
+  
+  // Also fetch active listings (user-created)
+  const { listings, isLoading: listingsLoading } = useListings({ status: 'active' });
 
-  // Transform database items to Collectible format
-  const collectiblesWithLivePrices = useMemo(() => {
+  const isLoading = marketLoading || listingsLoading;
+
+  // Transform database market items to Collectible format
+  const marketCollectibles = useMemo(() => {
     return marketItems.map(item => ({
       id: item.id,
       priceId: item.id,
@@ -104,9 +108,41 @@ const Index = () => {
       priceUpdated: false,
       liquidity: item.liquidity,
       salesCount: item.sales_count_30d,
-      source: 'database',
-    } as Collectible));
+      source: 'market_item',
+      listingId: undefined,
+    } as Collectible & { source: string; listingId?: string }));
   }, [marketItems]);
+
+  // Transform user listings to Collectible format
+  const listingCollectibles = useMemo(() => {
+    return listings.map(listing => ({
+      id: listing.id,
+      priceId: listing.id,
+      name: listing.title,
+      category: listing.category,
+      image: listing.image_url || '/placeholder.svg',
+      price: listing.price,
+      previousPrice: listing.price,
+      priceChange: 0,
+      rarity: 'rare' as const,
+      seller: 'User Listing',
+      condition: listing.condition || 'Near Mint',
+      year: new Date(listing.created_at).getFullYear(),
+      brand: listing.category,
+      trending: false,
+      priceUpdated: false,
+      liquidity: null,
+      salesCount: 0,
+      source: 'listing',
+      listingId: listing.id,
+    } as Collectible & { source: string; listingId?: string }));
+  }, [listings]);
+
+  // Combine both market items and listings
+  const collectiblesWithLivePrices = useMemo(() => {
+    // Merge and sort by newest first (listings at top since they're user-created)
+    return [...listingCollectibles, ...marketCollectibles];
+  }, [marketCollectibles, listingCollectibles]);
 
   const filteredCollectibles = useMemo(() => {
     if (selectedCategory === 'all') return collectiblesWithLivePrices;
@@ -125,6 +161,15 @@ const Index = () => {
   const handleRemoveFromCart = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
     toast.info(t.cart.removed);
+  };
+
+  // Handle click on collectible - navigate to listing page for user listings, modal for market items
+  const handleCollectibleClick = (collectible: Collectible & { source?: string; listingId?: string }) => {
+    if (collectible.source === 'listing' && collectible.listingId) {
+      navigate(`/listing/${collectible.listingId}`);
+    } else {
+      setSelectedCollectible(collectible);
+    }
   };
 
   const topGainers = collectiblesWithLivePrices
@@ -325,7 +370,7 @@ const Index = () => {
                     <CollectibleCard
                       collectible={collectible}
                       onAddToCart={handleAddToCart}
-                      onClick={setSelectedCollectible}
+                      onClick={handleCollectibleClick}
                     />
                   </div>
                 ))}
