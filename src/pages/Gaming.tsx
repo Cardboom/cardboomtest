@@ -2,30 +2,43 @@ import { useState, useMemo, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { CollectibleCard } from '@/components/CollectibleCard';
-import { CollectibleModal } from '@/components/CollectibleModal';
 import { CartDrawer } from '@/components/CartDrawer';
 import { CoachRegistrationDialog } from '@/components/gaming/CoachRegistrationDialog';
 import { CoachesSection } from '@/components/gaming/CoachesSection';
-import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Gamepad2, Trophy, Coins, Sword, Users, GraduationCap } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Gamepad2, Trophy, Coins, Sword, Users, GraduationCap, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useNavigate } from 'react-router-dom';
+
+interface GamingItem {
+  id: string;
+  name: string;
+  category: string;
+  subcategory: string | null;
+  current_price: number;
+  image_url: string | null;
+  change_24h: number | null;
+}
 
 const Gaming = () => {
   const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
-  const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
   const [showCoachDialog, setShowCoachDialog] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [gamingItems, setGamingItems] = useState<GamingItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Check auth state
   useEffect(() => {
@@ -42,40 +55,46 @@ const Gaming = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Filter gaming items
-  const gamingItems = useMemo(() => {
-    return mockCollectibles.filter(item => 
-      item.category === 'gamepoints' || item.category === 'coaching'
-    );
+  // Fetch gaming items from database
+  useEffect(() => {
+    const fetchGamingItems = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('market_items')
+        .select('id, name, category, subcategory, current_price, image_url, change_24h')
+        .in('category', ['gamepoints', 'gaming', 'coaching'])
+        .order('current_price', { ascending: false })
+        .limit(50);
+
+      if (error) {
+        console.error('Error fetching gaming items:', error);
+      } else {
+        setGamingItems(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchGamingItems();
   }, []);
 
   const gamePointsItems = useMemo(() => {
-    return mockCollectibles.filter(item => item.category === 'gamepoints');
-  }, []);
+    return gamingItems.filter(item => item.category === 'gamepoints');
+  }, [gamingItems]);
 
   const coachingItems = useMemo(() => {
-    return mockCollectibles.filter(item => item.category === 'coaching');
-  }, []);
+    return gamingItems.filter(item => item.category === 'coaching');
+  }, [gamingItems]);
 
   const filteredItems = useMemo(() => {
     if (activeTab === 'all') return gamingItems;
     if (activeTab === 'points') return gamePointsItems;
     if (activeTab === 'coaching') return coachingItems;
-    if (activeTab === 'valorant') return gamingItems.filter(i => i.brand === 'Valorant');
-    if (activeTab === 'lol') return gamingItems.filter(i => i.brand === 'League of Legends');
-    if (activeTab === 'csgo') return gamingItems.filter(i => i.brand === 'CS2');
-    if (activeTab === 'pubg') return gamingItems.filter(i => i.brand === 'PUBG Mobile');
+    if (activeTab === 'valorant') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('valorant'));
+    if (activeTab === 'lol') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('league'));
+    if (activeTab === 'csgo') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('cs'));
+    if (activeTab === 'pubg') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('pubg'));
     return gamingItems;
   }, [activeTab, gamingItems, gamePointsItems, coachingItems]);
-
-  const handleAddToCart = (collectible: Collectible) => {
-    if (cartItems.find((item) => item.id === collectible.id)) {
-      toast.error(t.cart.alreadyIn);
-      return;
-    }
-    setCartItems([...cartItems, collectible]);
-    toast.success(`${collectible.name.slice(0, 30)}... ${t.cart.added}`);
-  };
 
   const handleRemoveFromCart = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
@@ -145,13 +164,13 @@ const Gaming = () => {
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Sword className="w-5 h-5 text-loss mb-2" />
-            <p className="text-2xl font-bold">{gamingItems.filter(i => i.brand === 'CS2').length}</p>
+            <p className="text-2xl font-bold">{gamingItems.filter(i => i.subcategory?.toLowerCase().includes('cs')).length}</p>
             <p className="text-sm text-muted-foreground">CS2 Skins</p>
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Users className="w-5 h-5 text-gain mb-2" />
-            <p className="text-2xl font-bold">50+</p>
-            <p className="text-sm text-muted-foreground">Pro Coaches</p>
+            <p className="text-2xl font-bold">{gamingItems.length}</p>
+            <p className="text-sm text-muted-foreground">Total Items</p>
           </div>
         </div>
 
@@ -186,22 +205,58 @@ const Gaming = () => {
         </Tabs>
 
         {/* Items Grid */}
-        {filteredItems.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-4">
+                  <div className="aspect-square bg-muted rounded-lg mb-3" />
+                  <div className="h-4 bg-muted rounded mb-2" />
+                  <div className="h-3 bg-muted rounded w-2/3" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredItems.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredItems.map((item) => (
-              <CollectibleCard
-                key={item.id}
-                collectible={item}
-                onAddToCart={handleAddToCart}
-                onClick={() => setSelectedCollectible(item)}
-              />
+              <Card 
+                key={item.id} 
+                className="cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => navigate(`/item/${item.id}`)}
+              >
+                <CardContent className="p-4">
+                  <div className="aspect-square bg-muted rounded-lg mb-3 overflow-hidden">
+                    {item.image_url ? (
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Gamepad2 className="w-12 h-12 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="font-medium text-sm line-clamp-2 mb-1">{item.name}</h3>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-primary">{formatPrice(item.current_price)}</span>
+                    {item.change_24h !== null && (
+                      <span className={item.change_24h >= 0 ? 'text-gain text-xs' : 'text-loss text-xs'}>
+                        {item.change_24h >= 0 ? '+' : ''}{item.change_24h.toFixed(1)}%
+                      </span>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         ) : (
           <div className="text-center py-16">
-            <Gamepad2 className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+            <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-xl font-semibold mb-2">No items found</h3>
-            <p className="text-muted-foreground">Try a different category</p>
+            <p className="text-muted-foreground">Gaming items will appear here once added to the marketplace</p>
           </div>
         )}
 
@@ -238,12 +293,6 @@ const Gaming = () => {
       </main>
 
       <Footer />
-
-      <CollectibleModal
-        collectible={selectedCollectible}
-        onClose={() => setSelectedCollectible(null)}
-        onAddToCart={handleAddToCart}
-      />
 
       <CartDrawer
         isOpen={isCartOpen}
