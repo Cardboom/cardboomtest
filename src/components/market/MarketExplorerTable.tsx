@@ -42,21 +42,73 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
   const [user, setUser] = useState<any>(null);
   const [marketItems, setMarketItems] = useState<MarketItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 50;
 
-  // Fetch market items from database
+  // Fetch market items from database with pagination
   useEffect(() => {
     const fetchMarketItems = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('market_items')
-          .select('*')
-          .order('is_trending', { ascending: false })
-          .order('current_price', { ascending: false })
-          .limit(100);
+          .select('*', { count: 'exact' });
+        
+        // Apply category filter at database level
+        if (filters.category && filters.category !== 'all') {
+          query = query.eq('category', filters.category);
+        }
+
+        // Apply search filter
+        if (filters.search) {
+          query = query.ilike('name', `%${filters.search}%`);
+        }
+
+        // Apply price range
+        if (filters.priceMin !== null) {
+          query = query.gte('current_price', filters.priceMin);
+        }
+        if (filters.priceMax !== null) {
+          query = query.lte('current_price', filters.priceMax);
+        }
+
+        // Apply liquidity filter
+        if (filters.liquidityLevel && filters.liquidityLevel !== 'all') {
+          query = query.eq('liquidity', filters.liquidityLevel as 'high' | 'medium' | 'low');
+        }
+
+        // Apply filter type
+        if (filterType === 'trending') {
+          query = query.eq('is_trending', true);
+        } else if (filterType === 'gainers') {
+          query = query.gt('change_24h', 0);
+        } else if (filterType === 'losers') {
+          query = query.lt('change_24h', 0);
+        } else if (filterType === 'figures') {
+          query = query.eq('category', 'figures');
+        }
+
+        // Apply sorting
+        const sortColumn = sortBy === 'price' ? 'current_price' : sortBy === 'views' ? 'views_24h' : sortBy;
+        query = query.order(sortColumn, { ascending: sortOrder === 'asc', nullsFirst: false });
+
+        // Apply pagination
+        query = query.range(page * pageSize, (page + 1) * pageSize - 1);
+
+        const { data, error, count } = await query;
 
         if (error) throw error;
-        setMarketItems(data || []);
+        
+        if (page === 0) {
+          setMarketItems(data || []);
+        } else {
+          setMarketItems(prev => [...prev, ...(data || [])]);
+        }
+        
+        setTotalCount(count || 0);
+        setHasMore((data?.length || 0) === pageSize);
       } catch (error) {
         console.error('Error fetching market items:', error);
       } finally {
@@ -65,21 +117,13 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
     };
 
     fetchMarketItems();
+  }, [filters, sortBy, sortOrder, filterType, page]);
 
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('market-items-explorer')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'market_items' },
-        () => fetchMarketItems()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(0);
+    setMarketItems([]);
+  }, [filters.category, filters.search, filters.priceMin, filters.priceMax, filters.liquidityLevel, filterType, sortBy, sortOrder]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -87,86 +131,12 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
     });
   }, []);
 
-  const filteredData = useMemo(() => {
-    let data = [...marketItems];
+  // Data is already filtered/sorted at DB level, just use it directly
+  const filteredData = marketItems;
 
-    // Apply filter type
-    switch (filterType) {
-      case 'figures':
-        data = data.filter(item => item.category === 'figures');
-        break;
-      case 'trending':
-        data = data.filter(item => item.is_trending);
-        break;
-      case 'gainers':
-        data = data.filter(item => (item.change_24h ?? 0) > 0);
-        break;
-      case 'losers':
-        data = data.filter(item => (item.change_24h ?? 0) < 0);
-        break;
-    }
-
-    // Apply category filter
-    if (filters.category) {
-      data = data.filter(item => item.category === filters.category);
-    }
-
-    // Apply search
-    if (filters.search) {
-      const search = filters.search.toLowerCase();
-      data = data.filter(item => 
-        item.name.toLowerCase().includes(search) ||
-        (item.set_name?.toLowerCase() || '').includes(search) ||
-        item.category.toLowerCase().includes(search)
-      );
-    }
-
-    // Apply price range
-    if (filters.priceMin !== null) {
-      data = data.filter(item => item.current_price >= filters.priceMin!);
-    }
-    if (filters.priceMax !== null) {
-      data = data.filter(item => item.current_price <= filters.priceMax!);
-    }
-
-    // Apply liquidity filter
-    if (filters.liquidityLevel) {
-      data = data.filter(item => item.liquidity === filters.liquidityLevel);
-    }
-
-    // Apply sorting
-    data.sort((a, b) => {
-      let aVal: number, bVal: number;
-      switch (sortBy) {
-        case 'change_24h':
-          aVal = a.change_24h ?? 0;
-          bVal = b.change_24h ?? 0;
-          break;
-        case 'change_7d':
-          aVal = a.change_7d ?? 0;
-          bVal = b.change_7d ?? 0;
-          break;
-        case 'change_30d':
-          aVal = a.change_30d ?? 0;
-          bVal = b.change_30d ?? 0;
-          break;
-        case 'price':
-          aVal = a.current_price;
-          bVal = b.current_price;
-          break;
-        case 'views':
-          aVal = a.views_24h ?? 0;
-          bVal = b.views_24h ?? 0;
-          break;
-        default:
-          aVal = a.change_24h ?? 0;
-          bVal = b.change_24h ?? 0;
-      }
-      return sortOrder === 'desc' ? bVal - aVal : aVal - bVal;
-    });
-
-    return data;
-  }, [filters, sortBy, sortOrder, filterType, marketItems]);
+  const loadMore = () => {
+    setPage(prev => prev + 1);
+  };
 
   const toggleWatchlist = async (itemId: string) => {
     if (!user) {
@@ -199,7 +169,7 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
   };
 
 
-  if (isLoading) {
+  if (isLoading && page === 0) {
     return (
       <div className="glass rounded-xl p-8 text-center">
         <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
@@ -209,7 +179,13 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
   }
 
   return (
-    <div className="glass rounded-xl overflow-hidden">
+    <div className="space-y-4">
+      {/* Stats bar */}
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <span>Showing {filteredData.length.toLocaleString()} of {totalCount.toLocaleString()} items</span>
+      </div>
+
+      <div className="glass rounded-xl overflow-hidden">
       {/* Table Header */}
       <div className="hidden lg:grid grid-cols-12 gap-4 p-3 bg-secondary/50 text-muted-foreground text-sm font-medium border-b border-border/50">
         <div className="col-span-1">#</div>
@@ -348,6 +324,28 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
           ))
         )}
       </div>
+      </div>
+
+      {/* Load More Button */}
+      {hasMore && (
+        <div className="flex justify-center pt-4">
+          <Button 
+            onClick={loadMore} 
+            disabled={isLoading}
+            variant="outline"
+            className="min-w-[200px]"
+          >
+            {isLoading ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              `Load More (${Math.min(pageSize, totalCount - filteredData.length).toLocaleString()} more)`
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
