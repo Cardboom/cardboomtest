@@ -9,6 +9,7 @@ export const MarketExplorerStats = () => {
     activeListings: 0,
     totalUsers: 0,
     totalVolume: 0,
+    indexedItems: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -18,6 +19,13 @@ export const MarketExplorerStats = () => {
 
   const fetchStats = async () => {
     try {
+      // Fetch market items count (indexed from PriceCharting)
+      const { count: marketItemsCount, error: marketError } = await supabase
+        .from('market_items')
+        .select('*', { count: 'exact', head: true });
+
+      if (marketError) throw marketError;
+
       // Fetch active listings count and total value
       const { data: listings, error: listingsError } = await supabase
         .from('listings')
@@ -48,7 +56,8 @@ export const MarketExplorerStats = () => {
         totalListings: listings?.length || 0,
         activeListings: activeListings.length,
         totalUsers: usersCount || 0,
-        totalVolume: totalVolume + totalValue, // Include listing value as potential volume
+        totalVolume: totalVolume + totalValue,
+        indexedItems: marketItemsCount || 0,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -70,41 +79,20 @@ export const MarketExplorerStats = () => {
     return value.toLocaleString();
   };
 
-  // Calculate real 24h volume from orders created in last 24 hours
-  const [volume24h, setVolume24h] = useState(0);
-  
-  useEffect(() => {
-    const fetch24hVolume = async () => {
-      const twentyFourHoursAgo = new Date();
-      twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-      
-      const { data: recentOrders, error } = await supabase
-        .from('orders')
-        .select('price')
-        .gte('created_at', twentyFourHoursAgo.toISOString());
-      
-      if (!error && recentOrders) {
-        const vol = recentOrders.reduce((sum, o) => sum + Number(o.price), 0);
-        setVolume24h(vol);
-      }
-    };
-    fetch24hVolume();
-  }, []);
-
   const displayStats = [
+    { 
+      label: 'Indexed Items', 
+      value: formatNumber(stats.indexedItems), 
+      change: 'From PriceCharting',
+      isPositive: true,
+      icon: BarChart3 
+    },
     { 
       label: 'Total Volume', 
       value: formatValue(stats.totalVolume), 
       change: null,
       isPositive: true,
       icon: DollarSign 
-    },
-    { 
-      label: '24h Volume', 
-      value: formatValue(volume24h),
-      change: null,
-      isPositive: true,
-      icon: BarChart3 
     },
     { 
       label: 'Active Listings', 
