@@ -46,19 +46,23 @@ const countryToLocale: Record<string, Locale> = {
   // Default to English for all others
 };
 
-async function detectLocaleFromIP(): Promise<Locale> {
+function detectLocaleFromBrowser(): Locale {
   try {
-    // Use ip-api.com (free, no API key required)
-    const response = await fetch("http://ip-api.com/json/?fields=countryCode", {
-      signal: AbortSignal.timeout(3000),
-    });
+    // Use browser's language setting (more reliable and secure than IP-based detection)
+    const browserLang = navigator.language || (navigator as any).userLanguage || "en";
+    const langCode = browserLang.split("-")[0].toLowerCase();
     
-    if (!response.ok) return "en";
+    // Map browser language codes to our supported locales
+    const langToLocale: Record<string, Locale> = {
+      "tr": "tr",
+      "de": "de",
+      "fr": "fr",
+      "it": "it",
+      "ar": "ar",
+      "en": "en",
+    };
     
-    const data = await response.json();
-    const countryCode = data.countryCode as string;
-    
-    return countryToLocale[countryCode] || "en";
+    return langToLocale[langCode] || "en";
   } catch {
     return "en";
   }
@@ -79,8 +83,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Detect from IP
-      const detected = await detectLocaleFromIP();
+      // Detect from browser language
+      const detected = detectLocaleFromBrowser();
       setLocaleState(detected);
       localStorage.setItem(LOCALE_STORAGE_KEY, detected);
       setIsLoading(false);
