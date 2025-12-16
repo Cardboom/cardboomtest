@@ -13,6 +13,7 @@ import { Trophy, Flame, Star, TrendingUp, Medal, Crown, Gamepad2, Target } from 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { TournamentBanner } from '@/components/leaderboard/TournamentBanner';
 import { TournamentLeaderboard } from '@/components/leaderboard/TournamentLeaderboard';
+import { GlobalRankings } from '@/components/leaderboard/GlobalRankings';
 
 interface LeaderboardEntry {
   id: string;
@@ -254,6 +255,9 @@ const Leaderboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Global Rankings */}
+        <GlobalRankings />
 
         {/* Tournament Leaderboard */}
         <TournamentLeaderboard />
