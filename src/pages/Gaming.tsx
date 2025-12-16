@@ -5,6 +5,7 @@ import { CollectibleCard } from '@/components/CollectibleCard';
 import { CollectibleModal } from '@/components/CollectibleModal';
 import { CartDrawer } from '@/components/CartDrawer';
 import { CoachRegistrationDialog } from '@/components/gaming/CoachRegistrationDialog';
+import { CoachesSection } from '@/components/gaming/CoachesSection';
 import { mockCollectibles } from '@/data/mockData';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -142,6 +143,9 @@ const Gaming = () => {
             <p className="text-sm text-muted-foreground">Pro Coaches</p>
           </div>
         </div>
+
+        {/* Our Coaches Section */}
+        <CoachesSection />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
