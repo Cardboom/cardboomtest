@@ -53,11 +53,15 @@ export const ReferralCard = () => {
               readOnly
               className="font-mono text-center text-lg"
             />
-            <Button variant="outline" size="icon" onClick={copyReferralCode}>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 gap-2" onClick={copyReferralCode}>
               <Copy className="h-4 w-4" />
+              Copy Code
             </Button>
-            <Button variant="outline" size="icon" onClick={shareReferralLink}>
+            <Button variant="outline" className="flex-1 gap-2" onClick={shareReferralLink}>
               <Share2 className="h-4 w-4" />
+              Copy URL
             </Button>
           </div>
         </div>
