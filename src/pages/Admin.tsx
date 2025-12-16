@@ -39,6 +39,7 @@ import { FractionalManagement } from '@/components/admin/FractionalManagement';
 import { APIAnalytics } from '@/components/admin/APIAnalytics';
 import { SupportTickets } from '@/components/admin/SupportTickets';
 import { AutoBuyManager } from '@/components/admin/AutoBuyManager';
+import { DataSyncManager } from '@/components/admin/DataSyncManager';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -248,6 +249,10 @@ const Admin = () => {
               <Bot className="w-4 h-4" />
               Deal Scooper
             </TabsTrigger>
+            <TabsTrigger value="datasync" className="gap-2">
+              <Database className="w-4 h-4" />
+              Data Sync
+            </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
               Price Management
@@ -276,6 +281,10 @@ const Admin = () => {
 
           <TabsContent value="autobuy">
             <AutoBuyManager />
+          </TabsContent>
+
+          <TabsContent value="datasync">
+            <DataSyncManager />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">
