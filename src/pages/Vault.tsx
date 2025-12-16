@@ -6,9 +6,10 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Vault as VaultIcon, Package, TrendingUp, ExternalLink } from 'lucide-react';
+import { Vault as VaultIcon, Package, TrendingUp, ExternalLink, Plus, Send } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { SendToVaultDialog } from '@/components/SendToVaultDialog';
 
 interface VaultItem {
   id: string;
@@ -27,6 +28,7 @@ const VaultPage = () => {
   const [items, setItems] = useState<VaultItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalValue, setTotalValue] = useState(0);
+  const [sendToVaultOpen, setSendToVaultOpen] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -82,7 +84,7 @@ const VaultPage = () => {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-3xl font-display font-bold text-foreground mb-2">
                 My Vault
@@ -91,17 +93,23 @@ const VaultPage = () => {
                 Your securely stored collectibles
               </p>
             </div>
-            <Card className="px-6 py-4 bg-gradient-to-br from-gold/10 to-gold/5 border-gold/20">
-              <div className="flex items-center gap-4">
-                <TrendingUp className="h-8 w-8 text-gold" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Value</p>
-                  <p className="text-2xl font-display font-bold text-foreground">
-                    {formatCurrency(totalValue)}
-                  </p>
+            <div className="flex items-center gap-3">
+              <Button onClick={() => setSendToVaultOpen(true)} className="gap-2">
+                <Send className="h-4 w-4" />
+                Send to Vault
+              </Button>
+              <Card className="px-6 py-4 bg-gradient-to-br from-gold/10 to-gold/5 border-gold/20">
+                <div className="flex items-center gap-4">
+                  <TrendingUp className="h-8 w-8 text-gold" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Value</p>
+                    <p className="text-2xl font-display font-bold text-foreground">
+                      {formatCurrency(totalValue)}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
 
           {/* Vault Items Grid */}
@@ -112,11 +120,17 @@ const VaultPage = () => {
                 Your vault is empty
               </h2>
               <p className="text-muted-foreground mb-6">
-                When you buy cards and choose vault storage, they'll appear here.
+                Send your own cards to our warehouse or buy cards and choose vault storage.
               </p>
-              <Button onClick={() => navigate('/')}>
-                Browse Marketplace
-              </Button>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={() => setSendToVaultOpen(true)} variant="outline" className="gap-2">
+                  <Send className="h-4 w-4" />
+                  Send Your Cards
+                </Button>
+                <Button onClick={() => navigate('/')}>
+                  Browse Marketplace
+                </Button>
+              </div>
             </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -183,6 +197,7 @@ const VaultPage = () => {
         </div>
       </main>
 
+      <SendToVaultDialog open={sendToVaultOpen} onOpenChange={setSendToVaultOpen} />
       <Footer />
     </div>
   );

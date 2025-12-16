@@ -300,27 +300,51 @@ const SellPage = () => {
       <Header cartCount={0} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-            Sell Your Cards
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            List your collectibles for sale. 6% seller fee applies when sold.
-          </p>
+        <div className="max-w-5xl mx-auto">
+          {/* Hero Section */}
+          <div className="mb-8 p-6 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
+                  Sell Your Cards
+                </h1>
+                <p className="text-muted-foreground">
+                  List your collectibles in minutes. Reach thousands of verified buyers.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <div className="px-4 py-2 rounded-lg bg-background/80 border border-border">
+                  <p className="text-xs text-muted-foreground">Seller Fee</p>
+                  <p className="text-lg font-bold text-foreground">6%</p>
+                </div>
+                <div className="px-4 py-2 rounded-lg bg-background/80 border border-border">
+                  <p className="text-xs text-muted-foreground">Active Listings</p>
+                  <p className="text-lg font-bold text-foreground">{listings.filter(l => l.status === 'active').length}</p>
+                </div>
+                <div className="px-4 py-2 rounded-lg bg-background/80 border border-border">
+                  <p className="text-xs text-muted-foreground">Total Sold</p>
+                  <p className="text-lg font-bold text-gain">{listings.filter(l => l.status === 'sold').length}</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6">
+            <TabsList className="mb-6 w-full sm:w-auto grid grid-cols-3 sm:flex">
               <TabsTrigger value="scanner" className="gap-2">
                 <Search className="h-4 w-4" />
-                Card Scanner
+                <span className="hidden sm:inline">Card Scanner</span>
+                <span className="sm:hidden">Scan</span>
               </TabsTrigger>
               <TabsTrigger value="create" className="gap-2">
                 <Plus className="h-4 w-4" />
-                Create Listing
+                <span className="hidden sm:inline">Create Listing</span>
+                <span className="sm:hidden">Create</span>
               </TabsTrigger>
               <TabsTrigger value="listings" className="gap-2">
                 <Package className="h-4 w-4" />
-                My Listings ({listings.length})
+                <span className="hidden sm:inline">My Listings ({listings.length})</span>
+                <span className="sm:hidden">({listings.length})</span>
               </TabsTrigger>
             </TabsList>
 
@@ -338,14 +362,17 @@ const SellPage = () => {
             </TabsContent>
 
             <TabsContent value="create">
-              <Card>
-                <CardHeader>
-                  <CardTitle>New Listing</CardTitle>
+              <Card className="border-primary/10">
+                <CardHeader className="bg-gradient-to-r from-muted/50 to-transparent border-b border-border/50">
+                  <CardTitle className="flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-primary" />
+                    Create New Listing
+                  </CardTitle>
                   <CardDescription>
-                    Fill in the details about your collectible
+                    Fill in the details to list your collectible
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="sm:col-span-2">
@@ -398,7 +425,7 @@ const SellPage = () => {
                       </div>
 
                       <div>
-                        <Label htmlFor="price">Price (USD) *</Label>
+                        <Label htmlFor="price">Your Price (USD) *</Label>
                         <div className="relative mt-1.5">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                           <Input
@@ -411,6 +438,12 @@ const SellPage = () => {
                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                             className="pl-7"
                           />
+                        </div>
+                        {/* Average Price Indicator */}
+                        <div className="mt-2 p-2 rounded-lg bg-muted/50 border border-border/50">
+                          <p className="text-xs text-muted-foreground">
+                            💡 <span className="font-medium">Pricing Tip:</span> Use the Card Scanner to see market average prices before setting your price.
+                          </p>
                         </div>
                       </div>
 
