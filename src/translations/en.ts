@@ -68,6 +68,21 @@ export const en = {
     topGainers: "Top Gainers",
     topLosers: "Top Losers",
     explore: "Explore Collectibles",
+    popularCollections: "Popular Collections",
+    seeAllMarkets: "See All Markets",
+    browseListings: "Browse all available listings",
+    loading: "Loading collectibles...",
+    noItems: "No items found in this category",
+  },
+  // Smart Hub
+  smartHub: {
+    title: "Smart Trading Hub",
+    subtitle: "AI-powered insights, social trading & gamification",
+    fractionalMarket: "Fractional Market",
+    aiInsights: "AI Insights",
+    topTraders: "Top Traders",
+    quests: "Quests",
+    alerts: "Alerts",
   },
   // Categories
   categories: {
@@ -204,6 +219,14 @@ export const en = {
     fractionalOwnershipDesc: "Own shares of high-value collectibles",
     aiInsights: "AI Insights",
     aiInsightsDesc: "Get smart recommendations for your portfolio",
+    instantTrades: "Instant Trades",
+    instantTradesDesc: "Fast P2P trading with escrow protection",
+    easyPayments: "Easy Payments",
+    easyPaymentsDesc: "Multiple payment methods including crypto",
+    verifiedInvestors: "Verified Investors",
+    verifiedInvestorsDesc: "Trade with confidence from verified accounts",
+    fractionalShares: "Fractional Shares",
+    fractionalSharesDesc: "Own pieces of grails starting from $10",
   },
   // About Page
   about: {
