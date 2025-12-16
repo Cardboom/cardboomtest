@@ -43,6 +43,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userXP, setUserXP] = useState(0);
+  const [userLevel, setUserLevel] = useState(1);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
 
@@ -71,12 +73,14 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const fetchUserXP = async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
-      .select('xp')
+      .select('xp, level, avatar_url')
       .eq('id', userId)
       .single();
     
     if (data) {
       setUserXP(data.xp || 0);
+      setUserLevel(data.level || 1);
+      setUserAvatar(data.avatar_url);
     }
   };
 
@@ -336,8 +340,18 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="default" className="hidden sm:flex gap-2">
-                    <Star className="w-4 h-4" />
+                  <Button variant="default" className="hidden sm:flex gap-2 items-center">
+                    {userAvatar ? (
+                      <img 
+                        src={userAvatar} 
+                        alt="Profile" 
+                        className="w-6 h-6 rounded-full object-cover ring-2 ring-primary-foreground/20"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                        <User className="w-3.5 h-3.5" />
+                      </div>
+                    )}
                     {user.email?.split('@')[0]}
                   </Button>
                 </DropdownMenuTrigger>

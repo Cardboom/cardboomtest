@@ -36,20 +36,31 @@ export const XPProgressBar = ({ xp, compact = false }: XPProgressBarProps) => {
   if (compact) {
     return (
       <div className="flex items-center gap-3">
-        <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getLevelColor(level)} flex items-center justify-center`}>
+        <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getLevelColor(level)} flex items-center justify-center shadow-lg ring-2 ring-white/20`}>
           <span className="text-white font-bold text-sm">{level}</span>
         </div>
         <div className="flex-1">
-          <div className="h-2 bg-obsidian/50 rounded-full overflow-hidden">
+          <div className="h-2.5 bg-muted/80 rounded-full overflow-hidden shadow-inner">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progressPercent}%` }}
               transition={{ duration: 0.5 }}
-              className={`h-full bg-gradient-to-r ${getLevelColor(level)}`}
-            />
+              className={`h-full bg-gradient-to-r ${getLevelColor(level)} relative`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-white/30" />
+              <motion.div 
+                className="absolute inset-0 bg-white/40"
+                animate={{ opacity: [0.2, 0.5, 0.2] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+            </motion.div>
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[10px] text-muted-foreground font-medium">{getLevelTitle(level)}</span>
+            <span className="text-[10px] text-muted-foreground">{Math.round(progressPercent)}%</span>
           </div>
         </div>
-        <span className="text-platinum/60 text-xs">{xp.toLocaleString()} XP</span>
+        <span className="text-muted-foreground text-xs font-semibold">{xp.toLocaleString()} XP</span>
       </div>
     );
   }
