@@ -184,8 +184,8 @@ serve(async (req) => {
         const searchQuery = getSearchQuery(item.name, item.category);
         console.log(`[sync-cardmarket] Searching "${searchQuery}" for "${item.name}" in ${game}`);
 
-        // Rate limiting - wait 200ms between requests
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Rate limiting - wait 2 seconds between requests to avoid RapidAPI limits
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         const cardResults = await searchCardmarket(game, searchQuery, CARDMARKET_API_KEY);
         
