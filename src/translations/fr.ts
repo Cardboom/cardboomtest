@@ -14,6 +14,7 @@ export const fr: Translations = {
     deals: "Offres",
     leaderboard: "Classement",
     fractional: "Propriété Fractionnée",
+    gaming: "Jeux",
     wallet: "Portefeuille",
     myProfile: "Mon Profil",
     myVault: "Mon Coffre",

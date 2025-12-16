@@ -4,7 +4,7 @@ export interface Collectible {
   id: string;
   priceId: string;
   name: string;
-  category: 'nba' | 'football' | 'tcg' | 'figures' | 'pokemon' | 'mtg' | 'yugioh' | 'onepiece' | 'lorcana' | 'digimon' | 'dragonball' | 'starwars' | 'riftbound' | 'gamepoints';
+  category: 'nba' | 'football' | 'tcg' | 'figures' | 'pokemon' | 'mtg' | 'yugioh' | 'onepiece' | 'lorcana' | 'digimon' | 'dragonball' | 'starwars' | 'riftbound' | 'gamepoints' | 'coaching';
   image: string;
   price: number;
   previousPrice: number;

@@ -14,6 +14,7 @@ export const ar: Translations = {
     deals: "الصفقات",
     leaderboard: "المتصدرون",
     fractional: "الملكية الجزئية",
+    gaming: "الألعاب",
     wallet: "المحفظة المالية",
     myProfile: "ملفي الشخصي",
     myVault: "خزنتي",

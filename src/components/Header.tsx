@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -126,6 +126,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <Link to="/fractional" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <PieChart className="w-4 h-4" />
               {t.nav.fractional}
+            </Link>
+            <Link to="/gaming" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
+              <Gamepad2 className="w-4 h-4" />
+              {t.nav.gaming}
             </Link>
             <Link to="/sell" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
               {t.nav.sell}
@@ -251,6 +255,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Link to="/fractional" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <PieChart className="w-4 h-4" />
                 {t.nav.fractional}
+              </Link>
+              <Link to="/gaming" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Gamepad2 className="w-4 h-4" />
+                {t.nav.gaming}
               </Link>
               <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.sell}
