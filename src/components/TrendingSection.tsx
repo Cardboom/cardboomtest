@@ -8,6 +8,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { useNavigate } from 'react-router-dom';
 import { useEbayProducts } from '@/hooks/useEbayProducts';
+import { formatGrade } from '@/hooks/useGradePrices';
 
 export const TrendingSection = () => {
   const { formatPrice } = useCurrency();
@@ -35,7 +36,8 @@ export const TrendingSection = () => {
         priceChange: p.change_24h || 0,
         rarity: 'legendary' as const,
         seller: 'eBay',
-        condition: 'PSA 10',
+        condition: 'Gem Mint',
+        grade: 'psa10' as const,
         year: 2024,
         brand: p.subcategory || p.category,
         trending: true,
@@ -122,7 +124,22 @@ export const TrendingSection = () => {
                         <h3 className="font-medium text-foreground text-sm line-clamp-1">
                           {item.name}
                         </h3>
-                        <p className="text-xs text-muted-foreground">{item.brand}</p>
+                        <div className="flex items-center gap-2">
+                          {item.grade && (
+                            <span className={cn(
+                              "text-xs px-1.5 py-0.5 rounded font-semibold",
+                              item.grade === 'psa10' && "bg-gold/20 text-gold",
+                              item.grade === 'psa9' && "bg-purple-500/20 text-purple-400",
+                              item.grade === 'psa8' && "bg-blue-500/20 text-blue-400",
+                              item.grade === 'bgs10' && "bg-gold/20 text-gold",
+                              item.grade === 'bgs9_5' && "bg-purple-500/20 text-purple-400",
+                              !['psa10', 'psa9', 'psa8', 'bgs10', 'bgs9_5'].includes(item.grade) && "bg-secondary text-muted-foreground"
+                            )}>
+                              {formatGrade(item.grade)}
+                            </span>
+                          )}
+                          <p className="text-xs text-muted-foreground">{item.brand}</p>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">

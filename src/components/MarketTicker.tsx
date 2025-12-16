@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { usePrices } from '@/contexts/PriceContext';
 import { cn } from '@/lib/utils';
 import { LiveTickerPrice } from './LiveTickerPrice';
+import { formatGrade } from '@/hooks/useGradePrices';
 
 export const MarketTicker = () => {
   const trendingMock = useMemo(() => mockCollectibles.filter(item => item.trending), []);
@@ -15,6 +16,7 @@ export const MarketTicker = () => {
       return {
         id: item.id,
         name: item.name,
+        grade: item.grade,
         price: livePrice?.price ?? item.price,
         change: livePrice?.change ?? item.priceChange,
         updated: livePrice?.updated ?? false,
@@ -38,8 +40,19 @@ export const MarketTicker = () => {
             )}
           >
             <span className="text-sm text-muted-foreground font-medium">
-              {item.name.slice(0, 25)}...
+              {item.name.slice(0, 20)}{item.name.length > 20 ? '...' : ''}
             </span>
+            {item.grade && (
+              <span className={cn(
+                "text-xs px-1.5 py-0.5 rounded font-semibold",
+                item.grade === 'psa10' && "bg-gold/20 text-gold",
+                item.grade === 'psa9' && "bg-purple-500/20 text-purple-400",
+                item.grade === 'psa8' && "bg-blue-500/20 text-blue-400",
+                !['psa10', 'psa9', 'psa8'].includes(item.grade) && "bg-secondary/50 text-muted-foreground"
+              )}>
+                {formatGrade(item.grade)}
+              </span>
+            )}
             <span className="text-sm font-semibold">
               <LiveTickerPrice value={item.price} tickInterval={2000} volatility={0.0015} />
             </span>

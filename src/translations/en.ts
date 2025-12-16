@@ -357,6 +357,22 @@ export const en = {
     recentSales: "Recent Sales",
     mostWatched: "Most Watched",
   },
+  // Grades
+  grades: {
+    raw: "Raw",
+    psa10: "PSA 10",
+    psa9: "PSA 9",
+    psa8: "PSA 8",
+    psa7: "PSA 7",
+    psa6: "PSA 6",
+    bgs10: "BGS 10",
+    bgs9_5: "BGS 9.5",
+    cgc10: "CGC 10",
+    gemMint: "Gem Mint",
+    mint: "Mint",
+    nearMint: "Near Mint",
+    priceByGrade: "Price by Grade",
+  },
 };
 
 export type Translations = typeof en;
