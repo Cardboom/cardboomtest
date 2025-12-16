@@ -14,6 +14,7 @@ interface WalletTopUpDialogProps {
 }
 
 const TOPUP_FEE_PERCENT = 6.5;
+const FLAT_FEE = 0.5; // $0.50 flat fee on all transfers
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
   const [amount, setAmount] = useState('');
@@ -37,7 +38,8 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const [buyerCity, setBuyerCity] = useState('');
 
   const numAmount = parseFloat(amount) || 0;
-  const fee = numAmount * (TOPUP_FEE_PERCENT / 100);
+  const percentFee = numAmount * (TOPUP_FEE_PERCENT / 100);
+  const fee = percentFee + FLAT_FEE;
   const total = numAmount + fee;
 
   const presetAmounts = [50, 100, 250, 500, 1000];
@@ -168,7 +170,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
             {step === '3ds' && '3D Secure Verification'}
           </DialogTitle>
           <DialogDescription>
-            {step === 'amount' && 'Top up your wallet with credit card. 6.5% processing fee applies.'}
+            {step === 'amount' && 'Top up your wallet with credit card. 6.5% + $0.50 processing fee applies.'}
             {step === 'card' && 'Enter your card details securely.'}
             {step === '3ds' && 'Complete the 3D secure verification with your bank.'}
           </DialogDescription>
@@ -221,7 +223,11 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Processing Fee (6.5%)</span>
-                  <span>{formatCurrency(fee)}</span>
+                  <span>{formatCurrency(percentFee)}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Flat Fee</span>
+                  <span>{formatCurrency(FLAT_FEE)}</span>
                 </div>
                 <div className="flex justify-between font-medium text-foreground border-t border-border pt-2">
                   <span>Total Charge</span>

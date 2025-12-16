@@ -12,6 +12,7 @@ const CARDBOOM_IBAN = 'TR490086401100008249929845';
 const CARDBOOM_IBAN_FORMATTED = 'TR49 0086 4011 0000 8249 9298 45';
 const CARDBOOM_BANK = 'BRAINBABY BILISIM ANONIM SIRKETI';
 const WIRE_TRANSFER_FEE = 3; // 3%
+const FLAT_FEE = 0.5; // $0.50 flat fee on all transfers
 
 export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
   const [copied, setCopied] = useState<string | null>(null);
@@ -58,7 +59,7 @@ export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
               <li>• <span className="text-loss font-semibold">Currency: TRY only</span> (Turkish Lira)</li>
               <li>• <span className="text-loss font-semibold">Domestic TR transfers only</span> (EFT/Havale)</li>
               <li>• International transfers will NOT be credited</li>
-              <li>• Fee: <span className="text-platinum font-semibold">{WIRE_TRANSFER_FEE}%</span> of transfer amount</li>
+              <li>• Fee: <span className="text-platinum font-semibold">{WIRE_TRANSFER_FEE}%</span> + <span className="text-platinum font-semibold">${FLAT_FEE}</span> flat fee</li>
             </ul>
           </div>
         </div>

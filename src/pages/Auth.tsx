@@ -29,12 +29,14 @@ const Auth = () => {
   const [nationalId, setNationalId] = useState('');
   const [accountType, setAccountType] = useState<AccountType>('buyer');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedFees, setAcceptedFees] = useState(false);
   const [errors, setErrors] = useState<{ 
     email?: string; 
     password?: string; 
     phone?: string;
     nationalId?: string;
     terms?: string;
+    fees?: string;
   }>({});
 
   useEffect(() => {
@@ -79,6 +81,7 @@ const Auth = () => {
       phone?: string;
       nationalId?: string;
       terms?: string;
+      fees?: string;
     } = {};
     
     const emailResult = emailSchema.safeParse(email);
@@ -103,6 +106,10 @@ const Auth = () => {
 
     if (!acceptedTerms) {
       newErrors.terms = 'You must accept the terms and conditions';
+    }
+
+    if (!acceptedFees) {
+      newErrors.fees = 'You must accept the platform fees and commissions';
     }
     
     setErrors(newErrors);
@@ -530,6 +537,23 @@ const Auth = () => {
                         </span>
                       </label>
                       {errors.terms && <p className="text-destructive text-xs">{errors.terms}</p>}
+                    </div>
+
+                    {/* Fees & Commissions Checkbox */}
+                    <div className="space-y-2">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={acceptedFees}
+                          onChange={(e) => setAcceptedFees(e.target.checked)}
+                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50"
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          I accept the <span className="text-primary font-medium">Platform Fees & Commissions</span>:{' '}
+                          <span className="text-foreground">Credit Card (6.5% + $0.50), Wire Transfer (3% + $0.50), Seller Fee (5%)</span>
+                        </span>
+                      </label>
+                      {errors.fees && <p className="text-destructive text-xs">{errors.fees}</p>}
                     </div>
 
                     <Button

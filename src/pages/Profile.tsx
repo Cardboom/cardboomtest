@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TrendingUp, Package, Star, Clock, ShoppingBag, MessageSquare, Heart, Eye, ArrowUpRight, ArrowDownRight, Trophy } from 'lucide-react';
+import { TrendingUp, Package, Star, Clock, ShoppingBag, MessageSquare, Heart, Eye, ArrowUpRight, ArrowDownRight, Trophy, Store, Wallet } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AchievementsShowcase } from '@/components/achievements/AchievementsShowcase';
@@ -26,7 +26,17 @@ const Profile = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const { profile, backgrounds, unlockedBackgrounds, loading, updateProfile, unlockBackground } = useProfile(userId);
 
-  // Fetch user reviews
+  // Get current user on mount
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getUser();
+  }, []);
+
+  const isOwnProfile = !userId || userId === currentUserId;
+
   const { data: reviews } = useQuery({
     queryKey: ['user-reviews', profile?.id],
     queryFn: async () => {
@@ -83,15 +93,62 @@ const Profile = () => {
     enabled: !!profile?.id,
   });
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
-    };
-    getUser();
-  }, []);
+  // Fetch user's active listings
+  const { data: userListings } = useQuery({
+    queryKey: ['user-listings', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('seller_id', profile.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
 
-  const isOwnProfile = !userId || userId === currentUserId;
+  // Fetch user's orders (bought and sold)
+  const { data: userOrders } = useQuery({
+    queryKey: ['user-orders', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return { bought: [], sold: [] };
+      const [boughtRes, soldRes] = await Promise.all([
+        supabase
+          .from('orders')
+          .select('*, listing:listings(*)')
+          .eq('buyer_id', profile.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('orders')
+          .select('*, listing:listings(*)')
+          .eq('seller_id', profile.id)
+          .order('created_at', { ascending: false }),
+      ]);
+      return {
+        bought: boughtRes.data || [],
+        sold: soldRes.data || [],
+      };
+    },
+    enabled: !!profile?.id,
+  });
+
+  // Fetch user's portfolio items
+  const { data: portfolioItems } = useQuery({
+    queryKey: ['user-portfolio', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data, error } = await supabase
+        .from('portfolio_items')
+        .select('*, market_item:market_items(*)')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id && isOwnProfile,
+  });
 
   if (loading) {
     return (
@@ -159,18 +216,30 @@ const Profile = () => {
         />
 
         <Tabs defaultValue="showcase" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
             <TabsTrigger value="showcase" className="gap-2">
               <Package className="h-4 w-4" />
               <span className="hidden md:inline">Showcase</span>
             </TabsTrigger>
+            <TabsTrigger value="listings" className="gap-2">
+              <Store className="h-4 w-4" />
+              <span className="hidden md:inline">Listings</span>
+            </TabsTrigger>
+            <TabsTrigger value="collection" className="gap-2">
+              <Wallet className="h-4 w-4" />
+              <span className="hidden md:inline">Collection</span>
+            </TabsTrigger>
+            <TabsTrigger value="bought" className="gap-2">
+              <ShoppingBag className="h-4 w-4" />
+              <span className="hidden md:inline">Bought</span>
+            </TabsTrigger>
+            <TabsTrigger value="sold" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden md:inline">Sold</span>
+            </TabsTrigger>
             <TabsTrigger value="achievements" className="gap-2">
               <Trophy className="h-4 w-4" />
               <span className="hidden md:inline">Achievements</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="gap-2">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden md:inline">Stats</span>
             </TabsTrigger>
             <TabsTrigger value="reviews" className="gap-2">
               <Star className="h-4 w-4" />
@@ -189,6 +258,219 @@ const Profile = () => {
               isOwnProfile={isOwnProfile}
               onUpdateShowcase={handleUpdateShowcase}
             />
+          </TabsContent>
+
+          <TabsContent value="listings">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Store className="h-5 w-5" />
+                  Active Listings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {userListings && userListings.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {userListings.map((listing: any) => (
+                      <div 
+                        key={listing.id} 
+                        className="p-4 rounded-lg bg-muted/50 hover:bg-muted/70 cursor-pointer transition-colors"
+                        onClick={() => navigate(`/listing/${listing.id}`)}
+                      >
+                        {listing.image_url && (
+                          <img src={listing.image_url} alt={listing.title} className="w-full h-32 object-cover rounded-lg mb-3" />
+                        )}
+                        <h4 className="font-medium text-sm truncate">{listing.title}</h4>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-primary font-bold">{formatPrice(listing.price)}</span>
+                          <Badge variant={listing.status === 'active' ? 'default' : 'secondary'}>
+                            {listing.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Store className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                    <p className="text-muted-foreground">No active listings</p>
+                    {isOwnProfile && (
+                      <Button variant="outline" className="mt-4" onClick={() => navigate('/sell')}>
+                        Create Listing
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="collection">
+            {isOwnProfile ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Wallet className="h-5 w-5" />
+                    My Collection
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {portfolioItems && portfolioItems.length > 0 ? (
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {portfolioItems.map((item: any) => (
+                        <div 
+                          key={item.id} 
+                          className="p-4 rounded-lg bg-muted/50 hover:bg-muted/70 cursor-pointer transition-colors"
+                          onClick={() => item.market_item_id && navigate(`/item/${item.market_item_id}`)}
+                        >
+                          {(item.image_url || item.market_item?.image_url) && (
+                            <img 
+                              src={item.image_url || item.market_item?.image_url} 
+                              alt={item.custom_name || item.market_item?.name} 
+                              className="w-full h-32 object-cover rounded-lg mb-3" 
+                            />
+                          )}
+                          <h4 className="font-medium text-sm truncate">
+                            {item.custom_name || item.market_item?.name || 'Unknown Item'}
+                          </h4>
+                          <div className="flex items-center justify-between mt-2">
+                            {item.purchase_price && (
+                              <span className="text-muted-foreground text-sm">
+                                Paid: {formatPrice(item.purchase_price)}
+                              </span>
+                            )}
+                            {item.grade && (
+                              <Badge variant="outline">{item.grade}</Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                      <p className="text-muted-foreground">No items in collection</p>
+                      <Button variant="outline" className="mt-4" onClick={() => navigate('/markets')}>
+                        Browse Markets
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                  <p className="text-muted-foreground">Collection is private</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="bought">
+            {isOwnProfile ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5" />
+                    Purchased Items
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {userOrders?.bought && userOrders.bought.length > 0 ? (
+                    <div className="space-y-3">
+                      {userOrders.bought.map((order: any) => (
+                        <div key={order.id} className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+                          {order.listing?.image_url && (
+                            <img src={order.listing.image_url} alt={order.listing.title} className="w-16 h-16 object-cover rounded-lg" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium truncate">{order.listing?.title || 'Unknown Item'}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-primary">{formatPrice(order.price)}</p>
+                            <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                              {order.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                      <p className="text-muted-foreground">No purchases yet</p>
+                      <Button variant="outline" className="mt-4" onClick={() => navigate('/markets')}>
+                        Start Shopping
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                  <p className="text-muted-foreground">Purchase history is private</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sold">
+            {isOwnProfile ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    Sold Items
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {userOrders?.sold && userOrders.sold.length > 0 ? (
+                    <div className="space-y-3">
+                      {userOrders.sold.map((order: any) => (
+                        <div key={order.id} className="flex items-center gap-4 p-4 rounded-lg bg-muted/50">
+                          {order.listing?.image_url && (
+                            <img src={order.listing.image_url} alt={order.listing.title} className="w-16 h-16 object-cover rounded-lg" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium truncate">{order.listing?.title || 'Unknown Item'}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-gain">{formatPrice(order.price)}</p>
+                            <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                              {order.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                      <p className="text-muted-foreground">No sales yet</p>
+                      <Button variant="outline" className="mt-4" onClick={() => navigate('/sell')}>
+                        Start Selling
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                  <p className="text-muted-foreground">Sales history is private</p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="achievements">
