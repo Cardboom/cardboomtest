@@ -42,6 +42,10 @@ import Help from "./pages/Help";
 import Safety from "./pages/Safety";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import KVKK from "./pages/KVKK";
+import UserAgreement from "./pages/UserAgreement";
+import DistanceSalesContract from "./pages/DistanceSalesContract";
+import API from "./pages/API";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -94,6 +98,10 @@ const App = () => (
                   <Route path="/safety" element={<Safety />} />
                   <Route path="/terms" element={<Terms />} />
                   <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/kvkk" element={<KVKK />} />
+                  <Route path="/kullanici-sozlesmesi" element={<UserAgreement />} />
+                  <Route path="/mesafeli-satis-sozlesmesi" element={<DistanceSalesContract />} />
+                  <Route path="/api" element={<API />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
