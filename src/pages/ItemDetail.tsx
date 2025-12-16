@@ -28,6 +28,7 @@ import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
 import { ItemBids } from '@/components/item/ItemBids';
 import { FractionalOwnershipCard } from '@/components/fractional/FractionalOwnershipCard';
 import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
+import { CardSocialProof } from '@/components/CardSocialProof';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -486,6 +487,18 @@ const ItemDetail = () => {
               imageUrl={item.image_url || undefined}
             />
           </div>
+        </div>
+
+        {/* Social Proof Section */}
+        <div className="mb-8">
+          <CardSocialProof
+            itemId={item.id}
+            views={viewStats?.views24h || 0}
+            watchlistCount={watchlistCount || 0}
+            searchCount={Math.floor((viewStats?.views24h || 0) * 0.3)}
+            mentionCount={Math.floor((watchlistCount || 0) * 0.5)}
+            recentBuyers={salesCount30d || 0}
+          />
         </div>
 
         {/* Investment Intelligence Section */}
