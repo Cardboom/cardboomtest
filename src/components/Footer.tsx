@@ -12,7 +12,7 @@ export const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <img src={cardboomLogo} alt="CardBoom" className="h-14 w-auto" />
+              <img src={cardboomLogo} alt="CardBoom" className="h-24 w-auto" />
             </Link>
             <p className="text-sm text-muted-foreground mb-4">
               {t.footer.tagline}
