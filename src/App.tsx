@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { PriceProvider } from "@/contexts/PriceContext";
+import { AchievementProvider } from "@/contexts/AchievementContext";
 import { CookieConsent } from "@/components/CookieConsent";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { HelmetProvider } from "react-helmet-async";
@@ -135,7 +136,9 @@ const App = () => (
           <PriceProvider>
             <QueryClientProvider client={queryClient}>
               <TooltipProvider>
-                <AppContent />
+                <AchievementProvider>
+                  <AppContent />
+                </AchievementProvider>
               </TooltipProvider>
             </QueryClientProvider>
           </PriceProvider>
