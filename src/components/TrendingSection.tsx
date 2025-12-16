@@ -1,10 +1,8 @@
 import { TrendingUp, TrendingDown, ArrowRight, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { mockCollectibles } from '@/data/mockData';
 import { cn } from '@/lib/utils';
-import { usePrices } from '@/contexts/PriceContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { useNavigate } from 'react-router-dom';
 import { useEbayProducts } from '@/hooks/useEbayProducts';
@@ -13,18 +11,15 @@ import { formatGrade } from '@/hooks/useGradePrices';
 export const TrendingSection = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
-  const { prices } = usePrices();
   const { products: ebayProducts, isLoading, populateProducts } = useEbayProducts(undefined, 20);
   const [isPopulating, setIsPopulating] = useState(false);
   
-  // Combine mock data with eBay products for trending
-  const trendingMock = mockCollectibles.filter(item => item.trending).slice(0, 3);
-  
   const trending = useMemo(() => {
-    // Get trending eBay products
-    const ebayTrending = ebayProducts
-      .filter(p => p.is_trending)
-      .slice(0, 5)
+    // Get trending products from database
+    const trendingProducts = ebayProducts
+      .filter(p => p.is_trending || (p.change_24h && p.change_24h > 0))
+      .sort((a, b) => (b.change_24h || 0) - (a.change_24h || 0))
+      .slice(0, 8)
       .map(p => ({
         id: p.id,
         priceId: p.external_id || p.id,
@@ -34,38 +29,51 @@ export const TrendingSection = () => {
         price: p.current_price,
         previousPrice: p.base_price,
         priceChange: p.change_24h || 0,
-        rarity: 'legendary' as const,
-        seller: 'eBay',
-        condition: 'Gem Mint',
-        grade: 'psa10' as const,
-        year: 2024,
+        grade: p.subcategory?.toLowerCase().includes('psa') ? p.subcategory : 'raw',
         brand: p.subcategory || p.category,
         trending: true,
         priceUpdated: false,
-        isEbay: true,
       }));
 
-    // Combine with mock data
-    const mockTrending = trendingMock.map(item => {
-      const livePrice = prices[item.priceId];
-      return {
-        ...item,
-        price: livePrice?.price ?? item.price,
-        priceChange: livePrice?.change ?? item.priceChange,
-        priceUpdated: livePrice?.updated ?? false,
-        isEbay: false,
-      };
-    });
-
-    // Prioritize eBay products, then mock
-    return [...ebayTrending, ...mockTrending].slice(0, 8);
-  }, [trendingMock, prices, ebayProducts]);
+    return trendingProducts;
+  }, [ebayProducts]);
 
   const handlePopulate = async () => {
     setIsPopulating(true);
     await populateProducts();
     setIsPopulating(false);
   };
+
+  if (isLoading && trending.length === 0) {
+    return (
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display text-2xl font-bold text-foreground">
+              Trending Now 🔥
+            </h2>
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="glass rounded-xl p-4 w-72 shrink-0 animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg bg-muted" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                    <div className="h-3 bg-muted rounded w-1/2" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (trending.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-12">
@@ -83,7 +91,7 @@ export const TrendingSection = () => {
                 className="gap-2"
               >
                 <RefreshCw className={cn("w-4 h-4", isPopulating && "animate-spin")} />
-                {isPopulating ? 'Loading...' : 'Fetch eBay'}
+                {isPopulating ? 'Loading...' : 'Refresh'}
               </Button>
               <Button 
                 variant="ghost" 

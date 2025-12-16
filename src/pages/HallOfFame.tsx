@@ -85,25 +85,48 @@ const HallOfFame = () => {
         };
       }));
 
-      // Fastest Flips - based on orders (buy to sell)
-      const { data: orders } = await supabase
+      // Fastest Flips - based on completed orders
+      const { data: completedOrders } = await supabase
         .from('orders')
         .select('buyer_id, seller_id, price, created_at')
         .eq('status', 'completed')
         .order('created_at', { ascending: false })
         .limit(100);
 
-      // Mock fastest flips since we don't track this directly
-      const flippers = profiles?.slice(0, 10).map((p, i) => ({
-        id: p.id,
-        display_name: p.display_name,
-        avatar_url: p.avatar_url,
-        value: `${(Math.random() * 200 + 50).toFixed(0)}%`,
-        subtitle: `Flipped in ${Math.floor(Math.random() * 7) + 1} days`,
-        badge: i === 0 ? 'Speed Demon' : undefined
-      })) || [];
+      // Calculate actual flip metrics from completed orders
+      const flipperMap = new Map<string, { totalProfit: number; count: number }>();
+      completedOrders?.forEach(order => {
+        const sellerId = order.seller_id;
+        const current = flipperMap.get(sellerId) || { totalProfit: 0, count: 0 };
+        flipperMap.set(sellerId, { 
+          totalProfit: current.totalProfit + order.price, 
+          count: current.count + 1 
+        });
+      });
 
-      setFastestFlips(flippers);
+      const sortedFlippers = Array.from(flipperMap.entries())
+        .sort((a, b) => b[1].totalProfit - a[1].totalProfit)
+        .slice(0, 10);
+
+      const flipperIds = sortedFlippers.map(f => f[0]);
+      const { data: flipperProfiles } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .in('id', flipperIds);
+
+      const flipperProfileMap = new Map(flipperProfiles?.map(f => [f.id, f]));
+
+      setFastestFlips(sortedFlippers.map(([userId, stats], i) => {
+        const profile = flipperProfileMap.get(userId);
+        return {
+          id: userId,
+          display_name: profile?.display_name || 'Anonymous',
+          avatar_url: profile?.avatar_url || null,
+          value: `$${stats.totalProfit.toLocaleString()}`,
+          subtitle: `${stats.count} sales completed`,
+          badge: i === 0 ? 'Top Seller' : undefined
+        };
+      }));
 
       // Rarest Sales - highest value orders
       const { data: highValueOrders } = await supabase
