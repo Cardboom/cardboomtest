@@ -7,16 +7,21 @@ import { ScrollReveal } from '@/components/ScrollReveal';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { ItemBadges } from '@/components/market/ItemBadges';
 import { WantedBoard } from '@/components/market/WantedBoard';
+import { ExplainPriceDialog } from '@/components/market/ExplainPriceDialog';
 import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
 import { GRADE_LABELS } from '@/hooks/useGradePrices';
 import { 
   TrendingUp, TrendingDown, RefreshCw, Search, 
   Flame, Zap, Users, BarChart3, Star,
-  ArrowUpDown, ChevronDown, Award
+  ArrowUpDown, ChevronDown, Award, HelpCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TableRowSkeleton } from '@/components/ui/card-skeleton';
+import { PriceSourceBadge } from '@/components/ui/price-tooltip';
+import { ConfidenceBadge } from '@/components/ui/confidence-badge';
+import { EmptySearchState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -465,10 +470,15 @@ const Markets = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayedCollectibles.length === 0 ? (
+                {isLoading ? (
+                  // Skeleton loading state
+                  Array.from({ length: 10 }).map((_, i) => (
+                    <TableRowSkeleton key={i} columns={10} />
+                  ))
+                ) : displayedCollectibles.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
-                      No assets found matching your criteria
+                    <TableCell colSpan={10} className="py-0">
+                      <EmptySearchState query={searchQuery || 'your criteria'} />
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -490,12 +500,19 @@ const Markets = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="relative">
-                              <img 
-                                src={item.image} 
-                                alt={item.name} 
-                                className="w-10 h-10 rounded-lg object-cover"
-                              />
+                            <div className="relative w-10 h-10 flex-shrink-0">
+                              {/* Consistent aspect ratio container */}
+                              <div className="w-full h-full rounded-lg overflow-hidden bg-muted">
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name} 
+                                  className="w-full h-full object-cover object-center"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    e.currentTarget.src = '/placeholder.svg';
+                                  }}
+                                />
+                              </div>
                               {item.isVerified && (
                                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
                                   <span className="text-[8px] text-primary-foreground">✓</span>
@@ -566,16 +583,38 @@ const Markets = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            <Star className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <ExplainPriceDialog
+                              itemName={item.name}
+                              currentPrice={item.price}
+                              priceChange24h={item.priceChange}
+                              priceChange7d={item.change7d}
+                              priceChange30d={item.change30d}
+                              liquidityLevel={item.liquidityLevel as 'high' | 'medium' | 'low'}
+                              watchlistCount={item.holders}
+                              salesCount={item.txns}
+                              category={item.category}
+                            >
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                              </Button>
+                            </ExplainPriceDialog>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              <Star className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
