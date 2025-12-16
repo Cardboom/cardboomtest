@@ -7,21 +7,34 @@ const corsHeaders = {
 };
 
 interface CardmarketCard {
-  id: string;
+  id: number;
   name: string;
+  name_numbered?: string;
+  slug?: string;
   image?: string;
   imageUrl?: string;
-  price?: number;
+  prices?: {
+    cardmarket_price?: number;
+    tcgplayer_price?: number;
+  };
   priceFrom?: number;
   priceTrend?: number;
   expansion?: string;
   rarity?: string;
+  images?: {
+    small?: string;
+    large?: string;
+  };
 }
 
 interface CardmarketResponse {
-  results?: CardmarketCard[];
   data?: CardmarketCard[];
-  cards?: CardmarketCard[];
+  results?: number; // This is a count, not array!
+  paging?: {
+    current: number;
+    total: number;
+    per_page: number;
+  };
 }
 
 // Map our categories to Cardmarket game types
@@ -90,12 +103,14 @@ async function searchCardmarket(game: string, query: string, apiKey: string): Pr
   const data: CardmarketResponse = await response.json();
   console.log(`[sync-cardmarket] Got ${JSON.stringify(data).substring(0, 200)}...`);
   
-  // Handle different response structures
-  return data.results || data.data || data.cards || [];
+  // API returns { data: [...], results: <count>, paging: {...} }
+  // data.results is a NUMBER (count), data.data is the actual array
+  return Array.isArray(data.data) ? data.data : [];
 }
 
 function getImageUrl(card: CardmarketCard): string | null {
-  return card.image || card.imageUrl || null;
+  // Check various image fields in the API response
+  return card.images?.large || card.images?.small || card.image || card.imageUrl || null;
 }
 
 function findBestMatch(cardName: string, results: CardmarketCard[]): CardmarketCard | null {
@@ -184,8 +199,8 @@ serve(async (req) => {
         const searchQuery = getSearchQuery(item.name, item.category);
         console.log(`[sync-cardmarket] Searching "${searchQuery}" for "${item.name}" in ${game}`);
 
-        // Rate limiting - wait 2 seconds between requests to avoid RapidAPI limits
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Rate limiting - wait 500ms between requests (3000/day = ~2/min sustained, but can burst)
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         const cardResults = await searchCardmarket(game, searchQuery, CARDMARKET_API_KEY);
         
