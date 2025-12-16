@@ -43,6 +43,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userXP, setUserXP] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -50,6 +52,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
         setUser(session?.user ?? null);
         if (session?.user) {
           fetchUserXP(session.user.id);
+          fetchUnreadCounts(session.user.id);
         }
       }
     );
@@ -58,6 +61,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserXP(session.user.id);
+        fetchUnreadCounts(session.user.id);
       }
     });
 
@@ -74,6 +78,35 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
     if (data) {
       setUserXP(data.xp || 0);
     }
+  };
+
+  const fetchUnreadCounts = async (userId: string) => {
+    // Fetch unread messages
+    const { data: conversations } = await supabase
+      .from('conversations')
+      .select('id')
+      .or(`participant_1.eq.${userId},participant_2.eq.${userId}`);
+    
+    if (conversations && conversations.length > 0) {
+      const conversationIds = conversations.map(c => c.id);
+      const { count: messagesCount } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .in('conversation_id', conversationIds)
+        .neq('sender_id', userId)
+        .eq('is_read', false);
+      
+      setUnreadMessages(messagesCount || 0);
+    }
+
+    // Fetch unread notifications
+    const { count: notificationsCount } = await supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
+    
+    setUnreadNotifications(notificationsCount || 0);
   };
 
   const handleSignOut = async () => {
@@ -304,9 +337,23 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <User className="w-4 h-4 mr-2" />
                     {t.nav.myProfile}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/messages')}>
+                  <DropdownMenuItem onClick={() => navigate('/messages')} className="relative">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Messages
+                    {unreadMessages > 0 && (
+                      <span className="ml-auto bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                        {unreadMessages > 99 ? '99+' : unreadMessages}
+                      </span>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/notifications')} className="relative">
+                    <Bell className="w-4 h-4 mr-2" />
+                    Notifications
+                    {unreadNotifications > 0 && (
+                      <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                        {unreadNotifications > 99 ? '99+' : unreadNotifications}
+                      </span>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
