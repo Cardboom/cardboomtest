@@ -159,7 +159,7 @@ const PublicProfile = () => {
   };
 
   const shareToTwitter = () => {
-    const text = `Check out my collectibles portfolio on @CardBoom! 📈 Portfolio Value: ${formatValue(portfolioStats?.totalValue || 0)}`;
+    const text = `Check out my collectibles portfolio on @cardboom! 📈 Portfolio Value: ${formatValue(portfolioStats?.totalValue || 0)}`;
     const url = window.location.href;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
   };
