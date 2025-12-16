@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -189,6 +190,16 @@ const Deals = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Best Deals | Cardboom - Trading Cards Below Market Value</title>
+        <meta name="description" content="Find trading cards listed below market value. Real-time deal detection for Pokemon, sports cards, and collectibles. Discover hidden treasures and arbitrage opportunities." />
+        <meta name="keywords" content="trading card deals, cheap trading cards, card arbitrage, Pokemon deals, sports card deals, below market value, card discounts" />
+        <link rel="canonical" href="https://cardboom.com/deals" />
+        <meta property="og:title" content="Best Deals | Cardboom" />
+        <meta property="og:description" content="Find trading cards listed below market value. Real-time deal detection." />
+        <meta property="og:url" content="https://cardboom.com/deals" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-8">

@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,15 @@ const Safety = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Safety & Security | Cardboom - Secure Trading</title>
+        <meta name="description" content="Learn about Cardboom's safety features including escrow protection, vault storage, verified sellers, and authenticity guarantees. Trade with confidence." />
+        <meta name="keywords" content="trading card safety, secure marketplace, escrow protection, vault storage, verified sellers, card authenticity" />
+        <link rel="canonical" href="https://cardboom.com/safety" />
+        <meta property="og:title" content="Safety & Security | Cardboom" />
+        <meta property="og:description" content="Your safety is our priority. Learn about our security measures." />
+        <meta property="og:url" content="https://cardboom.com/safety" />
+      </Helmet>
       <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} items={[]} onRemoveItem={() => {}} />
 

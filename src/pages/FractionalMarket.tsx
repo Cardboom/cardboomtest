@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -164,6 +165,16 @@ const FractionalMarket = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Fractional Ownership | Cardboom - Invest in Premium Collectibles</title>
+        <meta name="description" content="Buy fractional shares of premium trading cards and collectibles. Invest in high-value Pokemon, sports cards, and rare items with as little as $1. Trade shares on the secondary market." />
+        <meta name="keywords" content="fractional ownership, collectible investing, trading card shares, Pokemon investment, sports card investment, fractional trading cards" />
+        <link rel="canonical" href="https://cardboom.com/fractional" />
+        <meta property="og:title" content="Fractional Ownership | Cardboom" />
+        <meta property="og:description" content="Buy fractional shares of premium trading cards and collectibles. Start investing today." />
+        <meta property="og:url" content="https://cardboom.com/fractional" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">

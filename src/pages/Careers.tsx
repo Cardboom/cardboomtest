@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,15 @@ const Careers = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Careers | Cardboom - Join Our Team</title>
+        <meta name="description" content="Join the Cardboom team and help build the future of collectibles trading. View open positions in engineering, design, marketing, and operations." />
+        <meta name="keywords" content="Cardboom careers, trading card jobs, fintech jobs Istanbul, remote jobs, startup careers" />
+        <link rel="canonical" href="https://cardboom.com/careers" />
+        <meta property="og:title" content="Careers | Cardboom" />
+        <meta property="og:description" content="Join our team and help build the future of collectibles trading." />
+        <meta property="og:url" content="https://cardboom.com/careers" />
+      </Helmet>
       <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} items={[]} onRemoveItem={() => {}} />
 
