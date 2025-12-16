@@ -13,7 +13,8 @@ export const categoryLabels: Record<string, string> = {
   'sports-mlb': 'MLB',
   'sports-wnba': 'WNBA',
   'nba': 'NBA',
-  'gaming': 'Gaming',
+  'gaming': 'Gaming Points',
+  'gamepoints': 'Game Points',
 };
 
 export const getCategoryLabel = (category: string): string => {
@@ -35,6 +36,7 @@ export const categoryIcons: Record<string, string> = {
   'sports-wnba': '🏀',
   'nba': '🏀',
   'gaming': '🎮',
+  'gamepoints': '🎮',
 };
 
 export const getCategoryIcon = (category: string): string => {
