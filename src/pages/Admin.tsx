@@ -200,7 +200,7 @@ const Admin = () => {
       <header className="border-b border-border/50 bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={cardboomLogo} alt="CardBoom" className="h-12 w-auto" />
+            <img src={cardboomLogo} alt="CardBoom" className="h-20 w-auto" />
             <span className="font-bold text-xl text-primary">Admin</span>
           </div>
           <Button variant="outline" onClick={() => navigate('/')}>Back to Site</Button>
