@@ -36,7 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type MarketTab = 'trending' | 'gainers' | 'losers' | 'new' | 'watchlist';
+type MarketTab = 'all' | 'trending' | 'gainers' | 'losers' | 'new' | 'watchlist';
 type TimeInterval = '1h' | '4h' | '24h' | '7d' | '30d';
 type SortField = 'rank' | 'price' | 'change' | 'volume' | 'liquidity' | 'holders';
 
@@ -45,13 +45,13 @@ const Markets = () => {
   const { formatPrice } = useCurrency();
   const [cartItems, setCartItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<MarketTab>('trending');
+  const [activeTab, setActiveTab] = useState<MarketTab>('all');
   const [timeInterval, setTimeInterval] = useState<TimeInterval>('24h');
   const [sortField, setSortField] = useState<SortField>('rank');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedGrade, setSelectedGrade] = useState<string>('all');
-  const [displayCount, setDisplayCount] = useState(20);
+  const [displayCount, setDisplayCount] = useState(50);
 
   const gradeOptions = [
     { value: 'all', label: 'All Grades' },
@@ -74,7 +74,7 @@ const Markets = () => {
     refetch,
     lastUpdated,
     updateCount
-  } = useMarketItems({ limit: 500, refreshInterval: 30000 });
+  } = useMarketItems({ limit: 1000, refreshInterval: 30000 });
 
   // Transform database items to display format
   const collectiblesWithPrices = useMemo(() => {
@@ -159,6 +159,9 @@ const Markets = () => {
     }
 
     switch (activeTab) {
+      case 'all':
+        // Show all items, no filter
+        break;
       case 'trending':
         items = items.filter(c => c.trending);
         break;
@@ -203,7 +206,7 @@ const Markets = () => {
   const hasMoreItems = displayCount < filteredCollectibles.length;
 
   const handleLoadMore = () => {
-    setDisplayCount(prev => Math.min(prev + 20, filteredCollectibles.length));
+    setDisplayCount(prev => Math.min(prev + 50, filteredCollectibles.length));
   };
 
   const handleSort = (field: SortField) => {
@@ -309,8 +312,15 @@ const Markets = () => {
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as MarketTab)}>
               <TabsList className="bg-secondary/30 p-1 h-auto gap-1">
                 <TabsTrigger 
-                  value="trending" 
+                  value="all" 
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1.5"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  All
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="trending" 
+                  className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground gap-1.5"
                 >
                   <Flame className="w-4 h-4" />
                   Trending
