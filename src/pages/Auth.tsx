@@ -219,7 +219,7 @@ const Auth = () => {
                 <img 
                   src={cardboomLogo} 
                   alt="Cardboom" 
-                  className="h-40 w-auto object-contain"
+                  className="h-80 w-auto object-contain"
                 />
               </div>
 
@@ -304,7 +304,7 @@ const Auth = () => {
               <img 
                 src={cardboomLogo} 
                 alt="Cardboom" 
-                className="h-28 w-auto object-contain mx-auto"
+                className="h-56 w-auto object-contain mx-auto"
               />
             </div>
 
