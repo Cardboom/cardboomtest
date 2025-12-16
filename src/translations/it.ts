@@ -1,7 +1,6 @@
-import { Translations } from "./en";
+import type { Translations } from "./en";
 
 export const it: Translations = {
-  // Navigation
   nav: {
     marketplace: "Mercato",
     portfolio: "Portafoglio",
@@ -12,21 +11,19 @@ export const it: Translations = {
     profile: "Profilo",
     search: "Cerca collezionabili...",
   },
-  // Hero
   hero: {
-    badge: "Trading Live",
-    title: "Boom la tua",
-    titleHighlight: "collezione",
-    subtitle: "Prezzi in tempo reale • Regolamento istantaneo",
-    description: "Unisciti al mercato principale per carte collezionabili e oggetti rari. Prezzi in tempo reale, transazioni sicure e una comunità di collezionisti verificati.",
-    startTrading: "Inizia a fare Trading",
-    exploreMarket: "Esplora il Mercato",
+    badge: "Il Futuro degli Investimenti TCG",
+    title: "Il valore della tua collezione fa",
+    titleHighlight: "boom!",
+    subtitle: "Prezzi in Tempo Reale • Tracking Portfolio • Investimento Intelligente",
+    description: "La casa degli investimenti TCG. Monitora i prezzi in tempo reale, costruisci il tuo portfolio e trasforma la tua passione in profitto.",
+    startTrading: "Inizia a Investire",
+    exploreMarket: "Vedi i Mercati",
     totalVolume: "Volume Totale",
     volume24h: "Volume 24h",
     activeListings: "Annunci Attivi",
-    traders: "Trader",
+    traders: "Investitori",
   },
-  // Waitlist
   waitlist: {
     badge: "Prossimamente",
     title: "Ottieni accesso anticipato a Cardboom",
@@ -64,14 +61,12 @@ export const it: Translations = {
       emailRequiredDesc: "Inserisci il tuo indirizzo email.",
     },
   },
-  // Market
   market: {
     index: "Indice Mercato Cardboom",
     topGainers: "Top Gainer",
     topLosers: "Top Loser",
     explore: "Esplora Collezionabili",
   },
-  // Categories
   categories: {
     all: "Tutti",
     nba: "Carte NBA",
@@ -80,7 +75,6 @@ export const it: Translations = {
     figures: "Figure",
     gaming: "Gaming",
   },
-  // Cart
   cart: {
     title: "Il tuo Carrello",
     empty: "Il tuo carrello è vuoto",
@@ -92,7 +86,6 @@ export const it: Translations = {
     alreadyIn: "Articolo già nel carrello",
     removed: "Articolo rimosso dal carrello",
   },
-  // Common
   common: {
     addToCart: "Aggiungi al Carrello",
     buyNow: "Compra Ora",
@@ -103,7 +96,6 @@ export const it: Translations = {
     verified: "Verificato",
     guru: "Esperto",
   },
-  // Profile
   profile: {
     level: "Livello",
     xp: "XP",
@@ -124,7 +116,6 @@ export const it: Translations = {
       figures: "Esperto Figure",
     },
   },
-  // Leaderboard
   leaderboard: {
     title: "Top Collezionisti",
     description: "Competi con altri collezionisti. Guadagna XP tramite scambi, acquisti e login giornalieri.",
@@ -141,9 +132,8 @@ export const it: Translations = {
     noGaming: "Nessun leader gaming ancora!",
     gamingPoints: "Punti Gaming",
   },
-  // Footer
   footer: {
-    tagline: "Il mercato principale per carte e figure collezionabili.",
+    tagline: "La casa degli investimenti TCG. Costruisci ricchezza dalla tua collezione.",
     marketplace: "Mercato",
     nbaCards: "Carte NBA",
     footballCards: "Carte Football",

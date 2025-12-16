@@ -1,7 +1,6 @@
-import { Translations } from "./en";
+import type { Translations } from "./en";
 
 export const ar: Translations = {
-  // Navigation
   nav: {
     marketplace: "السوق",
     portfolio: "المحفظة",
@@ -12,21 +11,19 @@ export const ar: Translations = {
     profile: "الملف الشخصي",
     search: "ابحث عن المقتنيات...",
   },
-  // Hero
   hero: {
-    badge: "تداول مباشر",
-    title: "انطلق بمجموعتك",
-    titleHighlight: "الآن",
-    subtitle: "أسعار فورية • تسوية لحظية",
-    description: "انضم إلى السوق الرائد لبطاقات التداول والمقتنيات النادرة. أسعار فورية، معاملات آمنة، ومجتمع من الجامعين الموثقين.",
-    startTrading: "ابدأ التداول",
-    exploreMarket: "استكشف السوق",
+    badge: "مستقبل استثمار TCG",
+    title: "قيمة مجموعتك",
+    titleHighlight: "تنفجر!",
+    subtitle: "أسعار فورية • تتبع المحفظة • استثمار ذكي",
+    description: "موطن استثمار TCG. تتبع الأسعار الفورية، ابنِ محفظتك وحوّل شغفك إلى ربح.",
+    startTrading: "ابدأ الاستثمار",
+    exploreMarket: "عرض الأسواق",
     totalVolume: "إجمالي الحجم",
     volume24h: "حجم 24 ساعة",
     activeListings: "الإعلانات النشطة",
-    traders: "المتداولون",
+    traders: "المستثمرون",
   },
-  // Waitlist
   waitlist: {
     badge: "قريباً",
     title: "احصل على وصول مبكر إلى Cardboom",
@@ -64,14 +61,12 @@ export const ar: Translations = {
       emailRequiredDesc: "يرجى إدخال بريدك الإلكتروني.",
     },
   },
-  // Market
   market: {
     index: "مؤشر سوق Cardboom",
     topGainers: "أعلى الرابحين",
     topLosers: "أعلى الخاسرين",
     explore: "استكشف المقتنيات",
   },
-  // Categories
   categories: {
     all: "الكل",
     nba: "بطاقات NBA",
@@ -80,7 +75,6 @@ export const ar: Translations = {
     figures: "مجسمات",
     gaming: "ألعاب",
   },
-  // Cart
   cart: {
     title: "سلتك",
     empty: "سلتك فارغة",
@@ -92,7 +86,6 @@ export const ar: Translations = {
     alreadyIn: "العنصر موجود في السلة",
     removed: "تم إزالة العنصر من السلة",
   },
-  // Common
   common: {
     addToCart: "أضف للسلة",
     buyNow: "اشترِ الآن",
@@ -103,7 +96,6 @@ export const ar: Translations = {
     verified: "موثق",
     guru: "خبير",
   },
-  // Profile
   profile: {
     level: "المستوى",
     xp: "XP",
@@ -124,7 +116,6 @@ export const ar: Translations = {
       figures: "خبير مجسمات",
     },
   },
-  // Leaderboard
   leaderboard: {
     title: "أفضل الجامعين",
     description: "تنافس مع جامعين آخرين. اكسب XP من التداول والشراء والتسجيل اليومي.",
@@ -141,9 +132,8 @@ export const ar: Translations = {
     noGaming: "لا يوجد قادة ألعاب بعد!",
     gamingPoints: "نقاط الألعاب",
   },
-  // Footer
   footer: {
-    tagline: "السوق الرائد لبطاقات التداول والمجسمات.",
+    tagline: "موطن استثمار TCG. ابنِ ثروتك من مجموعتك.",
     marketplace: "السوق",
     nbaCards: "بطاقات NBA",
     footballCards: "بطاقات كرة القدم",
