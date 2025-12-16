@@ -449,7 +449,7 @@ export const categories = [
   { id: 'sports-mlb', name: 'MLB', icon: '⚾' },
   { id: 'sports-wnba', name: 'WNBA', icon: '🏀' },
   { id: 'figures', name: 'Figures', icon: '🎨' },
-  { id: 'gaming', name: 'Gaming', icon: '🎮' },
+  { id: 'gamepoints', name: 'Gaming Points', icon: '🎮' },
 ];
 
 // XP/Level calculations

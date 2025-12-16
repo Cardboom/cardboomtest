@@ -9,6 +9,16 @@ export const en = {
     signOut: "Sign Out",
     profile: "Profile",
     search: "Search collectibles...",
+    markets: "Markets",
+    deals: "Deals",
+    leaderboard: "Leaderboard",
+    fractional: "Fractional",
+    wallet: "Wallet",
+    myProfile: "My Profile",
+    myVault: "My Vault",
+    myListings: "My Listings",
+    referrals: "Referrals & XP",
+    verifiedSeller: "Verified Seller",
   },
   // Hero
   hero: {
