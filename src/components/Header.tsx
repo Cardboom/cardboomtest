@@ -99,7 +99,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <img 
               src={cardboomLogo} 
               alt="CardBoom" 
-              className="h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
           </div>
 
@@ -303,6 +303,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <User className="w-4 h-4 mr-2" />
                     {t.nav.myProfile}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/messages')}>
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Messages
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
