@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_request_logs: {
+        Row: {
+          api_key: string
+          created_at: string
+          endpoint: string
+          id: string
+          response_code: number | null
+        }
+        Insert: {
+          api_key: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          response_code?: number | null
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          response_code?: number | null
+        }
+        Relationships: []
+      }
+      api_subscriptions: {
+        Row: {
+          api_key: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          plan: string
+          price_monthly: number
+          requests_limit: number
+          requests_today: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          api_key?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          plan?: string
+          price_monthly?: number
+          requests_limit?: number
+          requests_today?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          plan?: string
+          price_monthly?: number
+          requests_limit?: number
+          requests_today?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bids: {
         Row: {
           bid_amount: number
