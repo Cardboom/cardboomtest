@@ -28,6 +28,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { FAQSection } from '@/components/FAQSection';
 
 const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
 
@@ -379,6 +380,9 @@ const Index = () => {
           </div>
         </section>
       </main>
+
+      {/* FAQ Section for non-logged-in users - Great for SEO */}
+      {!user && <FAQSection />}
 
       <Footer />
 
