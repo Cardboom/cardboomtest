@@ -56,3 +56,6 @@ verify_jwt = false
 
 [functions.sync-justtcg-prices]
 verify_jwt = false
+
+[functions.import-pricecharting-csv]
+verify_jwt = false
