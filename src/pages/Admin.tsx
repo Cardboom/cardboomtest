@@ -28,7 +28,8 @@ import {
   Truck,
   Key,
   MessageCircle,
-  HelpCircle
+  HelpCircle,
+  Bot
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
@@ -37,6 +38,7 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { FractionalManagement } from '@/components/admin/FractionalManagement';
 import { APIAnalytics } from '@/components/admin/APIAnalytics';
 import { SupportTickets } from '@/components/admin/SupportTickets';
+import { AutoBuyManager } from '@/components/admin/AutoBuyManager';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -242,6 +244,10 @@ const Admin = () => {
               <Key className="w-4 h-4" />
               API Analytics
             </TabsTrigger>
+            <TabsTrigger value="autobuy" className="gap-2">
+              <Bot className="w-4 h-4" />
+              Deal Scooper
+            </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
               Price Management
@@ -266,6 +272,10 @@ const Admin = () => {
 
           <TabsContent value="api">
             <APIAnalytics />
+          </TabsContent>
+
+          <TabsContent value="autobuy">
+            <AutoBuyManager />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">
