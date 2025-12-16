@@ -2372,7 +2372,57 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"] | null
+          avatar_url: string | null
+          badges: Json | null
+          bio: string | null
+          created_at: string | null
+          custom_guru: string | null
+          display_name: string | null
+          guru_expertise: string[] | null
+          id: string | null
+          is_beta_tester: boolean | null
+          level: number | null
+          showcase_items: string[] | null
+          title: string | null
+          xp: number | null
+        }
+        Insert: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          avatar_url?: string | null
+          badges?: Json | null
+          bio?: string | null
+          created_at?: string | null
+          custom_guru?: string | null
+          display_name?: string | null
+          guru_expertise?: string[] | null
+          id?: string | null
+          is_beta_tester?: boolean | null
+          level?: number | null
+          showcase_items?: string[] | null
+          title?: string | null
+          xp?: number | null
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"] | null
+          avatar_url?: string | null
+          badges?: Json | null
+          bio?: string | null
+          created_at?: string | null
+          custom_guru?: string | null
+          display_name?: string | null
+          guru_expertise?: string[] | null
+          id?: string | null
+          is_beta_tester?: boolean | null
+          level?: number | null
+          showcase_items?: string[] | null
+          title?: string | null
+          xp?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_level: { Args: { xp_amount: number }; Returns: number }

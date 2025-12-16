@@ -34,6 +34,89 @@ function generateAuthorizationHeader(
   return `IYZWS ${apiKey}:${base64}`;
 }
 
+// HMAC-SHA1 signature verification for iyzico callbacks
+async function verifyIyzicoSignature(
+  paymentId: string,
+  currency: string,
+  basketId: string,
+  conversationId: string,
+  paidPrice: string,
+  price: string,
+  receivedSignature: string,
+  secretKey: string
+): Promise<boolean> {
+  // iyzico callback signature format: paymentId:currency:basketId:conversationId:paidPrice:price:secretKey
+  const signatureString = `${paymentId}:${currency}:${basketId}:${conversationId}:${paidPrice}:${price}:${secretKey}`;
+  
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secretKey),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  
+  const signatureData = await crypto.subtle.sign(
+    'HMAC',
+    key,
+    encoder.encode(signatureString)
+  );
+  
+  // Convert to base64
+  const computedSignature = btoa(String.fromCharCode(...new Uint8Array(signatureData)));
+  
+  // Constant-time comparison to prevent timing attacks
+  if (computedSignature.length !== receivedSignature.length) {
+    return false;
+  }
+  
+  let result = 0;
+  for (let i = 0; i < computedSignature.length; i++) {
+    result |= computedSignature.charCodeAt(i) ^ receivedSignature.charCodeAt(i);
+  }
+  
+  return result === 0;
+}
+
+// Alternative: Verify payment by calling iyzico API directly
+async function verifyPaymentWithIyzico(
+  paymentId: string,
+  conversationId: string
+): Promise<{ verified: boolean; data?: any; error?: string }> {
+  const retrieveRequest = {
+    locale: 'en',
+    conversationId,
+    paymentId
+  };
+
+  const randomString = Date.now().toString();
+  const requestBody = JSON.stringify(retrieveRequest);
+
+  try {
+    const response = await fetch(`${IYZICO_BASE_URL}/payment/detail`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': generateAuthorizationHeader(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, requestBody),
+        'x-iyzi-rnd': randomString
+      },
+      body: requestBody
+    });
+
+    const data = await response.json();
+    
+    if (data.status === 'success' && data.paymentId === paymentId) {
+      return { verified: true, data };
+    }
+    
+    return { verified: false, error: data.errorMessage || 'Payment verification failed' };
+  } catch (error) {
+    console.error('Error verifying payment with iyzico:', error);
+    return { verified: false, error: 'Failed to verify payment' };
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -101,6 +184,25 @@ serve(async (req) => {
 
       return redirectWithError(frontendUrl, '3DS verification failed');
     }
+
+    // SECURITY: Verify payment authenticity by calling iyzico API directly
+    // This is the most secure method as it confirms the payment exists on iyzico's side
+    console.log('Verifying payment authenticity with iyzico API...');
+    const verificationResult = await verifyPaymentWithIyzico(paymentId, conversationId);
+    
+    if (!verificationResult.verified) {
+      console.error('Payment verification failed:', verificationResult.error);
+      
+      await supabase
+        .from('pending_payments')
+        .update({ status: 'failed', payment_id: paymentId })
+        .eq('conversation_id', conversationId)
+        .eq('status', 'pending');
+
+      return redirectWithError(frontendUrl, 'Payment verification failed');
+    }
+
+    console.log('Payment verified successfully with iyzico API');
 
     // Complete the 3DS payment
     const completeRequest = {
