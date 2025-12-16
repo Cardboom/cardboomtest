@@ -16,6 +16,7 @@ import { DailyQuestsPanel } from '@/components/DailyQuestsPanel';
 import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
+import { ActivityAnnouncementBanner } from '@/components/ActivityAnnouncementBanner';
 import { useMarketItems, useListings } from '@/hooks/useMarketItems';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { Collectible } from '@/types/collectible';
@@ -195,6 +196,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {showWaitlist && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
+      <ActivityAnnouncementBanner />
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <MarketTicker />
       

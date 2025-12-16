@@ -11,26 +11,34 @@ const BLOCKED_PATTERNS = [
   // Phone numbers (various formats)
   /\b(?:\+?90|0)?[\s.-]?5\d{2}[\s.-]?\d{3}[\s.-]?\d{2}[\s.-]?\d{2}\b/gi, // Turkish
   /\b\+?[\d\s.-]{10,15}\b/g, // General phone
+  /\b(?:\+1|\+44|\+49|\+33|\+81|\+86|\+91)[\s.-]?\d{6,12}\b/gi, // International codes
   
   // Email patterns
   /\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b/gi,
   /\b[a-zA-Z0-9._%+-]+\s*[@＠]\s*[a-zA-Z0-9.-]+\s*[.．]\s*[a-zA-Z]{2,}\b/gi,
   /\b[a-zA-Z0-9._%+-]+\s*(?:at|AT)\s*[a-zA-Z0-9.-]+\s*(?:dot|DOT)\s*[a-zA-Z]{2,}\b/gi,
   
-  // Social media handles
-  /\b(?:instagram|insta|ig|twitter|x\.com|telegram|tg|whatsapp|wa|discord|snap|snapchat|tiktok|facebook|fb)[\s:@]*[a-zA-Z0-9._-]+\b/gi,
+  // Social media handles and platforms
+  /\b(?:instagram|insta|ig|twitter|x\.com|x\s+app|telegram|tg|whatsapp|wa|discord|snap|snapchat|tiktok|facebook|fb|messenger|linkedin|wechat|line|viber|signal|skype)[\s:@]*[a-zA-Z0-9._-]+\b/gi,
   /@[a-zA-Z0-9._]{3,30}\b/g,
+  
+  // Social media mentions without handle
+  /\b(?:hit\s*me\s*(?:up|on)|dm\s*me|message\s*me\s*on|find\s*me\s*on|add\s*me\s*on|follow\s*me\s*on)\s*(?:instagram|insta|ig|twitter|x|telegram|tg|whatsapp|wa|discord|snap|snapchat|tiktok|facebook|fb)\b/gi,
   
   // URLs (except cardboom)
   /\b(?:https?:\/\/)?(?!.*cardboom)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?\b/gi,
   
-  // Common evasion patterns
+  // Common evasion patterns - spelled out numbers
   /\b(?:five|zero|one|two|three|four|six|seven|eight|nine)\s+(?:five|zero|one|two|three|four|six|seven|eight|nine)\s+(?:five|zero|one|two|three|four|six|seven|eight|nine)/gi,
   /\b(?:beş|sıfır|bir|iki|üç|dört|altı|yedi|sekiz|dokuz)\s+/gi, // Turkish numbers
   
   // "Message me at", "Contact me on", etc.
-  /\b(?:contact|message|reach|find|add)\s*(?:me|us)\s*(?:at|on|via|through|@)\b/gi,
-  /\b(?:my|send)\s*(?:number|phone|email|mail|insta|ig|telegram|whatsapp|discord)\b/gi,
+  /\b(?:contact|message|reach|find|add|call|text|ring)\s*(?:me|us)\s*(?:at|on|via|through|@)\b/gi,
+  /\b(?:my|send|here'?s?\s*my)\s*(?:number|phone|cell|mobile|email|mail|insta|ig|telegram|whatsapp|discord|snap|handle|username)\b/gi,
+  
+  // Numbers starting with specific patterns (phone number starts)
+  /\b0[1-9]\d{8,10}\b/g, // Numbers starting with 0
+  /\b\d{3}[\s.-]?\d{3}[\s.-]?\d{4}\b/g, // XXX-XXX-XXXX format
 ];
 
 // Words that suggest attempt to share contact but aren't definitive

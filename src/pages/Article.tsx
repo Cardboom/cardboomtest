@@ -304,7 +304,7 @@ const Article = () => {
           <Separator className="mb-8" />
 
           {/* Article Content */}
-          <div className="prose prose-lg max-w-none">
+          <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground/80 prose-strong:text-foreground prose-li:text-foreground/80">
             {renderContent(article.content)}
           </div>
 

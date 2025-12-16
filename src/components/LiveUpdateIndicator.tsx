@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, Wifi, WifiOff } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LiveUpdateIndicatorProps {
@@ -58,14 +58,6 @@ export const LiveUpdateIndicator = ({
       "flex items-center gap-2 text-xs text-muted-foreground",
       className
     )}>
-      {isConnected ? (
-        <Wifi className={cn(
-          "w-3 h-3 text-gain",
-          pulse && "animate-pulse"
-        )} />
-      ) : (
-        <WifiOff className="w-3 h-3 text-loss" />
-      )}
       <Clock className="w-3 h-3" />
       <span className={cn(
         "transition-all duration-300",
