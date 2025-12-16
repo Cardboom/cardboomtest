@@ -23,7 +23,7 @@ import { PriceSourceBadge } from '@/components/ui/price-tooltip';
 import { ConfidenceBadge } from '@/components/ui/confidence-badge';
 import { EmptySearchState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { MiniSparkline } from '@/components/market/MiniSparkline';
 import {
@@ -47,9 +47,10 @@ type SortField = 'rank' | 'price' | 'change' | 'volume' | 'liquidity' | 'holders
 
 const Markets = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { formatPrice } = useCurrency();
   const [cartItems, setCartItems] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [activeTab, setActiveTab] = useState<MarketTab>('all');
   const [timeInterval, setTimeInterval] = useState<TimeInterval>('24h');
   const [sortField, setSortField] = useState<SortField>('rank');
