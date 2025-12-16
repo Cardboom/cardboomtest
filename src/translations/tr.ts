@@ -14,6 +14,7 @@ export const tr: Translations = {
     deals: "Fırsatlar",
     leaderboard: "Sıralama",
     fractional: "Kısmi Sahiplik",
+    gaming: "Oyun",
     wallet: "Cüzdan",
     myProfile: "Profilim",
     myVault: "Kasam",

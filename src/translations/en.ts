@@ -13,6 +13,7 @@ export const en = {
     deals: "Deals",
     leaderboard: "Leaderboard",
     fractional: "Fractional",
+    gaming: "Gaming",
     wallet: "Wallet",
     myProfile: "My Profile",
     myVault: "My Vault",

@@ -28,6 +28,7 @@ import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
 import Admin from "./pages/Admin";
 import FractionalMarket from "./pages/FractionalMarket";
+import Gaming from "./pages/Gaming";
 import OrderSuccess from "./pages/OrderSuccess";
 import About from "./pages/About";
 import Careers from "./pages/Careers";
@@ -73,6 +74,7 @@ const App = () => (
                   <Route path="/leaderboard" element={<Leaderboard />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/fractional" element={<FractionalMarket />} />
+                  <Route path="/gaming" element={<Gaming />} />
                   <Route path="/order-success/:orderId" element={<OrderSuccess />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/careers" element={<Careers />} />
