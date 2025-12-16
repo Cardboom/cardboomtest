@@ -113,19 +113,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             </Link>
             <Link to="/markets" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <TrendingUp className="w-4 h-4" />
-              Markets
+              {t.nav.markets}
             </Link>
             <Link to="/deals" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <Sparkles className="w-4 h-4" />
-              Deals
+              {t.nav.deals}
             </Link>
             <Link to="/leaderboard" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <Trophy className="w-4 h-4" />
-              Leaderboard
+              {t.nav.leaderboard}
             </Link>
             <Link to="/fractional" className="text-foreground hover:text-primary transition-colors text-sm font-bold flex items-center gap-1.5">
               <PieChart className="w-4 h-4" />
-              Fractional
+              {t.nav.fractional}
             </Link>
             <Link to="/sell" className="text-foreground hover:text-primary transition-colors text-sm font-bold">
               {t.nav.sell}
@@ -169,28 +169,28 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </div>
                   <DropdownMenuItem onClick={() => navigate('/profile')}>
                     <User className="w-4 h-4 mr-2" />
-                    My Profile
+                    {t.nav.myProfile}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
-                    Wallet
+                    {t.nav.wallet}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/vault')}>
                     <Vault className="w-4 h-4 mr-2" />
-                    My Vault
+                    {t.nav.myVault}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/sell')}>
                     <TrendingUp className="w-4 h-4 mr-2" />
-                    My Listings
+                    {t.nav.myListings}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/referrals')}>
                     <Gift className="w-4 h-4 mr-2" />
-                    Referrals & XP
+                    {t.nav.referrals}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/verified-seller')}>
                     <BadgeCheck className="w-4 h-4 mr-2" />
-                    Verified Seller
+                    {t.nav.verifiedSeller}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
@@ -238,19 +238,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               </Link>
               <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <TrendingUp className="w-4 h-4" />
-                Markets
+                {t.nav.markets}
               </Link>
               <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Sparkles className="w-4 h-4" />
-                Deals
+                {t.nav.deals}
               </Link>
               <Link to="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Trophy className="w-4 h-4" />
-                Leaderboard
+                {t.nav.leaderboard}
               </Link>
               <Link to="/fractional" className="text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <PieChart className="w-4 h-4" />
-                Fractional
+                {t.nav.fractional}
               </Link>
               <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.sell}
@@ -262,15 +262,15 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 <>
                   <Link to="/wallet" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                     <Wallet className="w-4 h-4 inline mr-2" />
-                    Wallet
+                    {t.nav.wallet}
                   </Link>
                   <Link to="/verified-seller" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                     <BadgeCheck className="w-4 h-4 inline mr-2" />
-                    Verified Seller
+                    {t.nav.verifiedSeller}
                   </Link>
                   <Link to="/referrals" className="text-muted-foreground hover:text-foreground transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                     <Gift className="w-4 h-4 inline mr-2" />
-                    Referrals & XP
+                    {t.nav.referrals}
                   </Link>
                 </>
               )}
