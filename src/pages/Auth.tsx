@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkles, TrendingUp, Star } from 'lucide-react';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
+import cardboomLogo from '@/assets/cardboom-logo.png';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -215,15 +216,11 @@ const Auth = () => {
             <div className="space-y-8">
               {/* Logo */}
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-glow">
-                  <span className="text-primary-foreground font-display font-bold text-3xl">C</span>
-                </div>
-                <div>
-                  <h1 className="font-display text-4xl font-bold text-foreground tracking-tight">
-                    CARD<span className="text-primary">BOOM</span>
-                  </h1>
-                  <p className="text-muted-foreground">Premium Collectibles Marketplace</p>
-                </div>
+                <img 
+                  src={cardboomLogo} 
+                  alt="Cardboom" 
+                  className="h-16 w-auto object-contain"
+                />
               </div>
 
               {/* Features */}
@@ -304,14 +301,11 @@ const Auth = () => {
           >
             {/* Mobile Logo */}
             <div className="text-center mb-6 lg:hidden">
-              <div className="inline-flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-glow">
-                  <span className="text-primary-foreground font-display font-bold text-xl">C</span>
-                </div>
-                <h1 className="font-display text-2xl font-bold text-foreground">
-                  CARD<span className="text-primary">BOOM</span>
-                </h1>
-              </div>
+              <img 
+                src={cardboomLogo} 
+                alt="Cardboom" 
+                className="h-12 w-auto object-contain mx-auto"
+              />
             </div>
 
             {/* Auth Card */}
