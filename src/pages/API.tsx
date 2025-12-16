@@ -51,22 +51,70 @@ const API = () => {
     
     setLoading(true);
     try {
+      // Check wallet balance first
+      const { data: wallet, error: walletError } = await supabase
+        .from('wallets')
+        .select('id, balance')
+        .eq('user_id', user.id)
+        .single();
+
+      if (walletError || !wallet) {
+        toast.error('Could not find your wallet');
+        setLoading(false);
+        return;
+      }
+
+      if (wallet.balance < 30) {
+        toast.error(`Insufficient wallet balance. You need $30, but have $${wallet.balance.toFixed(2)}. Please top up your wallet.`);
+        navigate('/wallet');
+        setLoading(false);
+        return;
+      }
+
+      // Deduct $30 from wallet
+      const { error: deductError } = await supabase
+        .from('wallets')
+        .update({ balance: wallet.balance - 30 })
+        .eq('id', wallet.id);
+
+      if (deductError) {
+        toast.error('Failed to process payment');
+        setLoading(false);
+        return;
+      }
+
+      // Record the transaction
+      await supabase.from('transactions').insert({
+        wallet_id: wallet.id,
+        type: 'fee',
+        amount: -30,
+        description: 'API Access Subscription - 1 Month'
+      });
+
+      // Create the subscription with lower rate limits (1,000/day to prevent arbitrage)
       const { data, error } = await supabase
         .from('api_subscriptions')
         .insert({
           user_id: user.id,
           plan: 'basic',
           price_monthly: 30,
-          requests_limit: 10000,
+          requests_limit: 1000, // Lower than RapidAPI Cardmarket to prevent arbitrage
           expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Refund if subscription creation fails
+        await supabase
+          .from('wallets')
+          .update({ balance: wallet.balance })
+          .eq('id', wallet.id);
+        throw error;
+      }
       
       setSubscription(data);
-      toast.success('API subscription activated!');
+      toast.success('API subscription activated! $30 deducted from wallet.');
     } catch (error: any) {
       toast.error(error.message || 'Failed to subscribe');
     } finally {
@@ -135,7 +183,7 @@ print(data)`
                 <ul className="text-left space-y-3 mb-6">
                   <li className="flex items-center gap-2">
                     <Check className="h-5 w-5 text-green-500" />
-                    <span>10,000 requests/day</span>
+                    <span>1,000 requests/day</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-5 w-5 text-green-500" />
