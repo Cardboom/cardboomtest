@@ -1417,6 +1417,82 @@ export type Database = {
         }
         Relationships: []
       }
+      receipts: {
+        Row: {
+          card_image_url: string | null
+          card_name: string
+          created_at: string
+          deal_price: number
+          grade: string | null
+          id: string
+          listing_id: string | null
+          market_delta: number | null
+          market_item_id: string | null
+          market_price: number
+          order_id: string | null
+          receipt_type: string
+          share_code: string
+          user_id: string | null
+          views_count: number | null
+        }
+        Insert: {
+          card_image_url?: string | null
+          card_name: string
+          created_at?: string
+          deal_price: number
+          grade?: string | null
+          id?: string
+          listing_id?: string | null
+          market_delta?: number | null
+          market_item_id?: string | null
+          market_price: number
+          order_id?: string | null
+          receipt_type?: string
+          share_code?: string
+          user_id?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          card_image_url?: string | null
+          card_name?: string
+          created_at?: string
+          deal_price?: number
+          grade?: string | null
+          id?: string
+          listing_id?: string | null
+          market_delta?: number | null
+          market_item_id?: string | null
+          market_price?: number
+          order_id?: string | null
+          receipt_type?: string
+          share_code?: string
+          user_id?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_commissions: {
         Row: {
           commission_amount: number
@@ -1505,6 +1581,62 @@ export type Database = {
           tier?: string | null
         }
         Relationships: []
+      }
+      regret_simulations: {
+        Row: {
+          card_name: string
+          created_at: string
+          current_price: number
+          current_value: number
+          historical_price: number
+          id: string
+          investment_amount: number
+          investment_date: string
+          market_item_id: string | null
+          profit_loss: number
+          profit_loss_percent: number
+          share_code: string
+          views_count: number | null
+        }
+        Insert: {
+          card_name: string
+          created_at?: string
+          current_price: number
+          current_value: number
+          historical_price: number
+          id?: string
+          investment_amount: number
+          investment_date: string
+          market_item_id?: string | null
+          profit_loss: number
+          profit_loss_percent: number
+          share_code?: string
+          views_count?: number | null
+        }
+        Update: {
+          card_name?: string
+          created_at?: string
+          current_price?: number
+          current_value?: number
+          historical_price?: number
+          id?: string
+          investment_amount?: number
+          investment_date?: string
+          market_item_id?: string | null
+          profit_loss?: number
+          profit_loss_percent?: number
+          share_code?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regret_simulations_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
