@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAchievementNotifications } from '@/contexts/AchievementContext';
 
 export const useFollows = (targetUserId?: string) => {
   const [isFollowing, setIsFollowing] = useState(false);
@@ -8,6 +9,22 @@ export const useFollows = (targetUserId?: string) => {
   const [followingCount, setFollowingCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { checkAndAwardAchievement } = useAchievementNotifications();
+
+  const checkFollowerAchievements = async (userId: string) => {
+    const { count } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', userId);
+
+    const followerCount = count || 0;
+    if (followerCount >= 1) await checkAndAwardAchievement('followers_1', userId);
+    if (followerCount >= 10) await checkAndAwardAchievement('followers_10', userId);
+    if (followerCount >= 50) await checkAndAwardAchievement('followers_50', userId);
+    if (followerCount >= 100) await checkAndAwardAchievement('followers_100', userId);
+    if (followerCount >= 500) await checkAndAwardAchievement('followers_500', userId);
+    if (followerCount >= 1000) await checkAndAwardAchievement('followers_1000', userId);
+  };
 
   const checkFollowStatus = async () => {
     if (!targetUserId) return;
@@ -94,6 +111,14 @@ export const useFollows = (targetUserId?: string) => {
 
         setIsFollowing(true);
         setFollowersCount(prev => prev + 1);
+
+        // Check follower achievements for the target user
+        try {
+          await checkFollowerAchievements(targetUserId);
+        } catch (achievementError) {
+          console.error('Error checking follower achievements:', achievementError);
+        }
+
         toast({
           title: 'Following!',
           description: 'You will now see updates from this seller',

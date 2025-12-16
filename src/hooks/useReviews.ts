@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAchievementNotifications } from '@/contexts/AchievementContext';
 
 interface Review {
   id: string;
@@ -24,6 +25,20 @@ export const useReviews = (sellerId?: string) => {
   const [sellerRating, setSellerRating] = useState<SellerRating>({ avg_rating: 0, review_count: 0 });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { checkAndAwardAchievement } = useAchievementNotifications();
+
+  const checkReviewAchievements = async (userId: string) => {
+    const { count } = await supabase
+      .from('reviews')
+      .select('*', { count: 'exact', head: true })
+      .eq('reviewer_id', userId);
+
+    const reviewCount = count || 0;
+    if (reviewCount === 1) await checkAndAwardAchievement('first_review', userId);
+    if (reviewCount >= 10) await checkAndAwardAchievement('reviews_10', userId);
+    if (reviewCount >= 50) await checkAndAwardAchievement('reviews_50', userId);
+    if (reviewCount >= 100) await checkAndAwardAchievement('reviews_100', userId);
+  };
 
   const fetchReviews = async () => {
     if (!sellerId) {
@@ -89,6 +104,13 @@ export const useReviews = (sellerId?: string) => {
         });
 
       if (error) throw error;
+
+      // Check review achievements
+      try {
+        await checkReviewAchievements(user.id);
+      } catch (achievementError) {
+        console.error('Error checking review achievements:', achievementError);
+      }
 
       toast({
         title: 'Review Submitted',
