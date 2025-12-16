@@ -169,23 +169,37 @@ serve(async (req) => {
           
           if (marketItems.length === 0) continue;
           
+          // Try batch insert, ignore duplicates
           const { data, error } = await supabase
             .from('market_items')
-            .upsert(marketItems, { 
-              onConflict: 'external_id',
-              ignoreDuplicates: false 
-            })
+            .insert(marketItems)
             .select('id');
           
           if (error) {
-            console.error(`Batch error for ${cat}:`, error.message);
-            errors += batch.length;
+            // If batch fails due to duplicates, try one by one
+            if (error.message.includes('duplicate') || error.message.includes('unique')) {
+              for (const item of marketItems) {
+                const { error: singleError } = await supabase
+                  .from('market_items')
+                  .insert(item);
+                if (!singleError) imported++;
+                else errors++;
+              }
+            } else {
+              console.error(`Batch error for ${cat}:`, error.message);
+              errors += marketItems.length;
+            }
           } else {
             imported += data?.length || 0;
           }
           
+          // Log progress every 1000 items
+          if ((i + batchSize) % 1000 === 0) {
+            console.log(`Progress ${cat}: ${i + batchSize}/${limitedRecords.length}`);
+          }
+          
           // Small delay to avoid rate limiting
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise(resolve => setTimeout(resolve, 50));
         }
         
         results[cat] = { imported, errors };
