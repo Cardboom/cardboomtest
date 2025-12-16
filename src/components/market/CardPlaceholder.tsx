@@ -69,17 +69,17 @@ export function CardPlaceholder({
         "bg-gradient-to-br",
         gradient,
         "border border-border/50 rounded-lg overflow-hidden",
-        "min-h-[100px] p-3",
+        "min-h-[180px] p-4",
         className
       )}
     >
       {/* Category icon */}
-      <div className="text-2xl mb-1 opacity-60">
+      <div className="text-4xl mb-2 opacity-70">
         {categoryIcon}
       </div>
       
       {/* Card name */}
-      <p className="text-xs font-medium text-center text-foreground/80 line-clamp-2 mb-1">
+      <p className="text-sm font-medium text-center text-foreground/80 line-clamp-2 mb-1 px-2">
         {shortName}
       </p>
       
@@ -140,11 +140,11 @@ export function InlinePlaceholder({
         "bg-gradient-to-br",
         gradient,
         "border border-border/30 rounded",
-        "w-10 h-10",
+        "w-12 h-12",
         className
       )}
     >
-      <span className="text-lg opacity-60">{categoryIcon}</span>
+      <span className="text-xl opacity-70">{categoryIcon}</span>
     </div>
   );
 }
