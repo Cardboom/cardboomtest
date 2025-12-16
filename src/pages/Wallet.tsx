@@ -9,6 +9,7 @@ import { Wallet, ArrowUpRight, ArrowDownLeft, History, Plus, CreditCard, Trendin
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
+import { WireTransferDialog } from '@/components/WireTransferDialog';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { toast } from 'sonner';
 
@@ -29,7 +30,8 @@ const WalletPage = () => {
   const [balance, setBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showTopUp, setShowTopUp] = useState(false);
+  const [showCardTopUp, setShowCardTopUp] = useState(false);
+  const [showWireTransfer, setShowWireTransfer] = useState(false);
   const [user, setUser] = useState<any>(null);
 
   // Handle payment callback from iyzico
@@ -185,7 +187,7 @@ const WalletPage = () => {
                   </div>
                 </div>
 
-                <Button onClick={() => setShowTopUp(true)} size="lg" className="gap-2 shadow-glow h-14 px-8">
+                <Button onClick={() => setShowCardTopUp(true)} size="lg" className="gap-2 shadow-glow h-14 px-8">
                   <Plus className="h-5 w-5" />
                   Add Funds
                 </Button>
@@ -199,7 +201,7 @@ const WalletPage = () => {
               <h3 className="font-display font-semibold text-foreground mb-4">Quick Add Funds</h3>
               <div className="grid sm:grid-cols-2 gap-4">
                 <button
-                  onClick={() => setShowTopUp(true)}
+                  onClick={() => setShowCardTopUp(true)}
                   className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-secondary/30 transition-all text-left"
                 >
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -207,19 +209,19 @@ const WalletPage = () => {
                   </div>
                   <div>
                     <p className="font-semibold text-foreground">Credit / Debit Card</p>
-                    <p className="text-sm text-muted-foreground">Instant deposit with card</p>
+                    <p className="text-sm text-muted-foreground">Instant • USD & TRY • 6.5% fee</p>
                   </div>
                 </button>
                 <button
-                  onClick={() => setShowTopUp(true)}
+                  onClick={() => setShowWireTransfer(true)}
                   className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-secondary/30 transition-all text-left"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <Banknote className="h-6 w-6 text-primary" />
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                    <Banknote className="h-6 w-6 text-blue-500" />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">Bank Transfer</p>
-                    <p className="text-sm text-muted-foreground">Transfer from your bank</p>
+                    <p className="font-semibold text-foreground">Wire Transfer (EFT/Havale)</p>
+                    <p className="text-sm text-muted-foreground">TRY only • Domestic TR • 3% fee</p>
                   </div>
                 </button>
               </div>
@@ -296,9 +298,14 @@ const WalletPage = () => {
       <Footer />
 
       <WalletTopUpDialog 
-        open={showTopUp} 
-        onOpenChange={setShowTopUp}
+        open={showCardTopUp} 
+        onOpenChange={setShowCardTopUp}
         onSuccess={() => user && fetchWalletData(user.id)}
+      />
+      
+      <WireTransferDialog
+        open={showWireTransfer}
+        onOpenChange={setShowWireTransfer}
       />
     </div>
   );

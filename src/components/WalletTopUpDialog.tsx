@@ -13,7 +13,7 @@ interface WalletTopUpDialogProps {
   onSuccess: () => void;
 }
 
-const TOPUP_FEE_PERCENT = 7;
+const TOPUP_FEE_PERCENT = 6.5;
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
   const [amount, setAmount] = useState('');
@@ -168,7 +168,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
             {step === '3ds' && '3D Secure Verification'}
           </DialogTitle>
           <DialogDescription>
-            {step === 'amount' && 'Top up your wallet with credit card. 7% processing fee applies.'}
+            {step === 'amount' && 'Top up your wallet with credit card. 6.5% processing fee applies.'}
             {step === 'card' && 'Enter your card details securely.'}
             {step === '3ds' && 'Complete the 3D secure verification with your bank.'}
           </DialogDescription>
@@ -220,7 +220,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
                   <span>{formatCurrency(numAmount)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
-                  <span>Processing Fee (7%)</span>
+                  <span>Processing Fee (6.5%)</span>
                   <span>{formatCurrency(fee)}</span>
                 </div>
                 <div className="flex justify-between font-medium text-foreground border-t border-border pt-2">
