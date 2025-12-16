@@ -148,8 +148,15 @@ const Index = () => {
   }, [marketCollectibles, listingCollectibles]);
 
   const filteredCollectibles = useMemo(() => {
-    if (selectedCategory === 'all') return collectiblesWithLivePrices;
-    return collectiblesWithLivePrices.filter((item) => item.category === selectedCategory);
+    // Only show items with real images (not placeholder)
+    let items = collectiblesWithLivePrices.filter((item) => 
+      item.image && item.image !== '/placeholder.svg' && !item.image.includes('placeholder')
+    );
+    
+    if (selectedCategory !== 'all') {
+      items = items.filter((item) => item.category === selectedCategory);
+    }
+    return items;
   }, [selectedCategory, collectiblesWithLivePrices]);
 
   const handleAddToCart = (collectible: Collectible) => {
@@ -176,12 +183,12 @@ const Index = () => {
   };
 
   const topGainers = collectiblesWithLivePrices
-    .filter((item) => item.priceChange > 0)
+    .filter((item) => item.priceChange > 0 && item.image && item.image !== '/placeholder.svg' && !item.image.includes('placeholder'))
     .sort((a, b) => b.priceChange - a.priceChange)
     .slice(0, 5);
 
   const topLosers = collectiblesWithLivePrices
-    .filter((item) => item.priceChange < 0)
+    .filter((item) => item.priceChange < 0 && item.image && item.image !== '/placeholder.svg' && !item.image.includes('placeholder'))
     .sort((a, b) => a.priceChange - b.priceChange)
     .slice(0, 5);
 
