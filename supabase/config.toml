@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.sync-pokemon-images]
 verify_jwt = false
+
+[functions.sync-cardmarket-images]
+verify_jwt = false
