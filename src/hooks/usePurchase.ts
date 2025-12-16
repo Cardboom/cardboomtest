@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { useAchievementTriggers } from './useAchievementTriggers';
 
 interface PurchaseParams {
   listingId: string;
@@ -25,6 +26,14 @@ interface PurchaseParams {
 export const usePurchase = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { 
+    checkPurchaseAchievements, 
+    checkSaleAchievements, 
+    checkCollectionAchievements,
+    checkVaultAchievements,
+    checkSpendingAchievements,
+    checkEarningsAchievements 
+  } = useAchievementTriggers();
 
   const calculateFees = (price: number) => {
     const buyerFeeRate = 0.05; // 5% buyer fee
@@ -206,6 +215,20 @@ export const usePurchase = () => {
             order_id: order.id,
             image_url: params.imageUrl,
           });
+      }
+
+      // Check achievements for buyer and seller
+      try {
+        await checkPurchaseAchievements(buyerId);
+        await checkCollectionAchievements(buyerId);
+        await checkSpendingAchievements(buyerId);
+        await checkSaleAchievements(params.sellerId);
+        await checkEarningsAchievements(params.sellerId);
+        if (params.deliveryOption === 'vault') {
+          await checkVaultAchievements(buyerId);
+        }
+      } catch (achievementError) {
+        console.error('Error checking achievements:', achievementError);
       }
 
       toast.success('Purchase successful!');

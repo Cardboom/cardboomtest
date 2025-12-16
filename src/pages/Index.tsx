@@ -21,7 +21,7 @@ import { useMarketItems, useListings } from '@/hooks/useMarketItems';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useDailyStreak } from '@/hooks/useDailyStreak';
+import { useDailyStreakWithAchievements } from '@/hooks/useDailyStreakWithAchievements';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart } from 'lucide-react';
@@ -44,7 +44,7 @@ const Index = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
   
-  useDailyStreak();
+  useDailyStreakWithAchievements();
 
   // Check auth state
   useEffect(() => {

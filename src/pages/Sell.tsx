@@ -18,6 +18,7 @@ import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Uploa
 import { CardScanner } from '@/components/CardScanner';
 import { toast } from 'sonner';
 import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
+import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
 
 interface Listing {
   id: string;
@@ -39,6 +40,7 @@ const conditions = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Fair', 'Poor'];
 
 const SellPage = () => {
   const navigate = useNavigate();
+  const { checkListingAchievements } = useAchievementTriggers();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -217,6 +219,13 @@ const SellPage = () => {
           console.error('Error creating fractional listing:', fractionalError);
           toast.error('Listing created but fractional setup failed');
         }
+      }
+
+      // Check listing achievements
+      try {
+        await checkListingAchievements(session.user.id);
+      } catch (achievementError) {
+        console.error('Error checking achievements:', achievementError);
       }
 
       toast.success(formData.enableFractional ? 'Fractional listing created successfully!' : 'Listing created successfully!');
