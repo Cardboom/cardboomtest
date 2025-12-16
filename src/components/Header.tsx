@@ -41,6 +41,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userXP, setUserXP] = useState(0);
   const [userLevel, setUserLevel] = useState(1);
@@ -156,6 +157,14 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Input
                 type="text"
                 placeholder={t.nav.search}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    navigate(`/markets?search=${encodeURIComponent(searchQuery.trim())}`);
+                    setSearchQuery('');
+                  }
+                }}
                 className="w-full pl-10 pr-4 h-10 bg-muted/50 hover:bg-muted/70 border-border/50 focus:border-primary/50 focus:bg-background rounded-lg text-sm placeholder:text-muted-foreground/70 transition-all"
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
