@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Header } from '@/components/Header';
 import { MarketTicker } from '@/components/MarketTicker';
@@ -26,12 +26,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
 
 const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
 
 const Index = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const marketRef = useRef<HTMLDivElement>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
@@ -39,6 +43,30 @@ const Index = () => {
   const [showWaitlist, setShowWaitlist] = useState(false);
   
   useDailyStreak();
+
+  // Check auth state
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Scroll to market section if user is logged in
+  useEffect(() => {
+    if (user && marketRef.current) {
+      setTimeout(() => {
+        marketRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [user]);
   
   useEffect(() => {
     const dismissed = sessionStorage.getItem(WAITLIST_DISMISSED_KEY);
@@ -125,11 +153,12 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        <HeroSection />
+        {/* Only show hero for non-logged-in users */}
+        {!user && <HeroSection />}
         
         {/* Live Market Section */}
         <ScrollReveal>
-          <section className="py-12 border-t border-border/50 bg-muted/20">
+          <section ref={marketRef} className="py-12 border-t border-border/50 bg-muted/20">
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between mb-8">
                 <div>
