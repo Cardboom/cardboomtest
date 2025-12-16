@@ -117,11 +117,11 @@ export const CollectibleModal = ({ collectible, onClose, onAddToCart }: Collecti
               </div>
             </div>
 
-            {/* Social Proof */}
+            {/* Social Proof - stable numbers based on item id */}
             <CardSocialProof
               itemId={collectible.id}
-              views={Math.floor(Math.random() * 500) + 100}
-              watchlistCount={Math.floor(Math.random() * 100) + 20}
+              views={2 + (collectible.id.charCodeAt(0) % 19)}
+              watchlistCount={2 + (collectible.id.charCodeAt(1) % 19)}
               compact
               className="mt-2"
             />

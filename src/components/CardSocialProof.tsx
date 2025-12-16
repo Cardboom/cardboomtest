@@ -39,15 +39,10 @@ export const CardSocialProof = ({
   // Determine heat level
   const heatLevel = socialScore >= 80 ? 'hot' : socialScore >= 50 ? 'warm' : 'normal';
 
-  // Simulate live view count updates
+  // Use stable view count - no random simulation
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() > 0.7) {
-        setDisplayViews(prev => prev + Math.floor(Math.random() * 3));
-      }
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    setDisplayViews(views);
+  }, [views]);
 
   // Check if item is "hot"
   useEffect(() => {

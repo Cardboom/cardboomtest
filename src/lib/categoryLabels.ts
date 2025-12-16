@@ -64,6 +64,7 @@ export const mainCategories = [
   { id: 'yugioh', label: 'Yu-Gi-Oh!', icon: '🔮', count: 9690 },
   { id: 'pokemon', label: 'Pokémon TCG', icon: '⚡', count: 9151 },
   { id: 'gaming', label: 'Video Games', icon: '🎮', count: 7006 },
+  { id: 'lol-riftbound', label: 'LoL Riftbound', icon: '🎮', count: 16 },
   { id: 'lorcana', label: 'Disney Lorcana', icon: '✨', count: 8 },
   { id: 'one-piece', label: 'One Piece TCG', icon: '🏴‍☠️', count: 9 },
   { id: 'sports-nba', label: 'NBA Cards', icon: '🏀', count: 8 },
