@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Trophy, Sparkles, Timer, Gift } from 'lucide-react';
+import { Trophy, Sparkles, Timer, Gift, Shield, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { cn } from '@/lib/utils';
 
 export const TournamentBanner = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -58,34 +57,46 @@ export const TournamentBanner = () => {
           <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
             <Badge className="bg-yellow-500 text-yellow-950 border-0">
               <Gift className="w-3 h-3 mr-1" />
-              MONTHLY TOURNAMENT
+              LAUNCH TOURNAMENT
             </Badge>
           </div>
           
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-2">
-            Win ₺50,000 in Cards!
+            Win ₺5,000 Worth of Cards!
           </h2>
           
           <p className="text-primary-foreground/80 mb-4 max-w-lg">
-            Sell the highest volume of cards this month and win the grand prize. 
-            Top 10 sellers all receive rewards!
+            Our launch tournament for sellers with ₺50,000 or less in monthly volume. 
+            Top sellers win amazing card prizes!
           </p>
 
           {/* Prize tiers */}
           <div className="flex flex-wrap gap-2 justify-center lg:justify-start mb-4">
             <Badge variant="outline" className="bg-yellow-500/20 border-yellow-500/50 text-primary-foreground">
-              🥇 1st: ₺50,000
+              🥇 1st: ₺2,500 in cards
             </Badge>
             <Badge variant="outline" className="bg-gray-400/20 border-gray-400/50 text-primary-foreground">
-              🥈 2nd: ₺25,000
+              🥈 2nd: ₺1,500 in cards
             </Badge>
             <Badge variant="outline" className="bg-amber-600/20 border-amber-600/50 text-primary-foreground">
-              🥉 3rd: ₺10,000
+              🥉 3rd: ₺1,000 in cards
             </Badge>
           </div>
 
+          {/* Rules highlight */}
+          <div className="flex flex-wrap gap-3 justify-center lg:justify-start text-xs">
+            <div className="flex items-center gap-1 bg-primary-foreground/10 px-2 py-1 rounded-full">
+              <Shield className="w-3 h-3" />
+              <span>Max ₺50K volume</span>
+            </div>
+            <div className="flex items-center gap-1 bg-primary-foreground/10 px-2 py-1 rounded-full">
+              <Package className="w-3 h-3" />
+              <span>CardBoom sales or Vault hold</span>
+            </div>
+          </div>
+
           {/* Progress bar */}
-          <div className="max-w-md mx-auto lg:mx-0">
+          <div className="max-w-md mx-auto lg:mx-0 mt-4">
             <Progress value={progressPercent} className="h-2 bg-primary-foreground/20" />
             <p className="text-xs text-primary-foreground/60 mt-1">
               {Math.round(progressPercent)}% of the month completed
