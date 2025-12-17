@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 interface Subscription {
   id: string;
   user_id: string;
-  tier: 'free' | 'pro';
+  tier: 'free' | 'pro' | 'enterprise';
   price_monthly: number;
   started_at: string;
   expires_at: string | null;
@@ -51,7 +51,14 @@ export const useSubscription = (userId?: string) => {
 
   const isPro = () => {
     if (!subscription) return false;
-    if (subscription.tier !== 'pro') return false;
+    if (subscription.tier !== 'pro' && subscription.tier !== 'enterprise') return false;
+    if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) return false;
+    return true;
+  };
+
+  const isEnterprise = () => {
+    if (!subscription) return false;
+    if (subscription.tier !== 'enterprise') return false;
     if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) return false;
     return true;
   };
@@ -165,12 +172,20 @@ export const useSubscription = (userId?: string) => {
   };
 
   const getFeeRates = () => {
+    if (isEnterprise()) {
+      return {
+        buyerFeeRate: 0.015, // 1.5% for Enterprise
+        sellerFeeRate: 0.03, // 3% for Enterprise
+        cardFeeRate: 0.03, // 3% for Enterprise
+        wireFeeRate: 0.01, // 1% for Enterprise
+      };
+    }
     if (isPro()) {
       return {
         buyerFeeRate: 0.025, // 2.5% for Pro
         sellerFeeRate: 0.045, // 4.5% for Pro
-        cardFeeRate: 0.045, // 4.5% for Pro (vs standard ~6%)
-        wireFeeRate: 0.015, // 1.5% for Pro (vs standard ~3%)
+        cardFeeRate: 0.045, // 4.5% for Pro
+        wireFeeRate: 0.015, // 1.5% for Pro
       };
     }
     return {
@@ -185,10 +200,12 @@ export const useSubscription = (userId?: string) => {
     subscription,
     loading,
     isPro: isPro(),
+    isEnterprise: isEnterprise(),
     subscribe,
     cancelAutoRenew,
     getFeeRates,
     PRO_PRICE,
+    ENTERPRISE_PRICE: 20,
     refetch: fetchSubscription,
   };
 };
