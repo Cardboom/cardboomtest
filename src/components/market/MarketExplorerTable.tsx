@@ -33,7 +33,7 @@ interface MarketExplorerTableProps {
   filters: MarketFilters;
   sortBy: SortOption;
   sortOrder: 'asc' | 'desc';
-  filterType: 'all' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers';
+  filterType: 'all' | 'tcg' | 'sports' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers';
 }
 
 export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: MarketExplorerTableProps) => {
@@ -89,6 +89,10 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
           query = query.lt('change_24h', 0);
         } else if (filterType === 'figures') {
           query = query.eq('category', 'figures');
+        } else if (filterType === 'tcg') {
+          query = query.in('category', ['pokemon', 'yugioh', 'mtg', 'lorcana', 'one-piece', 'lol-riftbound']);
+        } else if (filterType === 'sports') {
+          query = query.in('category', ['sports-nba', 'sports-nfl', 'sports-mlb', 'sports-wnba']);
         }
 
         // Apply sorting

@@ -8,9 +8,9 @@ import { MarketExplorerTable } from '@/components/market/MarketExplorerTable';
 import { MarketExplorerStats } from '@/components/market/MarketExplorerStats';
 import { ListingsTable } from '@/components/market/ListingsTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, TrendingDown, BarChart3, Award, Layers, ShoppingBag } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Award, Layers, ShoppingBag, Sparkles, Trophy } from 'lucide-react';
 
-export type MarketTab = 'all' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers' | 'forsale';
+export type MarketTab = 'all' | 'tcg' | 'sports' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers' | 'forsale';
 export type SortOption = 'change_24h' | 'change_7d' | 'change_30d' | 'price' | 'volume' | 'views' | 'liquidity' | 'recent';
 
 export interface MarketFilters {
@@ -83,6 +83,14 @@ const Explorer = () => {
                 <Layers className="w-4 h-4 mr-2" />
                 All Cards
               </TabsTrigger>
+              <TabsTrigger value="tcg" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Sparkles className="w-4 h-4 mr-2" />
+                TCG Collectibles
+              </TabsTrigger>
+              <TabsTrigger value="sports" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Trophy className="w-4 h-4 mr-2" />
+                Sports Cards
+              </TabsTrigger>
               <TabsTrigger value="graded" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Award className="w-4 h-4 mr-2" />
                 Graded (PSA)
@@ -130,6 +138,22 @@ const Explorer = () => {
                 sortBy={sortBy} 
                 sortOrder={sortOrder}
                 filterType="all"
+              />
+            </TabsContent>
+            <TabsContent value="tcg" className="mt-0">
+              <MarketExplorerTable 
+                filters={filters} 
+                sortBy={sortBy} 
+                sortOrder={sortOrder}
+                filterType="tcg"
+              />
+            </TabsContent>
+            <TabsContent value="sports" className="mt-0">
+              <MarketExplorerTable 
+                filters={filters} 
+                sortBy={sortBy} 
+                sortOrder={sortOrder}
+                filterType="sports"
               />
             </TabsContent>
             <TabsContent value="graded" className="mt-0">
