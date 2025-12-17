@@ -537,6 +537,8 @@ const ItemDetail = () => {
             <ItemPriceChart 
               itemId={id || ''} 
               productId={item.external_id || id || ''} 
+              itemName={item.name}
+              category={item.category}
               currentPrice={item.current_price}
             />
           </TabsContent>
