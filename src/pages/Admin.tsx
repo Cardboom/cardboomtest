@@ -29,7 +29,8 @@ import {
   Key,
   MessageCircle,
   HelpCircle,
-  Bot
+  Bot,
+  Bug
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
@@ -40,6 +41,7 @@ import { APIAnalytics } from '@/components/admin/APIAnalytics';
 import { SupportTickets } from '@/components/admin/SupportTickets';
 import { AutoBuyManager } from '@/components/admin/AutoBuyManager';
 import { DataSyncManager } from '@/components/admin/DataSyncManager';
+import { DiagnosticsDashboard } from '@/components/admin/DiagnosticsDashboard';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -253,6 +255,10 @@ const Admin = () => {
               <Database className="w-4 h-4" />
               Data Sync
             </TabsTrigger>
+            <TabsTrigger value="diagnostics" className="gap-2">
+              <Bug className="w-4 h-4" />
+              Diagnostics
+            </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
               Price Management
@@ -285,6 +291,10 @@ const Admin = () => {
 
           <TabsContent value="datasync">
             <DataSyncManager />
+          </TabsContent>
+
+          <TabsContent value="diagnostics">
+            <DiagnosticsDashboard />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">

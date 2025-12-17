@@ -9,6 +9,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { PriceProvider } from "@/contexts/PriceContext";
 import { AchievementProvider } from "@/contexts/AchievementContext";
+import { DebugProvider } from "@/contexts/DebugContext";
 import { CookieConsent } from "@/components/CookieConsent";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { HelmetProvider } from "react-helmet-async";
