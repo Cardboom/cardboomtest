@@ -102,9 +102,33 @@ Admin → Diagnostics → "Clear Cache" button
 └─────────────────┘
 ```
 
-## Scheduled Refresh (TODO)
+## Scheduled Refresh Jobs
 
-Configure via Supabase cron:
-- Top viewed cards: every 15 minutes
-- Portfolio items: every 30 minutes  
-- Full catalog: nightly at 2am UTC
+### Edge Functions
+- `refresh-prices` - Updates price changes for items
+- `validate-images` - Checks and fixes broken image URLs
+- `backfill-attributes` - Fills missing card attributes
+
+### Manual Trigger
+```bash
+# Refresh top viewed items
+curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/refresh-prices \
+  -H "Authorization: Bearer ANON_KEY" \
+  -d '{"type": "top_viewed", "limit": 100}'
+
+# Refresh portfolio items
+curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/refresh-prices \
+  -d '{"type": "portfolio"}'
+
+# Validate images
+curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/validate-images
+
+# Backfill attributes
+curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/backfill-attributes
+```
+
+### Cron Schedule (optional)
+To enable automatic refreshes, set up pg_cron:
+- Top viewed: `*/15 * * * *` (every 15 min)
+- Portfolio: `*/30 * * * *` (every 30 min)
+- Full catalog: `0 2 * * *` (daily at 2am UTC)
