@@ -197,6 +197,8 @@ export const tr: Translations = {
     safety: "Güvenlik",
     terms: "Şartlar",
     privacy: "Gizlilik",
+    userAgreement: "Kullanıcı Sözleşmesi",
+    distanceSales: "Mesafeli Satış",
     copyright: "© 2025 Brainbaby Bilişim A.Ş. Tüm hakları saklıdır.",
     address: "Iran Caddesi 55/9, Gaziosmanpaşa Mahallesi, Çankaya, Ankara, Türkiye",
   },

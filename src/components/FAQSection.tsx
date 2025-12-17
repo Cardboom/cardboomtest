@@ -33,11 +33,11 @@ const faqItems = [
   },
   {
     question: "What gaming services does CardBoom offer?",
-    answer: "CardBoom Gaming Hub offers in-game currency, boosting services, and coaching for popular games including Valorant, PUBG Mobile, League of Legends, and more. Purchase Valorant Points (VP), PUBG UC, or connect with verified coaches for rank boosting and skill improvement. All gaming transactions are protected by our buyer guarantee."
+    answer: "CardBoom Gaming Hub offers in-game currency and coaching services for popular games including Valorant, PUBG Mobile, League of Legends, and more. Purchase Valorant Points (VP), PUBG UC, or connect with verified coaches for personalized training and VOD reviews. All gaming transactions are protected by our buyer guarantee."
   },
   {
-    question: "How does Valorant boosting work on CardBoom?",
-    answer: "Our Valorant boosting service connects you with verified, high-rank players who can help improve your competitive rank. Choose between account boosting (they play on your account) or duo boosting (play together). All boosters are vetted, and we offer rank guarantees. Pricing varies by current rank and target rank. Your account credentials are encrypted and never stored."
+    question: "How does coaching work on CardBoom?",
+    answer: "Our coaching services connect you with verified, high-rank players who provide personalized training sessions and VOD reviews. Coaches offer 1-on-1 sessions covering game sense, mechanics, strategy, and more. All coaches are vetted for their expertise and communication skills. Browse coach profiles, read reviews, and book sessions directly through the platform."
   },
   {
     question: "What TCG categories does CardBoom support?",

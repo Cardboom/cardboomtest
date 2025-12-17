@@ -197,6 +197,8 @@ export const ar: Translations = {
     safety: "الأمان",
     terms: "الشروط",
     privacy: "الخصوصية",
+    userAgreement: "اتفاقية المستخدم",
+    distanceSales: "البيع عن بُعد",
     copyright: "© 2025 Brainbaby Bilişim A.Ş. جميع الحقوق محفوظة.",
     address: "Iran Caddesi 55/9, Gaziosmanpaşa Mahallesi, Çankaya, Ankara, Türkiye",
   },

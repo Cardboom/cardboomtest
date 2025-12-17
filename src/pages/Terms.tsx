@@ -64,7 +64,7 @@ const Terms = () => {
 
                 <h2 className="text-xl font-semibold mb-4">8. Gaming Services</h2>
                 <p className="text-muted-foreground mb-6">
-                  Gaming services including game currency and boosting services are provided as-is. Users are responsible for ensuring compliance with the terms of service of the respective game publishers. Brainbaby Bilişim A.Ş. is not affiliated with game publishers.
+                  Gaming services including game currency and coaching services are provided as-is. Users are responsible for ensuring compliance with the terms of service of the respective game publishers. Brainbaby Bilişim A.Ş. is not affiliated with game publishers.
                 </p>
 
                 <h2 className="text-xl font-semibold mb-4">9. Dispute Resolution</h2>
