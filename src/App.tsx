@@ -54,6 +54,7 @@ import API from "./pages/API";
 import Article from "./pages/Article";
 import Achievements from "./pages/Achievements";
 import Pricing from "./pages/Pricing";
+import Discussions from "./pages/Discussions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -125,6 +126,7 @@ const AppContent = () => {
           <Route path="/blog/:slug" element={<Article />} />
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/discussions" element={<Discussions />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

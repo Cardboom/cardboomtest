@@ -303,6 +303,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               {t.nav.gaming}
             </Link>
             <Link 
+              to="/discussions" 
+              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md flex items-center gap-1.5"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Discussions
+            </Link>
+            <Link 
               to="/sell" 
               className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
             >
@@ -482,6 +489,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Link to="/gaming" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Gamepad2 className="w-4 h-4" />
                 {t.nav.gaming}
+              </Link>
+              <Link to="/discussions" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <MessageCircle className="w-4 h-4" />
+                Discussions
               </Link>
               
               {/* Sell & Portfolio */}
