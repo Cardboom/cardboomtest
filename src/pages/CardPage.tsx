@@ -6,7 +6,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { 
   TrendingUp, TrendingDown, Users, Clock, 
   Loader2, Bell, Plus,
@@ -48,48 +48,101 @@ const CardPage = () => {
 
   // Parse slug to extract search components
   const { searchTerms, possibleYear, possibleCardNumber } = parseSlug(slug || '');
+  
+  // Split search terms into words for flexible matching (filter short words)
+  const searchWords = searchTerms.split(' ').filter(w => w.length >= 3);
 
-  // Fetch item by slug resolution - prioritize exact matches
+  // Fetch item by slug resolution - improved matching logic
   const { data: item, isLoading, isError } = useQuery({
     queryKey: ['card-page-seo', category, slug],
     queryFn: async () => {
       const normalizedCategory = normalizeCategory(category || '');
       
-      // First: Try to find by external_id if we have a card number
+      // Strategy 1: Try exact external_id match
       if (possibleCardNumber) {
         const { data: exactMatch } = await supabase
           .from('market_items')
           .select('*')
-          .eq('category', normalizedCategory)
+          .ilike('category', `${normalizedCategory}%`)
           .ilike('external_id', `%${possibleCardNumber}%`)
-          .ilike('name', `%${searchTerms.split(' ')[0]}%`)
           .limit(1)
           .maybeSingle();
         
         if (exactMatch) return exactMatch;
       }
 
-      // Second: Search by name similarity
-      const { data, error } = await supabase
+      // Strategy 2: Try matching with full search terms
+      const { data: fullMatch } = await supabase
         .from('market_items')
         .select('*')
-        .eq('category', normalizedCategory)
+        .ilike('category', `${normalizedCategory}%`)
         .ilike('name', `%${searchTerms}%`)
-        .limit(10);
+        .limit(1)
+        .maybeSingle();
       
-      if (error) throw error;
-      if (!data || data.length === 0) return null;
+      if (fullMatch) return fullMatch;
 
-      // If multiple matches, try to find best match using year/set
-      if (data.length > 1 && possibleYear) {
-        const yearMatch = data.find(d => 
-          d.series?.includes(possibleYear) || 
-          d.set_name?.includes(possibleYear)
-        );
-        if (yearMatch) return yearMatch;
+      // Strategy 3: Try matching first two significant words (use textSearch or filter in JS)
+      if (searchWords.length >= 2) {
+        const { data: wordMatches } = await supabase
+          .from('market_items')
+          .select('*')
+          .ilike('category', `${normalizedCategory}%`)
+          .ilike('name', `%${searchWords[0]}%`)
+          .limit(20);
+        
+        if (wordMatches && wordMatches.length > 0) {
+          // Filter in JS for second word match
+          const twoWordMatch = wordMatches.filter(m => 
+            m.name.toLowerCase().includes(searchWords[1].toLowerCase())
+          );
+          
+          if (twoWordMatch.length > 0) {
+            const exactCat = twoWordMatch.find(m => m.category === normalizedCategory);
+            return exactCat || twoWordMatch[0];
+          }
+          
+          // If no two-word match, return single word match
+          const exactCat = wordMatches.find(m => m.category === normalizedCategory);
+          return exactCat || wordMatches[0];
+        }
       }
 
-      return data[0];
+      // Strategy 4: Try matching just the first word (likely card name)
+      if (searchWords.length >= 1) {
+        const { data: singleWordMatch } = await supabase
+          .from('market_items')
+          .select('*')
+          .ilike('category', `${normalizedCategory}%`)
+          .ilike('name', `%${searchWords[0]}%`)
+          .limit(10);
+        
+        if (singleWordMatch && singleWordMatch.length > 0) {
+          // Try to find best match by checking other words
+          if (searchWords.length > 1) {
+            const betterMatch = singleWordMatch.find(m => 
+              searchWords.some(w => m.name.toLowerCase().includes(w.toLowerCase()))
+            );
+            if (betterMatch) return betterMatch;
+          }
+          return singleWordMatch[0];
+        }
+      }
+
+      // Strategy 5: Fallback - search entire name field with any word
+      for (const word of searchWords) {
+        const { data: anyMatch } = await supabase
+          .from('market_items')
+          .select('*')
+          .ilike('category', `${normalizedCategory}%`)
+          .ilike('name', `%${word}%`)
+          .limit(1)
+          .maybeSingle();
+        
+        if (anyMatch) return anyMatch;
+      }
+
+      return null;
     },
     enabled: !!category && !!slug,
   });
@@ -394,17 +447,30 @@ const CardPage = () => {
               />
             </div>
 
-            {/* Tabs */}
-            <Tabs defaultValue="listings" className="space-y-4">
-              <TabsList className="glass">
-                <TabsTrigger value="listings">
-                  Listings ({activeListings?.length || 0})
-                </TabsTrigger>
-                <TabsTrigger value="history">Price History</TabsTrigger>
-                <TabsTrigger value="sales">Sales History</TabsTrigger>
-              </TabsList>
+            {/* Price Chart - Full Width */}
+            <section aria-labelledby="price-chart-heading">
+              {item && (
+                <ItemPriceChart 
+                  itemId={item.id} 
+                  productId={item.external_id || item.id}
+                  itemName={item.name}
+                  category={item.category}
+                  currentPrice={item.current_price}
+                />
+              )}
+            </section>
 
-              <TabsContent value="listings">
+            {/* Sales History */}
+            <section aria-labelledby="sales-history-heading">
+              {item && <ItemSalesHistory itemId={item.id} />}
+            </section>
+
+            {/* Active Listings */}
+            <section aria-labelledby="listings-heading">
+              <div className="glass rounded-xl p-6">
+                <h2 id="listings-heading" className="font-display text-xl font-semibold text-foreground mb-4">
+                  Active Listings ({activeListings?.length || 0})
+                </h2>
                 {activeListings && activeListings.length > 0 ? (
                   <div className="space-y-3">
                     {activeListings.map((listing) => (
@@ -437,29 +503,19 @@ const CardPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <Card className="glass">
-                    <CardContent className="p-8 text-center">
-                      <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <h3 className="font-semibold mb-2">No Active Listings</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Be the first to list this item!
-                      </p>
-                      <Button onClick={() => navigate('/sell')}>
-                        List Now
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <div className="text-center py-8">
+                    <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold mb-2">No Active Listings</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Be the first to list this item!
+                    </p>
+                    <Button onClick={() => navigate('/sell')}>
+                      List Now
+                    </Button>
+                  </div>
                 )}
-              </TabsContent>
-
-              <TabsContent value="history">
-                {item && <ItemPriceChart itemId={item.id} />}
-              </TabsContent>
-
-              <TabsContent value="sales">
-                {item && <ItemSalesHistory itemId={item.id} />}
-              </TabsContent>
-            </Tabs>
+              </div>
+            </section>
           </div>
         </div>
       </main>
