@@ -4,7 +4,6 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   TrendingUp, TrendingDown, Eye, Heart, 
@@ -524,41 +523,36 @@ const ItemDetail = () => {
           />
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="chart" className="space-y-6">
-          <TabsList className="bg-secondary/50 p-1 rounded-xl">
-            <TabsTrigger value="chart" className="rounded-lg">Price Chart</TabsTrigger>
-            <TabsTrigger value="grades" className="rounded-lg">Grade Comparison</TabsTrigger>
-            <TabsTrigger value="history" className="rounded-lg">Sales History</TabsTrigger>
-            <TabsTrigger value="listings" className="rounded-lg">Active Listings</TabsTrigger>
-          </TabsList>
+        {/* Price Chart - Full Width (SEO: Main content) */}
+        <section className="mb-8" aria-labelledby="price-history-heading">
+          <ItemPriceChart 
+            itemId={id || ''} 
+            productId={item.external_id || id || ''} 
+            itemName={item.name}
+            category={item.category}
+            currentPrice={item.current_price}
+          />
+        </section>
 
-          <TabsContent value="chart">
-            <ItemPriceChart 
-              itemId={id || ''} 
-              productId={item.external_id || id || ''} 
-              itemName={item.name}
-              category={item.category}
-              currentPrice={item.current_price}
-            />
-          </TabsContent>
-
-          <TabsContent value="grades">
+        {/* Sales History & Grade Comparison - Side by Side */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          <section aria-labelledby="sales-history-heading">
+            <ItemSalesHistory itemId={id || ''} />
+          </section>
+          
+          <section aria-labelledby="grade-comparison-heading">
             <ItemGradeComparison 
               itemId={id || ''} 
               selectedGrade={selectedGrade}
               onGradeChange={setSelectedGrade}
             />
-          </TabsContent>
+          </section>
+        </div>
 
-          <TabsContent value="history">
-            <ItemSalesHistory itemId={id || ''} />
-          </TabsContent>
-
-          <TabsContent value="listings">
-            <ItemListings itemId={id || ''} />
-          </TabsContent>
-        </Tabs>
+        {/* Active Listings - Full Width */}
+        <section className="mb-8" aria-labelledby="active-listings-heading">
+          <ItemListings itemId={id || ''} />
+        </section>
       </main>
 
       <Footer />
