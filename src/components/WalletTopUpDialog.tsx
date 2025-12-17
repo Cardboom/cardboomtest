@@ -3,9 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CreditCard, AlertCircle, Loader2 } from 'lucide-react';
+import { CreditCard, AlertCircle, Loader2, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface WalletTopUpDialogProps {
   open: boolean;
@@ -13,7 +14,6 @@ interface WalletTopUpDialogProps {
   onSuccess: () => void;
 }
 
-const TOPUP_FEE_PERCENT = 6.5;
 const FLAT_FEE = 0.5; // $0.50 flat fee on all transfers
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
@@ -22,6 +22,11 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const [step, setStep] = useState<'amount' | 'card' | '3ds'>('amount');
   const [threeDSContent, setThreeDSContent] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [userId, setUserId] = useState<string | undefined>();
+
+  // Get subscription status for fee calculation
+  const { isPro } = useSubscription(userId);
+  const TOPUP_FEE_PERCENT = isPro ? 4.5 : 6.5; // Pro gets 4.5%, standard gets 6.5%
 
   // Card details
   const [cardHolderName, setCardHolderName] = useState('');
@@ -41,6 +46,15 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const percentFee = numAmount * (TOPUP_FEE_PERCENT / 100);
   const fee = percentFee + FLAT_FEE;
   const total = numAmount + fee;
+
+  // Fetch user ID for subscription check
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) setUserId(session.user.id);
+    };
+    fetchUser();
+  }, []);
 
   const presetAmounts = [50, 100, 250, 500, 1000];
 
@@ -170,7 +184,12 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
             {step === '3ds' && '3D Secure Verification'}
           </DialogTitle>
           <DialogDescription>
-            {step === 'amount' && 'Top up your wallet with credit card. 6.5% + $0.50 processing fee applies.'}
+            {step === 'amount' && (
+              <>
+                Top up your wallet with credit card. {TOPUP_FEE_PERCENT}% + $0.50 processing fee applies.
+                {isPro && <span className="text-primary ml-1">(Pro discount applied!)</span>}
+              </>
+            )}
             {step === 'card' && 'Enter your card details securely.'}
             {step === '3ds' && 'Complete the 3D secure verification with your bank.'}
           </DialogDescription>
@@ -222,7 +241,10 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
                   <span>{formatCurrency(numAmount)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
-                  <span>Processing Fee (6.5%)</span>
+                  <span className="flex items-center gap-1">
+                    Processing Fee ({TOPUP_FEE_PERCENT}%)
+                    {isPro && <Crown className="h-3 w-3 text-amber-500" />}
+                  </span>
                   <span>{formatCurrency(percentFee)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">

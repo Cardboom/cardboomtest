@@ -35,9 +35,40 @@ export const usePurchase = () => {
     checkEarningsAchievements 
   } = useAchievementTriggers();
 
-  const calculateFees = (price: number) => {
-    const buyerFeeRate = 0.05; // 5% buyer fee
-    const sellerFeeRate = 0.08; // 8% seller fee
+  const checkIsPro = async (userId: string): Promise<boolean> => {
+    const { data } = await supabase
+      .from('user_subscriptions')
+      .select('tier, expires_at')
+      .eq('user_id', userId)
+      .maybeSingle();
+    
+    if (!data || data.tier !== 'pro') return false;
+    if (data.expires_at && new Date(data.expires_at) < new Date()) return false;
+    return true;
+  };
+
+  const calculateFees = async (price: number, buyerId?: string, sellerId?: string) => {
+    // Check Pro status for both buyer and seller
+    const buyerIsPro = buyerId ? await checkIsPro(buyerId) : false;
+    const sellerIsPro = sellerId ? await checkIsPro(sellerId) : false;
+
+    const buyerFeeRate = buyerIsPro ? 0.025 : 0.05; // 2.5% for Pro, 5% standard
+    const sellerFeeRate = sellerIsPro ? 0.045 : 0.08; // 4.5% for Pro, 8% standard
+
+    return {
+      buyerFee: price * buyerFeeRate,
+      sellerFee: price * sellerFeeRate,
+      totalBuyerPays: price + (price * buyerFeeRate),
+      sellerReceives: price - (price * sellerFeeRate),
+      buyerIsPro,
+      sellerIsPro,
+    };
+  };
+
+  // Quick sync version for UI display (assumes standard rates)
+  const calculateFeesSync = (price: number, buyerIsPro = false, sellerIsPro = false) => {
+    const buyerFeeRate = buyerIsPro ? 0.025 : 0.05;
+    const sellerFeeRate = sellerIsPro ? 0.045 : 0.08;
     return {
       buyerFee: price * buyerFeeRate,
       sellerFee: price * sellerFeeRate,
@@ -79,8 +110,8 @@ export const usePurchase = () => {
         return { success: false };
       }
 
-      // 3. Calculate fees
-      const fees = calculateFees(params.price);
+      // 3. Calculate fees (with Pro subscription check)
+      const fees = await calculateFees(params.price, buyerId, params.sellerId);
 
       // 4. Check buyer has sufficient balance
       if (Number(buyerWallet.balance) < fees.totalBuyerPays) {
@@ -256,5 +287,5 @@ export const usePurchase = () => {
     }
   };
 
-  return { purchase, loading, calculateFees };
+  return { purchase, loading, calculateFees, calculateFeesSync };
 };

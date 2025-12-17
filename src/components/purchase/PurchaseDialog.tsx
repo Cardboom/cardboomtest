@@ -53,10 +53,10 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
   });
   const [selectedCarrier, setSelectedCarrier] = useState<string>('');
   
-  const { purchase, loading, calculateFees } = usePurchase();
+  const { purchase, loading, calculateFeesSync } = usePurchase();
   const { loading: shippingLoading, offers, getShippingPrices } = useGeliverShipping();
 
-  const fees = calculateFees(listing.price);
+  const fees = calculateFeesSync(listing.price);
   const selectedOffer = offers.find(o => o.id === selectedCarrier);
   const shippingCost = selectedOffer?.price || 0;
   const totalWithShipping = fees.totalBuyerPays + (deliveryOption === 'ship' ? shippingCost : 0);

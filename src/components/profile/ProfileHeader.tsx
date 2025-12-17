@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload, Crown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,9 @@ import { ProfileBackgroundSelector } from './ProfileBackgroundSelector';
 import { ProfileGuruSelector } from './ProfileGuruSelector';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSubscription } from '@/hooks/useSubscription';
+import { ProBadge } from '@/components/subscription/ProBadge';
+import { SubscriptionUpgradeDialog } from '@/components/subscription/SubscriptionUpgradeDialog';
 
 interface ProfileHeaderProps {
   profile: {
@@ -55,6 +58,7 @@ export const ProfileHeader = ({
   const idFileInputRef = useRef<HTMLInputElement>(null);
   const { uploadAvatar, uploading } = useAvatarUpload();
   const { t } = useLanguage();
+  const { isPro, subscription, refetch: refetchSubscription } = useSubscription(profile.id);
 
   const selectedBackground = backgrounds.find(b => b.id === profile.profile_background);
   const backgroundStyle = selectedBackground?.css_value || 'hsl(240, 10%, 4%)';
@@ -183,6 +187,7 @@ export const ProfileHeader = ({
                       <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                         {profile.display_name || 'Anonymous'}
                       </h1>
+                      {isPro && <ProBadge />}
                       {profile.is_id_verified && (
                         <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary">
                           <ShieldCheck className="h-3 w-3" />
@@ -236,6 +241,20 @@ export const ProfileHeader = ({
                     </>
                   ) : (
                     <>
+                      {!isPro && (
+                        <SubscriptionUpgradeDialog 
+                          userId={profile.id} 
+                          onSuccess={refetchSubscription}
+                        >
+                          <Button 
+                            size="sm" 
+                            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                          >
+                            <Crown className="h-4 w-4" />
+                            Upgrade to Pro
+                          </Button>
+                        </SubscriptionUpgradeDialog>
+                      )}
                       <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="gap-2">
                         <Edit2 className="h-4 w-4" />
                         Edit Profile
