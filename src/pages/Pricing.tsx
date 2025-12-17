@@ -128,9 +128,9 @@ const Pricing = () => {
       popular: false,
       tier: 'free' as const,
       fees: {
-        buyer: '5%',
-        seller: '8%',
-        card: '6%',
+        buyer: '6%',
+        seller: '8.5%',
+        card: '7%',
         wire: '3%',
       },
       features: [
@@ -156,8 +156,8 @@ const Pricing = () => {
       popular: true,
       tier: 'pro' as const,
       fees: {
-        buyer: '2.5%',
-        seller: '4.5%',
+        buyer: '4.5%',
+        seller: '6%',
         card: '4.5%',
         wire: '1.5%',
       },
@@ -182,10 +182,10 @@ const Pricing = () => {
       popular: false,
       tier: 'enterprise' as const,
       fees: {
-        buyer: '1.5%',
-        seller: '3%',
-        card: '3%',
-        wire: '1%',
+        buyer: '3%',
+        seller: '4.5%',
+        card: '5%',
+        wire: '1.5%',
       },
       features: [
         'Everything in Pro',

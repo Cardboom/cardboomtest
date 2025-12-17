@@ -174,24 +174,24 @@ export const useSubscription = (userId?: string) => {
   const getFeeRates = () => {
     if (isEnterprise()) {
       return {
-        buyerFeeRate: 0.015, // 1.5% for Enterprise
-        sellerFeeRate: 0.03, // 3% for Enterprise
-        cardFeeRate: 0.03, // 3% for Enterprise
-        wireFeeRate: 0.01, // 1% for Enterprise
+        buyerFeeRate: 0.03, // 3% for Enterprise
+        sellerFeeRate: 0.045, // 4.5% for Enterprise
+        cardFeeRate: 0.05, // 5% for Enterprise
+        wireFeeRate: 0.015, // 1.5% for Enterprise (minimum)
       };
     }
     if (isPro()) {
       return {
-        buyerFeeRate: 0.025, // 2.5% for Pro
-        sellerFeeRate: 0.045, // 4.5% for Pro
+        buyerFeeRate: 0.045, // 4.5% for Pro
+        sellerFeeRate: 0.06, // 6% for Pro
         cardFeeRate: 0.045, // 4.5% for Pro
-        wireFeeRate: 0.015, // 1.5% for Pro
+        wireFeeRate: 0.015, // 1.5% for Pro (minimum)
       };
     }
     return {
-      buyerFeeRate: 0.05, // 5% standard
-      sellerFeeRate: 0.08, // 8% standard
-      cardFeeRate: 0.06, // 6% standard
+      buyerFeeRate: 0.06, // 6% standard
+      sellerFeeRate: 0.085, // 8.5% standard
+      cardFeeRate: 0.07, // 7% standard
       wireFeeRate: 0.03, // 3% standard
     };
   };
