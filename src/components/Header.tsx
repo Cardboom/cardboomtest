@@ -358,6 +358,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <User className="w-4 h-4 mr-2" />
                     {t.nav.myProfile}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/pricing')} className="text-primary">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Upgrade to Pro
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/messages')} className="relative">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Messages
