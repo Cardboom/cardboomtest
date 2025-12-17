@@ -11,7 +11,9 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Gift, Copy, Share2, Users, Coins, TrendingUp, 
-  ArrowUpRight, Crown, Star, Zap, Trophy, Target
+  ArrowUpRight, Crown, Star, Zap, Trophy, Target,
+  Megaphone, DollarSign, Repeat, ShoppingCart, Percent,
+  CheckCircle, Rocket, Globe
 } from 'lucide-react';
 import { useReferralSystem } from '@/hooks/useReferralSystem';
 import { useXP } from '@/hooks/useXP';
@@ -40,6 +42,7 @@ const ReferralsPage = () => {
   const { formatPrice } = useCurrency();
   const [user, setUser] = useState<any>(null);
   const [inputCode, setInputCode] = useState('');
+  const [activeTab, setActiveTab] = useState('ambassador');
   
   const {
     referralCode,
@@ -98,14 +101,50 @@ const ReferralsPage = () => {
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-8">
-          {/* Header */}
+          {/* Hero Header */}
           <div className="text-center space-y-4">
+            <Badge variant="outline" className="text-primary border-primary/30">
+              <Megaphone className="w-3 h-3 mr-1" />
+              Brand Ambassador Program
+            </Badge>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground">
-              Referral Program
+              Earn While You <span className="text-primary">Share</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Earn up to 15% commission when your friends deposit and trade on CardBoom
+              Become a CardBoom Ambassador. Earn up to 15% commission on every trade your referrals make.
             </p>
+          </div>
+
+          {/* How It Works - Ambassador Focus */}
+          <div className="grid md:grid-cols-4 gap-4">
+            <Card className="p-6 text-center bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+              <div className="w-12 h-12 rounded-full bg-primary/10 mx-auto mb-3 flex items-center justify-center">
+                <Share2 className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold mb-1">1. Share Your Link</h3>
+              <p className="text-sm text-muted-foreground">Share your unique referral code with friends, followers, or community</p>
+            </Card>
+            <Card className="p-6 text-center bg-gradient-to-br from-blue-500/5 to-blue-500/10 border-blue-500/20">
+              <div className="w-12 h-12 rounded-full bg-blue-500/10 mx-auto mb-3 flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className="font-semibold mb-1">2. Friends Join</h3>
+              <p className="text-sm text-muted-foreground">They sign up using your code and start trading collectibles</p>
+            </Card>
+            <Card className="p-6 text-center bg-gradient-to-br from-green-500/5 to-green-500/10 border-green-500/20">
+              <div className="w-12 h-12 rounded-full bg-green-500/10 mx-auto mb-3 flex items-center justify-center">
+                <Repeat className="w-6 h-6 text-green-500" />
+              </div>
+              <h3 className="font-semibold mb-1">3. They Trade</h3>
+              <p className="text-sm text-muted-foreground">Every buy & sell they make earns you commission automatically</p>
+            </Card>
+            <Card className="p-6 text-center bg-gradient-to-br from-amber-500/5 to-amber-500/10 border-amber-500/20">
+              <div className="w-12 h-12 rounded-full bg-amber-500/10 mx-auto mb-3 flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-amber-500" />
+              </div>
+              <h3 className="font-semibold mb-1">4. You Earn</h3>
+              <p className="text-sm text-muted-foreground">Get paid 5-15% of their trading fees, forever!</p>
+            </Card>
           </div>
 
           {/* XP & Level Card */}
@@ -256,6 +295,75 @@ const ReferralsPage = () => {
                     </p>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Ambassador Benefits Section */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+              <CardTitle className="flex items-center gap-2">
+                <Rocket className="h-5 w-5 text-primary" />
+                Ambassador Benefits
+              </CardTitle>
+              <CardDescription>
+                Why become a CardBoom Ambassador?
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-green-500">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-semibold">Passive Income</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Earn commission on every trade your referrals make. The more they trade, the more you earn - forever.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-blue-500">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-semibold">Growing Rates</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Start at 5% and grow to 15% commission as your network expands. Diamond ambassadors earn the most.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-amber-500">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-semibold">Instant Payouts</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Commissions are credited to your wallet instantly. No waiting periods, no minimum thresholds.
+                  </p>
+                </div>
+              </div>
+
+              {/* Example Earnings */}
+              <div className="mt-8 p-4 rounded-lg bg-muted/50">
+                <h4 className="font-semibold mb-3 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-green-500" />
+                  Example Earnings
+                </h4>
+                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                  <div className="p-3 rounded-md bg-background">
+                    <p className="text-muted-foreground mb-1">10 active referrals trading $500/month each</p>
+                    <p className="text-xl font-bold text-green-500">$25 - $75/month</p>
+                    <p className="text-xs text-muted-foreground">depending on your tier</p>
+                  </div>
+                  <div className="p-3 rounded-md bg-background">
+                    <p className="text-muted-foreground mb-1">50 active referrals trading $1,000/month each</p>
+                    <p className="text-xl font-bold text-green-500">$250 - $750/month</p>
+                    <p className="text-xs text-muted-foreground">depending on your tier</p>
+                  </div>
+                  <div className="p-3 rounded-md bg-background">
+                    <p className="text-muted-foreground mb-1">100 active referrals trading $2,000/month each</p>
+                    <p className="text-xl font-bold text-green-500">$1,000 - $3,000/month</p>
+                    <p className="text-xs text-muted-foreground">depending on your tier</p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
