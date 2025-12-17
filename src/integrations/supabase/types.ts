@@ -366,6 +366,105 @@ export type Database = {
           },
         ]
       }
+      creator_picks: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          is_public: boolean | null
+          market_item_id: string
+          note: string | null
+          pick_type: string
+          price_at_pick: number | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_public?: boolean | null
+          market_item_id: string
+          note?: string | null
+          pick_type: string
+          price_at_pick?: number | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_public?: boolean | null
+          market_item_id?: string
+          note?: string | null
+          pick_type?: string
+          price_at_pick?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_picks_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_picks_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          creator_name: string
+          follower_count: number | null
+          id: string
+          is_public: boolean | null
+          is_verified: boolean | null
+          platform: string
+          platform_handle: string | null
+          portfolio_public: boolean | null
+          specialty_categories: string[] | null
+          updated_at: string
+          user_id: string
+          watchlist_public: boolean | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          creator_name: string
+          follower_count?: number | null
+          id?: string
+          is_public?: boolean | null
+          is_verified?: boolean | null
+          platform: string
+          platform_handle?: string | null
+          portfolio_public?: boolean | null
+          specialty_categories?: string[] | null
+          updated_at?: string
+          user_id: string
+          watchlist_public?: boolean | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          creator_name?: string
+          follower_count?: number | null
+          id?: string
+          is_public?: boolean | null
+          is_verified?: boolean | null
+          platform?: string
+          platform_handle?: string | null
+          portfolio_public?: boolean | null
+          specialty_categories?: string[] | null
+          updated_at?: string
+          user_id?: string
+          watchlist_public?: boolean | null
+        }
+        Relationships: []
+      }
       daily_logins: {
         Row: {
           created_at: string
@@ -387,6 +486,33 @@ export type Database = {
           login_date?: string
           streak_count?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      data_access_levels: {
+        Row: {
+          access_level: string
+          created_at: string
+          data_type: string
+          description: string | null
+          field_name: string
+          id: string
+        }
+        Insert: {
+          access_level: string
+          created_at?: string
+          data_type: string
+          description?: string | null
+          field_name: string
+          id?: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string
+          data_type?: string
+          description?: string | null
+          field_name?: string
+          id?: string
         }
         Relationships: []
       }
@@ -449,6 +575,56 @@ export type Database = {
           sold_listings_count?: number | null
         }
         Relationships: []
+      }
+      external_liquidity_signals: {
+        Row: {
+          avg_price: number | null
+          created_at: string
+          id: string
+          is_recommended: boolean | null
+          last_updated: string | null
+          liquidity_level: string | null
+          market_item_id: string | null
+          platform: string
+          recommendation_reason: string | null
+          spread_percent: number | null
+          volume_24h: number | null
+        }
+        Insert: {
+          avg_price?: number | null
+          created_at?: string
+          id?: string
+          is_recommended?: boolean | null
+          last_updated?: string | null
+          liquidity_level?: string | null
+          market_item_id?: string | null
+          platform: string
+          recommendation_reason?: string | null
+          spread_percent?: number | null
+          volume_24h?: number | null
+        }
+        Update: {
+          avg_price?: number | null
+          created_at?: string
+          id?: string
+          is_recommended?: boolean | null
+          last_updated?: string | null
+          liquidity_level?: string | null
+          market_item_id?: string | null
+          platform?: string
+          recommendation_reason?: string | null
+          spread_percent?: number | null
+          volume_24h?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_liquidity_signals_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       follows: {
         Row: {
@@ -784,6 +960,48 @@ export type Database = {
         }
         Relationships: []
       }
+      market_controls: {
+        Row: {
+          activated_at: string | null
+          activated_by: string | null
+          control_type: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          reason: string
+          target_category: string | null
+          target_pattern: string | null
+          threshold_value: number | null
+        }
+        Insert: {
+          activated_at?: string | null
+          activated_by?: string | null
+          control_type: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          reason: string
+          target_category?: string | null
+          target_pattern?: string | null
+          threshold_value?: number | null
+        }
+        Update: {
+          activated_at?: string | null
+          activated_by?: string | null
+          control_type?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          reason?: string
+          target_category?: string | null
+          target_pattern?: string | null
+          threshold_value?: number | null
+        }
+        Relationships: []
+      }
       market_item_grades: {
         Row: {
           avg_days_to_sell: number | null
@@ -938,6 +1156,53 @@ export type Database = {
           watchlist_count?: number | null
         }
         Relationships: []
+      }
+      market_memory: {
+        Row: {
+          category: string | null
+          confidence: string | null
+          created_at: string
+          description: string
+          event_date: string
+          event_type: string
+          id: string
+          market_item_id: string | null
+          price_at_event: number | null
+          recovery_days: number | null
+        }
+        Insert: {
+          category?: string | null
+          confidence?: string | null
+          created_at?: string
+          description: string
+          event_date: string
+          event_type: string
+          id?: string
+          market_item_id?: string | null
+          price_at_event?: number | null
+          recovery_days?: number | null
+        }
+        Update: {
+          category?: string | null
+          confidence?: string | null
+          created_at?: string
+          description?: string
+          event_date?: string
+          event_type?: string
+          id?: string
+          market_item_id?: string | null
+          price_at_event?: number | null
+          recovery_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "market_memory_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -2606,6 +2871,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      whale_invites: {
+        Row: {
+          created_at: string
+          early_exit_warnings: boolean | null
+          faster_payouts: boolean | null
+          fee_discount_percent: number | null
+          id: string
+          invite_tier: string
+          invited_by: string | null
+          is_active: boolean | null
+          notes: string | null
+          payout_speed_hours: number | null
+          private_liquidity_access: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          early_exit_warnings?: boolean | null
+          faster_payouts?: boolean | null
+          fee_discount_percent?: number | null
+          id?: string
+          invite_tier: string
+          invited_by?: string | null
+          is_active?: boolean | null
+          notes?: string | null
+          payout_speed_hours?: number | null
+          private_liquidity_access?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          early_exit_warnings?: boolean | null
+          faster_payouts?: boolean | null
+          fee_discount_percent?: number | null
+          id?: string
+          invite_tier?: string
+          invited_by?: string | null
+          is_active?: boolean | null
+          notes?: string | null
+          payout_speed_hours?: number | null
+          private_liquidity_access?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
       }
       wire_transfers: {
         Row: {

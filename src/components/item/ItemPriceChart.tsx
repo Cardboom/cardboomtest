@@ -8,6 +8,8 @@ import { Loader2 } from 'lucide-react';
 interface ItemPriceChartProps {
   itemId: string;
   productId?: string;
+  itemName?: string;
+  category?: string;
   currentPrice?: number;
 }
 
@@ -23,11 +25,13 @@ const getDaysFromRange = (range: TimeRange) => {
   }
 };
 
-export const ItemPriceChart = ({ itemId, productId, currentPrice }: ItemPriceChartProps) => {
+export const ItemPriceChart = ({ itemId, productId, itemName, category, currentPrice }: ItemPriceChartProps) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
 
   const { data: historyData, isLoading, hasData } = usePriceHistory({
     productId: productId || itemId,
+    itemName,
+    category,
     days: getDaysFromRange(timeRange),
   });
 
