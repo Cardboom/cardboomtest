@@ -216,6 +216,65 @@ export type Database = {
           },
         ]
       }
+      auto_relist_settings: {
+        Row: {
+          created_at: string
+          current_suggested_price: number | null
+          days_until_suggest: number | null
+          enabled: boolean | null
+          id: string
+          last_reduction_at: string | null
+          listing_id: string
+          min_price: number | null
+          original_price: number
+          price_ladder_enabled: boolean | null
+          price_reduction_percent: number | null
+          reduction_interval_hours: number | null
+          seller_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_suggested_price?: number | null
+          days_until_suggest?: number | null
+          enabled?: boolean | null
+          id?: string
+          last_reduction_at?: string | null
+          listing_id: string
+          min_price?: number | null
+          original_price: number
+          price_ladder_enabled?: boolean | null
+          price_reduction_percent?: number | null
+          reduction_interval_hours?: number | null
+          seller_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_suggested_price?: number | null
+          days_until_suggest?: number | null
+          enabled?: boolean | null
+          id?: string
+          last_reduction_at?: string | null
+          listing_id?: string
+          min_price?: number | null
+          original_price?: number
+          price_ladder_enabled?: boolean | null
+          price_reduction_percent?: number | null
+          reduction_interval_hours?: number | null
+          seller_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_relist_settings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bids: {
         Row: {
           bid_amount: number
@@ -777,6 +836,7 @@ export type Database = {
       }
       market_items: {
         Row: {
+          avg_days_to_sell: number | null
           base_price: number
           category: string
           change_24h: number | null
@@ -798,6 +858,7 @@ export type Database = {
           price_30d_ago: number | null
           price_7d_ago: number | null
           rarity: string | null
+          sale_probability: number | null
           sales_count_30d: number | null
           series: string | null
           set_name: string | null
@@ -805,9 +866,11 @@ export type Database = {
           updated_at: string
           views_24h: number | null
           views_7d: number | null
+          volume_trend: string | null
           watchlist_count: number | null
         }
         Insert: {
+          avg_days_to_sell?: number | null
           base_price?: number
           category: string
           change_24h?: number | null
@@ -829,6 +892,7 @@ export type Database = {
           price_30d_ago?: number | null
           price_7d_ago?: number | null
           rarity?: string | null
+          sale_probability?: number | null
           sales_count_30d?: number | null
           series?: string | null
           set_name?: string | null
@@ -836,9 +900,11 @@ export type Database = {
           updated_at?: string
           views_24h?: number | null
           views_7d?: number | null
+          volume_trend?: string | null
           watchlist_count?: number | null
         }
         Update: {
+          avg_days_to_sell?: number | null
           base_price?: number
           category?: string
           change_24h?: number | null
@@ -860,6 +926,7 @@ export type Database = {
           price_30d_ago?: number | null
           price_7d_ago?: number | null
           rarity?: string | null
+          sale_probability?: number | null
           sales_count_30d?: number | null
           series?: string | null
           set_name?: string | null
@@ -867,6 +934,7 @@ export type Database = {
           updated_at?: string
           views_24h?: number | null
           views_7d?: number | null
+          volume_trend?: string | null
           watchlist_count?: number | null
         }
         Relationships: []
@@ -1163,6 +1231,39 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_heat_scores: {
+        Row: {
+          calculated_at: string
+          created_at: string
+          id: string
+          liquidity_score: number | null
+          price_movement_score: number | null
+          score: number
+          user_id: string
+          views_score: number | null
+        }
+        Insert: {
+          calculated_at?: string
+          created_at?: string
+          id?: string
+          liquidity_score?: number | null
+          price_movement_score?: number | null
+          score?: number
+          user_id: string
+          views_score?: number | null
+        }
+        Update: {
+          calculated_at?: string
+          created_at?: string
+          id?: string
+          liquidity_score?: number | null
+          price_movement_score?: number | null
+          score?: number
+          user_id?: string
+          views_score?: number | null
+        }
+        Relationships: []
+      }
       portfolio_items: {
         Row: {
           created_at: string
@@ -1322,6 +1423,7 @@ export type Database = {
         Row: {
           account_status: string
           account_type: Database["public"]["Enums"]["account_type"]
+          activation_unlocked: boolean | null
           avatar_url: string | null
           badges: Json | null
           banned_at: string | null
@@ -1331,6 +1433,8 @@ export type Database = {
           custom_guru: string | null
           display_name: string | null
           email: string | null
+          first_deposit_at: string | null
+          first_deposit_completed: boolean | null
           guru_expertise: string[] | null
           id: string
           id_document_url: string | null
@@ -1342,9 +1446,12 @@ export type Database = {
           paused_until: string | null
           phone: string | null
           phone_verified: boolean | null
+          premium_trial_expires_at: string | null
           profile_background: string | null
           referral_code: string | null
           referred_by: string | null
+          reputation_score: number | null
+          reputation_tier: string | null
           showcase_items: string[] | null
           title: string | null
           updated_at: string
@@ -1354,6 +1461,7 @@ export type Database = {
         Insert: {
           account_status?: string
           account_type?: Database["public"]["Enums"]["account_type"]
+          activation_unlocked?: boolean | null
           avatar_url?: string | null
           badges?: Json | null
           banned_at?: string | null
@@ -1363,6 +1471,8 @@ export type Database = {
           custom_guru?: string | null
           display_name?: string | null
           email?: string | null
+          first_deposit_at?: string | null
+          first_deposit_completed?: boolean | null
           guru_expertise?: string[] | null
           id: string
           id_document_url?: string | null
@@ -1374,9 +1484,12 @@ export type Database = {
           paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          premium_trial_expires_at?: string | null
           profile_background?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          reputation_score?: number | null
+          reputation_tier?: string | null
           showcase_items?: string[] | null
           title?: string | null
           updated_at?: string
@@ -1386,6 +1499,7 @@ export type Database = {
         Update: {
           account_status?: string
           account_type?: Database["public"]["Enums"]["account_type"]
+          activation_unlocked?: boolean | null
           avatar_url?: string | null
           badges?: Json | null
           banned_at?: string | null
@@ -1395,6 +1509,8 @@ export type Database = {
           custom_guru?: string | null
           display_name?: string | null
           email?: string | null
+          first_deposit_at?: string | null
+          first_deposit_completed?: boolean | null
           guru_expertise?: string[] | null
           id?: string
           id_document_url?: string | null
@@ -1406,9 +1522,12 @@ export type Database = {
           paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          premium_trial_expires_at?: string | null
           profile_background?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          reputation_score?: number | null
+          reputation_tier?: string | null
           showcase_items?: string[] | null
           title?: string | null
           updated_at?: string
@@ -1489,6 +1608,50 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reference_listings: {
+        Row: {
+          confidence_level: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_updated: string | null
+          market_item_id: string | null
+          price_source: string
+          reference_price: number
+          sample_size: number | null
+        }
+        Insert: {
+          confidence_level?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          market_item_id?: string | null
+          price_source?: string
+          reference_price: number
+          sample_size?: number | null
+        }
+        Update: {
+          confidence_level?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          market_item_id?: string | null
+          price_source?: string
+          reference_price?: number
+          sample_size?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reference_listings_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1638,6 +1801,36 @@ export type Database = {
           },
         ]
       }
+      reputation_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          notes: string | null
+          points_change: number
+          reference_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          notes?: string | null
+          points_change: number
+          reference_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          points_change?: number
+          reference_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
@@ -1717,6 +1910,47 @@ export type Database = {
           xp_cost?: number
         }
         Relationships: []
+      }
+      shadow_wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          last_viewed_at: string | null
+          market_item_id: string | null
+          search_count: number | null
+          user_id: string
+          view_count: number | null
+          view_duration_seconds: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_viewed_at?: string | null
+          market_item_id?: string | null
+          search_count?: number | null
+          user_id: string
+          view_count?: number | null
+          view_duration_seconds?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_viewed_at?: string | null
+          market_item_id?: string | null
+          search_count?: number | null
+          user_id?: string
+          view_count?: number | null
+          view_duration_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shadow_wishlists_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tournament_entries: {
         Row: {
@@ -1962,6 +2196,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_market_signals: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string | null
+          market_item_id: string | null
+          price_at_signal: number | null
+          signal_type: string
+          signal_value: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          price_at_signal?: number | null
+          signal_type: string
+          signal_value: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          price_at_signal?: number | null
+          signal_type?: string
+          signal_value?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_market_signals_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_market_signals_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_rewards: {
         Row: {
@@ -2462,6 +2744,7 @@ export type Database = {
     }
     Functions: {
       calculate_level: { Args: { xp_amount: number }; Returns: number }
+      calculate_portfolio_heat: { Args: { p_user_id: string }; Returns: number }
       get_seller_rating: {
         Args: { seller_uuid: string }
         Returns: {
@@ -2475,6 +2758,15 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      update_reputation: {
+        Args: {
+          p_event_type: string
+          p_points: number
+          p_reference_id?: string
+          p_user_id: string
+        }
+        Returns: number
       }
     }
     Enums: {
