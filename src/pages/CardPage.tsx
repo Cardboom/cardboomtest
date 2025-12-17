@@ -20,6 +20,7 @@ import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
 import { ShareButton } from '@/components/ShareButton';
 import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
+import { CardDiscussionPanel } from '@/components/discussions/CardDiscussionPanel';
 import { 
   generateCardSlug, 
   parseSlug, 
@@ -463,6 +464,17 @@ const CardPage = () => {
             {/* Sales History */}
             <section aria-labelledby="sales-history-heading">
               {item && <ItemSalesHistory itemId={item.id} />}
+            </section>
+
+            {/* Market Discussion */}
+            <section aria-labelledby="discussion-heading">
+              {item && (
+                <CardDiscussionPanel
+                  marketItemId={item.id}
+                  itemName={item.name}
+                  currentPrice={item.current_price}
+                />
+              )}
             </section>
 
             {/* Active Listings */}

@@ -516,6 +516,166 @@ export type Database = {
         }
         Relationships: []
       }
+      discussion_comments: {
+        Row: {
+          accuracy_score: number | null
+          collapse_reason: string | null
+          content: string
+          contradicted_count: number | null
+          created_at: string
+          discussion_id: string
+          id: string
+          insightful_count: number | null
+          is_collapsed: boolean | null
+          outdated_count: number | null
+          parent_id: string | null
+          price_at_post: number | null
+          relevance_score: number | null
+          stance: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          collapse_reason?: string | null
+          content: string
+          contradicted_count?: number | null
+          created_at?: string
+          discussion_id: string
+          id?: string
+          insightful_count?: number | null
+          is_collapsed?: boolean | null
+          outdated_count?: number | null
+          parent_id?: string | null
+          price_at_post?: number | null
+          relevance_score?: number | null
+          stance?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          collapse_reason?: string | null
+          content?: string
+          contradicted_count?: number | null
+          created_at?: string
+          discussion_id?: string
+          id?: string
+          insightful_count?: number | null
+          is_collapsed?: boolean | null
+          outdated_count?: number | null
+          parent_id?: string | null
+          price_at_post?: number | null
+          relevance_score?: number | null
+          stance?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discussion_comments_discussion_id_fkey"
+            columns: ["discussion_id"]
+            isOneToOne: false
+            referencedRelation: "discussions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "discussion_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "discussion_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discussion_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string
+          id: string
+          reaction_type: Database["public"]["Enums"]["discussion_reaction_type"]
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          id?: string
+          reaction_type: Database["public"]["Enums"]["discussion_reaction_type"]
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          id?: string
+          reaction_type?: Database["public"]["Enums"]["discussion_reaction_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discussion_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "discussion_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discussions: {
+        Row: {
+          comment_count: number | null
+          created_at: string
+          description: string | null
+          event_type: string | null
+          id: string
+          is_active: boolean | null
+          is_admin_created: boolean | null
+          market_item_id: string | null
+          price_at_creation: number | null
+          sentiment_score: number | null
+          title: string
+          type: Database["public"]["Enums"]["discussion_type"]
+          updated_at: string
+        }
+        Insert: {
+          comment_count?: number | null
+          created_at?: string
+          description?: string | null
+          event_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_admin_created?: boolean | null
+          market_item_id?: string | null
+          price_at_creation?: number | null
+          sentiment_score?: number | null
+          title: string
+          type: Database["public"]["Enums"]["discussion_type"]
+          updated_at?: string
+        }
+        Update: {
+          comment_count?: number | null
+          created_at?: string
+          description?: string | null
+          event_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_admin_created?: boolean | null
+          market_item_id?: string | null
+          price_at_creation?: number | null
+          sentiment_score?: number | null
+          title?: string
+          type?: Database["public"]["Enums"]["discussion_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discussions_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ebay_card_cache: {
         Row: {
           active_listings_count: number | null
@@ -3101,6 +3261,8 @@ export type Database = {
         | "cgc9_5"
         | "cgc10"
       delivery_option: "vault" | "trade" | "ship"
+      discussion_reaction_type: "insightful" | "outdated" | "contradicted"
+      discussion_type: "card" | "event" | "strategy"
       liquidity_level: "high" | "medium" | "low"
       listing_status: "active" | "sold" | "cancelled" | "reserved"
       offer_status:
@@ -3302,6 +3464,8 @@ export const Constants = {
         "cgc10",
       ],
       delivery_option: ["vault", "trade", "ship"],
+      discussion_reaction_type: ["insightful", "outdated", "contradicted"],
+      discussion_type: ["card", "event", "strategy"],
       liquidity_level: ["high", "medium", "low"],
       listing_status: ["active", "sold", "cancelled", "reserved"],
       offer_status: [
