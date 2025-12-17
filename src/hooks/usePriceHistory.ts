@@ -15,50 +15,26 @@ interface UsePriceHistoryOptions {
   enabled?: boolean;
 }
 
-// Generate alternative product_id formats to search
-const generateProductIdVariants = (productId: string, itemName?: string, category?: string): string[] => {
-  const variants: string[] = [productId];
+// Generate search patterns from item name
+const generateSearchPatterns = (itemName?: string): string[] => {
+  if (!itemName) return [];
   
-  // Common prefix mappings
-  const prefixMappings: Record<string, string[]> = {
-    'mtg': ['tcg', 'mtg'],
-    'tcg': ['tcg', 'mtg'],
-    'pokemon': ['tcg', 'pokemon'],
-    'yugioh': ['yugioh', 'tcg'],
-    'sports': ['nba', 'football', 'baseball'],
-    'figures': ['figure', 'figures'],
-  };
-
-  // Try to extract and swap prefixes
-  const parts = productId.split('-');
-  if (parts.length > 1) {
-    const prefix = parts[0].toLowerCase();
-    const rest = parts.slice(1).join('-');
-    
-    // Add variants with different prefixes
-    Object.entries(prefixMappings).forEach(([key, values]) => {
-      if (prefix === key || values.includes(prefix)) {
-        values.forEach(v => {
-          if (v !== prefix) {
-            variants.push(`${v}-${rest}`);
-          }
-        });
-      }
-    });
+  const patterns: string[] = [];
+  const cleanName = itemName.toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim();
+  
+  // Add words from the name
+  const words = cleanName.split(/\s+/).filter(w => w.length > 2);
+  words.forEach(word => patterns.push(word));
+  
+  // Add first two words combined
+  if (words.length >= 2) {
+    patterns.push(`${words[0]}-${words[1]}`);
+    patterns.push(`${words[0]}%${words[1]}`);
   }
-
-  // If we have item name, create variants from that
-  if (itemName && category) {
-    const cleanName = itemName.toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .substring(0, 30);
-    
-    const catPrefix = category.toLowerCase().split('-')[0];
-    variants.push(`${catPrefix}-${cleanName}`);
-  }
-
-  return [...new Set(variants)];
+  
+  return [...new Set(patterns)];
 };
 
 export const usePriceHistory = ({ 
@@ -82,54 +58,111 @@ export const usePriceHistory = ({
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
 
-      // Generate all possible product_id variants
-      const variants = generateProductIdVariants(productId, itemName, category);
-
-      // Try each variant until we find data
       let historyData: any[] = [];
-      
-      for (const variant of variants) {
-        const { data: result, error: fetchError } = await supabase
+
+      // Strategy 1: Exact match on productId
+      const { data: exactMatch } = await supabase
+        .from('price_history')
+        .select('price, recorded_at, product_id')
+        .eq('product_id', productId)
+        .gte('recorded_at', startDate.toISOString())
+        .order('recorded_at', { ascending: true });
+
+      if (exactMatch && exactMatch.length > 0) {
+        historyData = exactMatch;
+      }
+
+      // Strategy 2: Try partial match - productId contains our search term
+      if (historyData.length === 0) {
+        const { data: partialMatch } = await supabase
           .from('price_history')
           .select('price, recorded_at, product_id')
-          .eq('product_id', variant)
+          .ilike('product_id', `%${productId}%`)
           .gte('recorded_at', startDate.toISOString())
-          .order('recorded_at', { ascending: true });
+          .order('recorded_at', { ascending: true })
+          .limit(200);
 
-        if (!fetchError && result && result.length > 0) {
-          historyData = result;
-          break;
+        if (partialMatch && partialMatch.length > 0) {
+          historyData = partialMatch;
         }
       }
 
-      // If still no data, try fuzzy match using ILIKE
-      if (historyData.length === 0 && itemName) {
-        const searchTerm = itemName.toLowerCase()
-          .replace(/[^a-z0-9\s]/g, '')
-          .split(' ')[0]; // First word
-        
-        const { data: fuzzyResult } = await supabase
+      // Strategy 3: Our productId contains the price_history product_id
+      if (historyData.length === 0 && productId.includes('-')) {
+        const baseName = productId.split('-').slice(0, 2).join('-');
+        const { data: baseMatch } = await supabase
           .from('price_history')
           .select('price, recorded_at, product_id')
-          .ilike('product_id', `%${searchTerm}%`)
+          .ilike('product_id', `${baseName}%`)
           .gte('recorded_at', startDate.toISOString())
           .order('recorded_at', { ascending: true })
-          .limit(100);
+          .limit(200);
 
-        if (fuzzyResult && fuzzyResult.length > 0) {
-          historyData = fuzzyResult;
+        if (baseMatch && baseMatch.length > 0) {
+          historyData = baseMatch;
+        }
+      }
+
+      // Strategy 4: Search by item name patterns
+      if (historyData.length === 0 && itemName) {
+        const patterns = generateSearchPatterns(itemName);
+        
+        for (const pattern of patterns) {
+          const { data: nameMatch } = await supabase
+            .from('price_history')
+            .select('price, recorded_at, product_id')
+            .ilike('product_id', `%${pattern}%`)
+            .gte('recorded_at', startDate.toISOString())
+            .order('recorded_at', { ascending: true })
+            .limit(200);
+
+          if (nameMatch && nameMatch.length > 0) {
+            historyData = nameMatch;
+            break;
+          }
+        }
+      }
+
+      // Strategy 5: Category-based fallback
+      if (historyData.length === 0 && category) {
+        const categoryPrefix = category.split('-')[0].toLowerCase();
+        const { data: categoryMatch } = await supabase
+          .from('price_history')
+          .select('price, recorded_at, product_id')
+          .ilike('product_id', `${categoryPrefix}%`)
+          .gte('recorded_at', startDate.toISOString())
+          .order('recorded_at', { ascending: true })
+          .limit(50);
+
+        if (categoryMatch && categoryMatch.length > 0) {
+          // Take the most recent entries for this category
+          historyData = categoryMatch;
         }
       }
 
       if (historyData.length > 0) {
-        const formattedData = historyData.map((point) => ({
-          date: new Date(point.recorded_at).toLocaleDateString('en-US', { 
+        // Group by date and average if multiple entries per day
+        const groupedByDate = historyData.reduce((acc: Record<string, { total: number; count: number; recorded_at: string }>, point) => {
+          const dateKey = new Date(point.recorded_at).toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric' 
-          }),
-          price: Number(point.price),
-          recorded_at: point.recorded_at,
-        }));
+          });
+          if (!acc[dateKey]) {
+            acc[dateKey] = { total: 0, count: 0, recorded_at: point.recorded_at };
+          }
+          acc[dateKey].total += Number(point.price);
+          acc[dateKey].count += 1;
+          return acc;
+        }, {});
+
+        const formattedData = Object.entries(groupedByDate)
+          .map(([date, value]: [string, { total: number; count: number; recorded_at: string }]) => ({
+            date,
+            price: value.total / value.count,
+            recorded_at: value.recorded_at,
+          }))
+          .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime());
+        
         setData(formattedData);
       } else {
         setData([]);
