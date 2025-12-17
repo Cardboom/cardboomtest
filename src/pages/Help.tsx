@@ -26,7 +26,7 @@ const Help = () => {
     { id: 'payments', icon: CreditCard, title: 'Payments & Wallet', description: 'Payment methods, fees, and wallet' },
     { id: 'security', icon: Shield, title: 'Security & Verification', description: 'Account security and KYC' },
     { id: 'fractional', icon: PieChart, title: 'Fractional Shares', description: 'Investing in card shares' },
-    { id: 'gaming', icon: Gamepad2, title: 'Gaming Services', description: 'VP, UC, boosting & more' },
+    { id: 'gaming', icon: Gamepad2, title: 'Gaming Services', description: 'VP, UC, coaching & more' },
   ];
 
   const faqData: Record<string, Array<{ q: string; a: string }>> = {
@@ -62,9 +62,9 @@ const Help = () => {
     ],
     'gaming': [
       { q: 'How do I buy Valorant Points (VP)?', a: 'Go to Gaming → Valorant, select your region and VP amount, complete payment, and receive your VP code via email within minutes.' },
-      { q: 'Is boosting safe for my account?', a: 'Our verified boosters use VPNs and security measures. However, boosting may violate game ToS - use at your own discretion.' },
-      { q: 'What games does CardBoom Gaming support?', a: 'Valorant (VP), PUBG Mobile (UC), League of Legends, and coaching/boosting for various competitive games.' },
-      { q: 'Can I get a refund for gaming purchases?', a: 'Unused codes can be refunded within 24 hours. Activated codes and boosting services are non-refundable.' },
+      { q: 'How does coaching work?', a: 'Browse verified coaches, check their reviews and expertise, and book 1-on-1 sessions or VOD reviews. Coaches provide personalized training to help you improve.' },
+      { q: 'What games does CardBoom Gaming support?', a: 'Valorant (VP), PUBG Mobile (UC), League of Legends, and coaching/VOD review services for various competitive games.' },
+      { q: 'Can I get a refund for gaming purchases?', a: 'Unused codes can be refunded within 24 hours. Activated codes and completed coaching sessions are non-refundable.' },
     ],
   };
 

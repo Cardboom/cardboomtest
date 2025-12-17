@@ -51,8 +51,8 @@ export const Footer = () => {
               <li><Link to="/terms" className="hover:text-foreground transition-colors">{t.footer.terms}</Link></li>
               <li><Link to="/privacy" className="hover:text-foreground transition-colors">{t.footer.privacy}</Link></li>
               <li><Link to="/kvkk" className="hover:text-foreground transition-colors">KVKK</Link></li>
-              <li><Link to="/kullanici-sozlesmesi" className="hover:text-foreground transition-colors">Kullanıcı Sözleşmesi</Link></li>
-              <li><Link to="/mesafeli-satis-sozlesmesi" className="hover:text-foreground transition-colors">Mesafeli Satış</Link></li>
+              <li><Link to="/kullanici-sozlesmesi" className="hover:text-foreground transition-colors">{t.footer.userAgreement}</Link></li>
+              <li><Link to="/mesafeli-satis-sozlesmesi" className="hover:text-foreground transition-colors">{t.footer.distanceSales}</Link></li>
               <li><Link to="/api" className="hover:text-foreground transition-colors">API</Link></li>
             </ul>
           </div>
