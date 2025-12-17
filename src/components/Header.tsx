@@ -29,7 +29,9 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { AIMarketInsight } from '@/components/AIMarketInsight';
 import { cn } from '@/lib/utils';
+import { useTheme } from '@/hooks/useTheme';
 import cardboomLogo from '@/assets/cardboom-logo.png';
+import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
 interface HeaderProps {
   cartCount: number;
@@ -39,6 +41,8 @@ interface HeaderProps {
 export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,7 +139,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
             <img 
-              src={cardboomLogo} 
+              src={isDark ? cardboomLogoDark : cardboomLogo} 
               alt="CardBoom" 
               className="h-40 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
