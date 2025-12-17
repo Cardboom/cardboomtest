@@ -620,6 +620,38 @@ export type Database = {
           },
         ]
       }
+      discussion_votes: {
+        Row: {
+          created_at: string
+          discussion_id: string
+          id: string
+          user_id: string
+          vote_type: string
+        }
+        Insert: {
+          created_at?: string
+          discussion_id: string
+          id?: string
+          user_id: string
+          vote_type?: string
+        }
+        Update: {
+          created_at?: string
+          discussion_id?: string
+          id?: string
+          user_id?: string
+          vote_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discussion_votes_discussion_id_fkey"
+            columns: ["discussion_id"]
+            isOneToOne: false
+            referencedRelation: "discussions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discussions: {
         Row: {
           comment_count: number | null
@@ -629,12 +661,14 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_admin_created: boolean | null
+          language: string | null
           market_item_id: string | null
           price_at_creation: number | null
           sentiment_score: number | null
           title: string
           type: Database["public"]["Enums"]["discussion_type"]
           updated_at: string
+          upvotes: number | null
         }
         Insert: {
           comment_count?: number | null
@@ -644,12 +678,14 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_admin_created?: boolean | null
+          language?: string | null
           market_item_id?: string | null
           price_at_creation?: number | null
           sentiment_score?: number | null
           title: string
           type: Database["public"]["Enums"]["discussion_type"]
           updated_at?: string
+          upvotes?: number | null
         }
         Update: {
           comment_count?: number | null
@@ -659,12 +695,14 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_admin_created?: boolean | null
+          language?: string | null
           market_item_id?: string | null
           price_at_creation?: number | null
           sentiment_score?: number | null
           title?: string
           type?: Database["public"]["Enums"]["discussion_type"]
           updated_at?: string
+          upvotes?: number | null
         }
         Relationships: [
           {
