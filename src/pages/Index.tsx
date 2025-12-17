@@ -18,11 +18,11 @@ import { AIInsightsPanel } from '@/components/AIInsightsPanel';
 import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
 import { ActivityAnnouncementBanner } from '@/components/ActivityAnnouncementBanner';
+import { DailyXPClaimNotification } from '@/components/DailyXPClaimNotification';
 import { useMarketItems, useListings } from '@/hooks/useMarketItems';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useDailyStreakWithAchievements } from '@/hooks/useDailyStreakWithAchievements';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart } from 'lucide-react';
@@ -44,8 +44,6 @@ const Index = () => {
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showWaitlist, setShowWaitlist] = useState(false);
-  
-  useDailyStreakWithAchievements();
 
   // Check auth state
   useEffect(() => {
@@ -215,6 +213,7 @@ const Index = () => {
       </Helmet>
       {showWaitlist && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
       <ActivityAnnouncementBanner />
+      {user && <DailyXPClaimNotification />}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <MarketTicker />
       
