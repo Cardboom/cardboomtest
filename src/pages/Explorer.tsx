@@ -8,9 +8,9 @@ import { MarketExplorerTable } from '@/components/market/MarketExplorerTable';
 import { MarketExplorerStats } from '@/components/market/MarketExplorerStats';
 import { ListingsTable } from '@/components/market/ListingsTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, TrendingDown, BarChart3, Award, Layers, ShoppingBag, Sparkles, Trophy } from 'lucide-react';
+import { TrendingUp, TrendingDown, BarChart3, Award, Layers, ShoppingBag, Sparkles, Trophy, Gamepad2 } from 'lucide-react';
 
-export type MarketTab = 'all' | 'tcg' | 'sports' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers' | 'forsale';
+export type MarketTab = 'all' | 'tcg' | 'sports' | 'gamepoints' | 'graded' | 'figures' | 'trending' | 'gainers' | 'losers' | 'forsale';
 export type SortOption = 'change_24h' | 'change_7d' | 'change_30d' | 'price' | 'volume' | 'views' | 'liquidity' | 'recent';
 
 export interface MarketFilters {
@@ -91,6 +91,10 @@ const Explorer = () => {
                 <Trophy className="w-4 h-4 mr-2" />
                 Sports Cards
               </TabsTrigger>
+              <TabsTrigger value="gamepoints" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Gamepad2 className="w-4 h-4 mr-2" />
+                Game Points
+              </TabsTrigger>
               <TabsTrigger value="graded" className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 <Award className="w-4 h-4 mr-2" />
                 Graded (PSA)
@@ -154,6 +158,14 @@ const Explorer = () => {
                 sortBy={sortBy} 
                 sortOrder={sortOrder}
                 filterType="sports"
+              />
+            </TabsContent>
+            <TabsContent value="gamepoints" className="mt-0">
+              <MarketExplorerTable 
+                filters={filters} 
+                sortBy={sortBy} 
+                sortOrder={sortOrder}
+                filterType="gamepoints"
               />
             </TabsContent>
             <TabsContent value="graded" className="mt-0">
