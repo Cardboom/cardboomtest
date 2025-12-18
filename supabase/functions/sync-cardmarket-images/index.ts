@@ -126,6 +126,21 @@ function getImageUrl(card: CardmarketCard): string | null {
   return card.images?.large || card.images?.small || null;
 }
 
+// Check if an image URL is a sample/placeholder that should be replaced
+function isSampleOrBadImage(imageUrl: string | null): boolean {
+  if (!imageUrl) return true;
+  const lowerUrl = imageUrl.toLowerCase();
+  return (
+    lowerUrl.includes("sample") ||
+    lowerUrl.includes("placeholder") ||
+    lowerUrl.includes("no-image") ||
+    lowerUrl.includes("noimage") ||
+    lowerUrl.includes("default") ||
+    lowerUrl.includes("blank") ||
+    lowerUrl.length < 20 // Very short URLs are likely placeholders
+  );
+}
+
 function getPriceData(card: CardmarketCard): { price: number | null; trend: number | null } {
   const prices = card.prices;
   if (!prices) return { price: null, trend: null };
@@ -186,14 +201,20 @@ serve(async (req) => {
       category,
       delay_ms = 200, // 200ms = 5 req/sec = 300/min
       prioritize_valuable = true,
-      store_price_history = true
+      store_price_history = true,
+      refresh_old_images = true, // Also update items with old cached images
+      max_image_age_days = 30 // Refresh images older than this
     } = await req.json().catch(() => ({}));
 
+    // Calculate cutoff date for old images
+    const imageCutoffDate = new Date();
+    imageCutoffDate.setDate(imageCutoffDate.getDate() - max_image_age_days);
+
     // Build query for cards needing images or price updates
+    // Include: null images, placeholder images, sample images, and old cached images
     let query = supabase
       .from("market_items")
       .select("*")
-      .or("image_url.is.null,image_url.like.%placeholder%,image_url.eq.")
       .range(offset, offset + limit - 1);
 
     // Order by value if prioritizing valuable cards
@@ -207,6 +228,14 @@ serve(async (req) => {
     } else {
       // Only process TCG categories
       query = query.in("category", Object.keys(categoryToGame));
+    }
+
+    // Filter for items needing image updates
+    if (refresh_old_images) {
+      // Get items with: no image, sample images, placeholder images, or old cached images
+      query = query.or(`image_url.is.null,image_url.like.%placeholder%,image_url.like.%sample%,image_url.eq.,updated_at.lt.${imageCutoffDate.toISOString()}`);
+    } else {
+      query = query.or("image_url.is.null,image_url.like.%placeholder%,image_url.like.%sample%,image_url.eq.");
     }
 
     const { data: items, error: fetchError } = await query;
@@ -268,10 +297,26 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         };
 
-        // Add image if found
-        if (imageUrl) {
+        // Add image if found and it's better than current image
+        // Only update if: new image exists, is not a sample, and either we have no image or current is bad
+        const currentImageIsBad = isSampleOrBadImage(item.image_url);
+        const newImageIsGood = imageUrl && !isSampleOrBadImage(imageUrl);
+        
+        if (newImageIsGood && currentImageIsBad) {
           updateData.image_url = imageUrl;
           results.images_added++;
+          console.log(`[sync-cardmarket] Replacing image for ${item.name}: ${item.image_url?.substring(0, 50)} -> ${imageUrl.substring(0, 50)}`);
+        } else if (newImageIsGood && !currentImageIsBad) {
+          // Current image is fine, but check if it's old and needs refresh
+          const itemUpdated = new Date(item.updated_at);
+          const imageCutoff = new Date();
+          imageCutoff.setDate(imageCutoff.getDate() - 30);
+          
+          if (itemUpdated < imageCutoff) {
+            updateData.image_url = imageUrl;
+            results.images_added++;
+            console.log(`[sync-cardmarket] Refreshing old image for ${item.name}`);
+          }
         }
 
         // Add price data if available and different

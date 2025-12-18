@@ -176,7 +176,7 @@ export const DailyXPClaimNotification = ({ className }: DailyXPClaimNotification
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -20, scale: 0.95 }}
         className={cn(
-          "fixed top-28 right-4 z-50 max-w-sm",
+          "fixed top-36 right-4 z-50 max-w-sm",
           className
         )}
       >
