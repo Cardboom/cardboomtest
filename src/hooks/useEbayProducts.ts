@@ -43,6 +43,8 @@ export function useEbayProducts(category?: string, limit: number = 50): UseEbayP
         .select('*')
         .not('image_url', 'is', null)
         .neq('image_url', '')
+        .gt('current_price', 0) // Only items with real prices
+        .not('data_source', 'is', null) // Only verified data sources
         .order('is_trending', { ascending: false })
         .order('current_price', { ascending: false })
         .limit(limit);
