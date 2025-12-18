@@ -135,13 +135,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
         <AIMarketInsight />
       </div>
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-40 gap-4">
+        <div className="flex items-center justify-between h-16 gap-4">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
             <img 
               src={isDark ? cardboomLogoDark : cardboomLogo} 
               alt="CardBoom" 
-              className="h-16 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-40 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
           </Link>
 
