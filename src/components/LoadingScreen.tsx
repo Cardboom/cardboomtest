@@ -1,7 +1,12 @@
 import { motion } from 'framer-motion';
+import { useTheme } from '@/hooks/useTheme';
 import cardboomLogo from '@/assets/cardboom-logo.png';
+import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
 export const LoadingScreen = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
     <div className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center">
       {/* Animated background */}
@@ -18,9 +23,9 @@ export const LoadingScreen = () => {
         className="relative z-10"
       >
         <img 
-          src={cardboomLogo} 
+          src={isDark ? cardboomLogoDark : cardboomLogo} 
           alt="Cardboom" 
-          className="h-40 md:h-56 w-auto object-contain"
+          className="h-16 md:h-20 w-auto object-contain"
         />
       </motion.div>
 
