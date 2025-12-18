@@ -10,7 +10,9 @@ import { toast } from 'sonner';
 import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkles, TrendingUp, Star, Smartphone } from 'lucide-react';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
+import { useTheme } from '@/hooks/useTheme';
 import cardboomLogo from '@/assets/cardboom-logo.png';
+import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -23,6 +25,8 @@ type LoginMethod = 'email' | 'phone';
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -307,10 +311,10 @@ const Auth = () => {
             <div className="space-y-8">
               {/* Logo */}
               <div className="flex items-center gap-4">
-                <img 
-                  src={cardboomLogo} 
+              <img 
+                  src={isDark ? cardboomLogoDark : cardboomLogo} 
                   alt="Cardboom" 
-                  className="h-80 w-auto object-contain"
+                  className="h-16 md:h-20 w-auto object-contain"
                 />
               </div>
 
@@ -393,9 +397,9 @@ const Auth = () => {
             {/* Mobile Logo */}
             <div className="text-center mb-6 lg:hidden">
               <img 
-                src={cardboomLogo} 
+                src={isDark ? cardboomLogoDark : cardboomLogo} 
                 alt="Cardboom" 
-                className="h-56 w-auto object-contain mx-auto"
+                className="h-16 md:h-20 w-auto object-contain mx-auto"
               />
             </div>
 
