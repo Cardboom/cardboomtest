@@ -21,6 +21,10 @@ export const MarketTicker = () => {
         .from('market_items')
         .select('id, name, current_price, change_24h')
         .not('change_24h', 'is', null)
+        .not('image_url', 'is', null)
+        .neq('image_url', '')
+        .gt('current_price', 0)
+        .not('data_source', 'is', null)
         .order('change_24h', { ascending: false })
         .limit(50);
 

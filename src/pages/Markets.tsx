@@ -73,6 +73,7 @@ const Markets = () => {
   ];
 
   // Fetch items from database with real-time updates (30s cache TTL)
+  // Only show items with real images and verified prices
   const { 
     items: marketItems, 
     isLoading, 
@@ -80,7 +81,7 @@ const Markets = () => {
     refetch,
     lastUpdated,
     updateCount
-  } = useMarketItems({ limit: 1000, refreshInterval: 30000 });
+  } = useMarketItems({ limit: 1000, refreshInterval: 30000, requireImage: true });
 
   // Transform database items to display format
   const collectiblesWithPrices = useMemo(() => {

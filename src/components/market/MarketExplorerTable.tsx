@@ -55,7 +55,11 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
       try {
         let query = supabase
           .from('market_items')
-          .select('*', { count: 'exact' });
+          .select('*', { count: 'exact' })
+          .not('image_url', 'is', null)
+          .neq('image_url', '')
+          .gt('current_price', 0)
+          .not('data_source', 'is', null);
         
         // Apply category filter at database level
         if (filters.category && filters.category !== 'all') {

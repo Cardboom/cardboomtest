@@ -143,6 +143,7 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
       let query = supabase
         .from('market_items')
         .select('*')
+        .gt('current_price', 0) // Only items with real prices
         .order('is_trending', { ascending: false })
         .order('current_price', { ascending: false })
         .limit(limit);
@@ -155,10 +156,13 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
         query = query.eq('is_trending', true);
       }
 
-      // Only fetch items with images if required
+      // Only fetch items with images if required (default true for homepage)
       if (requireImage) {
         query = query.not('image_url', 'is', null).neq('image_url', '');
       }
+      
+      // Only show items with verified data sources (not mock)
+      query = query.not('data_source', 'is', null);
 
       const { data, error: queryError } = await query;
 
