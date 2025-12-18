@@ -34,6 +34,7 @@ interface UseMarketItemsOptions {
   limit?: number;
   trending?: boolean;
   refreshInterval?: number; // Cache TTL in ms (default 30s)
+  requireImage?: boolean; // Only fetch items with images
 }
 
 interface MarketItemsState {
@@ -45,7 +46,7 @@ interface MarketItemsState {
 }
 
 export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
-  const { category, limit = 100, trending, refreshInterval = 30000 } = options;
+  const { category, limit = 100, trending, refreshInterval = 30000, requireImage = false } = options;
   
   const [state, setState] = useState<MarketItemsState>({
     items: [],
@@ -154,6 +155,11 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
         query = query.eq('is_trending', true);
       }
 
+      // Only fetch items with images if required
+      if (requireImage) {
+        query = query.not('image_url', 'is', null).neq('image_url', '');
+      }
+
       const { data, error: queryError } = await query;
 
       if (queryError) throw queryError;
@@ -195,7 +201,7 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
         error: err instanceof Error ? err.message : 'Failed to fetch items',
       }));
     }
-  }, [category, limit, trending]);
+  }, [category, limit, trending, requireImage]);
 
   // Initial fetch - run only once on mount or when category/trending changes
   const initialFetchDone = useRef(false);
@@ -204,7 +210,7 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
     fetchItems();
     initialFetchDone.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, trending, limit]);
+  }, [category, trending, limit, requireImage]);
 
   // Real-time subscription - separate from fetch to prevent re-subscription loops
   useEffect(() => {

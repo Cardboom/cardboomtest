@@ -81,8 +81,12 @@ const Index = () => {
     setShowWaitlist(false);
   };
 
-  // Fetch items from database with real-time updates
-  const { items: marketItems, isLoading: marketLoading, lastUpdated, updateCount } = useMarketItems({ limit: 100, refreshInterval: 30000 });
+  // Fetch items from database with real-time updates - prioritize items with images
+  const { items: marketItems, isLoading: marketLoading, lastUpdated, updateCount } = useMarketItems({ 
+    limit: 100, 
+    refreshInterval: 30000,
+    requireImage: true // Only fetch items that have images
+  });
   
   // Also fetch active listings (user-created)
   const { listings, isLoading: listingsLoading } = useListings({ status: 'active' });
