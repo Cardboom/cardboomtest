@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Loader2, TrendingUp, TrendingDown, Droplets, ExternalLink, Package } from 'lucide-react';
+import { Search, Loader2, TrendingUp, Droplets, ExternalLink, Package, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CardScanResult {
   cardName: string;
@@ -16,22 +17,9 @@ interface CardScanResult {
   avgPrice: number;
   minPrice: number;
   maxPrice: number;
-  soldAvgPrice: number;
-  activeListingsCount: number;
-  soldListingsCount: number;
   liquidity: string;
   imageUrl?: string;
-  cachedImagePath?: string;
-  listings: {
-    id: string;
-    title: string;
-    price: number;
-    imageUrl?: string;
-    condition?: string;
-    seller?: string;
-    url?: string;
-  }[];
-  fromCache?: boolean;
+  salesCount?: number;
 }
 
 interface CardScannerProps {
@@ -56,18 +44,52 @@ export const CardScanner = ({ onSelectPrice, onCardScanned }: CardScannerProps) 
     setResult(null);
 
     try {
-      const { data, error: functionError } = await supabase.functions.invoke('scan-card', {
-        body: {
-          cardName: cardName.trim(),
-          setName: setName.trim() || undefined,
-          cardNumber: cardNumber.trim() || undefined,
-        },
-      });
+      // Search in market_items table for matching cards
+      let query = supabase
+        .from('market_items')
+        .select('*')
+        .ilike('name', `%${cardName.trim()}%`)
+        .gt('current_price', 0)
+        .limit(10);
 
-      if (functionError) throw new Error(functionError.message);
+      if (setName.trim()) {
+        query = query.ilike('set_name', `%${setName.trim()}%`);
+      }
 
-      setResult(data);
-      onCardScanned?.(data);
+      const { data, error: queryError } = await query;
+
+      if (queryError) throw new Error(queryError.message);
+
+      if (!data || data.length === 0) {
+        setError('No matching cards found in our database. Try a different search term.');
+        return;
+      }
+
+      // Calculate aggregate pricing from found items
+      const prices = data.map(item => item.current_price).filter(p => p > 0);
+      const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+
+      // Determine liquidity based on number of matches
+      let liquidity = 'low';
+      if (data.length > 5) liquidity = 'high';
+      else if (data.length > 2) liquidity = 'medium';
+
+      const scanResult: CardScanResult = {
+        cardName: cardName.trim(),
+        setName: setName.trim() || undefined,
+        cardNumber: cardNumber.trim() || undefined,
+        avgPrice: Math.round(avgPrice * 100) / 100,
+        minPrice: Math.round(minPrice * 100) / 100,
+        maxPrice: Math.round(maxPrice * 100) / 100,
+        liquidity,
+        imageUrl: data[0]?.image_url || undefined,
+        salesCount: data.length,
+      };
+
+      setResult(scanResult);
+      onCardScanned?.(scanResult);
     } catch (err) {
       console.error('Card scan error:', err);
       setError(err instanceof Error ? err.message : 'Failed to scan card');
@@ -92,7 +114,7 @@ export const CardScanner = ({ onSelectPrice, onCardScanned }: CardScannerProps) 
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Search className="w-5 h-5 text-primary" />
-            Card Scanner
+            Card Price Lookup
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -136,12 +158,12 @@ export const CardScanner = ({ onSelectPrice, onCardScanned }: CardScannerProps) 
                 {isScanning ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Scanning eBay...
+                    Searching...
                   </>
                 ) : (
                   <>
                     <Search className="w-4 h-4 mr-2" />
-                    Scan Card
+                    Search Price
                   </>
                 )}
               </Button>
@@ -152,9 +174,10 @@ export const CardScanner = ({ onSelectPrice, onCardScanned }: CardScannerProps) 
 
       {/* Error Message */}
       {error && (
-        <div className="bg-loss/10 text-loss border border-loss/30 rounded-lg p-4">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Results */}
@@ -191,14 +214,10 @@ export const CardScanner = ({ onSelectPrice, onCardScanned }: CardScannerProps) 
                   </div>
 
                   {/* Price Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Market Avg</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg">
+                      <p className="text-xs text-primary mb-1">Market Avg</p>
                       <p className="text-lg font-bold text-foreground">{formatPrice(result.avgPrice)}</p>
-                    </div>
-                    <div className="p-3 bg-gain/10 rounded-lg">
-                      <p className="text-xs text-gain mb-1">Sold Avg</p>
-                      <p className="text-lg font-bold text-gain">{formatPrice(result.soldAvgPrice)}</p>
                     </div>
                     <div className="p-3 bg-muted/30 rounded-lg">
                       <p className="text-xs text-muted-foreground mb-1">Min Price</p>
@@ -210,80 +229,27 @@ export const CardScanner = ({ onSelectPrice, onCardScanned }: CardScannerProps) 
                     </div>
                   </div>
 
-                  {/* Listings Count */}
+                  {/* Match Count */}
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <Package className="w-4 h-4" />
-                      <span>{result.activeListingsCount} active listings</span>
+                      <span>{result.salesCount} matching items found</span>
                     </div>
-                    <div className="flex items-center gap-1 text-gain">
-                      <TrendingUp className="w-4 h-4" />
-                      <span>{result.soldListingsCount} recently sold</span>
-                    </div>
-                    {result.fromCache && (
-                      <Badge variant="outline" className="text-xs">Cached</Badge>
-                    )}
                   </div>
 
                   {/* Use Price Button */}
                   {onSelectPrice && (
                     <Button
-                      onClick={() => onSelectPrice(result.soldAvgPrice || result.avgPrice, result.imageUrl)}
+                      onClick={() => onSelectPrice(result.avgPrice, result.imageUrl)}
                       className="w-full md:w-auto"
                     >
-                      Use Suggested Price: {formatPrice(result.soldAvgPrice || result.avgPrice)}
+                      Use Suggested Price: {formatPrice(result.avgPrice)}
                     </Button>
                   )}
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Active Listings */}
-          {result.listings.length > 0 && (
-            <Card className="border-border/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Current eBay Listings</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-border/30">
-                  {result.listings.map((listing) => (
-                    <div key={listing.id} className="flex items-center gap-4 p-4 hover:bg-muted/20 transition-colors">
-                      {listing.imageUrl && (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary/50 shrink-0">
-                          <img
-                            src={listing.imageUrl}
-                            alt={listing.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground line-clamp-2">{listing.title}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                          {listing.condition && <span>{listing.condition}</span>}
-                          {listing.seller && <span>• {listing.seller}</span>}
-                        </div>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-bold text-foreground">{formatPrice(listing.price)}</p>
-                        {listing.url && (
-                          <a
-                            href={listing.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs text-primary hover:underline inline-flex items-center gap-1"
-                          >
-                            View <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       )}
     </div>

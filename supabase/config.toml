@@ -30,22 +30,10 @@ verify_jwt = false
 [functions.generate-item-image]
 verify_jwt = false
 
-[functions.fetch-ebay-sales]
-verify_jwt = false
-
 [functions.market-insights]
 verify_jwt = false
 
 [functions.geliver-shipping]
-verify_jwt = false
-
-[functions.scan-card]
-verify_jwt = false
-
-[functions.populate-ebay-products]
-verify_jwt = false
-
-[functions.ebay-oauth]
 verify_jwt = false
 
 [functions.sync-tcgdex-images]

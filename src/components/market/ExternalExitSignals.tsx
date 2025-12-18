@@ -11,7 +11,6 @@ interface ExternalExitSignalsProps {
 }
 
 const PLATFORM_CONFIG: Record<string, { name: string; color: string; url: string }> = {
-  ebay: { name: 'eBay', color: 'text-blue-500', url: 'https://ebay.com' },
   tcgplayer: { name: 'TCGPlayer', color: 'text-orange-500', url: 'https://tcgplayer.com' },
   cardmarket: { name: 'Cardmarket', color: 'text-purple-500', url: 'https://cardmarket.com' },
   stockx: { name: 'StockX', color: 'text-green-500', url: 'https://stockx.com' },

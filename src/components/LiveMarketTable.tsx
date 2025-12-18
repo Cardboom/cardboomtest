@@ -92,16 +92,11 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <div className="col-span-4 flex items-center gap-3">
-                <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-secondary/50 shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-secondary/50 shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   {index === 0 && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-gold rounded-full flex items-center justify-center">
                       <Sparkles className="w-2.5 h-2.5 text-background" />
-                    </div>
-                  )}
-                  {item.source === 'ebay' && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                      <Activity className="w-2.5 h-2.5 text-primary-foreground" />
                     </div>
                   )}
                 </div>
