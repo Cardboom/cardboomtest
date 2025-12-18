@@ -41,6 +41,8 @@ export function useEbayProducts(category?: string, limit: number = 50): UseEbayP
       let query = supabase
         .from('market_items')
         .select('*')
+        .not('image_url', 'is', null)
+        .neq('image_url', '')
         .order('is_trending', { ascending: false })
         .order('current_price', { ascending: false })
         .limit(limit);
