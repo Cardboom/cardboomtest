@@ -90,6 +90,27 @@ const Index = () => {
   const isLoading = marketLoading || listingsLoading;
 
   // Transform database market items to Collectible format
+  // Extract year from item name/set or use category-based defaults
+  const getItemYear = (item: typeof marketItems[0]): number => {
+    // Try to extract 4-digit year from name or set_name
+    const yearMatch = (item.name + ' ' + (item.set_name || '')).match(/\b(19[89]\d|20[0-2]\d)\b/);
+    if (yearMatch) return parseInt(yearMatch[1]);
+    
+    // Category-based defaults for vintage items
+    const categoryDefaults: Record<string, number> = {
+      'pokemon': 1999,
+      'mtg': 1993,
+      'yugioh': 2002,
+      'nba': 1996,
+      'nfl': 2000,
+      'mlb': 2000,
+      'onepiece': 2022,
+      'lorcana': 2023,
+      'lol-riftbound': 2024,
+    };
+    return categoryDefaults[item.category] || new Date().getFullYear();
+  };
+
   const marketCollectibles = useMemo(() => {
     return marketItems.map(item => ({
       id: item.id,
@@ -103,7 +124,7 @@ const Index = () => {
       rarity: (item.rarity as 'common' | 'rare' | 'legendary' | 'grail') || 'rare',
       seller: 'CardBoom',
       condition: 'Mint',
-      year: new Date(item.created_at).getFullYear(),
+      year: getItemYear(item),
       brand: item.set_name || item.subcategory || item.category,
       trending: item.is_trending ?? false,
       priceUpdated: false,
