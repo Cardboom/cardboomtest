@@ -366,6 +366,193 @@ export type Database = {
           },
         ]
       }
+      creator_analytics: {
+        Row: {
+          call_views: number | null
+          creator_id: string
+          date: string
+          id: string
+          new_followers: number | null
+          page_views: number | null
+          referral_clicks: number | null
+          unique_visitors: number | null
+          watchlist_views: number | null
+        }
+        Insert: {
+          call_views?: number | null
+          creator_id: string
+          date?: string
+          id?: string
+          new_followers?: number | null
+          page_views?: number | null
+          referral_clicks?: number | null
+          unique_visitors?: number | null
+          watchlist_views?: number | null
+        }
+        Update: {
+          call_views?: number | null
+          creator_id?: string
+          date?: string
+          id?: string
+          new_followers?: number | null
+          page_views?: number | null
+          referral_clicks?: number | null
+          unique_visitors?: number | null
+          watchlist_views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_analytics_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_call_followups: {
+        Row: {
+          call_id: string
+          content: string
+          created_at: string
+          creator_id: string
+          id: string
+          price_at_followup: number
+        }
+        Insert: {
+          call_id: string
+          content: string
+          created_at?: string
+          creator_id: string
+          id?: string
+          price_at_followup: number
+        }
+        Update: {
+          call_id?: string
+          content?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+          price_at_followup?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_call_followups_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "creator_market_calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_call_followups_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_followers: {
+        Row: {
+          creator_id: string
+          followed_at: string
+          follower_user_id: string
+          id: string
+          referral_source: string | null
+        }
+        Insert: {
+          creator_id: string
+          followed_at?: string
+          follower_user_id: string
+          id?: string
+          referral_source?: string | null
+        }
+        Update: {
+          creator_id?: string
+          followed_at?: string
+          follower_user_id?: string
+          id?: string
+          referral_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_followers_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_market_calls: {
+        Row: {
+          call_type: string
+          created_at: string
+          creator_id: string
+          current_price: number | null
+          id: string
+          is_public: boolean | null
+          liquidity_at_call: string | null
+          market_item_id: string
+          outcome_status: string | null
+          outcome_updated_at: string | null
+          price_at_call: number
+          price_change_percent: number | null
+          thesis: string | null
+          time_to_exit_days: number | null
+          volume_at_call: number | null
+        }
+        Insert: {
+          call_type: string
+          created_at?: string
+          creator_id: string
+          current_price?: number | null
+          id?: string
+          is_public?: boolean | null
+          liquidity_at_call?: string | null
+          market_item_id: string
+          outcome_status?: string | null
+          outcome_updated_at?: string | null
+          price_at_call: number
+          price_change_percent?: number | null
+          thesis?: string | null
+          time_to_exit_days?: number | null
+          volume_at_call?: number | null
+        }
+        Update: {
+          call_type?: string
+          created_at?: string
+          creator_id?: string
+          current_price?: number | null
+          id?: string
+          is_public?: boolean | null
+          liquidity_at_call?: string | null
+          market_item_id?: string
+          outcome_status?: string | null
+          outcome_updated_at?: string | null
+          price_at_call?: number
+          price_change_percent?: number | null
+          thesis?: string | null
+          time_to_exit_days?: number | null
+          volume_at_call?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_market_calls_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_market_calls_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_picks: {
         Row: {
           created_at: string
@@ -416,7 +603,11 @@ export type Database = {
       }
       creator_profiles: {
         Row: {
+          accuracy_rate: number | null
+          accurate_calls: number | null
+          avatar_url: string | null
           bio: string | null
+          cover_image_url: string | null
           created_at: string
           creator_name: string
           follower_count: number | null
@@ -426,13 +617,21 @@ export type Database = {
           platform: string
           platform_handle: string | null
           portfolio_public: boolean | null
+          referral_clicks: number | null
           specialty_categories: string[] | null
+          total_calls: number | null
+          total_views: number | null
           updated_at: string
           user_id: string
+          username: string | null
           watchlist_public: boolean | null
         }
         Insert: {
+          accuracy_rate?: number | null
+          accurate_calls?: number | null
+          avatar_url?: string | null
           bio?: string | null
+          cover_image_url?: string | null
           created_at?: string
           creator_name: string
           follower_count?: number | null
@@ -442,13 +641,21 @@ export type Database = {
           platform: string
           platform_handle?: string | null
           portfolio_public?: boolean | null
+          referral_clicks?: number | null
           specialty_categories?: string[] | null
+          total_calls?: number | null
+          total_views?: number | null
           updated_at?: string
           user_id: string
+          username?: string | null
           watchlist_public?: boolean | null
         }
         Update: {
+          accuracy_rate?: number | null
+          accurate_calls?: number | null
+          avatar_url?: string | null
           bio?: string | null
+          cover_image_url?: string | null
           created_at?: string
           creator_name?: string
           follower_count?: number | null
@@ -458,12 +665,111 @@ export type Database = {
           platform?: string
           platform_handle?: string | null
           portfolio_public?: boolean | null
+          referral_clicks?: number | null
           specialty_categories?: string[] | null
+          total_calls?: number | null
+          total_views?: number | null
           updated_at?: string
           user_id?: string
+          username?: string | null
           watchlist_public?: boolean | null
         }
         Relationships: []
+      }
+      creator_watchlist_items: {
+        Row: {
+          added_at: string
+          id: string
+          is_active: boolean | null
+          market_item_id: string
+          note: string | null
+          price_when_added: number
+          price_when_removed: number | null
+          removed_at: string | null
+          watchlist_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          is_active?: boolean | null
+          market_item_id: string
+          note?: string | null
+          price_when_added: number
+          price_when_removed?: number | null
+          removed_at?: string | null
+          watchlist_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          is_active?: boolean | null
+          market_item_id?: string
+          note?: string | null
+          price_when_added?: number
+          price_when_removed?: number | null
+          removed_at?: string | null
+          watchlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_watchlist_items_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_watchlist_items_watchlist_id_fkey"
+            columns: ["watchlist_id"]
+            isOneToOne: false
+            referencedRelation: "creator_watchlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_watchlists: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          is_public: boolean | null
+          slug: string
+          thesis: string | null
+          title: string
+          updated_at: string
+          views_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          is_public?: boolean | null
+          slug: string
+          thesis?: string | null
+          title: string
+          updated_at?: string
+          views_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          is_public?: boolean | null
+          slug?: string
+          thesis?: string | null
+          title?: string
+          updated_at?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_watchlists_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_logins: {
         Row: {
@@ -3267,6 +3573,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_call_outcomes: { Args: never; Returns: undefined }
       update_reputation: {
         Args: {
           p_event_type: string
