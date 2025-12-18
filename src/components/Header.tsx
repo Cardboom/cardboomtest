@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -210,6 +210,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
+                          <Link to="/explorer" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                              <Search className="w-4 h-4 text-blue-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">Explorer</div>
+                              <div className="text-xs text-muted-foreground">Browse all cards & items</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
                           <Link to="/deals" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
                             <div className="w-9 h-9 rounded-md bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
                               <Sparkles className="w-4 h-4 text-amber-500" />
@@ -217,6 +230,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                             <div>
                               <div className="font-medium text-sm">{t.nav.deals}</div>
                               <div className="text-xs text-muted-foreground">Arbitrage & hot deals</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/trades" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                              <ArrowLeftRight className="w-4 h-4 text-purple-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">Trades & Offers</div>
+                              <div className="text-xs text-muted-foreground">Manage your trades</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -250,6 +276,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[280px] gap-1 p-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/circle" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                              <MessageCircle className="w-4 h-4 text-blue-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">Circle</div>
+                              <div className="text-xs text-muted-foreground">Discussions & insights</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
                       <li>
                         <NavigationMenuLink asChild>
                           <Link to="/leaderboard" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
@@ -289,6 +328,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                           </Link>
                         </NavigationMenuLink>
                       </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/referrals" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-9 h-9 rounded-md bg-pink-500/10 flex items-center justify-center group-hover:bg-pink/20 transition-colors">
+                              <Mic className="w-4 h-4 text-pink-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">Creators & Ambassadors</div>
+                              <div className="text-xs text-muted-foreground">Become a creator</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
                     </ul>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
@@ -303,20 +355,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               {t.nav.gaming}
             </Link>
             <Link 
-              to="/circle" 
-              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md flex items-center gap-1.5"
-            >
-              <Users className="w-4 h-4" />
-              Circle
-            </Link>
-            <Link 
               to="/sell" 
               className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
             >
               {t.nav.sell}
             </Link>
             <Link 
-              to="/vault" 
+              to="/portfolio" 
               className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
             >
               {t.nav.portfolio}
@@ -382,14 +427,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       </span>
                     )}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/notifications')} className="relative">
-                    <Bell className="w-4 h-4 mr-2" />
-                    Notifications
-                    {unreadNotifications > 0 && (
-                      <span className="ml-auto bg-destructive text-destructive-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
-                        {unreadNotifications > 99 ? '99+' : unreadNotifications}
-                      </span>
-                    )}
+                  <DropdownMenuItem onClick={() => navigate('/portfolio')}>
+                    <PieChart className="w-4 h-4 mr-2" />
+                    My Portfolio
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/trades')}>
+                    <ArrowLeftRight className="w-4 h-4 mr-2" />
+                    Trades & Offers
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
@@ -465,9 +509,17 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 <TrendingUp className="w-4 h-4" />
                 {t.nav.markets}
               </Link>
+              <Link to="/explorer" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Search className="w-4 h-4" />
+                Explorer
+              </Link>
               <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Sparkles className="w-4 h-4" />
                 {t.nav.deals}
+              </Link>
+              <Link to="/trades" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <ArrowLeftRight className="w-4 h-4" />
+                Trades & Offers
               </Link>
               <Link to="/fractional" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <PieChart className="w-4 h-4" />
@@ -478,6 +530,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <div className="py-2 px-2 mt-2">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</span>
               </div>
+              <Link to="/circle" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <MessageCircle className="w-4 h-4" />
+                Circle
+              </Link>
               <Link to="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Trophy className="w-4 h-4" />
                 Leaderboard
@@ -486,13 +542,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 <Crown className="w-4 h-4" />
                 Hall of Fame
               </Link>
+              <Link to="/achievements" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <Award className="w-4 h-4" />
+                Achievements
+              </Link>
               <Link to="/gaming" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                 <Gamepad2 className="w-4 h-4" />
                 {t.nav.gaming}
-              </Link>
-              <Link to="/circle" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Users className="w-4 h-4" />
-                Circle
               </Link>
               
               {/* Sell & Portfolio */}
@@ -502,7 +558,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
                 {t.nav.sell}
               </Link>
-              <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/portfolio" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                <PieChart className="w-4 h-4" />
                 {t.nav.portfolio}
               </Link>
               {user && (
@@ -510,6 +567,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <Link to="/wallet" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                     <Wallet className="w-4 h-4" />
                     {t.nav.wallet}
+                  </Link>
+                  <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
+                    <Vault className="w-4 h-4" />
+                    My Vault
                   </Link>
                   <Link to="/messages" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                     <MessageCircle className="w-4 h-4" />
@@ -521,7 +582,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </Link>
                   <Link to="/referrals" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                     <Gift className="w-4 h-4" />
-                    {t.nav.referrals}
+                    Creators & Ambassadors
                   </Link>
                 </>
               )}
