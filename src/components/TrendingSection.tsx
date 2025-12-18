@@ -1,28 +1,31 @@
-import { TrendingUp, TrendingDown, ArrowRight, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { useNavigate } from 'react-router-dom';
-import { useEbayProducts } from '@/hooks/useEbayProducts';
+import { useMarketItems } from '@/hooks/useMarketItems';
 import { formatGrade } from '@/hooks/useGradePrices';
 
 export const TrendingSection = () => {
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
-  const { products: ebayProducts, isLoading, populateProducts } = useEbayProducts(undefined, 20);
-  const [isPopulating, setIsPopulating] = useState(false);
+  const { items: marketItems, isLoading } = useMarketItems({ 
+    trending: true, 
+    limit: 20, 
+    requireImage: true 
+  });
   
   const trending = useMemo(() => {
     // Get trending products from database
-    const trendingProducts = ebayProducts
+    const trendingProducts = marketItems
       .filter(p => p.is_trending || (p.change_24h && p.change_24h > 0))
       .sort((a, b) => (b.change_24h || 0) - (a.change_24h || 0))
       .slice(0, 8)
       .map(p => ({
         id: p.id,
-        priceId: p.external_id || p.id,
+        priceId: p.id,
         name: p.name,
         category: p.category,
         image: p.image_url || '/placeholder.svg',
@@ -32,17 +35,11 @@ export const TrendingSection = () => {
         grade: p.subcategory?.toLowerCase().includes('psa') ? p.subcategory : 'raw',
         brand: p.subcategory || p.category,
         trending: true,
-        priceUpdated: false,
+        priceUpdated: p.priceUpdated || false,
       }));
 
     return trendingProducts;
-  }, [ebayProducts]);
-
-  const handlePopulate = async () => {
-    setIsPopulating(true);
-    await populateProducts();
-    setIsPopulating(false);
-  };
+  }, [marketItems]);
 
   if (isLoading && trending.length === 0) {
     return (
@@ -82,26 +79,14 @@ export const TrendingSection = () => {
           <h2 className="font-display text-2xl font-bold text-foreground">
             Trending Now 🔥
           </h2>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handlePopulate}
-                disabled={isPopulating}
-                className="gap-2"
-              >
-                <RefreshCw className={cn("w-4 h-4", isPopulating && "animate-spin")} />
-                {isPopulating ? 'Loading...' : 'Refresh'}
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="text-muted-foreground hover:text-foreground"
-                onClick={() => navigate('/markets')}
-              >
-                View All
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
+          <Button 
+            variant="ghost" 
+            className="text-muted-foreground hover:text-foreground"
+            onClick={() => navigate('/markets')}
+          >
+            View All
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
 
         <div className="overflow-x-auto pb-4">

@@ -214,7 +214,7 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
       <div className="divide-y divide-border/30">
         {filteredData.length === 0 ? (
           <div className="p-8 text-center text-muted-foreground">
-            No items found. Try fetching from eBay in the Trending section.
+            No items found. Try adjusting your filters or check back later.
           </div>
         ) : (
           filteredData.map((item, index) => (
