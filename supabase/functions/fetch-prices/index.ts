@@ -300,18 +300,17 @@ async function fetchPriceChartingPrice(query: string): Promise<{ price: number; 
   }
 }
 
-// Fetch price from PriceCharting by console/product ID (more accurate for linked items)
-async function fetchPriceChartingById(consoleName: string, productId: string): Promise<{ price: number; source: string } | null> {
+// Fetch price from PriceCharting by numeric ID (most items use this)
+async function fetchPriceChartingByNumericId(numericId: string): Promise<{ price: number; source: string } | null> {
   if (!PRICECHARTING_API_KEY) {
     console.log('[fetch-prices] PriceCharting API key not configured');
     return null;
   }
 
   try {
-    // PriceCharting API accepts console-name and id in the product endpoint
-    const url = `https://www.pricecharting.com/api/product?t=${PRICECHARTING_API_KEY}&console=${encodeURIComponent(consoleName)}&id=${encodeURIComponent(productId)}`;
+    const url = `https://www.pricecharting.com/api/product?t=${PRICECHARTING_API_KEY}&id=${numericId}`;
     
-    console.log(`[fetch-prices] Fetching from PriceCharting by ID: ${consoleName}/${productId}`);
+    console.log(`[fetch-prices] Fetching from PriceCharting by numeric ID: ${numericId}`);
     
     const response = await fetch(url);
     if (!response.ok) {
@@ -328,16 +327,16 @@ async function fetchPriceChartingById(consoleName: string, productId: string): P
       const newPrice = product['new-price'] ? product['new-price'] / 100 : 0;
       const gradedPrice = product['graded-price'] ? product['graded-price'] / 100 : 0;
       
-      // For TCG cards: use graded > cib > new > loose
-      const price = gradedPrice || cibPrice || newPrice || loosePrice;
+      // For TCG cards: use loose price (ungraded card value), then graded, cib, new
+      const price = loosePrice || gradedPrice || cibPrice || newPrice;
       
       if (price > 0) {
-        console.log(`[fetch-prices] PriceCharting ID found: $${price} for ${consoleName}/${productId}`);
+        console.log(`[fetch-prices] PriceCharting ID ${numericId} found: $${price}`);
         return { price, source: 'pricecharting' };
       }
     }
     
-    console.log(`[fetch-prices] No PriceCharting price found for ID: ${consoleName}/${productId}`);
+    console.log(`[fetch-prices] No PriceCharting price found for ID: ${numericId}`);
     return null;
   } catch (error) {
     console.error(`[fetch-prices] PriceCharting ID error:`, error);
@@ -345,19 +344,19 @@ async function fetchPriceChartingById(consoleName: string, productId: string): P
   }
 }
 
-// Parse external_id to extract PriceCharting console and product ID
-function parsePriceChartingExternalId(externalId: string): { consoleName: string; productId: string } | null {
-  // Format: pricecharting_console-name_product-id
+// Parse external_id to extract PriceCharting ID info
+function parsePriceChartingExternalId(externalId: string): { type: 'numeric' | 'slug'; value: string } | null {
   if (!externalId?.startsWith('pricecharting_')) return null;
   
-  const parts = externalId.replace('pricecharting_', '').split('_');
-  if (parts.length >= 2) {
-    return {
-      consoleName: parts[0],
-      productId: parts.slice(1).join('_')
-    };
+  const idPart = externalId.replace('pricecharting_', '');
+  
+  // Check if it's a numeric ID (e.g., pricecharting_4727088)
+  if (/^\d+$/.test(idPart)) {
+    return { type: 'numeric', value: idPart };
   }
-  return null;
+  
+  // Otherwise it's a slug-based ID (use name search as fallback)
+  return { type: 'slug', value: idPart };
 }
 
 // Generate eBay search query from item name and category
@@ -617,12 +616,12 @@ serve(async (req) => {
           let pcData = null;
           
           // Try ID-based lookup first (more accurate)
-          const pcIds = parsePriceChartingExternalId(item.external_id);
-          if (pcIds) {
-            pcData = await fetchPriceChartingById(pcIds.consoleName, pcIds.productId);
+          const pcIdInfo = parsePriceChartingExternalId(item.external_id);
+          if (pcIdInfo?.type === 'numeric') {
+            pcData = await fetchPriceChartingByNumericId(pcIdInfo.value);
           }
           
-          // Fall back to search query
+          // Fall back to search query for slug-based IDs or if numeric lookup failed
           if (!pcData) {
             const searchQuery = mockIdToPriceChartingQuery[item.external_id] || item.name;
             pcData = await fetchPriceChartingPrice(searchQuery);
