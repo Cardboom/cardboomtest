@@ -254,7 +254,7 @@ const mockIdToPriceChartingQuery: Record<string, string> = {
   'riftbound-sleeved-booster': 'Riftbound Origins Sleeved Booster',
 };
 
-// Fetch price from PriceCharting API
+// Fetch price from PriceCharting API by search query
 async function fetchPriceChartingPrice(query: string): Promise<{ price: number; source: string } | null> {
   if (!PRICECHARTING_API_KEY) {
     console.log('[fetch-prices] PriceCharting API key not configured');
@@ -298,6 +298,66 @@ async function fetchPriceChartingPrice(query: string): Promise<{ price: number; 
     console.error(`[fetch-prices] PriceCharting error:`, error);
     return null;
   }
+}
+
+// Fetch price from PriceCharting by console/product ID (more accurate for linked items)
+async function fetchPriceChartingById(consoleName: string, productId: string): Promise<{ price: number; source: string } | null> {
+  if (!PRICECHARTING_API_KEY) {
+    console.log('[fetch-prices] PriceCharting API key not configured');
+    return null;
+  }
+
+  try {
+    // PriceCharting API accepts console-name and id in the product endpoint
+    const url = `https://www.pricecharting.com/api/product?t=${PRICECHARTING_API_KEY}&console=${encodeURIComponent(consoleName)}&id=${encodeURIComponent(productId)}`;
+    
+    console.log(`[fetch-prices] Fetching from PriceCharting by ID: ${consoleName}/${productId}`);
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`[fetch-prices] PriceCharting product API error: ${response.status}`);
+      return null;
+    }
+
+    const product = await response.json();
+    
+    if (product && !product.error) {
+      // PriceCharting returns prices in cents
+      const loosePrice = product['loose-price'] ? product['loose-price'] / 100 : 0;
+      const cibPrice = product['cib-price'] ? product['cib-price'] / 100 : 0;
+      const newPrice = product['new-price'] ? product['new-price'] / 100 : 0;
+      const gradedPrice = product['graded-price'] ? product['graded-price'] / 100 : 0;
+      
+      // For TCG cards: use graded > cib > new > loose
+      const price = gradedPrice || cibPrice || newPrice || loosePrice;
+      
+      if (price > 0) {
+        console.log(`[fetch-prices] PriceCharting ID found: $${price} for ${consoleName}/${productId}`);
+        return { price, source: 'pricecharting' };
+      }
+    }
+    
+    console.log(`[fetch-prices] No PriceCharting price found for ID: ${consoleName}/${productId}`);
+    return null;
+  } catch (error) {
+    console.error(`[fetch-prices] PriceCharting ID error:`, error);
+    return null;
+  }
+}
+
+// Parse external_id to extract PriceCharting console and product ID
+function parsePriceChartingExternalId(externalId: string): { consoleName: string; productId: string } | null {
+  // Format: pricecharting_console-name_product-id
+  if (!externalId?.startsWith('pricecharting_')) return null;
+  
+  const parts = externalId.replace('pricecharting_', '').split('_');
+  if (parts.length >= 2) {
+    return {
+      consoleName: parts[0],
+      productId: parts.slice(1).join('_')
+    };
+  }
+  return null;
 }
 
 // Generate eBay search query from item name and category
@@ -516,7 +576,7 @@ serve(async (req) => {
     // Build query for market items
     let query = supabase
       .from('market_items')
-      .select('id, external_id, name, current_price, change_24h, category, subcategory, sales_count_30d, liquidity, image_url');
+      .select('id, external_id, name, current_price, change_24h, category, subcategory, sales_count_30d, liquidity, image_url, data_source');
     
     if (category) {
       query = query.eq('category', category);
@@ -548,7 +608,72 @@ serve(async (req) => {
       for (const item of marketItems) {
         const itemKey = item.external_id || item.id;
         
-        if (ebayToken) {
+        // Check data_source to determine which API to use
+        const usePriceCharting = item.data_source === 'pricecharting' || 
+                                  item.external_id?.startsWith('pricecharting_');
+        
+        // Try PriceCharting first for items with that data source
+        if (usePriceCharting) {
+          let pcData = null;
+          
+          // Try ID-based lookup first (more accurate)
+          const pcIds = parsePriceChartingExternalId(item.external_id);
+          if (pcIds) {
+            pcData = await fetchPriceChartingById(pcIds.consoleName, pcIds.productId);
+          }
+          
+          // Fall back to search query
+          if (!pcData) {
+            const searchQuery = mockIdToPriceChartingQuery[item.external_id] || item.name;
+            pcData = await fetchPriceChartingPrice(searchQuery);
+          }
+          
+          if (pcData && pcData.price > 0) {
+            const oldPrice = Number(item.current_price) || pcData.price;
+            const change = ((pcData.price - oldPrice) / oldPrice) * 100;
+            
+            prices[itemKey] = {
+              price: pcData.price,
+              change: Math.round(change * 100) / 100,
+              source: 'pricecharting',
+              timestamp: new Date().toISOString(),
+              liquidity: item.liquidity || 'medium',
+              salesCount: item.sales_count_30d || undefined,
+              imageUrl: item.image_url || undefined,
+            };
+            
+            // Update database with PriceCharting price
+            const { error: updateError } = await supabase
+              .from('market_items')
+              .update({
+                current_price: pcData.price,
+                change_24h: Math.round(change * 100) / 100,
+                data_source: 'pricecharting',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', item.id);
+              
+            if (updateError) {
+              console.error(`[fetch-prices] Failed to update ${item.name}:`, updateError);
+            } else {
+              console.log(`[fetch-prices] Updated ${item.name} to $${pcData.price} (PriceCharting)`);
+            }
+            
+            // Log to price history
+            await supabase.from('price_history').insert({
+              product_id: item.id,
+              price: pcData.price,
+              source: 'pricecharting',
+              recorded_at: new Date().toISOString(),
+            });
+            
+            await new Promise(resolve => setTimeout(resolve, 200));
+            continue;
+          }
+        }
+        
+        // Use eBay for non-PriceCharting items
+        if (ebayToken && !usePriceCharting) {
           const ebayQuery = generateEbayQuery(item.name, item.category, item.subcategory);
           const ebayData = await fetchEbayPrice(ebayQuery, ebayToken);
           
@@ -584,6 +709,7 @@ serve(async (req) => {
           }
         }
 
+        // Use cached database price as fallback
         if (item.current_price && Number(item.current_price) > 0) {
           prices[itemKey] = {
             price: Number(item.current_price),
