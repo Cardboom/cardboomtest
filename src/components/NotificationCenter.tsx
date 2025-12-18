@@ -1,4 +1,5 @@
-import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, BellRing, BellOff } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, BellRing, BellOff, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications } from '@/hooks/useNotifications';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
 const getNotificationIcon = (type: string) => {
@@ -38,6 +41,93 @@ const getNotificationIcon = (type: string) => {
 export const NotificationCenter = () => {
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
+  const { toast } = useToast();
+  
+  const [canClaimXP, setCanClaimXP] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [xpReward, setXpReward] = useState(0);
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  const checkDailyXP = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todayLogin } = await supabase
+      .from('daily_logins')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('login_date', today)
+      .single();
+
+    if (!todayLogin) {
+      // Check yesterday's streak
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      const { data: yesterdayLogin } = await supabase
+        .from('daily_logins')
+        .select('streak_count')
+        .eq('user_id', user.id)
+        .eq('login_date', yesterdayStr)
+        .single();
+
+      const streak = yesterdayLogin ? (yesterdayLogin.streak_count || 0) + 1 : 1;
+      const reward = Math.min(10 + (streak - 1) * 5, 100);
+      
+      setCurrentStreak(streak);
+      setXpReward(reward);
+      setCanClaimXP(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkDailyXP();
+  }, [checkDailyXP]);
+
+  const claimDailyXP = async () => {
+    setIsClaiming(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Insert daily login
+      await supabase.from('daily_logins').insert({
+        user_id: user.id,
+        login_date: today,
+        streak_count: currentStreak
+      });
+
+      // Update profile XP
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('xp, level')
+        .eq('id', user.id)
+        .single();
+
+      const newXP = (profile?.xp || 0) + xpReward;
+      const newLevel = Math.floor(newXP / 1000) + 1;
+
+      await supabase
+        .from('profiles')
+        .update({ xp: newXP, level: newLevel })
+        .eq('id', user.id);
+
+      toast({
+        title: `+${xpReward} XP Claimed!`,
+        description: `Day ${currentStreak} streak bonus!`,
+      });
+
+      setCanClaimXP(false);
+    } catch (error) {
+      console.error('Error claiming XP:', error);
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   const handlePushToggle = () => {
     if (isSubscribed) {
@@ -50,15 +140,12 @@ export const NotificationCenter = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative h-9 w-9">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge
-              variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </Badge>
+            <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-destructive text-destructive-foreground rounded-sm text-[10px] font-bold flex items-center justify-center px-1">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </div>
           )}
         </Button>
       </DropdownMenuTrigger>
@@ -77,6 +164,27 @@ export const NotificationCenter = () => {
             </Button>
           )}
         </DropdownMenuLabel>
+
+        {/* Daily XP Claim */}
+        {canClaimXP && (
+          <>
+            <DropdownMenuItem 
+              onClick={claimDailyXP}
+              className="cursor-pointer bg-gradient-to-r from-primary/10 to-amber-500/10 hover:from-primary/20 hover:to-amber-500/20"
+              disabled={isClaiming}
+            >
+              <Sparkles className="h-4 w-4 mr-2 text-amber-500" />
+              <div className="flex-1">
+                <span className="font-medium">Claim Daily XP</span>
+                <span className="text-xs text-muted-foreground ml-2">
+                  +{xpReward} XP (Day {currentStreak})
+                </span>
+              </div>
+              <Gift className="h-4 w-4 text-primary animate-pulse" />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         
         {/* Push notifications toggle */}
         {isSupported && (
