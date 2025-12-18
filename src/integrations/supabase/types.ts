@@ -2099,6 +2099,53 @@ export type Database = {
           },
         ]
       }
+      price_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_triggered: boolean
+          market_item_id: string
+          target_price: number
+          triggered_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_triggered?: boolean
+          market_item_id: string
+          target_price: number
+          triggered_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_triggered?: boolean
+          market_item_id?: string
+          target_price?: number
+          triggered_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_alerts_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_history: {
         Row: {
           id: string
