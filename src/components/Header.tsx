@@ -29,6 +29,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { AIMarketInsight } from '@/components/AIMarketInsight';
 import { cn } from '@/lib/utils';
+import { SmartSearch } from '@/components/SmartSearch';
 import { useTheme } from '@/hooks/useTheme';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
@@ -145,35 +146,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             />
           </Link>
 
-          {/* Search Bar - Improved visibility */}
-          <div className={cn(
-            "hidden md:flex items-center flex-1 max-w-md relative transition-all duration-200",
-            searchFocused && "max-w-lg"
-          )}>
-            <div className={cn(
-              "relative w-full group",
-              searchFocused && "ring-2 ring-primary/20 rounded-lg"
-            )}>
-              <Search className={cn(
-                "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors",
-                searchFocused ? "text-primary" : "text-muted-foreground"
-              )} />
-              <Input
-                type="text"
-                placeholder={t.nav.search}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchQuery.trim()) {
-                    navigate(`/markets?search=${encodeURIComponent(searchQuery.trim())}`);
-                    setSearchQuery('');
-                  }
-                }}
-                className="w-full pl-10 pr-4 h-10 bg-muted/50 hover:bg-muted/70 border-border/50 focus:border-primary/50 focus:bg-background rounded-lg text-sm placeholder:text-muted-foreground/70 transition-all"
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-              />
-            </div>
+          {/* Smart Search with Autocomplete */}
+          <div className="hidden md:flex items-center flex-1 max-w-md">
+            <SmartSearch placeholder={t.nav.search} className="w-full" />
           </div>
 
           {/* Desktop Nav with Grouped Menus */}

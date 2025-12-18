@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { TrendingUp, TrendingDown, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { LiveTickerPrice } from './LiveTickerPrice';
 import { formatGrade } from '@/hooks/useGradePrices';
 import { CardPlaceholder } from './market/CardPlaceholder';
+import { MiniSparkline } from './market/MiniSparkline';
+
 interface CollectibleCardProps {
   collectible: Collectible;
   onAddToCart: (collectible: Collectible) => void;
@@ -19,6 +21,22 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
   const [priceDirection, setPriceDirection] = useState<'up' | 'down' | null>(null);
   const prevPriceRef = useRef(collectible.price);
   const isPositive = collectible.priceChange >= 0;
+
+  // Generate sparkline data based on price change trend
+  const sparklineData = useMemo(() => {
+    const basePrice = collectible.price;
+    const changePercent = collectible.priceChange / 100;
+    const startPrice = basePrice / (1 + changePercent);
+    
+    // Generate 8 data points showing the trend
+    return Array.from({ length: 8 }, (_, i) => {
+      const progress = i / 7;
+      const trend = startPrice + (basePrice - startPrice) * progress;
+      // Add small random variations for realism
+      const variation = trend * (Math.sin(i * 1.5) * 0.02);
+      return trend + variation;
+    });
+  }, [collectible.price, collectible.priceChange]);
 
   // Animate price changes
   useEffect(() => {
@@ -155,9 +173,9 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
           <span>{collectible.year}</span>
         </div>
 
-        {/* Price Section with Live Ticker */}
+        {/* Price Section with Live Ticker and Sparkline */}
         <div className="flex items-end justify-between">
-          <div>
+          <div className="flex-1">
             <div className="text-2xl font-bold font-display text-foreground">
               <LiveTickerPrice 
                 value={collectible.price} 
@@ -165,16 +183,24 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
                 volatility={0.003}
               />
             </div>
-            <div className={cn(
-              'flex items-center gap-1 text-sm font-medium',
-              isPositive ? 'text-gain' : 'text-loss'
-            )}>
-              {isPositive ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-              {isPositive ? '+' : ''}{collectible.priceChange.toFixed(2)}%
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                'flex items-center gap-1 text-sm font-medium',
+                isPositive ? 'text-gain' : 'text-loss'
+              )}>
+                {isPositive ? (
+                  <TrendingUp className="w-3 h-3" />
+                ) : (
+                  <TrendingDown className="w-3 h-3" />
+                )}
+                {isPositive ? '+' : ''}{collectible.priceChange.toFixed(1)}%
+              </div>
+              <MiniSparkline 
+                data={sparklineData} 
+                positive={isPositive}
+                width={40}
+                height={16}
+              />
             </div>
           </div>
 
