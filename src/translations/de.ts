@@ -82,6 +82,8 @@ export const de: Translations = {
     browseListings: "Alle verfügbaren Angebote durchsuchen",
     loading: "Lade Sammlerstücke...",
     noItems: "Keine Artikel in dieser Kategorie gefunden",
+    activeListings: "Aktive Angebote",
+    view: "Ansehen",
   },
   smartHub: {
     title: "Smart Trading Hub",

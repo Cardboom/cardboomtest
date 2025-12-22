@@ -84,6 +84,8 @@ export const en = {
     browseListings: "Browse all available listings",
     loading: "Loading collectibles...",
     noItems: "No items found in this category",
+    activeListings: "Active Listings",
+    view: "View",
   },
   // Smart Hub
   smartHub: {

@@ -82,6 +82,8 @@ export const ar: Translations = {
     browseListings: "تصفح جميع الإعلانات المتاحة",
     loading: "جارٍ تحميل المقتنيات...",
     noItems: "لم يتم العثور على عناصر في هذه الفئة",
+    activeListings: "الإعلانات النشطة",
+    view: "عرض",
   },
   smartHub: {
     title: "مركز التداول الذكي",
