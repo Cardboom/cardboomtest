@@ -27,6 +27,7 @@ import {
   normalizeCategory,
   normalizeSlug 
 } from '@/lib/seoSlug';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CardPage = () => {
   const { category, slug } = useParams();
@@ -35,6 +36,7 @@ const CardPage = () => {
   const location = useLocation();
   const queryClient = useQueryClient();
   const [user, setUser] = useState<any>(null);
+  const { t } = useLanguage();
 
   // Get variant params from query string (not path)
   const gradeParam = searchParams.get('grade')?.toUpperCase() || 'RAW';
@@ -481,7 +483,7 @@ const CardPage = () => {
             <section aria-labelledby="listings-heading">
               <div className="glass rounded-xl p-6">
                 <h2 id="listings-heading" className="font-display text-xl font-semibold text-foreground mb-4">
-                  Active Listings ({activeListings?.length || 0})
+                  {t.market.activeListings} ({activeListings?.length || 0})
                 </h2>
                 {activeListings && activeListings.length > 0 ? (
                   <div className="space-y-3">
@@ -505,7 +507,7 @@ const CardPage = () => {
                               <p className="font-display text-xl font-bold">${listing.price}</p>
                               <Button size="sm" asChild>
                                 <Link to={`/listing/${listing.id}`}>
-                                  View <ExternalLink className="w-3 h-3 ml-1" />
+                                  {t.market.view} <ExternalLink className="w-3 h-3 ml-1" />
                                 </Link>
                               </Button>
                             </div>

@@ -82,6 +82,8 @@ export const tr: Translations = {
     browseListings: "Mevcut tüm ilanları incele",
     loading: "Koleksiyonlar yükleniyor...",
     noItems: "Bu kategoride ürün bulunamadı",
+    activeListings: "Aktif İlanlar",
+    view: "Görüntüle",
   },
   smartHub: {
     title: "Akıllı İşlem Merkezi",

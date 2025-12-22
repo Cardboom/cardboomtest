@@ -82,6 +82,8 @@ export const fr: Translations = {
     browseListings: "Parcourir toutes les annonces disponibles",
     loading: "Chargement des objets de collection...",
     noItems: "Aucun article trouvé dans cette catégorie",
+    activeListings: "Annonces Actives",
+    view: "Voir",
   },
   smartHub: {
     title: "Hub de Trading Intelligent",
