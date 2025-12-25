@@ -30,8 +30,9 @@ export const Footer = () => {
               <li><Link to="/explorer?category=football" className="hover:text-foreground transition-colors">{t.footer.footballCards}</Link></li>
               <li><Link to="/explorer?category=pokemon" className="hover:text-foreground transition-colors">{t.footer.tcg}</Link></li>
               <li><Link to="/explorer?category=figures" className="hover:text-foreground transition-colors">{t.footer.figures}</Link></li>
-              <li><Link to="/trades" className="hover:text-foreground transition-colors">Trades & Offers</Link></li>
-              <li><Link to="/fractional" className="hover:text-foreground transition-colors">Fractional Ownership</Link></li>
+              <li><Link to="/trades" className="hover:text-foreground transition-colors">{t.nav.tradesOffers}</Link></li>
+              <li><Link to="/fractional" className="hover:text-foreground transition-colors">{t.fractional.title}</Link></li>
+              <li><Link to="/reels" className="hover:text-foreground transition-colors">{t.nav.reels}</Link></li>
             </ul>
           </div>
 
@@ -40,8 +41,8 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link to="/about" className="hover:text-foreground transition-colors">{t.footer.about}</Link></li>
               <li><Link to="/careers" className="hover:text-foreground transition-colors">{t.footer.careers}</Link></li>
-              <li><Link to="/referrals" className="hover:text-foreground transition-colors">Creators & Ambassadors</Link></li>
-              <li><Link to="/pricing" className="hover:text-foreground transition-colors">Pricing & Pro</Link></li>
+              <li><Link to="/referrals" className="hover:text-foreground transition-colors">{t.footer.creatorsAmbassadors}</Link></li>
+              <li><Link to="/pricing" className="hover:text-foreground transition-colors">{t.footer.pricingPro}</Link></li>
               <li><Link to="/blog" className="hover:text-foreground transition-colors">{t.footer.blog}</Link></li>
               <li><Link to="/press" className="hover:text-foreground transition-colors">{t.footer.press}</Link></li>
             </ul>
@@ -52,7 +53,7 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link to="/help" className="hover:text-foreground transition-colors">{t.footer.helpCenter}</Link></li>
               <li><Link to="/safety" className="hover:text-foreground transition-colors">{t.footer.safety}</Link></li>
-              <li><Link to="/api" className="hover:text-foreground transition-colors">API & Developers</Link></li>
+              <li><Link to="/api" className="hover:text-foreground transition-colors">{t.footer.apiDevelopers}</Link></li>
               <li><Link to="/terms" className="hover:text-foreground transition-colors">{t.footer.terms}</Link></li>
               <li><Link to="/privacy" className="hover:text-foreground transition-colors">{t.footer.privacy}</Link></li>
               <li><Link to="/kvkk" className="hover:text-foreground transition-colors">KVKK</Link></li>

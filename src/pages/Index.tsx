@@ -25,8 +25,9 @@ import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart } from 'lucide-react';
+import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart, Film } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -345,6 +346,11 @@ const Index = () => {
 
         <ScrollReveal>
           <TrendingSection />
+        </ScrollReveal>
+
+        {/* Reels Preview Section */}
+        <ScrollReveal>
+          <ReelsPreviewSection />
         </ScrollReveal>
         {/* Platform Features */}
         <ScrollReveal>
