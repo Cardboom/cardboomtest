@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, Send, CornerDownRight, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,12 +25,11 @@ export function CommentsDrawer({ reelId, isOpen, onClose }: CommentsDrawerProps)
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Get current user
-  useState(() => {
+  useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setCurrentUserId(user?.id || null);
     });
-  });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,19 +167,20 @@ interface CommentItemProps {
 
 function CommentItem({ comment, currentUserId, onLike, onReply, onDelete, formatTime, isReply }: CommentItemProps) {
   const { t } = useLanguage();
+  const displayName = comment.user?.display_name || 'User';
 
   return (
     <div className={cn("flex gap-3", isReply && "ml-10")}>
       <Avatar className="w-8 h-8 shrink-0">
         <AvatarImage src={comment.user?.avatar_url || undefined} />
         <AvatarFallback className="text-xs">
-          {comment.user?.username?.[0]?.toUpperCase() || 'U'}
+          {displayName[0]?.toUpperCase() || 'U'}
         </AvatarFallback>
       </Avatar>
       
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-sm">@{comment.user?.username || 'user'}</span>
+          <span className="font-semibold text-sm">@{displayName}</span>
           <span className="text-xs text-muted-foreground">{formatTime(comment.created_at)}</span>
           {comment.is_pinned && (
             <span className="text-xs text-primary font-medium">{t.reels?.pinned || 'Pinned'}</span>
