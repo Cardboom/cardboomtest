@@ -17,9 +17,9 @@ export interface Reel {
   is_featured: boolean;
   created_at: string;
   user?: {
-    username: string | null;
-    avatar_url: string | null;
+    id?: string;
     display_name: string | null;
+    avatar_url: string | null;
   };
   tagged_card?: {
     name: string;
@@ -41,9 +41,9 @@ export interface ReelComment {
   is_pinned: boolean;
   created_at: string;
   user?: {
-    username: string | null;
-    avatar_url: string | null;
+    id?: string;
     display_name: string | null;
+    avatar_url: string | null;
   };
   is_liked?: boolean;
   replies?: ReelComment[];
@@ -63,11 +63,7 @@ export function useReels(feedType: 'for_you' | 'following' | 'trending' = 'for_y
       
       let query = supabase
         .from('card_reels')
-        .select(`
-          *,
-          user:profiles!card_reels_user_id_fkey(username, avatar_url, display_name),
-          tagged_card:market_items(name, image_url, current_price, category)
-        `)
+        .select('*')
         .eq('is_active', true)
         .order(feedType === 'trending' ? 'like_count' : 'created_at', { ascending: false })
         .range(offset, offset + limit - 1);
@@ -88,9 +84,40 @@ export function useReels(feedType: 'for_you' | 'following' | 'trending' = 'for_y
 
       if (error) throw error;
 
-      let reelsWithLikes = data as Reel[];
+      if (!data || data.length === 0) {
+        if (offset === 0) setReels([]);
+        setHasMore(false);
+        setLoading(false);
+        return;
+      }
 
-      if (user && data) {
+      // Fetch user profiles separately
+      const userIds = [...new Set(data.map(r => r.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .in('id', userIds);
+
+      const profilesMap = new Map((profiles || []).map(p => [p.id, p]));
+
+      // Fetch tagged cards separately
+      const cardIds = data.filter(r => r.tagged_card_id).map(r => r.tagged_card_id);
+      let cardsMap = new Map();
+      if (cardIds.length > 0) {
+        const { data: cards } = await supabase
+          .from('market_items')
+          .select('id, name, image_url, current_price, category')
+          .in('id', cardIds);
+        cardsMap = new Map(cards?.map(c => [c.id, c]) || []);
+      }
+
+      let reelsWithData = data.map(reel => ({
+        ...reel,
+        user: profilesMap.get(reel.user_id) as Reel['user'],
+        tagged_card: reel.tagged_card_id ? cardsMap.get(reel.tagged_card_id) as Reel['tagged_card'] : undefined,
+      })) as Reel[];
+
+      if (user) {
         const reelIds = data.map(r => r.id);
         
         const { data: likes } = await supabase
@@ -108,20 +135,20 @@ export function useReels(feedType: 'for_you' | 'following' | 'trending' = 'for_y
         const likedIds = new Set(likes?.map(l => l.reel_id) || []);
         const savedIds = new Set(saves?.map(s => s.reel_id) || []);
 
-        reelsWithLikes = data.map(reel => ({
+        reelsWithData = reelsWithData.map(reel => ({
           ...reel,
           is_liked: likedIds.has(reel.id),
           is_saved: savedIds.has(reel.id),
-        })) as Reel[];
+        }));
       }
 
       if (offset === 0) {
-        setReels(reelsWithLikes);
+        setReels(reelsWithData);
       } else {
-        setReels(prev => [...prev, ...reelsWithLikes]);
+        setReels(prev => [...prev, ...reelsWithData]);
       }
 
-      setHasMore(data?.length === limit);
+      setHasMore(data.length === limit);
     } catch (error) {
       console.error('Error fetching reels:', error);
       toast({
@@ -258,12 +285,10 @@ export function useReelComments(reelId: string) {
       
       const { data: { user } } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase
+      // Fetch parent comments
+      const { data: parentComments, error } = await supabase
         .from('reel_comments')
-        .select(`
-          *,
-          user:profiles!reel_comments_user_id_fkey(username, avatar_url, display_name)
-        `)
+        .select('*')
         .eq('reel_id', reelId)
         .eq('is_active', true)
         .is('parent_id', null)
@@ -273,49 +298,67 @@ export function useReelComments(reelId: string) {
 
       if (error) throw error;
 
+      if (!parentComments || parentComments.length === 0) {
+        setComments([]);
+        setLoading(false);
+        return;
+      }
+
       // Fetch replies
       const { data: replies } = await supabase
         .from('reel_comments')
-        .select(`
-          *,
-          user:profiles!reel_comments_user_id_fkey(username, avatar_url, display_name)
-        `)
+        .select('*')
         .eq('reel_id', reelId)
         .eq('is_active', true)
         .not('parent_id', 'is', null)
         .order('created_at', { ascending: true });
 
-      let commentsWithLikes = data as ReelComment[];
+      // Fetch user profiles for all comments
+      const allComments = [...parentComments, ...(replies || [])];
+      const userIds = [...new Set(allComments.map(c => c.user_id))];
+      
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .in('id', userIds);
 
-      if (user && data) {
-        const commentIds = [...data.map(c => c.id), ...(replies?.map(r => r.id) || [])];
-        
+      const profilesMap = new Map((profiles || []).map(p => [p.id, p]));
+
+      // Check which comments user has liked
+      let likedIds = new Set<string>();
+      if (user) {
+        const commentIds = allComments.map(c => c.id);
         const { data: likes } = await supabase
           .from('reel_comment_likes')
           .select('comment_id')
           .eq('user_id', user.id)
           .in('comment_id', commentIds);
 
-        const likedIds = new Set(likes?.map(l => l.comment_id) || []);
-
-        const repliesMap = new Map<string, ReelComment[]>();
-        replies?.forEach(reply => {
-          const parentReplies = repliesMap.get(reply.parent_id!) || [];
-          parentReplies.push({
-            ...reply,
-            is_liked: likedIds.has(reply.id),
-          } as ReelComment);
-          repliesMap.set(reply.parent_id!, parentReplies);
-        });
-
-        commentsWithLikes = data.map(comment => ({
-          ...comment,
-          is_liked: likedIds.has(comment.id),
-          replies: repliesMap.get(comment.id) || [],
-        })) as ReelComment[];
+        likedIds = new Set(likes?.map(l => l.comment_id) || []);
       }
 
-      setComments(commentsWithLikes);
+      // Build replies map
+      const repliesMap = new Map<string, ReelComment[]>();
+      replies?.forEach(reply => {
+        const replyWithData = {
+          ...reply,
+          user: profilesMap.get(reply.user_id) as ReelComment['user'],
+          is_liked: likedIds.has(reply.id),
+        } as ReelComment;
+        const parentReplies = repliesMap.get(reply.parent_id!) || [];
+        parentReplies.push(replyWithData);
+        repliesMap.set(reply.parent_id!, parentReplies);
+      });
+
+      // Build final comments array
+      const commentsWithData = parentComments.map(comment => ({
+        ...comment,
+        user: profilesMap.get(comment.user_id) as ReelComment['user'],
+        is_liked: likedIds.has(comment.id),
+        replies: repliesMap.get(comment.id) || [],
+      })) as ReelComment[];
+
+      setComments(commentsWithData);
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {

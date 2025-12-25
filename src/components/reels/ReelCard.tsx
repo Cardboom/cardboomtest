@@ -29,6 +29,7 @@ export function ReelCard({ reel, isActive, onOpenComments, onLikeChange, onSaveC
   const [likeCount, setLikeCount] = useState(reel.like_count);
   const [hasViewed, setHasViewed] = useState(false);
   const [doubleTapAnimation, setDoubleTapAnimation] = useState(false);
+  const lastTapRef = useRef(0);
   
   const { likeReel, unlikeReel, saveReel, unsaveReel, incrementView, shareReel } = useReelActions();
 
@@ -115,16 +116,17 @@ export function ReelCard({ reel, isActive, onOpenComments, onLikeChange, onSaveC
     return count.toString();
   };
 
-  let lastTap = 0;
   const handleTap = () => {
     const now = Date.now();
-    if (now - lastTap < 300) {
+    if (now - lastTapRef.current < 300) {
       handleDoubleTap();
     } else {
       togglePlay();
     }
-    lastTap = now;
+    lastTapRef.current = now;
   };
+
+  const displayName = reel.user?.display_name || 'User';
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
@@ -195,11 +197,11 @@ export function ReelCard({ reel, isActive, onOpenComments, onLikeChange, onSaveC
       {/* Right side actions */}
       <div className="absolute right-4 bottom-32 flex flex-col items-center gap-5">
         {/* Profile */}
-        <Link to={`/u/${reel.user?.username || reel.user_id}`} className="relative">
+        <Link to={`/profile/${reel.user_id}`} className="relative">
           <Avatar className="w-12 h-12 ring-2 ring-primary">
             <AvatarImage src={reel.user?.avatar_url || undefined} />
             <AvatarFallback className="bg-primary text-primary-foreground">
-              {reel.user?.username?.[0]?.toUpperCase() || 'U'}
+              {displayName[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
@@ -274,13 +276,10 @@ export function ReelCard({ reel, isActive, onOpenComments, onLikeChange, onSaveC
       {/* Bottom info */}
       <div className="absolute bottom-6 left-4 right-20">
         {/* User info */}
-        <Link to={`/u/${reel.user?.username || reel.user_id}`} className="flex items-center gap-2 mb-3">
+        <Link to={`/profile/${reel.user_id}`} className="flex items-center gap-2 mb-3">
           <span className="text-white font-bold text-sm">
-            @{reel.user?.username || 'user'}
+            @{displayName}
           </span>
-          {reel.user?.display_name && (
-            <span className="text-white/70 text-sm">• {reel.user.display_name}</span>
-          )}
         </Link>
 
         {/* Title */}
