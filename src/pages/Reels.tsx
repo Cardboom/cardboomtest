@@ -87,18 +87,14 @@ export default function Reels() {
               </TabsList>
             </Tabs>
 
-            {/* Create button */}
-            {user && (
-              <Button
-                onClick={() => setCreateOpen(true)}
-                size="icon"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg shadow-primary/25"
-              >
-                <Plus className="w-5 h-5" />
-              </Button>
-            )}
-
-            {!user && <div className="w-10" />}
+            {/* Create button - always visible */}
+            <Button
+              onClick={() => user ? setCreateOpen(true) : window.location.href = '/auth'}
+              size="icon"
+              className="bg-[#00D4FF] hover:bg-[#00B8E6] text-black rounded-full shadow-lg shadow-[#00D4FF]/30 h-10 w-10"
+            >
+              <Plus className="w-6 h-6" />
+            </Button>
           </div>
         </motion.header>
 

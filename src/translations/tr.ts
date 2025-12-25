@@ -29,7 +29,7 @@ export const tr: Translations = {
     explorerDesc: "Tüm kartları ve öğeleri görüntüle",
     tradesOffers: "Takaslar ve Teklifler",
     tradesOffersDesc: "Takaslarınızı yönetin",
-    reels: "Reels",
+    reels: "Boom Reels",
   },
   hero: {
     badge: "TCG Yatırımının Geleceği",

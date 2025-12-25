@@ -28,7 +28,7 @@ export const en = {
     explorerDesc: "Browse all cards & items",
     tradesOffers: "Trades & Offers",
     tradesOffersDesc: "Manage your trades",
-    reels: "Reels",
+    reels: "Boom Reels",
   },
   // Hero
   hero: {
