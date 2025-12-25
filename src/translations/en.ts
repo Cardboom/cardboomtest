@@ -10,9 +10,12 @@ export const en = {
     profile: "Profile",
     search: "Search collectibles...",
     markets: "Markets",
+    marketsDesc: "Live prices & charts",
     deals: "Deals",
+    dealsDesc: "Arbitrage & hot deals",
     leaderboard: "Leaderboard",
     fractional: "Fractional",
+    fractionalDesc: "Own fractions of grails",
     gaming: "Gaming",
     wallet: "Wallet",
     myProfile: "My Profile",
@@ -20,6 +23,12 @@ export const en = {
     myListings: "My Listings",
     referrals: "Referrals & XP",
     verifiedSeller: "Verified Seller",
+    trading: "Trading",
+    explorer: "Explorer",
+    explorerDesc: "Browse all cards & items",
+    tradesOffers: "Trades & Offers",
+    tradesOffersDesc: "Manage your trades",
+    reels: "Reels",
   },
   // Hero
   hero: {
@@ -212,6 +221,9 @@ export const en = {
     distanceSales: "Distance Sales",
     copyright: "© 2025 Brainbaby Bilişim A.Ş. All rights reserved.",
     address: "Iran Caddesi 55/9, Gaziosmanpaşa Mahallesi, Çankaya, Ankara, Türkiye",
+    creatorsAmbassadors: "Creators & Ambassadors",
+    pricingPro: "Pricing & Pro",
+    apiDevelopers: "API & Developers",
   },
   // Badges
   badges: {

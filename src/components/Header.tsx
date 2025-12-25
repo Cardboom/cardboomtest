@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -160,13 +160,22 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               {t.nav.marketplace}
             </Link>
             
+            {/* Reels Link */}
+            <Link 
+              to="/reels" 
+              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md flex items-center gap-1.5"
+            >
+              <Film className="w-4 h-4" />
+              {t.nav.reels}
+            </Link>
+            
             {/* Trading Dropdown */}
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-sm font-medium text-foreground/80 hover:text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3">
                     <TrendingUp className="w-4 h-4 mr-1.5" />
-                    Trading
+                    {t.nav.trading}
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[280px] gap-1 p-2">
@@ -178,7 +187,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                             </div>
                             <div>
                               <div className="font-medium text-sm">{t.nav.markets}</div>
-                              <div className="text-xs text-muted-foreground">Live prices & charts</div>
+                              <div className="text-xs text-muted-foreground">{t.nav.marketsDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -190,8 +199,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <Search className="w-4 h-4 text-blue-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">Explorer</div>
-                              <div className="text-xs text-muted-foreground">Browse all cards & items</div>
+                              <div className="font-medium text-sm">{t.nav.explorer}</div>
+                              <div className="text-xs text-muted-foreground">{t.nav.explorerDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -204,7 +213,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                             </div>
                             <div>
                               <div className="font-medium text-sm">{t.nav.deals}</div>
-                              <div className="text-xs text-muted-foreground">Arbitrage & hot deals</div>
+                              <div className="text-xs text-muted-foreground">{t.nav.dealsDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -216,8 +225,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <ArrowLeftRight className="w-4 h-4 text-purple-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">Trades & Offers</div>
-                              <div className="text-xs text-muted-foreground">Manage your trades</div>
+                              <div className="font-medium text-sm">{t.nav.tradesOffers}</div>
+                              <div className="text-xs text-muted-foreground">{t.nav.tradesOffersDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -230,7 +239,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                             </div>
                             <div>
                               <div className="font-medium text-sm">{t.nav.fractional}</div>
-                              <div className="text-xs text-muted-foreground">Own fractions of grails</div>
+                              <div className="text-xs text-muted-foreground">{t.nav.fractionalDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
