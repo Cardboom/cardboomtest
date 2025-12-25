@@ -11,6 +11,7 @@ import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkle
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
+import { useLanguage } from '@/contexts/LanguageContext';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
@@ -26,6 +27,7 @@ type LoginMethod = 'email' | 'phone';
 const Auth = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -293,7 +295,7 @@ const Auth = () => {
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Cardboom
+            {t.auth.backToHome}
           </motion.button>
         </div>
       </header>
@@ -411,13 +413,13 @@ const Auth = () => {
                     value="login" 
                     className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium transition-all"
                   >
-                    Sign In
+                    {t.auth.signIn}
                   </TabsTrigger>
                   <TabsTrigger 
                     value="register" 
                     className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium transition-all"
                   >
-                    Register
+                    {t.auth.register}
                   </TabsTrigger>
                 </TabsList>
 
@@ -438,7 +440,7 @@ const Auth = () => {
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                       </svg>
-                      Continue with Google
+                      {t.auth.continueWithGoogle}
                     </Button>
 
                     <div className="relative">
@@ -446,7 +448,7 @@ const Auth = () => {
                         <span className="w-full border-t border-border/50" />
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                        <span className="bg-background px-2 text-muted-foreground">{t.auth.orContinueWith}</span>
                       </div>
                     </div>
 
@@ -480,7 +482,7 @@ const Auth = () => {
                     {loginMethod === 'email' ? (
                       <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-2">
-                          <Label htmlFor="login-email" className="text-foreground font-medium">Email</Label>
+                          <Label htmlFor="login-email" className="text-foreground font-medium">{t.auth.email}</Label>
                           <Input
                             id="login-email"
                             type="email"
@@ -493,7 +495,7 @@ const Auth = () => {
                           {errors.email && <p className="text-destructive text-sm">{errors.email}</p>}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="login-password" className="text-foreground font-medium">Password</Label>
+                          <Label htmlFor="login-password" className="text-foreground font-medium">{t.auth.password}</Label>
                           <Input
                             id="login-password"
                             type="password"
@@ -510,7 +512,7 @@ const Auth = () => {
                           disabled={loading}
                           className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-lg rounded-xl shadow-lg hover:shadow-glow transition-all"
                         >
-                          {loading ? 'Signing in...' : 'Sign In'}
+                          {loading ? `${t.auth.signIn}...` : t.auth.signIn}
                         </Button>
                       </form>
                     ) : (
@@ -520,7 +522,7 @@ const Auth = () => {
                             <div className="space-y-2">
                               <Label htmlFor="login-phone" className="text-foreground font-medium flex items-center gap-2">
                                 <Phone className="w-4 h-4" />
-                                Phone Number
+                                {t.auth.phone}
                               </Label>
                               <Input
                                 id="login-phone"
@@ -595,7 +597,7 @@ const Auth = () => {
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                       </svg>
-                      Sign up with Google
+                      {t.auth.continueWithGoogle}
                     </Button>
 
                     <div className="relative">
@@ -603,7 +605,7 @@ const Auth = () => {
                         <span className="w-full border-t border-border/50" />
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">Or register with email</span>
+                        <span className="bg-background px-2 text-muted-foreground">{t.auth.orContinueWith}</span>
                       </div>
                     </div>
 
@@ -612,24 +614,24 @@ const Auth = () => {
                     <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-4 space-y-3">
                       <div className="flex items-center gap-2 text-purple-400 font-semibold">
                         <Sparkles className="w-5 h-5" />
-                        Early Access Benefits
+                        {t.auth.earlyAccessBenefits}
                       </div>
                       <ul className="grid grid-cols-2 gap-2 text-xs">
                         <li className="flex items-center gap-2 text-foreground/80">
                           <span className="text-primary">✓</span>
-                          <strong>2x XP Bonus</strong>
+                          <strong>{t.auth.xpBonus}</strong>
                         </li>
                         <li className="flex items-center gap-2 text-foreground/80">
                           <span className="text-primary">✓</span>
-                          <strong>Beta Tester Badge</strong>
+                          <strong>{t.auth.betaTesterBadge}</strong>
                         </li>
                         <li className="flex items-center gap-2 text-foreground/80">
                           <span className="text-primary">✓</span>
-                          <strong>Reduced Fees</strong>
+                          <strong>{t.auth.reducedFees}</strong>
                         </li>
                         <li className="flex items-center gap-2 text-foreground/80">
                           <span className="text-primary">✓</span>
-                          <strong>Daily Streak Bonuses</strong>
+                          <strong>{t.auth.dailyStreakBonuses}</strong>
                         </li>
                       </ul>
                     </div>
@@ -638,24 +640,24 @@ const Auth = () => {
                     <div className="bg-primary/10 border border-primary/30 rounded-xl p-3 flex items-start gap-3">
                       <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                       <p className="text-foreground/80 text-xs">
-                        Your personal information is encrypted and securely stored. Required for regulatory compliance (KVKK/GDPR).
+                        {t.auth.securityNotice}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="register-name" className="text-foreground font-medium">Display Name</Label>
+                        <Label htmlFor="register-name" className="text-foreground font-medium">{t.auth.displayName}</Label>
                         <Input
                           id="register-name"
                           type="text"
-                          placeholder="Your name"
+                          placeholder={t.auth.displayNamePlaceholder}
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
                           className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="register-email" className="text-foreground font-medium">Email</Label>
+                        <Label htmlFor="register-email" className="text-foreground font-medium">{t.auth.email}</Label>
                         <Input
                           id="register-email"
                           type="email"
@@ -673,12 +675,12 @@ const Auth = () => {
                       <div className="space-y-2">
                         <Label htmlFor="register-phone" className="text-foreground font-medium flex items-center gap-2">
                           <Phone className="w-3.5 h-3.5" />
-                          Phone
+                          {t.auth.phone}
                         </Label>
                         <Input
                           id="register-phone"
                           type="tel"
-                          placeholder="05XX XXX XX XX"
+                          placeholder={t.auth.phonePlaceholder}
                           value={phone}
                           onChange={(e) => setPhone(formatPhone(e.target.value))}
                           className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
@@ -689,12 +691,12 @@ const Auth = () => {
                       <div className="space-y-2">
                         <Label htmlFor="register-national-id" className="text-foreground font-medium flex items-center gap-2">
                           <CreditCard className="w-3.5 h-3.5" />
-                          T.C. Kimlik No
+                          {t.auth.nationalId}
                         </Label>
                         <Input
                           id="register-national-id"
                           type="text"
-                          placeholder="XXXXXXXXXXX"
+                          placeholder={t.auth.nationalIdPlaceholder}
                           value={nationalId}
                           onChange={(e) => setNationalId(e.target.value.replace(/\D/g, '').slice(0, 11))}
                           className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
@@ -706,7 +708,7 @@ const Auth = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="register-password" className="text-foreground font-medium">Password</Label>
+                      <Label htmlFor="register-password" className="text-foreground font-medium">{t.auth.password}</Label>
                       <Input
                         id="register-password"
                         type="password"
@@ -721,16 +723,16 @@ const Auth = () => {
 
                     {/* Account Type Selection */}
                     <div className="space-y-3">
-                      <Label className="text-foreground font-medium">I want to:</Label>
+                      <Label className="text-foreground font-medium">{t.auth.accountType}:</Label>
                       <RadioGroup
                         value={accountType}
                         onValueChange={(value) => setAccountType(value as AccountType)}
                         className="grid grid-cols-3 gap-3"
                       >
                         {[
-                          { value: 'buyer', icon: ShoppingBag, label: 'Buy', desc: 'Purchase collectibles' },
-                          { value: 'seller', icon: Store, label: 'Sell', desc: 'List your items' },
-                          { value: 'both', icon: User, label: 'Both', desc: 'Full access' },
+                          { value: 'buyer', icon: ShoppingBag, label: t.auth.buyer, desc: t.auth.buyerDesc },
+                          { value: 'seller', icon: Store, label: t.auth.seller, desc: t.auth.sellerDesc },
+                          { value: 'both', icon: User, label: t.auth.both, desc: t.auth.bothDesc },
                         ].map((option) => (
                           <label
                             key={option.value}
@@ -762,14 +764,14 @@ const Auth = () => {
                           className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50"
                         />
                         <span className="text-sm text-muted-foreground">
-                          I have read and agree to the{' '}
-                          <a href="/terms" target="_blank" className="text-primary hover:underline">Terms of Service</a>,{' '}
-                          <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>,{' '}
-                          <a href="/kvkk" target="_blank" className="text-primary hover:underline">KVKK Aydınlatma Metni</a>, and{' '}
-                          <a href="/mesafeli-satis-sozlesmesi" target="_blank" className="text-primary hover:underline">Mesafeli Satış Sözleşmesi</a>
+                          {t.auth.termsAgreement}{' '}
+                          <a href="/terms" target="_blank" className="text-primary hover:underline">{t.auth.termsOfService}</a>,{' '}
+                          <a href="/privacy" target="_blank" className="text-primary hover:underline">{t.auth.privacyPolicy}</a>,{' '}
+                          <a href="/kvkk" target="_blank" className="text-primary hover:underline">{t.auth.kvkkNotice}</a>, {t.common.and}{' '}
+                          <a href="/mesafeli-satis-sozlesmesi" target="_blank" className="text-primary hover:underline">{t.auth.distanceSalesContract}</a>
                         </span>
                       </label>
-                      {errors.terms && <p className="text-destructive text-xs">{errors.terms}</p>}
+                      {errors.terms && <p className="text-destructive text-xs">{t.auth.termsError}</p>}
                     </div>
 
                     {/* Fees & Commissions Checkbox */}
@@ -782,11 +784,11 @@ const Auth = () => {
                           className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50"
                         />
                         <span className="text-sm text-muted-foreground">
-                          I accept the <span className="text-primary font-medium">Platform Fees & Commissions</span>:{' '}
+                          {t.auth.feesAgreement} <span className="text-primary font-medium">{t.auth.platformFees}</span>:{' '}
                           <span className="text-foreground">Credit Card (6.5% + $0.50), Wire Transfer (3% + $0.50), Seller Fee (5%)</span>
                         </span>
                       </label>
-                      {errors.fees && <p className="text-destructive text-xs">{errors.fees}</p>}
+                      {errors.fees && <p className="text-destructive text-xs">{t.auth.feesError}</p>}
                     </div>
 
                     <Button
@@ -794,7 +796,7 @@ const Auth = () => {
                       disabled={loading}
                       className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-lg rounded-xl shadow-lg hover:shadow-glow transition-all mt-2"
                     >
-                      {loading ? 'Creating account...' : 'Create Account'}
+                      {loading ? t.auth.creatingAccount : t.auth.createAccount}
                     </Button>
                   </form>
                   </div>
