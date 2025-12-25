@@ -29,7 +29,7 @@ export const de: Translations = {
     explorerDesc: "Alle Karten & Artikel durchsuchen",
     tradesOffers: "Tausch & Angebote",
     tradesOffersDesc: "Verwalten Sie Ihre Trades",
-    reels: "Reels",
+    reels: "Boom Reels",
   },
   hero: {
     badge: "Die Zukunft des TCG-Investierens",
