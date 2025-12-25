@@ -1,10 +1,12 @@
 import { motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
+import { useLanguage } from '@/contexts/LanguageContext';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
 export const LoadingScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const isDark = theme === 'dark';
 
   return (
@@ -15,7 +17,7 @@ export const LoadingScreen = () => {
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       </div>
 
-      {/* Logo */}
+      {/* Logo - Made bigger */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -25,7 +27,7 @@ export const LoadingScreen = () => {
         <img 
           src={isDark ? cardboomLogoDark : cardboomLogo} 
           alt="Cardboom" 
-          className="h-16 md:h-20 w-auto object-contain"
+          className="h-24 md:h-32 w-auto object-contain"
         />
       </motion.div>
 
@@ -56,7 +58,7 @@ export const LoadingScreen = () => {
         </div>
         
         <p className="text-muted-foreground text-sm font-medium">
-          Loading your collection...
+          {t.common.loading}
         </p>
       </motion.div>
 
@@ -67,7 +69,7 @@ export const LoadingScreen = () => {
         transition={{ delay: 0.6, duration: 0.5 }}
         className="absolute bottom-8 text-xs text-muted-foreground/60"
       >
-        The Future of TCG Investing
+        {t.hero.badge}
       </motion.p>
     </div>
   );
