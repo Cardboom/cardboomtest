@@ -56,6 +56,7 @@ import Achievements from "./pages/Achievements";
 import Pricing from "./pages/Pricing";
 import Circle from "./pages/Circle";
 import CreatorPage from "./pages/CreatorPage";
+import Reels from "./pages/Reels";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -128,6 +129,7 @@ const AppContent = () => {
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/circle" element={<Circle />} />
+          <Route path="/reels" element={<Reels />} />
           {/* Creator Public Pages */}
           <Route path="/@:username" element={<CreatorPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
