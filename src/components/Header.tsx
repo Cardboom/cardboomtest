@@ -130,7 +130,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
+    <header className="sticky top-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
       {/* AI Insight Banner */}
       <div className="hidden md:flex items-center justify-center py-1.5 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/20">
         <AIMarketInsight />
@@ -474,29 +474,30 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
+              className="lg:hidden relative z-[70]"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Menu - Fixed */}
+        {/* Mobile Menu - Fixed Full Screen */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[64px] bottom-0 z-50 bg-background overflow-y-auto animate-fade-in">
-            <div className="container mx-auto px-4 py-4">
+          <div className="lg:hidden fixed inset-0 top-[64px] z-[100] bg-background overflow-y-auto">
+            <div className="container mx-auto px-4 py-4 pb-24">
               {/* Search */}
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder={t.nav.search}
-                  className="pl-10 bg-muted border-border/50 rounded-xl h-11"
+                  className="pl-10 bg-muted border-border/50 rounded-xl h-11 w-full"
                 />
               </div>
               
-              <nav className="flex flex-col gap-1">
+              <nav className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
                 {/* Main Links */}
                 <Link 
                   to="/" 

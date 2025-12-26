@@ -1,7 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, ShoppingCart, DollarSign } from 'lucide-react';
+import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface GlobalStats {
   totalVolume: number;
@@ -11,6 +14,9 @@ interface GlobalStats {
 }
 
 export function GlobalTCGStats() {
+  const navigate = useNavigate();
+  const { t } = useLanguage();
+  
   const { data: stats, isLoading } = useQuery<GlobalStats>({
     queryKey: ['global-tcg-stats'],
     queryFn: async () => {
@@ -88,16 +94,54 @@ export function GlobalTCGStats() {
   ];
 
   return (
-    <section className="py-8 md:py-12">
+    <section className="py-12 md:py-20 relative overflow-hidden">
+      {/* Background gradients */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)]" />
+      
       <div className="container mx-auto px-4">
+        {/* Hero headline + Stats combined */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden"
+          className="text-center mb-10 md:mb-14"
         >
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.05),transparent_50%)]" />
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.1]">
+            {t.hero.title}
+            <span className="block text-primary">{t.hero.titleHighlight}</span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+            {t.hero.description}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/auth')}
+              className="h-14 px-10 rounded-full font-bold text-base shadow-lg shadow-primary/25"
+            >
+              {t.hero.startTrading}
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <Button 
+              variant="outline"
+              size="lg" 
+              onClick={() => navigate('/markets')}
+              className="h-14 px-10 rounded-full font-semibold text-base"
+            >
+              {t.hero.exploreMarket}
+            </Button>
+          </div>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden max-w-4xl mx-auto"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.03),transparent_50%)]" />
           
           <div className="relative grid grid-cols-2 md:grid-cols-4">
             {statItems.map((item, i) => (
@@ -105,14 +149,13 @@ export function GlobalTCGStats() {
                 key={item.label}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
+                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
                 className={`relative p-6 md:p-8 flex flex-col items-center justify-center text-center
                   ${i < 2 ? 'border-b border-border/30 md:border-b-0' : ''}
                   ${i % 2 === 0 ? 'border-r border-border/30' : ''}
                   ${i < 2 ? 'md:border-r md:border-border/30' : i === 2 ? 'md:border-r md:border-border/30' : ''}
                 `}
               >
-                {/* Gradient overlay */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-50`} />
                 
                 <div className="relative z-10 flex flex-col items-center gap-3">

@@ -245,11 +245,8 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Global Stats Bar */}
+        {/* Global Stats Bar with Hero - shown for all users */}
         <GlobalTCGStats />
-        
-        {/* Only show hero for non-logged-in users */}
-        {!user && <HeroSection />}
         
         {/* Live Market Section */}
         <ScrollReveal>
