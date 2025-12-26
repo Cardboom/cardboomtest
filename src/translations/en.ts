@@ -29,6 +29,8 @@ export const en = {
     tradesOffers: "Trades & Offers",
     tradesOffersDesc: "Manage your trades",
     reels: "Boom Reels",
+    grading: "Grading",
+    gradingDesc: "AI card grading",
   },
   // Hero
   hero: {

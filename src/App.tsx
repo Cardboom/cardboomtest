@@ -57,6 +57,10 @@ import Pricing from "./pages/Pricing";
 import Circle from "./pages/Circle";
 import CreatorPage from "./pages/CreatorPage";
 import Reels from "./pages/Reels";
+import Grading from "./pages/Grading";
+import GradingNew from "./pages/GradingNew";
+import GradingOrders from "./pages/GradingOrders";
+import GradingOrderDetail from "./pages/GradingOrderDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -130,6 +134,11 @@ const AppContent = () => {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/circle" element={<Circle />} />
           <Route path="/reels" element={<Reels />} />
+          {/* Grading Routes */}
+          <Route path="/grading" element={<Grading />} />
+          <Route path="/grading/new" element={<GradingNew />} />
+          <Route path="/grading/orders" element={<GradingOrders />} />
+          <Route path="/grading/orders/:id" element={<GradingOrderDetail />} />
           {/* Creator Public Pages */}
           <Route path="/@:username" element={<CreatorPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

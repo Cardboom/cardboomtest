@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useGrading, GRADING_CATEGORIES, GRADING_PRICE_USD } from '@/hooks/useGrading';
 import { Header } from '@/components/Header';
+import { CartDrawer } from '@/components/CartDrawer';
+import { Collectible } from '@/types/collectible';
+import { Helmet } from 'react-helmet-async';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -15,8 +18,7 @@ import {
   Check, 
   Loader2,
   CreditCard,
-  AlertCircle,
-  ImageIcon
+  AlertCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -28,6 +30,8 @@ export default function GradingNew() {
   const { toast } = useToast();
   const { createOrder, submitAndPay } = useGrading();
   
+  const [cartItems, setCartItems] = useState<Collectible[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [step, setStep] = useState<Step>('category');
   const [category, setCategory] = useState<string>('');
   const [frontImage, setFrontImage] = useState<File | null>(null);
@@ -107,14 +111,12 @@ export default function GradingNew() {
     
     setIsSubmitting(true);
     try {
-      // Create the order first
       const order = await createOrder(category, frontImage, backImage);
       if (!order) {
         setIsSubmitting(false);
         return;
       }
 
-      // Submit and pay
       const success = await submitAndPay(order.id, order.idempotency_key);
       
       if (success) {
@@ -132,10 +134,20 @@ export default function GradingNew() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Helmet>
+        <title>Submit Card for Grading - CardBoom</title>
+        <meta name="description" content="Submit your trading card for AI-powered grading. Upload photos and get professional results in 1-5 days." />
+      </Helmet>
+      
+      <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
+      <CartDrawer 
+        items={cartItems} 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))}
+      />
       
       <main className="container mx-auto px-4 pt-24 pb-16 max-w-2xl">
-        {/* Back button */}
         <Button 
           variant="ghost" 
           className="mb-6 gap-2"
@@ -145,7 +157,6 @@ export default function GradingNew() {
           Back
         </Button>
 
-        {/* Progress bar */}
         {step !== 'success' && (
           <div className="mb-8">
             <div className="flex justify-between mb-2">
@@ -165,7 +176,6 @@ export default function GradingNew() {
           </div>
         )}
 
-        {/* Step: Category */}
         {step === 'category' && (
           <Card>
             <CardHeader>
@@ -203,7 +213,6 @@ export default function GradingNew() {
           </Card>
         )}
 
-        {/* Step: Photos */}
         {step === 'photos' && (
           <Card>
             <CardHeader>
@@ -213,7 +222,6 @@ export default function GradingNew() {
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Front photo */}
               <div>
                 <label className="block text-sm font-medium mb-2">Front of Card</label>
                 <input
@@ -244,7 +252,6 @@ export default function GradingNew() {
                 </button>
               </div>
 
-              {/* Back photo */}
               <div>
                 <label className="block text-sm font-medium mb-2">Back of Card</label>
                 <input
@@ -288,7 +295,6 @@ export default function GradingNew() {
           </Card>
         )}
 
-        {/* Step: Review */}
         {step === 'review' && (
           <Card>
             <CardHeader>
@@ -337,7 +343,6 @@ export default function GradingNew() {
           </Card>
         )}
 
-        {/* Step: Payment */}
         {step === 'payment' && (
           <Card>
             <CardHeader>
@@ -404,7 +409,6 @@ export default function GradingNew() {
           </Card>
         )}
 
-        {/* Step: Success */}
         {step === 'success' && (
           <Card className="text-center">
             <CardContent className="pt-8 pb-8">

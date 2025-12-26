@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGrading, GradingOrder, GRADING_CATEGORIES } from '@/hooks/useGrading';
 import { GradingResultCard } from '@/components/grading/GradingResultCard';
@@ -10,6 +9,9 @@ import { OrderStatusTimeline } from '@/components/grading/OrderStatusTimeline';
 import { CardOverlayPreview } from '@/components/grading/CardOverlayPreview';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { CartDrawer } from '@/components/CartDrawer';
+import { Collectible } from '@/types/collectible';
+import { Helmet } from 'react-helmet-async';
 import { 
   ArrowLeft, 
   Clock, 
@@ -26,6 +28,8 @@ export default function GradingOrderDetail() {
   const { getOrder } = useGrading();
   const [order, setOrder] = useState<GradingOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [cartItems, setCartItems] = useState<Collectible[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -43,7 +47,7 @@ export default function GradingOrderDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
         <main className="container mx-auto px-4 pt-24 pb-16">
           <Skeleton className="h-8 w-48 mb-6" />
           <div className="grid lg:grid-cols-2 gap-8">
@@ -58,7 +62,7 @@ export default function GradingOrderDetail() {
   if (!order) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
         <main className="container mx-auto px-4 pt-24 pb-16 text-center">
           <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
           <Button onClick={() => navigate('/grading/orders')}>Back to Orders</Button>
@@ -71,10 +75,20 @@ export default function GradingOrderDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Helmet>
+        <title>Grading Order {order.id.slice(0, 8)} - CardBoom</title>
+        <meta name="description" content={`View your CardBoom grading order details and ${isCompleted ? 'results' : 'status'}.`} />
+      </Helmet>
+      
+      <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
+      <CartDrawer 
+        items={cartItems} 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))}
+      />
       
       <main className="container mx-auto px-4 pt-24 pb-16">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button 
             variant="ghost" 
@@ -92,7 +106,6 @@ export default function GradingOrderDetail() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Results or Status */}
           <div className="space-y-6">
             {isCompleted ? (
               <GradingResultCard order={order} />
@@ -115,7 +128,6 @@ export default function GradingOrderDetail() {
               </Card>
             )}
 
-            {/* Order Info */}
             <Card>
               <CardHeader>
                 <CardTitle>Order Information</CardTitle>
@@ -165,7 +177,6 @@ export default function GradingOrderDetail() {
               </CardContent>
             </Card>
 
-            {/* Support */}
             {!isCompleted && (
               <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="p-4 flex items-center justify-between">
@@ -181,7 +192,6 @@ export default function GradingOrderDetail() {
             )}
           </div>
 
-          {/* Right Column - Card Preview */}
           <div>
             <Card>
               <CardHeader>

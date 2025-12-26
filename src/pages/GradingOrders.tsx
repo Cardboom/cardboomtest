@@ -3,11 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useGrading, GradingOrder, GradingOrderStatus, GRADING_CATEGORIES } from '@/hooks/useGrading';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { CartDrawer } from '@/components/CartDrawer';
+import { Collectible } from '@/types/collectible';
+import { Helmet } from 'react-helmet-async';
 import { 
   ArrowLeft, 
   Plus, 
@@ -34,6 +37,8 @@ export default function GradingOrders() {
   const navigate = useNavigate();
   const { orders, isLoading } = useGrading();
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [cartItems, setCartItems] = useState<Collectible[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
@@ -54,7 +59,6 @@ export default function GradingOrders() {
       >
         <CardContent className="p-4">
           <div className="flex gap-4">
-            {/* Thumbnail */}
             <div className="w-20 h-28 rounded-lg bg-muted overflow-hidden shrink-0">
               {order.front_image_url ? (
                 <img 
@@ -69,7 +73,6 @@ export default function GradingOrders() {
               )}
             </div>
 
-            {/* Details */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
@@ -115,10 +118,20 @@ export default function GradingOrders() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Helmet>
+        <title>My Grading Orders - CardBoom</title>
+        <meta name="description" content="View and manage your CardBoom grading orders. Track status, view results, and submit new cards for grading." />
+      </Helmet>
+      
+      <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
+      <CartDrawer 
+        items={cartItems} 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))}
+      />
       
       <main className="container mx-auto px-4 pt-24 pb-16">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button 
@@ -137,7 +150,6 @@ export default function GradingOrders() {
           </Button>
         </div>
 
-        {/* Filters */}
         <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="mb-6">
           <TabsList>
             <TabsTrigger value="all">All ({orders.length})</TabsTrigger>
@@ -150,7 +162,6 @@ export default function GradingOrders() {
           </TabsList>
         </Tabs>
 
-        {/* Orders List */}
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (

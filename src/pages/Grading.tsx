@@ -1,14 +1,20 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Award, Clock, Shield, Sparkles, ChevronRight, ListOrdered, Zap, Star, CheckCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { CartDrawer } from '@/components/CartDrawer';
+import { Award, Clock, Shield, Sparkles, ChevronRight, ListOrdered, Zap, Star, CheckCircle } from 'lucide-react';
 import { GRADING_PRICE_USD } from '@/hooks/useGrading';
+import { Collectible } from '@/types/collectible';
+import { Helmet } from 'react-helmet-async';
 
 export default function Grading() {
   const navigate = useNavigate();
+  const [cartItems, setCartItems] = useState<Collectible[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const features = [
     { icon: Zap, title: 'AI-Powered Analysis', description: 'Advanced machine learning evaluates corners, edges, surface, and centering' },
@@ -26,7 +32,18 @@ export default function Grading() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Helmet>
+        <title>AI Card Grading - CardBoom</title>
+        <meta name="description" content="Get professional AI grading for your trading cards. Fast, accurate, and affordable at just $20 per card. Results in 1-5 days." />
+      </Helmet>
+      
+      <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
+      <CartDrawer 
+        items={cartItems} 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))}
+      />
       
       <main className="container mx-auto px-4 pt-24 pb-16">
         {/* Hero Section */}

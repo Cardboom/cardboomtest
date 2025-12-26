@@ -30,6 +30,8 @@ export const fr: Translations = {
     tradesOffers: "Échanges & Offres",
     tradesOffersDesc: "Gérez vos échanges",
     reels: "Boom Reels",
+    grading: "Notation",
+    gradingDesc: "Notation de cartes IA",
   },
   hero: {
     badge: "L'Avenir de l'Investissement TCG",
