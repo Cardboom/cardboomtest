@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
-import { ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
-import { ReelCard } from './ReelCard';
+import { motion, AnimatePresence, useMotionValue, PanInfo } from 'framer-motion';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+import { EnhancedReelCard } from './EnhancedReelCard';
+import { ReelSkeleton } from './ReelSkeleton';
 import { CommentsDrawer } from './CommentsDrawer';
-import { useReels, Reel } from '@/hooks/useReels';
+import { useReels } from '@/hooks/useReels';
+import { useMutePreference, usePrefetch } from '@/hooks/useReelsFeed';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 
@@ -20,15 +22,17 @@ export function ReelsFeed({ feedType = 'for_you', className }: ReelsFeedProps) {
   const [direction, setDirection] = useState<'up' | 'down'>('down');
   const containerRef = useRef<HTMLDivElement>(null);
   
+  const { isMuted, toggleMute } = useMutePreference();
   const y = useMotionValue(0);
-  const dragProgress = useTransform(y, [-100, 0, 100], [-1, 0, 1]);
+
+  // Preload next videos
+  usePrefetch(reels, currentIndex);
 
   const goToNext = useCallback(() => {
     if (currentIndex < reels.length - 1) {
       setDirection('down');
       setCurrentIndex(prev => prev + 1);
       
-      // Load more when near end
       if (currentIndex >= reels.length - 3 && hasMore) {
         loadMore();
       }
@@ -42,7 +46,6 @@ export function ReelsFeed({ feedType = 'for_you', className }: ReelsFeedProps) {
     }
   }, [currentIndex]);
 
-  // Handle swipe
   const handleDragEnd = (_: any, info: PanInfo) => {
     const threshold = 50;
     const velocity = info.velocity.y;
@@ -55,56 +58,41 @@ export function ReelsFeed({ feedType = 'for_you', className }: ReelsFeedProps) {
     }
   };
 
-  // Handle keyboard navigation
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (commentsOpen) return;
-      
-      if (e.key === 'ArrowDown' || e.key === 'j') {
-        goToNext();
-      } else if (e.key === 'ArrowUp' || e.key === 'k') {
-        goToPrev();
-      }
+      if (e.key === 'ArrowDown' || e.key === 'j') goToNext();
+      else if (e.key === 'ArrowUp' || e.key === 'k') goToPrev();
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [goToNext, goToPrev, commentsOpen]);
 
-  // Handle scroll wheel
+  // Scroll wheel
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     let lastScrollTime = 0;
-    const scrollCooldown = 500;
-
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      
       const now = Date.now();
-      if (now - lastScrollTime < scrollCooldown) return;
+      if (now - lastScrollTime < 500) return;
       
-      if (e.deltaY > 30) {
-        goToNext();
-        lastScrollTime = now;
-      } else if (e.deltaY < -30) {
-        goToPrev();
-        lastScrollTime = now;
-      }
+      if (e.deltaY > 30) { goToNext(); lastScrollTime = now; }
+      else if (e.deltaY < -30) { goToPrev(); lastScrollTime = now; }
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
   }, [goToNext, goToPrev]);
 
+  // Loading state with skeleton
   if (loading && reels.length === 0) {
     return (
-      <div className={cn("flex items-center justify-center h-full bg-black", className)}>
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-white/70">{t.reels?.loadingReels || 'Loading reels...'}</p>
-        </div>
+      <div className={cn("h-full bg-black", className)}>
+        <ReelSkeleton />
       </div>
     );
   }
@@ -126,13 +114,7 @@ export function ReelsFeed({ feedType = 'for_you', className }: ReelsFeedProps) {
   const currentReel = reels[currentIndex];
 
   return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "relative h-full w-full overflow-hidden bg-black touch-pan-x",
-        className
-      )}
-    >
+    <div ref={containerRef} className={cn("relative h-full w-full overflow-hidden bg-black touch-pan-x", className)}>
       <motion.div
         className="absolute inset-0"
         drag="y"
@@ -145,29 +127,17 @@ export function ReelsFeed({ feedType = 'for_you', className }: ReelsFeedProps) {
           <motion.div
             key={currentReel.id}
             custom={direction}
-            initial={{ 
-              y: direction === 'down' ? '100%' : '-100%',
-              opacity: 0 
-            }}
-            animate={{ 
-              y: 0,
-              opacity: 1 
-            }}
-            exit={{ 
-              y: direction === 'down' ? '-100%' : '100%',
-              opacity: 0 
-            }}
-            transition={{ 
-              type: 'spring', 
-              stiffness: 300, 
-              damping: 30,
-              opacity: { duration: 0.2 }
-            }}
+            initial={{ y: direction === 'down' ? '100%' : '-100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: direction === 'down' ? '-100%' : '100%', opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30, opacity: { duration: 0.2 } }}
             className="absolute inset-0"
           >
-            <ReelCard
+            <EnhancedReelCard
               reel={currentReel}
               isActive={true}
+              isMuted={isMuted}
+              onToggleMute={toggleMute}
               onOpenComments={() => setCommentsOpen(true)}
             />
           </motion.div>
@@ -178,46 +148,30 @@ export function ReelsFeed({ feedType = 'for_you', className }: ReelsFeedProps) {
       <div className="absolute left-1/2 -translate-x-1/2 top-20 z-10 pointer-events-none">
         <AnimatePresence>
           {currentIndex > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="flex flex-col items-center text-white/30"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-white/30">
               <ChevronUp className="w-6 h-6 animate-bounce" />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
       <div className="absolute left-1/2 -translate-x-1/2 bottom-28 z-10 pointer-events-none">
         <AnimatePresence>
           {currentIndex < reels.length - 1 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col items-center text-white/30"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-white/30">
               <ChevronDown className="w-6 h-6 animate-bounce" />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Reel counter */}
+      {/* Counter */}
       <div className="absolute top-4 right-16 z-10">
         <div className="px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs">
           {currentIndex + 1} / {reels.length}
         </div>
       </div>
 
-      {/* Comments drawer */}
-      <CommentsDrawer
-        reelId={currentReel.id}
-        isOpen={commentsOpen}
-        onClose={() => setCommentsOpen(false)}
-      />
+      <CommentsDrawer reelId={currentReel.id} isOpen={commentsOpen} onClose={() => setCommentsOpen(false)} />
     </div>
   );
 }
