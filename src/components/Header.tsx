@@ -476,124 +476,184 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Fixed */}
         {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border/50 animate-fade-in">
-            <div className="flex items-center mb-4">
-              <Search className="absolute ml-3 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder={t.nav.search}
-                className="pl-10 bg-secondary border-border/50 rounded-full"
-              />
+          <div className="lg:hidden fixed inset-x-0 top-[64px] bottom-0 z-50 bg-background overflow-y-auto animate-fade-in">
+            <div className="container mx-auto px-4 py-4">
+              {/* Search */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder={t.nav.search}
+                  className="pl-10 bg-muted border-border/50 rounded-xl h-11"
+                />
+              </div>
+              
+              <nav className="flex flex-col gap-1">
+                {/* Main Links */}
+                <Link 
+                  to="/" 
+                  className="flex items-center gap-3 py-3 px-3 rounded-xl text-foreground hover:bg-muted transition-colors" 
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <TrendingUp className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">{t.nav.marketplace}</span>
+                </Link>
+                
+                <Link 
+                  to="/reels" 
+                  className="flex items-center gap-3 py-3 px-3 rounded-xl text-foreground hover:bg-muted transition-colors" 
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Film className="w-5 h-5 text-muted-foreground" />
+                  <span className="font-medium">{t.nav.reels}</span>
+                </Link>
+                
+                {/* Divider with label */}
+                <div className="py-2 px-3 mt-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Trading</span>
+                </div>
+                
+                <Link to="/markets" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <span>{t.nav.markets}</span>
+                </Link>
+                <Link to="/explorer" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Search className="w-5 h-5 text-blue-500" />
+                  <span>Explorer</span>
+                </Link>
+                <Link to="/deals" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Sparkles className="w-5 h-5 text-amber-500" />
+                  <span>{t.nav.deals}</span>
+                </Link>
+                <Link to="/trades" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <ArrowLeftRight className="w-5 h-5 text-purple-500" />
+                  <span>Trades & Offers</span>
+                </Link>
+                <Link to="/fractional" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <PieChart className="w-5 h-5 text-cyan-500" />
+                  <span>{t.nav.fractional}</span>
+                </Link>
+                
+                {/* Services */}
+                <div className="py-2 px-3 mt-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Services</span>
+                </div>
+                
+                <Link to="/grading" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Award className="w-5 h-5 text-emerald-500" />
+                  <span>{t.nav.grading}</span>
+                </Link>
+                <Link to="/gaming" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Gamepad2 className="w-5 h-5 text-pink-500" />
+                  <span>{t.nav.gaming}</span>
+                </Link>
+                
+                {/* Community */}
+                <div className="py-2 px-3 mt-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Community</span>
+                </div>
+                
+                <Link to="/circle" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <MessageCircle className="w-5 h-5 text-blue-500" />
+                  <span>Circle</span>
+                </Link>
+                <Link to="/leaderboard" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Trophy className="w-5 h-5 text-amber-500" />
+                  <span>Leaderboard</span>
+                </Link>
+                <Link to="/achievements" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Medal className="w-5 h-5 text-yellow-500" />
+                  <span>Achievements</span>
+                </Link>
+                <Link to="/referrals" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Mic className="w-5 h-5 text-pink-500" />
+                  <span>Creators</span>
+                </Link>
+                
+                {/* Account */}
+                <div className="py-2 px-3 mt-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Account</span>
+                </div>
+                
+                <Link to="/sell" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <TrendingUp className="w-5 h-5 text-muted-foreground" />
+                  <span>{t.nav.sell}</span>
+                </Link>
+                <Link to="/portfolio" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <PieChart className="w-5 h-5 text-muted-foreground" />
+                  <span>{t.nav.portfolio}</span>
+                </Link>
+                
+                {user && (
+                  <>
+                    <Link to="/wallet" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                      <Wallet className="w-5 h-5 text-muted-foreground" />
+                      <span>{t.nav.wallet}</span>
+                    </Link>
+                    <Link to="/vault" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                      <Vault className="w-5 h-5 text-muted-foreground" />
+                      <span>My Vault</span>
+                    </Link>
+                    <Link to="/messages" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                      <MessageCircle className="w-5 h-5 text-muted-foreground" />
+                      <span>Messages</span>
+                      {unreadMessages > 0 && (
+                        <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                          {unreadMessages > 99 ? '99+' : unreadMessages}
+                        </span>
+                      )}
+                    </Link>
+                  </>
+                )}
+                
+                {/* Auth section */}
+                <div className="mt-4 pt-4 border-t border-border">
+                  {user ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 px-3 py-2">
+                        {userAvatar ? (
+                          <img src={userAvatar} alt="Profile" className="w-10 h-10 rounded-full object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                            <User className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{user.email?.split('@')[0]}</div>
+                          <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                        </div>
+                      </div>
+                      <Link 
+                        to="/profile" 
+                        className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-muted hover:bg-muted/80 transition-colors font-medium"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        View Profile
+                      </Link>
+                      <Button 
+                        variant="destructive" 
+                        onClick={handleSignOut} 
+                        className="w-full rounded-xl"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        {t.nav.signOut}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      variant="default" 
+                      onClick={() => { navigate('/auth'); setMobileMenuOpen(false); }} 
+                      className="w-full h-11 rounded-xl"
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {t.nav.signIn}
+                    </Button>
+                  )}
+                </div>
+              </nav>
             </div>
-            <nav className="flex flex-col gap-1">
-              <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                {t.nav.marketplace}
-              </Link>
-              
-              {/* Trading Section */}
-              <div className="py-2 px-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Trading</span>
-              </div>
-              <Link to="/markets" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <TrendingUp className="w-4 h-4" />
-                {t.nav.markets}
-              </Link>
-              <Link to="/explorer" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Search className="w-4 h-4" />
-                Explorer
-              </Link>
-              <Link to="/deals" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Sparkles className="w-4 h-4" />
-                {t.nav.deals}
-              </Link>
-              <Link to="/trades" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <ArrowLeftRight className="w-4 h-4" />
-                Trades & Offers
-              </Link>
-              <Link to="/fractional" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <PieChart className="w-4 h-4" />
-                {t.nav.fractional}
-              </Link>
-              
-              {/* Community Section */}
-              <div className="py-2 px-2 mt-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</span>
-              </div>
-              <Link to="/circle" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <MessageCircle className="w-4 h-4" />
-                Circle
-              </Link>
-              <Link to="/leaderboard" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Trophy className="w-4 h-4" />
-                Leaderboard
-              </Link>
-              <Link to="/hall-of-fame" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Crown className="w-4 h-4" />
-                Hall of Fame
-              </Link>
-              <Link to="/achievements" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Award className="w-4 h-4" />
-                Achievements
-              </Link>
-              <Link to="/gaming" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <Gamepad2 className="w-4 h-4" />
-                {t.nav.gaming}
-              </Link>
-              
-              {/* Sell & Portfolio */}
-              <div className="py-2 px-2 mt-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">My Account</span>
-              </div>
-              <Link to="/sell" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                {t.nav.sell}
-              </Link>
-              <Link to="/portfolio" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <PieChart className="w-4 h-4" />
-                {t.nav.portfolio}
-              </Link>
-              {user && (
-                <>
-                  <Link to="/wallet" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <Wallet className="w-4 h-4" />
-                    {t.nav.wallet}
-                  </Link>
-                  <Link to="/vault" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <Vault className="w-4 h-4" />
-                    My Vault
-                  </Link>
-                  <Link to="/messages" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <MessageCircle className="w-4 h-4" />
-                    Messages
-                  </Link>
-                  <Link to="/verified-seller" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <BadgeCheck className="w-4 h-4" />
-                    {t.nav.verifiedSeller}
-                  </Link>
-                  <Link to="/referrals" className="text-muted-foreground hover:text-foreground transition-colors py-2 px-2 rounded-lg hover:bg-muted flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                    <Gift className="w-4 h-4" />
-                    Creators & Ambassadors
-                  </Link>
-                </>
-              )}
-              {user ? (
-                <>
-                  <div className="py-2 px-2 text-foreground font-medium mt-2">
-                    {user.email}
-                  </div>
-                  <Button variant="destructive" onClick={handleSignOut} className="mt-2">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    {t.nav.signOut}
-                  </Button>
-                </>
-              ) : (
-                <Button variant="default" onClick={() => navigate('/auth')} className="mt-4">
-                  <User className="w-4 h-4 mr-2" />
-                  {t.nav.signIn}
-                </Button>
-              )}
-            </nav>
           </div>
         )}
       </div>
