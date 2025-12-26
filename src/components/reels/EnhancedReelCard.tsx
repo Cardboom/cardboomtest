@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Share2, Bookmark, Volume2, VolumeX, Play, Pause, MoreHorizontal, ShoppingBag, Music, Hash, ChevronDown, Search } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Volume2, VolumeX, Play, Pause, MoreHorizontal, ShoppingBag, Music, Hash, ChevronDown, Search, UserPlus, UserMinus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { useWatchEvents } from '@/hooks/useReelsFeed';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EnhancedReelCardProps {
   reel: Reel & { 
@@ -47,10 +48,31 @@ export function EnhancedReelCard({
   const [likeCount, setLikeCount] = useState(reel.like_count);
   const [doubleTapAnimation, setDoubleTapAnimation] = useState(false);
   const [showMoreCaption, setShowMoreCaption] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const lastTapRef = useRef(0);
   
-  const { likeReel, unlikeReel, saveReel, unsaveReel, incrementView, shareReel } = useReelActions();
+  const { likeReel, unlikeReel, saveReel, unsaveReel, incrementView, shareReel, followCreator, unfollowCreator } = useReelActions();
   const { trackEvent } = useWatchEvents();
+
+  // Check if user is following the creator
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+      
+      if (user && reel.user_id !== user.id) {
+        const { data } = await supabase
+          .from('follows')
+          .select('id')
+          .eq('follower_id', user.id)
+          .eq('following_id', reel.user_id)
+          .maybeSingle();
+        setIsFollowing(!!data);
+      }
+    };
+    checkFollowStatus();
+  }, [reel.user_id]);
 
   // Track watch time milestones
   useEffect(() => {
@@ -174,6 +196,24 @@ export function EnhancedReelCard({
     trackEvent(reel.id, 'share');
   };
 
+  const handleFollow = async () => {
+    if (!currentUserId) {
+      navigate('/auth');
+      return;
+    }
+    
+    if (isFollowing) {
+      await unfollowCreator(reel.user_id);
+      setIsFollowing(false);
+    } else {
+      const success = await followCreator(reel.user_id);
+      if (success) {
+        setIsFollowing(true);
+        trackEvent(reel.id, 'follow_creator');
+      }
+    }
+  };
+
   const handleOpenComments = () => {
     trackEvent(reel.id, 'comment');
     onOpenComments();
@@ -278,21 +318,37 @@ export function EnhancedReelCard({
 
       {/* Right side actions */}
       <div className="absolute right-4 bottom-32 flex flex-col items-center gap-5">
-        {/* Profile */}
-        <Link to={`/profile/${reel.user_id}`} className="relative">
-          <Avatar className="w-12 h-12 ring-2 ring-primary shadow-lg">
-            <AvatarImage src={reel.user?.avatar_url || undefined} />
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {displayName[0]?.toUpperCase() || 'U'}
-            </AvatarFallback>
-          </Avatar>
-          <motion.div 
-            whileHover={{ scale: 1.1 }}
-            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 bg-[#00D4FF] rounded-full flex items-center justify-center shadow-lg"
-          >
-            <span className="text-xs font-bold text-black">+</span>
-          </motion.div>
-        </Link>
+        {/* Profile with follow button */}
+        <div className="relative">
+          <Link to={`/profile/${reel.user_id}`}>
+            <Avatar className="w-12 h-12 ring-2 ring-primary shadow-lg">
+              <AvatarImage src={reel.user?.avatar_url || undefined} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {displayName[0]?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+          {/* Follow/Unfollow button - hide if it's the user's own reel */}
+          {currentUserId !== reel.user_id && (
+            <motion.button 
+              onClick={handleFollow}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className={cn(
+                "absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg transition-colors",
+                isFollowing 
+                  ? "bg-white/20 backdrop-blur-sm border border-white/30" 
+                  : "bg-[#00D4FF]"
+              )}
+            >
+              {isFollowing ? (
+                <UserMinus className="w-3 h-3 text-white" />
+              ) : (
+                <UserPlus className="w-3 h-3 text-black" />
+              )}
+            </motion.button>
+          )}
+        </div>
 
         {/* Like */}
         <button onClick={handleLike} className="flex flex-col items-center gap-1 group">
@@ -354,6 +410,9 @@ export function EnhancedReelCard({
           >
             <Share2 className="w-7 h-7 text-white" />
           </motion.div>
+          {(reel.share_count || 0) > 0 && (
+            <span className="text-white text-xs font-semibold">{formatCount(reel.share_count || 0)}</span>
+          )}
         </button>
 
         {/* More */}
