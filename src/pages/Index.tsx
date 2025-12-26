@@ -19,6 +19,7 @@ import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
 import { ActivityAnnouncementBanner } from '@/components/ActivityAnnouncementBanner';
 import { DailyXPClaimNotification } from '@/components/DailyXPClaimNotification';
+import { GlobalTCGStats } from '@/components/GlobalTCGStats';
 import { useMarketItems, useListings } from '@/hooks/useMarketItems';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
 import { Collectible } from '@/types/collectible';
@@ -244,6 +245,9 @@ const Index = () => {
       <MarketTicker />
       
       <main>
+        {/* Global Stats Bar */}
+        <GlobalTCGStats />
+        
         {/* Only show hero for non-logged-in users */}
         {!user && <HeroSection />}
         

@@ -21,14 +21,26 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatDistanceToNow } from 'date-fns';
 import { formatGrade, CardGrade } from '@/hooks/useGradePrices';
 
-// Mock portfolio data with grade-specific prices
-const MOCK_PORTFOLIO = [
+// Portfolio item type
+interface PortfolioItem {
+  id: string;
+  name: string;
+  grade: CardGrade;
+  purchasePrice: number;
+  currentPrice: number;
+  quantity: number;
+  inVault: boolean;
+  image: string;
+}
+
+// Initial mock portfolio data
+const INITIAL_PORTFOLIO: PortfolioItem[] = [
   { 
     id: '1', 
     name: 'Charizard Base Set', 
     grade: 'psa10' as CardGrade,
     purchasePrice: 380000, 
-    currentPrice: 420000, // PSA 10 price
+    currentPrice: 420000,
     quantity: 1,
     inVault: true,
     image: '/placeholder.svg'
@@ -38,7 +50,7 @@ const MOCK_PORTFOLIO = [
     name: 'LeBron James Rookie', 
     grade: 'psa10' as CardGrade,
     purchasePrice: 220000, 
-    currentPrice: 245000, // PSA 10 price
+    currentPrice: 245000,
     quantity: 1,
     inVault: false,
     image: '/placeholder.svg'
@@ -48,7 +60,7 @@ const MOCK_PORTFOLIO = [
     name: 'Monkey D. Luffy Leader', 
     grade: 'psa10' as CardGrade,
     purchasePrice: 500, 
-    currentPrice: 850, // PSA 10 price
+    currentPrice: 850,
     quantity: 3,
     inVault: false,
     image: '/placeholder.svg'
@@ -58,7 +70,7 @@ const MOCK_PORTFOLIO = [
     name: 'Pikachu Illustrator', 
     grade: 'psa9' as CardGrade,
     purchasePrice: 2200000, 
-    currentPrice: 2500000, // PSA 9 price (lower than PSA 10 would be)
+    currentPrice: 2500000,
     quantity: 1,
     inVault: true,
     image: '/placeholder.svg'
@@ -68,7 +80,7 @@ const MOCK_PORTFOLIO = [
     name: 'Michael Jordan Fleer Rookie', 
     grade: 'psa8' as CardGrade,
     purchasePrice: 45000, 
-    currentPrice: 52000, // PSA 8 price (lower than PSA 9/10)
+    currentPrice: 52000,
     quantity: 1,
     inVault: false,
     image: '/placeholder.svg'
@@ -83,6 +95,12 @@ const Portfolio = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(INITIAL_PORTFOLIO);
+
+  const handleRemoveItem = (id: string) => {
+    setPortfolioItems(items => items.filter(item => item.id !== id));
+    toast.success('Item removed from portfolio');
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -127,12 +145,12 @@ const Portfolio = () => {
   };
 
   // Calculate portfolio stats
-  const totalValue = MOCK_PORTFOLIO.reduce((sum, item) => sum + item.currentPrice * item.quantity, 0);
-  const totalCost = MOCK_PORTFOLIO.reduce((sum, item) => sum + item.purchasePrice * item.quantity, 0);
+  const totalValue = portfolioItems.reduce((sum, item) => sum + item.currentPrice * item.quantity, 0);
+  const totalCost = portfolioItems.reduce((sum, item) => sum + item.purchasePrice * item.quantity, 0);
   const totalPnL = totalValue - totalCost;
-  const pnlPercent = ((totalPnL / totalCost) * 100);
+  const pnlPercent = totalCost > 0 ? ((totalPnL / totalCost) * 100) : 0;
 
-  const filteredPortfolio = MOCK_PORTFOLIO.filter(item =>
+  const filteredPortfolio = portfolioItems.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -324,14 +342,30 @@ const Portfolio = () => {
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <Edit className="w-4 h-4" />
                       </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleRemoveItem(item.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
 
                     {/* Mobile Stats */}
                     <div className="col-span-12 lg:hidden flex items-center justify-between mt-2">
-                      <div>
+                      <div className="flex items-center gap-2">
                         <span className="text-muted-foreground text-xs">Qty: {item.quantity}</span>
-                        <span className="mx-2 text-border">|</span>
+                        <span className="text-border">|</span>
                         <span className="text-muted-foreground text-xs">Cost: {formatPrice(item.purchasePrice * item.quantity)}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10 ml-1"
+                          onClick={() => handleRemoveItem(item.id)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
                       </div>
                       <div className="text-right">
                         <p className="text-foreground font-semibold">{formatPrice(item.currentPrice * item.quantity)}</p>
