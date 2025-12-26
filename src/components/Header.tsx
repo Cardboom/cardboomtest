@@ -485,7 +485,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
         {/* Mobile Menu - Fixed Full Screen */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 top-[64px] z-[100] bg-background overflow-y-auto">
+          <>
+            {/* Backdrop overlay */}
+            <div 
+              className="lg:hidden fixed inset-0 z-[90] bg-background/80 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="lg:hidden fixed inset-0 top-[64px] z-[100] bg-background overflow-y-auto overscroll-contain touch-pan-y">
             <div className="container mx-auto px-4 py-4 pb-24">
               {/* Search */}
               <div className="relative mb-4">
@@ -662,6 +668,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               </nav>
             </div>
           </div>
+          </>
         )}
       </div>
     </header>
