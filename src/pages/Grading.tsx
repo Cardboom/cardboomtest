@@ -86,13 +86,13 @@ export default function Grading() {
         onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))}
       />
       
-      <main className="pt-16 md:pt-20">
+      <main className="pt-4 md:pt-6">
         {/* Hero Section */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_60%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--accent)/0.05),transparent_40%)]" />
           
-          <div className="container mx-auto px-4 py-16 md:py-24 lg:py-32 relative">
+          <div className="container mx-auto px-4 py-10 md:py-16 lg:py-20 relative">
             <div className="max-w-5xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Left Content */}
