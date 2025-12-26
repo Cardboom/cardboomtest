@@ -42,6 +42,7 @@ import { SupportTickets } from '@/components/admin/SupportTickets';
 import { AutoBuyManager } from '@/components/admin/AutoBuyManager';
 import { DataSyncManager } from '@/components/admin/DataSyncManager';
 import { DiagnosticsDashboard } from '@/components/admin/DiagnosticsDashboard';
+import { GradingManagement } from '@/components/admin/GradingManagement';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -259,6 +260,10 @@ const Admin = () => {
               <Bug className="w-4 h-4" />
               Diagnostics
             </TabsTrigger>
+            <TabsTrigger value="grading" className="gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              Grading
+            </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
               Price Management
@@ -295,6 +300,10 @@ const Admin = () => {
 
           <TabsContent value="diagnostics">
             <DiagnosticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="grading">
+            <GradingManagement />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">

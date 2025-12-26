@@ -30,6 +30,8 @@ export const ar: Translations = {
     tradesOffers: "المبادلات والعروض",
     tradesOffersDesc: "إدارة مبادلاتك",
     reels: "Boom Reels",
+    grading: "التصنيف",
+    gradingDesc: "تصنيف البطاقات بالذكاء الاصطناعي",
   },
   hero: {
     badge: "مستقبل استثمار TCG",

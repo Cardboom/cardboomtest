@@ -30,6 +30,8 @@ export const tr: Translations = {
     tradesOffers: "Takaslar ve Teklifler",
     tradesOffersDesc: "Takaslarınızı yönetin",
     reels: "Boom Reels",
+    grading: "Derecelendirme",
+    gradingDesc: "AI kart derecelendirme",
   },
   hero: {
     badge: "TCG Yatırımının Geleceği",
