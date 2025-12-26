@@ -136,13 +136,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
         <AIMarketInsight />
       </div>
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 gap-4">
+        <div className="flex items-center justify-between h-16 gap-4 overflow-visible">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2 group flex-shrink-0 relative z-10">
             <img 
               src={isDark ? cardboomLogoDark : cardboomLogo} 
               alt="CardBoom" 
-              className="h-40 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-10 md:h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
           </Link>
 
@@ -474,8 +474,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden relative z-[70]"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden relative"
+              style={{ zIndex: 9999 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('Mobile menu button clicked, current state:', mobileMenuOpen);
+                setMobileMenuOpen(!mobileMenuOpen);
+              }}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
