@@ -1426,6 +1426,84 @@ export type Database = {
           },
         ]
       }
+      grading_orders: {
+        Row: {
+          back_image_url: string | null
+          category: string
+          centering_grade: number | null
+          completed_at: string | null
+          confidence: number | null
+          corners_grade: number | null
+          created_at: string
+          edges_grade: number | null
+          external_request_id: string | null
+          final_grade: number | null
+          front_image_url: string | null
+          grade_label: string | null
+          grading_notes: string | null
+          id: string
+          idempotency_key: string
+          overlay_coordinates: Json | null
+          paid_at: string | null
+          price_usd: number
+          status: Database["public"]["Enums"]["grading_order_status"]
+          submitted_at: string | null
+          surface_grade: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          back_image_url?: string | null
+          category: string
+          centering_grade?: number | null
+          completed_at?: string | null
+          confidence?: number | null
+          corners_grade?: number | null
+          created_at?: string
+          edges_grade?: number | null
+          external_request_id?: string | null
+          final_grade?: number | null
+          front_image_url?: string | null
+          grade_label?: string | null
+          grading_notes?: string | null
+          id?: string
+          idempotency_key: string
+          overlay_coordinates?: Json | null
+          paid_at?: string | null
+          price_usd?: number
+          status?: Database["public"]["Enums"]["grading_order_status"]
+          submitted_at?: string | null
+          surface_grade?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          back_image_url?: string | null
+          category?: string
+          centering_grade?: number | null
+          completed_at?: string | null
+          confidence?: number | null
+          corners_grade?: number | null
+          created_at?: string
+          edges_grade?: number | null
+          external_request_id?: string | null
+          final_grade?: number | null
+          front_image_url?: string | null
+          grade_label?: string | null
+          grading_notes?: string | null
+          id?: string
+          idempotency_key?: string
+          overlay_coordinates?: Json | null
+          paid_at?: string | null
+          price_usd?: number
+          status?: Database["public"]["Enums"]["grading_order_status"]
+          submitted_at?: string | null
+          surface_grade?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       item_views: {
         Row: {
           id: string
@@ -3926,6 +4004,13 @@ export type Database = {
       delivery_option: "vault" | "trade" | "ship"
       discussion_reaction_type: "insightful" | "outdated" | "contradicted"
       discussion_type: "card" | "event" | "strategy"
+      grading_order_status:
+        | "pending_payment"
+        | "queued"
+        | "in_review"
+        | "completed"
+        | "failed"
+        | "refunded"
       liquidity_level: "high" | "medium" | "low"
       listing_status: "active" | "sold" | "cancelled" | "reserved"
       offer_status:
@@ -4129,6 +4214,14 @@ export const Constants = {
       delivery_option: ["vault", "trade", "ship"],
       discussion_reaction_type: ["insightful", "outdated", "contradicted"],
       discussion_type: ["card", "event", "strategy"],
+      grading_order_status: [
+        "pending_payment",
+        "queued",
+        "in_review",
+        "completed",
+        "failed",
+        "refunded",
+      ],
       liquidity_level: ["high", "medium", "low"],
       listing_status: ["active", "sold", "cancelled", "reserved"],
       offer_status: [
