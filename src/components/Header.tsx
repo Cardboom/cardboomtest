@@ -155,7 +155,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           <nav className="hidden lg:flex items-center gap-0.5">
             <Link 
               to="/" 
-              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
+              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               {t.nav.marketplace}
             </Link>
@@ -163,7 +164,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             {/* Reels Link */}
             <Link 
               to="/reels" 
-              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md flex items-center gap-1.5"
+              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               <Film className="w-4 h-4" />
               {t.nav.reels}
@@ -173,7 +175,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-medium text-foreground/80 hover:text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3">
+                  <NavigationMenuTrigger className="text-sm font-bold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3" style={{ fontFamily: 'Inter, sans-serif' }}>
                     <TrendingUp className="w-4 h-4 mr-1.5" />
                     {t.nav.trading}
                   </NavigationMenuTrigger>
@@ -254,7 +256,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-medium text-foreground/80 hover:text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3">
+                  <NavigationMenuTrigger className="text-sm font-bold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3" style={{ fontFamily: 'Inter, sans-serif' }}>
                     <Users className="w-4 h-4 mr-1.5" />
                     Community
                   </NavigationMenuTrigger>
@@ -333,27 +335,31 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
             <Link 
               to="/grading" 
-              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md flex items-center gap-1.5"
+              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               <Award className="w-4 h-4" />
               {t.nav.grading}
             </Link>
             <Link 
               to="/gaming" 
-              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md flex items-center gap-1.5"
+              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               <Gamepad2 className="w-4 h-4" />
               {t.nav.gaming}
             </Link>
             <Link 
               to="/sell" 
-              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
+              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               {t.nav.sell}
             </Link>
             <Link 
               to="/portfolio" 
-              className="text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-all text-sm font-medium px-3 py-2 rounded-md"
+              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md"
+              style={{ fontFamily: 'Inter, sans-serif' }}
             >
               {t.nav.portfolio}
             </Link>
