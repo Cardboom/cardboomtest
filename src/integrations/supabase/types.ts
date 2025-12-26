@@ -333,55 +333,79 @@ export type Database = {
       }
       card_reels: {
         Row: {
+          avg_watch_time: number | null
           comment_count: number | null
+          completion_rate: number | null
           created_at: string
           description: string | null
           duration_seconds: number | null
+          hashtags: string[] | null
           id: string
           is_active: boolean | null
           is_featured: boolean | null
           like_count: number | null
+          save_count: number | null
+          share_count: number | null
+          sound_name: string | null
           tagged_card_id: string | null
           thumbnail_url: string | null
           title: string
+          trending_score: number | null
           updated_at: string
           user_id: string
           video_url: string
           view_count: number | null
+          watch_time_total: number | null
         }
         Insert: {
+          avg_watch_time?: number | null
           comment_count?: number | null
+          completion_rate?: number | null
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
+          hashtags?: string[] | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
           like_count?: number | null
+          save_count?: number | null
+          share_count?: number | null
+          sound_name?: string | null
           tagged_card_id?: string | null
           thumbnail_url?: string | null
           title: string
+          trending_score?: number | null
           updated_at?: string
           user_id: string
           video_url: string
           view_count?: number | null
+          watch_time_total?: number | null
         }
         Update: {
+          avg_watch_time?: number | null
           comment_count?: number | null
+          completion_rate?: number | null
           created_at?: string
           description?: string | null
           duration_seconds?: number | null
+          hashtags?: string[] | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
           like_count?: number | null
+          save_count?: number | null
+          share_count?: number | null
+          sound_name?: string | null
           tagged_card_id?: string | null
           thumbnail_url?: string | null
           title?: string
+          trending_score?: number | null
           updated_at?: string
           user_id?: string
           video_url?: string
           view_count?: number | null
+          watch_time_total?: number | null
         }
         Relationships: [
           {
@@ -2631,6 +2655,44 @@ export type Database = {
           },
         ]
       }
+      reel_watch_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          reel_id: string
+          session_id: string | null
+          user_id: string | null
+          watch_duration: number | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          reel_id: string
+          session_id?: string | null
+          user_id?: string | null
+          watch_duration?: number | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          reel_id?: string
+          session_id?: string | null
+          user_id?: string | null
+          watch_duration?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reel_watch_events_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "card_reels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reference_listings: {
         Row: {
           confidence_level: string | null
@@ -3809,6 +3871,10 @@ export type Database = {
     Functions: {
       calculate_level: { Args: { xp_amount: number }; Returns: number }
       calculate_portfolio_heat: { Args: { p_user_id: string }; Returns: number }
+      calculate_reel_trending_score: {
+        Args: { reel_uuid: string }
+        Returns: number
+      }
       get_seller_rating: {
         Args: { seller_uuid: string }
         Returns: {
@@ -3823,6 +3889,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_reel_shares: { Args: { reel_uuid: string }; Returns: undefined }
       increment_reel_views: { Args: { reel_uuid: string }; Returns: undefined }
       update_call_outcomes: { Args: never; Returns: undefined }
       update_reputation: {

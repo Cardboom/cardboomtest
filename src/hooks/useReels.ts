@@ -13,8 +13,13 @@ export interface Reel {
   view_count: number;
   like_count: number;
   comment_count: number;
+  share_count: number;
+  save_count: number;
   duration_seconds: number | null;
   is_featured: boolean;
+  trending_score: number;
+  hashtags: string[];
+  sound_name: string | null;
   created_at: string;
   user?: {
     id?: string;
@@ -257,6 +262,9 @@ export function useReelActions() {
   const shareReel = async (reelId: string, title: string) => {
     const url = `${window.location.origin}/reels/${reelId}`;
     
+    // Increment share count in database
+    await supabase.rpc('increment_reel_shares', { reel_uuid: reelId });
+    
     if (navigator.share) {
       try {
         await navigator.share({ title, url });
@@ -271,7 +279,51 @@ export function useReelActions() {
     return true;
   };
 
-  return { likeReel, unlikeReel, saveReel, unsaveReel, incrementView, shareReel };
+  const followCreator = async (creatorId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: 'Please sign in to follow', variant: 'destructive' });
+      return false;
+    }
+
+    if (user.id === creatorId) {
+      return false; // Can't follow yourself
+    }
+
+    const { error } = await supabase
+      .from('follows')
+      .insert({ follower_id: user.id, following_id: creatorId });
+
+    if (error?.code === '23505') {
+      // Already following, unfollow
+      await supabase
+        .from('follows')
+        .delete()
+        .eq('follower_id', user.id)
+        .eq('following_id', creatorId);
+      return false;
+    }
+
+    if (!error) {
+      toast({ title: 'Following!' });
+    }
+    return !error;
+  };
+
+  const unfollowCreator = async (creatorId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { error } = await supabase
+      .from('follows')
+      .delete()
+      .eq('follower_id', user.id)
+      .eq('following_id', creatorId);
+
+    return !error;
+  };
+
+  return { likeReel, unlikeReel, saveReel, unsaveReel, incrementView, shareReel, followCreator, unfollowCreator };
 }
 
 export function useReelComments(reelId: string) {
