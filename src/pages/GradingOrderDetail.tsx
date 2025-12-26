@@ -12,14 +12,8 @@ import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
-import { 
-  ArrowLeft, 
-  Clock, 
-  Mail,
-  RefreshCw,
-  Calendar,
-  DollarSign
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function GradingOrderDetail() {
@@ -48,12 +42,9 @@ export default function GradingOrderDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
-        <main className="container mx-auto px-4 pt-24 pb-16">
+        <main className="container mx-auto px-4 pt-24 pb-16 max-w-4xl">
           <Skeleton className="h-8 w-48 mb-6" />
-          <div className="grid lg:grid-cols-2 gap-8">
-            <Skeleton className="h-96" />
-            <Skeleton className="h-96" />
-          </div>
+          <div className="grid lg:grid-cols-2 gap-6"><Skeleton className="h-80" /><Skeleton className="h-80" /></div>
         </main>
       </div>
     );
@@ -64,8 +55,9 @@ export default function GradingOrderDetail() {
       <div className="min-h-screen bg-background">
         <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
         <main className="container mx-auto px-4 pt-24 pb-16 text-center">
+          <Award className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
-          <Button onClick={() => navigate('/grading/orders')}>Back to Orders</Button>
+          <Button onClick={() => navigate('/grading/orders')} className="rounded-full">Back to Orders</Button>
         </main>
       </div>
     );
@@ -75,136 +67,47 @@ export default function GradingOrderDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>Grading Order {order.id.slice(0, 8)} - CardBoom</title>
-        <meta name="description" content={`View your CardBoom grading order details and ${isCompleted ? 'results' : 'status'}.`} />
-      </Helmet>
-      
+      <Helmet><title>Grading Order {order.id.slice(0, 8)} - CardBoom</title></Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
-      <CartDrawer 
-        items={cartItems} 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
-        onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))}
-      />
+      <CartDrawer items={cartItems} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))} />
       
-      <main className="container mx-auto px-4 pt-24 pb-16">
-        <div className="flex items-center gap-4 mb-8">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => navigate('/grading/orders')}
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
+      <main className="container mx-auto px-4 pt-24 pb-16 max-w-4xl">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-4 mb-8">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/grading/orders')}><ArrowLeft className="w-5 h-5" /></Button>
           <div>
-            <h1 className="text-2xl font-bold">Order Details</h1>
-            <p className="text-muted-foreground">
-              {category?.icon} {category?.name} • Order #{order.id.slice(0, 8)}
-            </p>
+            <h1 className="text-xl font-bold">Order Details</h1>
+            <p className="text-sm text-muted-foreground">{category?.icon} {category?.name} • #{order.id.slice(0, 8)}</p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            {isCompleted ? (
-              <GradingResultCard order={order} />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <RefreshCw className="w-5 h-5" />
-                    Order Status
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <OrderStatusTimeline 
-                    status={order.status}
-                    paidAt={order.paid_at}
-                    submittedAt={order.submitted_at}
-                    completedAt={order.completed_at}
-                  />
-                </CardContent>
+        <div className="grid lg:grid-cols-2 gap-6">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
+            {isCompleted ? <GradingResultCard order={order} /> : (
+              <Card className="border-border/50">
+                <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-lg"><RefreshCw className="w-5 h-5" />Order Status</CardTitle></CardHeader>
+                <CardContent><OrderStatusTimeline status={order.status} paidAt={order.paid_at} submittedAt={order.submitted_at} completedAt={order.completed_at} /></CardContent>
               </Card>
             )}
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="w-4 h-4" />
-                    <span>Submitted</span>
-                  </div>
-                  <span className="font-medium">
-                    {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <DollarSign className="w-4 h-4" />
-                    <span>Price Paid</span>
-                  </div>
-                  <span className="font-medium">${order.price_usd}</span>
-                </div>
-
-                {order.paid_at && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>Payment Date</span>
-                    </div>
-                    <span className="font-medium">
-                      {format(new Date(order.paid_at), 'MMM d, yyyy h:mm a')}
-                    </span>
-                  </div>
-                )}
-
-                {order.completed_at && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span>Completed</span>
-                    </div>
-                    <span className="font-medium">
-                      {format(new Date(order.completed_at), 'MMM d, yyyy h:mm a')}
-                    </span>
-                  </div>
-                )}
+            <Card className="border-border/50">
+              <CardHeader className="pb-3"><CardTitle className="text-lg">Order Info</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-4 h-4" /><span>Submitted</span></div><span className="font-medium">{format(new Date(order.created_at), 'MMM d, yyyy')}</span></div>
+                <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><DollarSign className="w-4 h-4" /><span>Price</span></div><span className="font-medium">${order.price_usd}</span></div>
+                {order.paid_at && <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" /><span>Paid</span></div><span className="font-medium">{format(new Date(order.paid_at), 'MMM d, yyyy')}</span></div>}
+                {order.completed_at && <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" /><span>Completed</span></div><span className="font-medium">{format(new Date(order.completed_at), 'MMM d, yyyy')}</span></div>}
               </CardContent>
             </Card>
-
             {!isCompleted && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-primary" />
-                    <span>Need help with this order?</span>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => navigate('/help')}>
-                    Contact Support
-                  </Button>
-                </CardContent>
-              </Card>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <Card className="border-primary/20 bg-primary/5"><CardContent className="p-4 flex items-center justify-between"><div className="flex items-center gap-3"><Mail className="w-5 h-5 text-primary" /><span className="text-sm">Need help?</span></div><Button variant="outline" size="sm" className="rounded-full h-8" onClick={() => navigate('/help')}>Contact Support</Button></CardContent></Card>
+              </motion.div>
             )}
-          </div>
-
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Card Preview</CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center py-8">
-                <CardOverlayPreview order={order} />
-              </CardContent>
-            </Card>
-          </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+            <Card className="border-border/50"><CardHeader className="pb-3"><CardTitle className="text-lg">Card Preview</CardTitle></CardHeader><CardContent className="flex justify-center py-6"><CardOverlayPreview order={order} /></CardContent></Card>
+          </motion.div>
         </div>
       </main>
-
       <Footer />
     </div>
   );
