@@ -107,8 +107,8 @@ export function GlobalTCGStats() {
           className="text-center mb-10 md:mb-14"
         >
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.1]">
-            {t.hero.title}
-            <span className="block text-primary">{t.hero.titleHighlight}</span>
+            Grade your <span className="text-primary">Card</span>
+            <span className="block"><span className="text-primary">Boom</span> Your Value</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             {t.hero.description}
