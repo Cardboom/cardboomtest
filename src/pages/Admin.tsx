@@ -43,6 +43,7 @@ import { AutoBuyManager } from '@/components/admin/AutoBuyManager';
 import { DataSyncManager } from '@/components/admin/DataSyncManager';
 import { DiagnosticsDashboard } from '@/components/admin/DiagnosticsDashboard';
 import { GradingManagement } from '@/components/admin/GradingManagement';
+import { CardWarsManager } from '@/components/admin/CardWarsManager';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -264,6 +265,10 @@ const Admin = () => {
               <ShieldCheck className="w-4 h-4" />
               Grading
             </TabsTrigger>
+            <TabsTrigger value="cardwars" className="gap-2">
+              <Zap className="w-4 h-4" />
+              Card Wars
+            </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
               Price Management
@@ -304,6 +309,10 @@ const Admin = () => {
 
           <TabsContent value="grading">
             <GradingManagement />
+          </TabsContent>
+
+          <TabsContent value="cardwars">
+            <CardWarsManager />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">
