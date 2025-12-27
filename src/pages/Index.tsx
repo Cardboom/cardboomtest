@@ -223,7 +223,14 @@ const Index = () => {
   // Platform features now handled by FeatureShowcase component
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Animated gradient background blobs */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 -left-40 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-[float_20s_ease-in-out_infinite]" />
+        <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-accent/15 rounded-full blur-[100px] animate-[float_25s_ease-in-out_infinite_reverse]" />
+        <div className="absolute bottom-0 left-1/3 w-[700px] h-[700px] bg-secondary/10 rounded-full blur-[140px] animate-[float_30s_ease-in-out_infinite]" />
+        <div className="absolute top-2/3 right-1/4 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[80px] animate-[float_22s_ease-in-out_infinite_reverse]" />
+      </div>
       <Helmet>
         <title>Cardboom - Premier Collectibles Trading Exchange | Buy & Sell Trading Cards</title>
         <meta name="description" content="Trade NBA cards, football cards, Pokemon TCG, Yu-Gi-Oh!, and rare collectible figures with real-time pricing, secure transactions, and instant settlements. Join 10,000+ collectors on Cardboom." />
