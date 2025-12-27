@@ -141,10 +141,20 @@
     scroll-behavior: smooth;
   }
 
+  /* Force GPU acceleration and 60fps for all animations */
+  *,
+  *::before,
+  *::after {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Premium Display Typography */
