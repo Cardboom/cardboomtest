@@ -93,57 +93,6 @@ export function GlobalTCGStats() {
     },
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.9 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: 'spring' as const,
-        stiffness: 100,
-        damping: 12,
-      },
-    },
-  };
-
-  const textVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: 'spring' as const,
-        stiffness: 80,
-        damping: 15,
-      },
-    },
-  };
-
-  const numberVariants = {
-    hidden: { opacity: 0, scale: 0.5 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        type: 'spring' as const,
-        stiffness: 150,
-        damping: 10,
-      },
-    },
-  };
-
   return (
     <section className="py-12 md:py-20 relative overflow-hidden">
       {/* Background gradients */}
@@ -152,93 +101,44 @@ export function GlobalTCGStats() {
       <div className="container mx-auto px-4">
         {/* Hero headline + Stats combined */}
         <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
           className="text-center mb-10 md:mb-14"
         >
-          <motion.h1 
-            variants={textVariants}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.1]"
-          >
-            <motion.span
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 0.1 }}
-            >
-              Grade your{' '}
-            </motion.span>
-            <motion.span 
-              className="text-primary"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ type: 'spring', stiffness: 120, damping: 10, delay: 0.3 }}
-            >
-              Card
-            </motion.span>
-            <span className="block">
-              <motion.span 
-                className="text-primary"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: 'spring', stiffness: 120, damping: 10, delay: 0.5 }}
-              >
-                Boom
-              </motion.span>
-              <motion.span
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 0.6 }}
-              >
-                {' '}Your Value
-              </motion.span>
-            </span>
-          </motion.h1>
-          <motion.p 
-            variants={textVariants}
-            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8"
-          >
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.1]">
+            Grade your <span className="text-primary">Card</span>
+            <span className="block"><span className="text-primary">Boom</span> Your Value</span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
             {t.hero.description}
-          </motion.p>
+          </p>
           
-          <motion.div 
-            variants={textVariants}
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/auth')}
+              className="h-14 px-10 rounded-full font-bold text-base shadow-lg shadow-primary/25"
             >
-              <Button 
-                size="lg" 
-                onClick={() => navigate('/auth')}
-                className="h-14 px-10 rounded-full font-bold text-base shadow-lg shadow-primary/25"
-              >
-                {t.hero.startTrading}
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </motion.div>
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
+              {t.hero.startTrading}
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <Button 
+              variant="outline"
+              size="lg" 
+              onClick={() => navigate('/markets')}
+              className="h-14 px-10 rounded-full font-semibold text-base"
             >
-              <Button 
-                variant="outline"
-                size="lg" 
-                onClick={() => navigate('/markets')}
-                className="h-14 px-10 rounded-full font-semibold text-base"
-              >
-                {t.hero.exploreMarket}
-              </Button>
-            </motion.div>
-          </motion.div>
+              {t.hero.exploreMarket}
+            </Button>
+          </div>
         </motion.div>
 
         {/* Stats Grid */}
         <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden max-w-4xl mx-auto"
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.03),transparent_50%)]" />
@@ -247,12 +147,10 @@ export function GlobalTCGStats() {
             {statItems.map((item, i) => (
               <motion.div
                 key={item.label}
-                variants={itemVariants}
-                whileHover={{ 
-                  scale: 1.02,
-                  transition: { type: 'spring', stiffness: 300, damping: 20 }
-                }}
-                className={`relative p-6 md:p-8 flex flex-col items-center justify-center text-center cursor-default
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
+                className={`relative p-6 md:p-8 flex flex-col items-center justify-center text-center
                   ${i < 2 ? 'border-b border-border/30 md:border-b-0' : ''}
                   ${i % 2 === 0 ? 'border-r border-border/30' : ''}
                   ${i < 2 ? 'md:border-r md:border-border/30' : i === 2 ? 'md:border-r md:border-border/30' : ''}
@@ -261,46 +159,21 @@ export function GlobalTCGStats() {
                 <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-50`} />
                 
                 <div className="relative z-10 flex flex-col items-center gap-3">
-                  <motion.div 
-                    className={`p-3 rounded-xl ${item.iconBg}`}
-                    initial={{ rotate: -10, scale: 0 }}
-                    animate={{ rotate: 0, scale: 1 }}
-                    transition={{ 
-                      type: 'spring', 
-                      stiffness: 200, 
-                      damping: 15, 
-                      delay: 0.5 + i * 0.1 
-                    }}
-                    whileHover={{ rotate: [0, -10, 10, 0], transition: { duration: 0.4 } }}
-                  >
+                  <div className={`p-3 rounded-xl ${item.iconBg}`}>
                     <item.icon className={`w-5 h-5 md:w-6 md:h-6 ${item.iconColor}`} />
-                  </motion.div>
+                  </div>
                   
                   <div className="space-y-1">
-                    <motion.div 
-                      variants={numberVariants}
-                      className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight"
-                    >
+                    <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
                       {isLoading ? (
                         <span className="inline-block w-20 h-8 bg-muted/50 rounded animate-pulse" />
                       ) : (
-                        <motion.span
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.7 + i * 0.1, duration: 0.3 }}
-                        >
-                          {item.value}
-                        </motion.span>
+                        item.value
                       )}
-                    </motion.div>
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.8 + i * 0.1 }}
-                      className="text-xs md:text-sm text-muted-foreground font-medium"
-                    >
+                    </div>
+                    <div className="text-xs md:text-sm text-muted-foreground font-medium">
                       {item.label}
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
