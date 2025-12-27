@@ -241,19 +241,14 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Hero Section */}
-        <HeroSection />
+        {/* Global Stats Bar - Hero at top */}
+        <GlobalTCGStats />
 
         {/* Feature Showcase - Why CardBoom */}
         <FeatureShowcase />
 
         {/* Grading CTA Section */}
         <GradingCTA />
-
-        {/* Global Stats Bar - shown for all users */}
-        <ScrollReveal>
-          <GlobalTCGStats />
-        </ScrollReveal>
         
         {/* Live Market Section */}
         <ScrollReveal>
