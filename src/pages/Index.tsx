@@ -26,8 +26,9 @@ import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, Brain, Trophy, Bell, Users, PieChart, Shield, Clock, Sparkles } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { ArrowRight, Brain, Trophy, Bell, Users, PieChart } from 'lucide-react';
+import { GradingHero } from '@/components/GradingHero';
+import { GradingCTA } from '@/components/GradingCTA';
 import { FeatureShowcase } from '@/components/FeatureShowcase';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
@@ -242,93 +243,13 @@ const Index = () => {
       
       <main>
         {/* Grading Hero Section */}
-        <section className="relative py-16 overflow-hidden bg-gradient-to-br from-blue-500/10 via-background to-cyan-500/10">
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:32px_32px]" />
-          <div className="container mx-auto px-4 relative">
-            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-              <div className="flex-1 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
-                  <Shield className="w-4 h-4 text-blue-500" />
-                  <span className="text-sm font-medium text-blue-500">AI-Powered Grading</span>
-                </div>
-                <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight mb-4">
-                  Grade Your Card
-                  <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">In Seconds</span>
-                </h1>
-                <p className="text-muted-foreground text-lg mb-6 max-w-md mx-auto lg:mx-0">
-                  Professional-quality AI grading at a fraction of the cost. Upload, scan, and get instant results.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                  <Button 
-                    size="lg"
-                    onClick={() => navigate('/grading')}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/25"
-                  >
-                    <Shield className="w-5 h-5 mr-2" />
-                    Start Grading
-                  </Button>
-                  <Button 
-                    size="lg"
-                    variant="outline"
-                    onClick={() => navigate('/grading')}
-                  >
-                    Learn More
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-                <div className="flex items-center gap-6 mt-6 justify-center lg:justify-start text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-yellow-500" />
-                    Free credits on signup
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    Results in 30 seconds
-                  </span>
-                </div>
-              </div>
-              <div className="flex-1 max-w-md">
-                <div className="relative">
-                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-3xl blur-2xl" />
-                  <div className="relative bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 shadow-2xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm font-medium text-muted-foreground">Sample Grade</span>
-                      <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white">PSA 9 Equivalent</Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="text-xs text-muted-foreground mb-1">Centering</div>
-                        <div className="text-lg font-bold text-foreground">9.0</div>
-                      </div>
-                      <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="text-xs text-muted-foreground mb-1">Corners</div>
-                        <div className="text-lg font-bold text-foreground">9.5</div>
-                      </div>
-                      <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="text-xs text-muted-foreground mb-1">Edges</div>
-                        <div className="text-lg font-bold text-foreground">9.0</div>
-                      </div>
-                      <div className="p-3 rounded-lg bg-muted/50">
-                        <div className="text-xs text-muted-foreground mb-1">Surface</div>
-                        <div className="text-lg font-bold text-foreground">9.5</div>
-                      </div>
-                    </div>
-                    <div className="p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">Final Grade</span>
-                        <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500">9.0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <GradingHero />
 
         {/* Feature Showcase - Why CardBoom */}
         <FeatureShowcase />
+
+        {/* Grading CTA Section */}
+        <GradingCTA />
 
         {/* Global Stats Bar - shown for all users */}
         <ScrollReveal>
