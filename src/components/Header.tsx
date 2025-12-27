@@ -349,21 +349,16 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Gamepad2 className="w-4 h-4" />
               {t.nav.gaming}
             </Link>
-            <Link 
-              to="/sell" 
-              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              {t.nav.sell}
-            </Link>
-            <Link 
-              to="/portfolio" 
-              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              {t.nav.portfolio}
-            </Link>
           </nav>
+          
+          {/* Sell Button - Prominent */}
+          <Button 
+            onClick={() => navigate('/sell')}
+            className="hidden lg:flex gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+          >
+            <span className="text-lg font-bold">+</span>
+            {t.nav.sell}
+          </Button>
 
           <div className="flex items-center gap-0.5">
             <CurrencyToggle />

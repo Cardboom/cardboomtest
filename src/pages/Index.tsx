@@ -240,8 +240,13 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Global Stats Bar with Hero - shown for all users */}
-        <GlobalTCGStats />
+        {/* Feature Showcase - Why CardBoom (Hero replacement) */}
+        <FeatureShowcase />
+
+        {/* Global Stats Bar - shown for all users */}
+        <ScrollReveal>
+          <GlobalTCGStats />
+        </ScrollReveal>
         
         {/* Live Market Section */}
         <ScrollReveal>
@@ -349,12 +354,14 @@ const Index = () => {
           <ReelsPreviewSection />
         </ScrollReveal>
 
-        {/* Card Wars Section */}
+        {/* Card Wars Section - aligned with container */}
         <ScrollReveal>
-          <CardWarsSection />
+          <section className="py-12 border-t border-border/50">
+            <div className="container mx-auto px-4">
+              <CardWarsSection />
+            </div>
+          </section>
         </ScrollReveal>
-        {/* Feature Showcase - Why CardBoom */}
-        <FeatureShowcase />
 
         {/* Listings */}
         <section className="py-12 border-t border-border/50">

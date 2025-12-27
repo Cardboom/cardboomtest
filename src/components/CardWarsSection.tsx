@@ -218,7 +218,7 @@ export const CardWarsSection = () => {
   }
 
   return (
-    <section className="py-8">
+    <div className="py-4">
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
           <Swords className="w-6 h-6 text-white" />
@@ -474,6 +474,6 @@ export const CardWarsSection = () => {
           );
         })}
       </div>
-    </section>
+    </div>
   );
 };
