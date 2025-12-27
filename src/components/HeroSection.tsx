@@ -68,7 +68,7 @@ export const HeroSection = () => {
       {/* Gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background pointer-events-none" />
       
-      <div className="container mx-auto px-4 py-20 lg:py-32 relative z-10">
+      <div className="container mx-auto px-4 py-20 lg:py-32 relative z-20">
         <div className="max-w-3xl mx-auto text-center space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary backdrop-blur-sm animate-fade-in">
