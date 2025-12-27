@@ -223,32 +223,26 @@ const Index = () => {
   // Platform features now handled by FeatureShowcase component
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Aesthetic animated background - fixed position behind everything */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: -1 }}>
-        {/* Base background color */}
+    <div className="min-h-screen relative">
+      {/* Refined ambient background */}
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
         <div className="absolute inset-0 bg-background" />
         
-        {/* Primary gradient orbs */}
-        <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-gradient-to-br from-primary/30 via-primary/15 to-transparent rounded-full blur-[100px] animate-[float_20s_ease-in-out_infinite]" />
-        <div className="absolute top-1/4 -right-60 w-[600px] h-[600px] bg-gradient-to-bl from-accent/25 via-accent/10 to-transparent rounded-full blur-[80px] animate-[float_25s_ease-in-out_infinite_reverse]" />
-        <div className="absolute -bottom-40 left-1/4 w-[900px] h-[900px] bg-gradient-to-tr from-secondary/20 via-primary/10 to-transparent rounded-full blur-[120px] animate-[float_30s_ease-in-out_infinite]" />
-        <div className="absolute top-1/2 right-1/3 w-[500px] h-[500px] bg-gradient-to-tl from-primary/20 via-transparent to-transparent rounded-full blur-[90px] animate-[float_22s_ease-in-out_infinite_reverse]" />
-        
-        {/* Subtle grid pattern overlay */}
+        {/* Single subtle gradient wash - GPU accelerated */}
         <div 
-          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04]"
+          className="absolute inset-0 opacity-40 dark:opacity-30"
           style={{
-            backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
+            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent)',
+            willChange: 'transform'
           }}
         />
         
-        {/* Noise texture for premium feel */}
+        {/* Minimal accent glow */}
         <div 
-          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] mix-blend-overlay"
+          className="absolute bottom-0 left-0 right-0 h-[60vh] opacity-20 dark:opacity-15"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
+            background: 'radial-gradient(ellipse 60% 40% at 50% 100%, hsl(var(--accent) / 0.1), transparent)',
+            willChange: 'transform'
           }}
         />
       </div>
@@ -283,7 +277,7 @@ const Index = () => {
         
         {/* Live Market Section */}
         <ScrollReveal>
-          <section ref={marketRef} className="py-12 border-t border-border/30 bg-background/60 backdrop-blur-sm">
+          <section ref={marketRef} className="py-12 border-t border-border/20 bg-transparent">
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -320,7 +314,7 @@ const Index = () => {
 
         {/* 2026 Features: AI Insights + Social + Gamification */}
         <ScrollReveal>
-          <section className="py-12 border-t border-border/30 bg-background/40 backdrop-blur-sm">
+          <section className="py-12 border-t border-border/20 bg-transparent">
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -389,7 +383,7 @@ const Index = () => {
 
         {/* Card Wars Section - aligned with container */}
         <ScrollReveal>
-          <section className="py-12 border-t border-border/30 bg-background/40 backdrop-blur-sm">
+          <section className="py-12 border-t border-border/20 bg-transparent">
             <div className="container mx-auto px-4">
               <CardWarsSection />
             </div>
@@ -397,7 +391,7 @@ const Index = () => {
         </ScrollReveal>
 
         {/* Listings */}
-        <section className="py-12 border-t border-border/30 bg-background/50 backdrop-blur-sm">
+        <section className="py-12 border-t border-border/20 bg-transparent">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <div>
