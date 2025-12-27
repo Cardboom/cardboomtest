@@ -35,8 +35,8 @@ export const en = {
   // Hero
   hero: {
     badge: "The Future of TCG Investing",
-    title: "Your collections value goes",
-    titleHighlight: "boom!",
+    title: "Grade your Card,",
+    titleHighlight: "Boom Your Value",
     subtitle: "Real-Time Pricing • Portfolio Tracking • Smart Investing",
     description: "Buy, sell, grade, and track cards, figures, gaming items, and fractional collectibles — all in one trusted base.",
     startTrading: "Start Investing",
