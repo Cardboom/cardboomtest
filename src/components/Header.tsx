@@ -155,7 +155,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           <nav className="hidden lg:flex items-center gap-0">
             <Link 
               to="/" 
-              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md"
             >
               {t.nav.marketplace}
             </Link>
@@ -163,7 +163,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             {/* Reels Link */}
             <Link 
               to="/reels" 
-              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
               <Film className="w-3.5 h-3.5" />
               {t.nav.reels}
@@ -173,7 +173,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-8 px-2">
+                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-8 px-2">
                     <TrendingUp className="w-3.5 h-3.5 mr-1" />
                     {t.nav.trading}
                   </NavigationMenuTrigger>
@@ -254,7 +254,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-8 px-2">
+                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-8 px-2">
                     <Users className="w-3.5 h-3.5 mr-1" />
                     Community
                   </NavigationMenuTrigger>
@@ -333,7 +333,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
             <Link 
               to="/grading" 
-              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
               <Award className="w-3.5 h-3.5" />
               {t.nav.grading}
@@ -342,7 +342,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             {/* Card Wars Link */}
             <Link 
               to="/#card-wars" 
-              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
               <Swords className="w-3.5 h-3.5" />
               Card Wars
@@ -350,7 +350,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             
             <Link 
               to="/gaming" 
-              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
               <Gamepad2 className="w-3.5 h-3.5" />
               {t.nav.gaming}
