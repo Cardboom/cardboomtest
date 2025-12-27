@@ -223,35 +223,38 @@ const Index = () => {
   // Platform features now handled by FeatureShowcase component
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Aesthetic animated background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Aesthetic animated background - fixed position behind everything */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: -1 }}>
+        {/* Base background color */}
+        <div className="absolute inset-0 bg-background" />
+        
         {/* Primary gradient orbs */}
-        <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-gradient-to-br from-primary/25 via-primary/10 to-transparent rounded-full blur-[100px] animate-[float_20s_ease-in-out_infinite]" />
-        <div className="absolute top-1/4 -right-60 w-[600px] h-[600px] bg-gradient-to-bl from-accent/20 via-accent/5 to-transparent rounded-full blur-[80px] animate-[float_25s_ease-in-out_infinite_reverse]" />
-        <div className="absolute -bottom-40 left-1/4 w-[900px] h-[900px] bg-gradient-to-tr from-secondary/15 via-primary/5 to-transparent rounded-full blur-[120px] animate-[float_30s_ease-in-out_infinite]" />
-        <div className="absolute top-1/2 right-1/3 w-[500px] h-[500px] bg-gradient-to-tl from-primary/15 via-transparent to-transparent rounded-full blur-[90px] animate-[float_22s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-gradient-to-br from-primary/30 via-primary/15 to-transparent rounded-full blur-[100px] animate-[float_20s_ease-in-out_infinite]" />
+        <div className="absolute top-1/4 -right-60 w-[600px] h-[600px] bg-gradient-to-bl from-accent/25 via-accent/10 to-transparent rounded-full blur-[80px] animate-[float_25s_ease-in-out_infinite_reverse]" />
+        <div className="absolute -bottom-40 left-1/4 w-[900px] h-[900px] bg-gradient-to-tr from-secondary/20 via-primary/10 to-transparent rounded-full blur-[120px] animate-[float_30s_ease-in-out_infinite]" />
+        <div className="absolute top-1/2 right-1/3 w-[500px] h-[500px] bg-gradient-to-tl from-primary/20 via-transparent to-transparent rounded-full blur-[90px] animate-[float_22s_ease-in-out_infinite_reverse]" />
         
         {/* Subtle grid pattern overlay */}
         <div 
-          className="absolute inset-0 opacity-[0.015] dark:opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04]"
           style={{
             backgroundImage: `linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)`,
             backgroundSize: '60px 60px'
           }}
         />
         
-        {/* Radial gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
-        
         {/* Noise texture for premium feel */}
         <div 
-          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04] mix-blend-overlay"
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] mix-blend-overlay"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`
           }}
         />
       </div>
+      
+      {/* Main content with transparent/semi-transparent backgrounds */}
+      <div className="relative z-0">
       <Helmet>
         <title>Cardboom - Premier Collectibles Trading Exchange | Buy & Sell Trading Cards</title>
         <meta name="description" content="Trade NBA cards, football cards, Pokemon TCG, Yu-Gi-Oh!, and rare collectible figures with real-time pricing, secure transactions, and instant settlements. Join 10,000+ collectors on Cardboom." />
@@ -280,7 +283,7 @@ const Index = () => {
         
         {/* Live Market Section */}
         <ScrollReveal>
-          <section ref={marketRef} className="py-12 border-t border-border/50 bg-muted/20">
+          <section ref={marketRef} className="py-12 border-t border-border/30 bg-background/60 backdrop-blur-sm">
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -317,7 +320,7 @@ const Index = () => {
 
         {/* 2026 Features: AI Insights + Social + Gamification */}
         <ScrollReveal>
-          <section className="py-12 border-t border-border/50">
+          <section className="py-12 border-t border-border/30 bg-background/40 backdrop-blur-sm">
             <div className="container mx-auto px-4">
               <div className="flex items-center justify-between mb-8">
                 <div>
@@ -386,7 +389,7 @@ const Index = () => {
 
         {/* Card Wars Section - aligned with container */}
         <ScrollReveal>
-          <section className="py-12 border-t border-border/50">
+          <section className="py-12 border-t border-border/30 bg-background/40 backdrop-blur-sm">
             <div className="container mx-auto px-4">
               <CardWarsSection />
             </div>
@@ -394,7 +397,7 @@ const Index = () => {
         </ScrollReveal>
 
         {/* Listings */}
-        <section className="py-12 border-t border-border/50">
+        <section className="py-12 border-t border-border/30 bg-background/50 backdrop-blur-sm">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -459,6 +462,7 @@ const Index = () => {
         items={cartItems}
         onRemoveItem={handleRemoveFromCart}
       />
+      </div>
     </div>
   );
 };
