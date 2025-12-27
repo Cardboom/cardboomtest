@@ -26,7 +26,8 @@ import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart, Film } from 'lucide-react';
+import { ArrowRight, Brain, Trophy, Bell, Users, PieChart } from 'lucide-react';
+import { FeatureShowcase } from '@/components/FeatureShowcase';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
 import { CardWarsSection } from '@/components/CardWarsSection';
@@ -218,14 +219,7 @@ const Index = () => {
     .sort((a, b) => a.priceChange - b.priceChange)
     .slice(0, 5);
 
-  const platformFeatures = [
-    { icon: Shield, title: t.whyInvest.secureVault, desc: t.whyInvest.secureVaultDesc },
-    { icon: Zap, title: t.whyInvest.instantTrades, desc: t.whyInvest.instantTradesDesc },
-    { icon: Wallet, title: t.whyInvest.easyPayments, desc: t.whyInvest.easyPaymentsDesc },
-    { icon: Users, title: t.whyInvest.verifiedInvestors, desc: t.whyInvest.verifiedInvestorsDesc },
-    { icon: PieChart, title: t.whyInvest.fractionalShares, desc: t.whyInvest.fractionalSharesDesc },
-    { icon: Brain, title: t.whyInvest.aiInsights, desc: t.whyInvest.aiInsightsDesc },
-  ];
+  // Platform features now handled by FeatureShowcase component
 
   return (
     <div className="min-h-screen bg-background">
@@ -359,35 +353,8 @@ const Index = () => {
         <ScrollReveal>
           <CardWarsSection />
         </ScrollReveal>
-        {/* Platform Features */}
-        <ScrollReveal>
-          <section className="py-16 border-t border-border/50 bg-gradient-to-b from-muted/30 to-transparent">
-            <div className="container mx-auto px-4">
-              <div className="text-center mb-12">
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  {t.whyInvest.title}
-                </h2>
-                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-                  {t.whyInvest.subtitle}
-                </p>
-              </div>
-              
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-                {platformFeatures.map((feature, index) => (
-                  <ScrollReveal key={feature.title} delay={index * 100} direction="scale">
-                    <div className="p-6 rounded-2xl bg-card/80 border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 text-center h-full">
-                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                        <feature.icon className="w-7 h-7 text-primary" />
-                      </div>
-                      <h3 className="font-display text-lg font-bold text-foreground mb-2">{feature.title}</h3>
-                      <p className="text-muted-foreground text-sm">{feature.desc}</p>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </div>
-          </section>
-        </ScrollReveal>
+        {/* Feature Showcase - Why CardBoom */}
+        <FeatureShowcase />
 
         {/* Listings */}
         <section className="py-12 border-t border-border/50">
