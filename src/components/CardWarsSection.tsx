@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Trophy, Clock, Users, Flame, Crown, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Swords, Trophy, Clock, Users, Flame, Crown, Sparkles, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +8,25 @@ import { Progress } from '@/components/ui/progress';
 import { useCardWars } from '@/hooks/useCardWars';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+
+// Mock data for showcase when no active wars
+const mockWar = {
+  id: 'mock',
+  card_a_name: 'Charizard 1st Edition',
+  card_b_name: 'Blastoise 1st Edition',
+  card_a_image: '/placeholder.svg',
+  card_b_image: '/placeholder.svg',
+  card_a_votes: 1247,
+  card_b_votes: 892,
+  card_a_pro_votes: 45.50,
+  card_b_pro_votes: 32.25,
+  prize_pool: 100,
+  ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24h from now
+};
 
 export const CardWarsSection = () => {
+  const navigate = useNavigate();
   const [userId, setUserId] = useState<string>();
   const [isPro, setIsPro] = useState(false);
   const { activeWars, userVotes, loading, vote } = useCardWars(userId);
@@ -34,6 +51,9 @@ export const CardWarsSection = () => {
     getUser();
   }, []);
 
+  const isShowcase = activeWars.length === 0;
+  const wars = isShowcase ? [mockWar] : activeWars;
+
   if (loading) {
     return (
       <div className="py-8">
@@ -43,10 +63,6 @@ export const CardWarsSection = () => {
         </div>
       </div>
     );
-  }
-
-  if (activeWars.length === 0) {
-    return null;
   }
 
   return (
@@ -59,10 +75,16 @@ export const CardWarsSection = () => {
           <h2 className="text-2xl font-bold">Card Wars</h2>
           <p className="text-sm text-muted-foreground">Vote for your champion • Pro votes share $100 prize</p>
         </div>
+        {isShowcase && (
+          <Badge variant="secondary" className="ml-auto">
+            <Sparkles className="w-3 h-3 mr-1" />
+            Feature Preview
+          </Badge>
+        )}
       </div>
 
       <div className="grid gap-6">
-        {activeWars.map((war) => {
+        {wars.map((war) => {
           const userVote = userVotes[war.id];
           const totalVotes = (war.card_a_votes || 0) + (war.card_b_votes || 0);
           const cardAPercent = totalVotes > 0 ? ((war.card_a_votes || 0) / totalVotes) * 100 : 50;
@@ -70,7 +92,53 @@ export const CardWarsSection = () => {
           const endsIn = formatDistanceToNow(new Date(war.ends_at), { addSuffix: true });
 
           return (
-            <Card key={war.id} className="overflow-hidden border-2 border-orange-500/30 bg-gradient-to-br from-background to-orange-950/10">
+            <Card key={war.id} className="overflow-hidden border-2 border-orange-500/30 bg-gradient-to-br from-background to-orange-950/10 relative">
+              {/* Showcase overlay */}
+              {isShowcase && (
+                <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+                  <div className="text-center space-y-2">
+                    <div className="p-3 rounded-full bg-orange-500/20 w-fit mx-auto">
+                      <Swords className="w-8 h-8 text-orange-500" />
+                    </div>
+                    <h3 className="text-xl font-bold">Card Wars</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto text-sm px-4">
+                      Vote on epic card battles! Pro members compete for real cash prizes. 
+                      Each Pro vote adds $2.50 to the winning pot.
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button 
+                      onClick={() => navigate('/auth')}
+                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                    >
+                      <Lock className="w-4 h-4 mr-2" />
+                      Sign Up to Vote
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      onClick={() => navigate('/pricing')}
+                    >
+                      See Pro Benefits
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-6 text-sm text-muted-foreground mt-2">
+                    <span className="flex items-center gap-1">
+                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      $100 Prize Pools
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Users className="w-4 h-4 text-blue-500" />
+                      Community Voting
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Flame className="w-4 h-4 text-orange-500" />
+                      Daily Battles
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <CardContent className="p-0">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-red-500/10 via-transparent to-blue-500/10">
@@ -99,7 +167,7 @@ export const CardWarsSection = () => {
                         ? 'border-green-500 bg-green-500/10' 
                         : 'border-red-500/50 bg-red-500/5 hover:bg-red-500/10'
                     }`}
-                    whileHover={{ scale: userVote ? 1 : 1.02 }}
+                    whileHover={{ scale: userVote || isShowcase ? 1 : 1.02 }}
                   >
                     {war.card_a_image && (
                       <img 
@@ -120,14 +188,14 @@ export const CardWarsSection = () => {
                       </div>
                       <Progress value={cardAPercent} className="h-2 bg-muted" />
                       
-                      {isPro && (
+                      {(isPro || isShowcase) && (
                         <div className="text-xs text-center text-muted-foreground">
                           Pro pot: ${(war.card_a_pro_votes || 0).toFixed(2)}
                         </div>
                       )}
                     </div>
 
-                    {!userVote && (
+                    {!userVote && !isShowcase && (
                       <Button 
                         className="w-full mt-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
                         onClick={() => vote(war.id, 'card_a', isPro)}
@@ -168,7 +236,7 @@ export const CardWarsSection = () => {
                         ? 'border-green-500 bg-green-500/10' 
                         : 'border-blue-500/50 bg-blue-500/5 hover:bg-blue-500/10'
                     }`}
-                    whileHover={{ scale: userVote ? 1 : 1.02 }}
+                    whileHover={{ scale: userVote || isShowcase ? 1 : 1.02 }}
                   >
                     {war.card_b_image && (
                       <img 
@@ -189,14 +257,14 @@ export const CardWarsSection = () => {
                       </div>
                       <Progress value={cardBPercent} className="h-2 bg-muted" />
                       
-                      {isPro && (
+                      {(isPro || isShowcase) && (
                         <div className="text-xs text-center text-muted-foreground">
                           Pro pot: ${(war.card_b_pro_votes || 0).toFixed(2)}
                         </div>
                       )}
                     </div>
 
-                    {!userVote && (
+                    {!userVote && !isShowcase && (
                       <Button 
                         className="w-full mt-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
                         onClick={() => vote(war.id, 'card_b', isPro)}
@@ -220,7 +288,12 @@ export const CardWarsSection = () => {
                 {/* Footer */}
                 <div className="px-6 pb-4">
                   <div className="p-3 rounded-lg bg-muted/50 text-center text-sm">
-                    {isPro ? (
+                    {isShowcase ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Sparkles className="w-4 h-4 text-yellow-500" />
+                        Join CardBoom to participate in Card Wars and win real prizes!
+                      </span>
+                    ) : isPro ? (
                       <span className="flex items-center justify-center gap-2">
                         <Sparkles className="w-4 h-4 text-yellow-500" />
                         Your Pro vote adds $2.50 to the winning pot!
