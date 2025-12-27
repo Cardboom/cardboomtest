@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -142,7 +142,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <img 
               src={isDark ? cardboomLogoDark : cardboomLogo} 
               alt="CardBoom" 
-              className="h-10 md:h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
           </Link>
 
@@ -341,6 +341,17 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Award className="w-4 h-4" />
               {t.nav.grading}
             </Link>
+            
+            {/* Card Wars Link */}
+            <Link 
+              to="/#card-wars" 
+              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              <Swords className="w-4 h-4" />
+              Card Wars
+            </Link>
+            
             <Link 
               to="/gaming" 
               className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
@@ -351,12 +362,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             </Link>
           </nav>
           
-          {/* Sell Button - Prominent */}
+          {/* Sell Button - Compact */}
           <Button 
+            size="sm"
             onClick={() => navigate('/sell')}
-            className="hidden lg:flex gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20"
+            className="hidden lg:flex gap-1.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md shadow-primary/20 text-sm"
           >
-            <span className="text-lg font-bold">+</span>
+            <span className="font-bold">+</span>
             {t.nav.sell}
           </Button>
 
