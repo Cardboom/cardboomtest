@@ -417,6 +417,116 @@ export type Database = {
           },
         ]
       }
+      card_war_votes: {
+        Row: {
+          card_war_id: string
+          created_at: string
+          id: string
+          is_pro_vote: boolean | null
+          payout_amount: number | null
+          payout_claimed: boolean | null
+          user_id: string
+          vote_for: string
+          vote_value: number | null
+        }
+        Insert: {
+          card_war_id: string
+          created_at?: string
+          id?: string
+          is_pro_vote?: boolean | null
+          payout_amount?: number | null
+          payout_claimed?: boolean | null
+          user_id: string
+          vote_for: string
+          vote_value?: number | null
+        }
+        Update: {
+          card_war_id?: string
+          created_at?: string
+          id?: string
+          is_pro_vote?: boolean | null
+          payout_amount?: number | null
+          payout_claimed?: boolean | null
+          user_id?: string
+          vote_for?: string
+          vote_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_war_votes_card_war_id_fkey"
+            columns: ["card_war_id"]
+            isOneToOne: false
+            referencedRelation: "card_wars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_wars: {
+        Row: {
+          card_a_id: string | null
+          card_a_image: string | null
+          card_a_name: string
+          card_b_id: string | null
+          card_b_image: string | null
+          card_b_name: string
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          prize_pool: number
+          starts_at: string
+          status: string
+          winner: string | null
+        }
+        Insert: {
+          card_a_id?: string | null
+          card_a_image?: string | null
+          card_a_name: string
+          card_b_id?: string | null
+          card_b_image?: string | null
+          card_b_name: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          prize_pool?: number
+          starts_at?: string
+          status?: string
+          winner?: string | null
+        }
+        Update: {
+          card_a_id?: string | null
+          card_a_image?: string | null
+          card_a_name?: string
+          card_b_id?: string | null
+          card_b_image?: string | null
+          card_b_name?: string
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          prize_pool?: number
+          starts_at?: string
+          status?: string
+          winner?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_wars_card_a_id_fkey"
+            columns: ["card_a_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_wars_card_b_id_fkey"
+            columns: ["card_b_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -1426,8 +1536,67 @@ export type Database = {
           },
         ]
       }
+      grading_credit_history: {
+        Row: {
+          created_at: string
+          credits_change: number
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_change: number
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_change?: number
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      grading_credits: {
+        Row: {
+          created_at: string
+          credits_remaining: number
+          first_deposit_credit_claimed: boolean | null
+          first_subscribe_credit_claimed: boolean | null
+          id: string
+          last_monthly_credit_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_remaining?: number
+          first_deposit_credit_claimed?: boolean | null
+          first_subscribe_credit_claimed?: boolean | null
+          id?: string
+          last_monthly_credit_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_remaining?: number
+          first_deposit_credit_claimed?: boolean | null
+          first_subscribe_credit_claimed?: boolean | null
+          id?: string
+          last_monthly_credit_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       grading_orders: {
         Row: {
+          auto_list_enabled: boolean | null
+          auto_list_price: number | null
           back_image_url: string | null
           category: string
           centering_grade: number | null
@@ -1443,16 +1612,20 @@ export type Database = {
           grading_notes: string | null
           id: string
           idempotency_key: string
+          listing_created_id: string | null
           overlay_coordinates: Json | null
           paid_at: string | null
           price_usd: number
           status: Database["public"]["Enums"]["grading_order_status"]
           submitted_at: string | null
+          suggested_price: number | null
           surface_grade: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          auto_list_enabled?: boolean | null
+          auto_list_price?: number | null
           back_image_url?: string | null
           category: string
           centering_grade?: number | null
@@ -1468,16 +1641,20 @@ export type Database = {
           grading_notes?: string | null
           id?: string
           idempotency_key: string
+          listing_created_id?: string | null
           overlay_coordinates?: Json | null
           paid_at?: string | null
           price_usd?: number
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
+          suggested_price?: number | null
           surface_grade?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          auto_list_enabled?: boolean | null
+          auto_list_price?: number | null
           back_image_url?: string | null
           category?: string
           centering_grade?: number | null
@@ -1493,11 +1670,13 @@ export type Database = {
           grading_notes?: string | null
           id?: string
           idempotency_key?: string
+          listing_created_id?: string | null
           overlay_coordinates?: Json | null
           paid_at?: string | null
           price_usd?: number
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
+          suggested_price?: number | null
           surface_grade?: number | null
           updated_at?: string
           user_id?: string
@@ -3947,6 +4126,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_card_war_payouts: {
+        Args: { war_id: string }
+        Returns: undefined
+      }
       calculate_level: { Args: { xp_amount: number }; Returns: number }
       calculate_portfolio_heat: { Args: { p_user_id: string }; Returns: number }
       calculate_reel_trending_score: {
