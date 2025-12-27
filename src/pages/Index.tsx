@@ -27,7 +27,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, Brain, Trophy, Bell, Users, PieChart } from 'lucide-react';
-import { GradingHero } from '@/components/GradingHero';
 import { GradingCTA } from '@/components/GradingCTA';
 import { FeatureShowcase } from '@/components/FeatureShowcase';
 import { useNavigate, Link } from 'react-router-dom';
@@ -242,8 +241,8 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Grading Hero Section */}
-        <GradingHero />
+        {/* Hero Section */}
+        <HeroSection />
 
         {/* Feature Showcase - Why CardBoom */}
         <FeatureShowcase />
