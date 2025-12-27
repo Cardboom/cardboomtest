@@ -29,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, Shield, Zap, Wallet, Users, Brain, Trophy, Bell, PieChart, Film } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
+import { CardWarsSection } from '@/components/CardWarsSection';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -352,6 +353,11 @@ const Index = () => {
         {/* Reels Preview Section */}
         <ScrollReveal>
           <ReelsPreviewSection />
+        </ScrollReveal>
+
+        {/* Card Wars Section */}
+        <ScrollReveal>
+          <CardWarsSection />
         </ScrollReveal>
         {/* Platform Features */}
         <ScrollReveal>

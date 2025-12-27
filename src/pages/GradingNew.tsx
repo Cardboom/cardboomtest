@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +35,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { GradingCreditsDisplay, GradingCreditsBanner } from '@/components/grading/GradingCreditsDisplay';
+import { GradeAndFlipToggle } from '@/components/grading/GradeAndFlipToggle';
+import { useGradingCredits } from '@/hooks/useGradingCredits';
 
 type Step = 'category' | 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
@@ -71,9 +74,21 @@ export default function GradingNew() {
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('shipping');
   const [includeProtection, setIncludeProtection] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [autoListEnabled, setAutoListEnabled] = useState(false);
+  const [autoListPrice, setAutoListPrice] = useState<number | null>(null);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
 
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch user ID for grading credits
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id);
+    });
+  }, []);
+
+  const { creditsRemaining } = useGradingCredits(userId);
 
   const steps = [
     { key: 'category', label: 'Category' },
@@ -322,6 +337,18 @@ export default function GradingNew() {
                       Includes premium protection sleeve and official CardBoom Index Certification hologram sticker for authenticity verification.
                     </p>
                   </div>
+
+                  {/* Grade & Flip Toggle */}
+                  <GradeAndFlipToggle
+                    enabled={autoListEnabled}
+                    onEnabledChange={setAutoListEnabled}
+                    suggestedPrice={autoListPrice || undefined}
+                    customPrice={autoListPrice || undefined}
+                    onCustomPriceChange={setAutoListPrice}
+                  />
+
+                  {/* Free Grading Credits */}
+                  <GradingCreditsDisplay userId={userId} />
 
                   {/* Pro Tip */}
                   <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
