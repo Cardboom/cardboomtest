@@ -152,11 +152,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           </div>
 
           {/* Desktop Nav with Grouped Menus */}
-          <nav className="hidden lg:flex items-center gap-0.5">
+          <nav className="hidden lg:flex items-center gap-0">
             <Link 
               to="/" 
-              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md"
             >
               {t.nav.marketplace}
             </Link>
@@ -164,10 +163,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             {/* Reels Link */}
             <Link 
               to="/reels" 
-              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
-              <Film className="w-4 h-4" />
+              <Film className="w-3.5 h-3.5" />
               {t.nav.reels}
             </Link>
             
@@ -175,73 +173,73 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-bold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    <TrendingUp className="w-4 h-4 mr-1.5" />
+                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-8 px-2">
+                    <TrendingUp className="w-3.5 h-3.5 mr-1" />
                     {t.nav.trading}
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[280px] gap-1 p-2">
+                    <ul className="grid w-[260px] gap-1 p-2">
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/markets" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                              <TrendingUp className="w-4 h-4 text-primary" />
+                          <Link to="/markets" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                              <TrendingUp className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">{t.nav.markets}</div>
-                              <div className="text-xs text-muted-foreground">{t.nav.marketsDesc}</div>
+                              <div className="font-medium text-xs">{t.nav.markets}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.marketsDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/explorer" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                              <Search className="w-4 h-4 text-blue-500" />
+                          <Link to="/explorer" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                              <Search className="w-3.5 h-3.5 text-blue-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">{t.nav.explorer}</div>
-                              <div className="text-xs text-muted-foreground">{t.nav.explorerDesc}</div>
+                              <div className="font-medium text-xs">{t.nav.explorer}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.explorerDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/deals" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
-                              <Sparkles className="w-4 h-4 text-amber-500" />
+                          <Link to="/deals" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">{t.nav.deals}</div>
-                              <div className="text-xs text-muted-foreground">{t.nav.dealsDesc}</div>
+                              <div className="font-medium text-xs">{t.nav.deals}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.dealsDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/trades" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                              <ArrowLeftRight className="w-4 h-4 text-purple-500" />
+                          <Link to="/trades" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-purple-500/10 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
+                              <ArrowLeftRight className="w-3.5 h-3.5 text-purple-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">{t.nav.tradesOffers}</div>
-                              <div className="text-xs text-muted-foreground">{t.nav.tradesOffersDesc}</div>
+                              <div className="font-medium text-xs">{t.nav.tradesOffers}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.tradesOffersDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/fractional" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                              <PieChart className="w-4 h-4 text-accent" />
+                          <Link to="/fractional" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                              <PieChart className="w-3.5 h-3.5 text-accent" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">{t.nav.fractional}</div>
-                              <div className="text-xs text-muted-foreground">{t.nav.fractionalDesc}</div>
+                              <div className="font-medium text-xs">{t.nav.fractional}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.fractionalDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -256,73 +254,73 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-sm font-bold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-9 px-3" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    <Users className="w-4 h-4 mr-1.5" />
+                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 data-[state=open]:bg-muted/50 h-8 px-2">
+                    <Users className="w-3.5 h-3.5 mr-1" />
                     Community
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <ul className="grid w-[280px] gap-1 p-2">
+                    <ul className="grid w-[260px] gap-1 p-2">
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/circle" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                              <MessageCircle className="w-4 h-4 text-blue-500" />
+                          <Link to="/circle" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                              <MessageCircle className="w-3.5 h-3.5 text-blue-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">Circle</div>
-                              <div className="text-xs text-muted-foreground">Discussions & insights</div>
+                              <div className="font-medium text-xs">Circle</div>
+                              <div className="text-[10px] text-muted-foreground">Discussions & insights</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/leaderboard" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
-                              <Trophy className="w-4 h-4 text-amber-500" />
+                          <Link to="/leaderboard" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-amber-500/10 flex items-center justify-center group-hover:bg-amber-500/20 transition-colors">
+                              <Trophy className="w-3.5 h-3.5 text-amber-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">Leaderboard</div>
-                              <div className="text-xs text-muted-foreground">Rankings & tournaments</div>
+                              <div className="font-medium text-xs">Leaderboard</div>
+                              <div className="text-[10px] text-muted-foreground">Rankings & tournaments</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/hall-of-fame" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                              <Crown className="w-4 h-4 text-primary" />
+                          <Link to="/hall-of-fame" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                              <Crown className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">Hall of Fame</div>
-                              <div className="text-xs text-muted-foreground">Top collectors</div>
+                              <div className="font-medium text-xs">Hall of Fame</div>
+                              <div className="text-[10px] text-muted-foreground">Top collectors</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/achievements" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition-colors">
-                              <Award className="w-4 h-4 text-yellow-500" />
+                          <Link to="/achievements" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition-colors">
+                              <Award className="w-3.5 h-3.5 text-yellow-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">Achievements</div>
-                              <div className="text-xs text-muted-foreground">Earn bragging rights</div>
+                              <div className="font-medium text-xs">Achievements</div>
+                              <div className="text-[10px] text-muted-foreground">Earn bragging rights</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/referrals" className="flex items-center gap-3 p-2.5 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-9 h-9 rounded-md bg-pink-500/10 flex items-center justify-center group-hover:bg-pink/20 transition-colors">
-                              <Mic className="w-4 h-4 text-pink-500" />
+                          <Link to="/referrals" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-pink-500/10 flex items-center justify-center group-hover:bg-pink/20 transition-colors">
+                              <Mic className="w-3.5 h-3.5 text-pink-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-sm">Creators & Ambassadors</div>
-                              <div className="text-xs text-muted-foreground">Become a creator</div>
+                              <div className="font-medium text-xs">Creators & Ambassadors</div>
+                              <div className="text-[10px] text-muted-foreground">Become a creator</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -335,29 +333,26 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
             <Link 
               to="/grading" 
-              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
-              <Award className="w-4 h-4" />
+              <Award className="w-3.5 h-3.5" />
               {t.nav.grading}
             </Link>
             
             {/* Card Wars Link */}
             <Link 
               to="/#card-wars" 
-              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
-              <Swords className="w-4 h-4" />
+              <Swords className="w-3.5 h-3.5" />
               Card Wars
             </Link>
             
             <Link 
               to="/gaming" 
-              className="text-foreground hover:bg-muted/50 transition-all text-sm font-bold px-3 py-2 rounded-md flex items-center gap-1.5"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              className="text-foreground hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
-              <Gamepad2 className="w-4 h-4" />
+              <Gamepad2 className="w-3.5 h-3.5" />
               {t.nav.gaming}
             </Link>
           </nav>
