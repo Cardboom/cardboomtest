@@ -249,24 +249,24 @@ export const CardWarsSection = () => {
   }
 
   return (
-    <div className="py-4">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
-          <Swords className="w-6 h-6 text-white" />
+    <div className="py-3">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
+          <Swords className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold">Card Wars</h2>
-          <p className="text-sm text-muted-foreground">Vote for your champion • Pro votes share $100 prize</p>
+          <h2 className="text-xl font-bold">Card Wars</h2>
+          <p className="text-xs text-muted-foreground">Vote for your champion • Pro votes share $100 prize</p>
         </div>
         {useMockData && (
-          <Badge variant="secondary" className="ml-auto">
+          <Badge variant="secondary" className="ml-auto text-xs">
             <Sparkles className="w-3 h-3 mr-1" />
             {userId ? 'Demo Battle' : 'Feature Preview'}
           </Badge>
         )}
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-4">
         {wars.map((war) => {
           const userVote = userVotes[war.id];
           const totalVotes = (war.card_a_votes || 0) + (war.card_b_votes || 0);
@@ -275,7 +275,7 @@ export const CardWarsSection = () => {
           const endsIn = formatDistanceToNow(new Date(war.ends_at), { addSuffix: true });
 
           return (
-            <Card key={war.id} className="overflow-hidden border-2 border-orange-500/30 bg-gradient-to-br from-background to-orange-950/10 relative">
+            <Card key={war.id} className="overflow-hidden border border-orange-500/30 bg-gradient-to-br from-background to-orange-950/10 relative">
               {/* Showcase overlay - only for non-logged-in users */}
               {isShowcase && (
                 <div className="absolute inset-0 z-10 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
@@ -324,25 +324,25 @@ export const CardWarsSection = () => {
 
               <CardContent className="p-0">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-border/50 bg-gradient-to-r from-red-500/10 via-transparent to-emerald-500/10">
-                  <div className="flex items-center gap-2">
-                    <Flame className="w-5 h-5 text-orange-500 animate-pulse" />
-                    <span className="font-bold text-lg">BATTLE ROYALE</span>
+                <div className="flex items-center justify-between px-3 py-2 border-b border-border/50 bg-gradient-to-r from-red-500/10 via-transparent to-emerald-500/10">
+                  <div className="flex items-center gap-1.5">
+                    <Flame className="w-4 h-4 text-orange-500 animate-pulse" />
+                    <span className="font-bold text-sm">BATTLE ROYALE</span>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="border-yellow-500/50 text-yellow-500">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="border-yellow-500/50 text-yellow-500 text-xs py-0">
                       <Trophy className="w-3 h-3 mr-1" />
-                      ${war.prize_pool} Prize Pool
+                      ${war.prize_pool}
                     </Badge>
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className="text-xs py-0">
                       <Clock className="w-3 h-3 mr-1" />
-                      Ends {endsIn}
+                      {endsIn}
                     </Badge>
                   </div>
                 </div>
 
                 {/* Live Vote Bar */}
-                <div className="px-6 pt-6">
+                <div className="px-4 pt-3">
                   <LiveVoteBar 
                     cardAPercent={cardAPercent}
                     cardBPercent={cardBPercent}
@@ -353,12 +353,12 @@ export const CardWarsSection = () => {
                 </div>
 
                 {/* Battle Arena */}
-                <div className="grid grid-cols-[1fr,auto,1fr] gap-4 p-6">
+                <div className="grid grid-cols-[1fr,auto,1fr] gap-3 p-4">
                   {/* Card A - Red */}
                   <motion.div 
-                    className={`relative rounded-xl p-4 border-2 transition-all ${
+                    className={`relative rounded-lg p-2.5 border transition-all ${
                       userVote?.vote_for === 'card_a' 
-                        ? 'border-red-500 bg-red-500/20 ring-2 ring-red-500/50' 
+                        ? 'border-red-500 bg-red-500/20 ring-1 ring-red-500/50' 
                         : 'border-red-500/50 bg-red-500/5 hover:bg-red-500/10'
                     }`}
                     whileHover={{ scale: userVote || isShowcase ? 1 : 1.02 }}
@@ -367,30 +367,32 @@ export const CardWarsSection = () => {
                       <img 
                         src={war.card_a_image} 
                         alt={war.card_a_name}
-                        className="w-full aspect-[3/4] object-cover rounded-lg mb-3"
+                        className="w-full max-w-[140px] mx-auto aspect-[3/4] object-cover rounded-md mb-2"
                       />
                     )}
-                    <h3 className="font-bold text-lg text-center mb-2">{war.card_a_name}</h3>
+                    <h3 className="font-semibold text-sm text-center mb-1 line-clamp-2">{war.card_a_name}</h3>
                     
                     {(isPro || useMockData) && (
-                      <div className="text-xs text-center text-muted-foreground mb-3">
+                      <div className="text-[10px] text-center text-muted-foreground mb-2">
                         Pro pot: ${(war.card_a_pro_votes || 0).toFixed(2)}
                       </div>
                     )}
 
                     {!userVote && userId && !useMockData && (
                       <Button 
-                        className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
+                        size="sm"
+                        className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-xs h-8"
                         onClick={() => vote(war.id, 'card_a', isPro)}
                       >
-                        {isPro && <Sparkles className="w-4 h-4 mr-2" />}
+                        {isPro && <Sparkles className="w-3 h-3 mr-1" />}
                         Vote Red
                       </Button>
                     )}
 
                     {useMockData && userId && (
                       <Button 
-                        className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 opacity-50"
+                        size="sm"
+                        className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 opacity-50 text-xs h-8"
                         disabled
                       >
                         Demo Only
@@ -398,9 +400,9 @@ export const CardWarsSection = () => {
                     )}
 
                     {userVote?.vote_for === 'card_a' && (
-                      <div className="absolute top-2 right-2">
-                        <Badge className="bg-red-500">
-                          <Crown className="w-3 h-3 mr-1" />
+                      <div className="absolute top-1.5 right-1.5">
+                        <Badge className="bg-red-500 text-[10px] py-0 px-1.5">
+                          <Crown className="w-2.5 h-2.5 mr-0.5" />
                           Your Pick
                         </Badge>
                       </div>
@@ -411,21 +413,21 @@ export const CardWarsSection = () => {
                   <div className="flex items-center justify-center">
                     <div className="relative">
                       <motion.div
-                        className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-red-500"
+                        className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-orange-500 to-red-500"
                         animate={{ scale: [1, 1.1, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
                         VS
                       </motion.div>
-                      <Swords className="absolute -top-6 left-1/2 -translate-x-1/2 w-8 h-8 text-orange-500" />
+                      <Swords className="absolute -top-4 left-1/2 -translate-x-1/2 w-5 h-5 text-orange-500" />
                     </div>
                   </div>
 
                   {/* Card B - Green */}
                   <motion.div 
-                    className={`relative rounded-xl p-4 border-2 transition-all ${
+                    className={`relative rounded-lg p-2.5 border transition-all ${
                       userVote?.vote_for === 'card_b' 
-                        ? 'border-emerald-500 bg-emerald-500/20 ring-2 ring-emerald-500/50' 
+                        ? 'border-emerald-500 bg-emerald-500/20 ring-1 ring-emerald-500/50' 
                         : 'border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10'
                     }`}
                     whileHover={{ scale: userVote || isShowcase ? 1 : 1.02 }}
@@ -434,30 +436,32 @@ export const CardWarsSection = () => {
                       <img 
                         src={war.card_b_image} 
                         alt={war.card_b_name}
-                        className="w-full aspect-[3/4] object-cover rounded-lg mb-3"
+                        className="w-full max-w-[140px] mx-auto aspect-[3/4] object-cover rounded-md mb-2"
                       />
                     )}
-                    <h3 className="font-bold text-lg text-center mb-2">{war.card_b_name}</h3>
+                    <h3 className="font-semibold text-sm text-center mb-1 line-clamp-2">{war.card_b_name}</h3>
                     
                     {(isPro || useMockData) && (
-                      <div className="text-xs text-center text-muted-foreground mb-3">
+                      <div className="text-[10px] text-center text-muted-foreground mb-2">
                         Pro pot: ${(war.card_b_pro_votes || 0).toFixed(2)}
                       </div>
                     )}
 
                     {!userVote && userId && !useMockData && (
                       <Button 
-                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+                        size="sm"
+                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-xs h-8"
                         onClick={() => vote(war.id, 'card_b', isPro)}
                       >
-                        {isPro && <Sparkles className="w-4 h-4 mr-2" />}
+                        {isPro && <Sparkles className="w-3 h-3 mr-1" />}
                         Vote Green
                       </Button>
                     )}
 
                     {useMockData && userId && (
                       <Button 
-                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 opacity-50"
+                        size="sm"
+                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 opacity-50 text-xs h-8"
                         disabled
                       >
                         Demo Only
@@ -465,9 +469,9 @@ export const CardWarsSection = () => {
                     )}
 
                     {userVote?.vote_for === 'card_b' && (
-                      <div className="absolute top-2 right-2">
-                        <Badge className="bg-emerald-500">
-                          <Crown className="w-3 h-3 mr-1" />
+                      <div className="absolute top-1.5 right-1.5">
+                        <Badge className="bg-emerald-500 text-[10px] py-0 px-1.5">
+                          <Crown className="w-2.5 h-2.5 mr-0.5" />
                           Your Pick
                         </Badge>
                       </div>
@@ -476,21 +480,21 @@ export const CardWarsSection = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 pb-4">
-                  <div className="p-3 rounded-lg bg-muted/50 text-center text-sm">
+                <div className="px-4 pb-3">
+                  <div className="p-2 rounded-md bg-muted/50 text-center text-xs">
                     {!userId ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Sparkles className="w-4 h-4 text-yellow-500" />
+                      <span className="flex items-center justify-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-yellow-500" />
                         Join CardBoom to participate in Card Wars and win real prizes!
                       </span>
                     ) : useMockData ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="flex items-center justify-center gap-1.5">
+                        <Clock className="w-3 h-3 text-muted-foreground" />
                         No active battles right now. Check back soon!
                       </span>
                     ) : isPro ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Sparkles className="w-4 h-4 text-yellow-500" />
+                      <span className="flex items-center justify-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-yellow-500" />
                         Your Pro vote adds $2.50 to the winning pot!
                       </span>
                     ) : (
