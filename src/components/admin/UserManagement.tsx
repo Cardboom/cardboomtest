@@ -21,8 +21,18 @@ import {
   Wallet,
   CheckCircle,
   XCircle,
-  AlertTriangle
+  AlertTriangle,
+  Crown,
+  Gift,
+  Calendar
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { format } from 'date-fns';
 import {
   Dialog,
@@ -85,6 +95,14 @@ interface WireTransfer {
   sender_name: string | null;
 }
 
+interface UserSubscription {
+  id: string;
+  user_id: string;
+  tier: 'free' | 'pro' | 'enterprise';
+  expires_at: string | null;
+  started_at: string | null;
+}
+
 export const UserManagement = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [wallets, setWallets] = useState<Record<string, WalletData>>({});
@@ -106,6 +124,12 @@ export const UserManagement = () => {
   const [actionReason, setActionReason] = useState('');
   const [pauseDuration, setPauseDuration] = useState('7');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Pro subscription management
+  const [subscriptions, setSubscriptions] = useState<Record<string, UserSubscription>>({});
+  const [proDialogOpen, setProDialogOpen] = useState(false);
+  const [proDuration, setProDuration] = useState('30');
+  const [selectedUserSubscription, setSelectedUserSubscription] = useState<UserSubscription | null>(null);
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -129,6 +153,19 @@ export const UserManagement = () => {
           walletMap[w.user_id] = w;
         });
         setWallets(walletMap);
+      }
+
+      // Fetch all subscriptions
+      const { data: subsData } = await supabase
+        .from('user_subscriptions')
+        .select('*');
+
+      if (subsData) {
+        const subMap: Record<string, UserSubscription> = {};
+        subsData.forEach(s => {
+          subMap[s.user_id] = s as UserSubscription;
+        });
+        setSubscriptions(subMap);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -183,8 +220,17 @@ export const UserManagement = () => {
 
   const handleViewUser = async (user: UserProfile) => {
     setSelectedUser(user);
+    setSelectedUserSubscription(subscriptions[user.id] || null);
     setUserDetailOpen(true);
     await fetchUserDetails(user);
+  };
+
+  const isUserPro = (userId: string) => {
+    const sub = subscriptions[userId];
+    if (!sub) return false;
+    if (sub.tier !== 'pro' && sub.tier !== 'enterprise') return false;
+    if (sub.expires_at && new Date(sub.expires_at) < new Date()) return false;
+    return true;
   };
 
   const handleBanUser = async () => {
@@ -295,6 +341,107 @@ export const UserManagement = () => {
     }
   };
 
+  const handleGrantPro = async () => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + parseInt(proDuration));
+
+      const existingSub = subscriptions[selectedUser.id];
+
+      if (existingSub) {
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .update({
+            tier: 'pro',
+            started_at: new Date().toISOString(),
+            expires_at: expiresAt.toISOString(),
+            auto_renew: false,
+          })
+          .eq('user_id', selectedUser.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .insert({
+            user_id: selectedUser.id,
+            tier: 'pro',
+            price_monthly: 0,
+            started_at: new Date().toISOString(),
+            expires_at: expiresAt.toISOString(),
+            auto_renew: false,
+          });
+
+        if (error) throw error;
+      }
+
+      toast.success(`Pro subscription granted to ${selectedUser.display_name} for ${proDuration} days`);
+      setProDialogOpen(false);
+      setProDuration('30');
+      fetchUsers();
+      
+      // Update local subscription state
+      setSubscriptions(prev => ({
+        ...prev,
+        [selectedUser.id]: {
+          id: existingSub?.id || '',
+          user_id: selectedUser.id,
+          tier: 'pro',
+          expires_at: expiresAt.toISOString(),
+          started_at: new Date().toISOString(),
+        }
+      }));
+      setSelectedUserSubscription({
+        id: existingSub?.id || '',
+        user_id: selectedUser.id,
+        tier: 'pro',
+        expires_at: expiresAt.toISOString(),
+        started_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error granting Pro:', error);
+      toast.error('Failed to grant Pro subscription');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRevokePro = async () => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('user_subscriptions')
+        .update({
+          tier: 'free',
+          expires_at: new Date().toISOString(),
+        })
+        .eq('user_id', selectedUser.id);
+
+      if (error) throw error;
+
+      toast.success(`Pro subscription revoked from ${selectedUser.display_name}`);
+      fetchUsers();
+      
+      setSubscriptions(prev => ({
+        ...prev,
+        [selectedUser.id]: {
+          ...prev[selectedUser.id],
+          tier: 'free',
+          expires_at: new Date().toISOString(),
+        }
+      }));
+      setSelectedUserSubscription(null);
+    } catch (error) {
+      console.error('Error revoking Pro:', error);
+      toast.error('Failed to revoke Pro subscription');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleDeleteComment = async (commentId: string) => {
     try {
       const { error } = await supabase
@@ -342,12 +489,13 @@ export const UserManagement = () => {
     paused: users.filter(u => u.account_status === 'paused').length,
     banned: users.filter(u => u.account_status === 'banned').length,
     verified: users.filter(u => u.is_id_verified).length,
+    pro: users.filter(u => isUserPro(u.id)).length,
   };
 
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card className="bg-card/50 border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -417,6 +565,20 @@ export const UserManagement = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10">
+                <Crown className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Pro Users</p>
+                <p className="text-2xl font-bold text-foreground">{stats.pro}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -479,8 +641,7 @@ export const UserManagement = () => {
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Contact</TableHead>
-                    <TableHead className="text-center">Email</TableHead>
-                    <TableHead className="text-center">Phone</TableHead>
+                    <TableHead className="text-center">Pro</TableHead>
                     <TableHead className="text-center">ID Verified</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
                     <TableHead>Status</TableHead>
@@ -509,17 +670,13 @@ export const UserManagement = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
-                        {user.email ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-500 mx-auto" />
+                        {isUserPro(user.id) ? (
+                          <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/30">
+                            <Crown className="w-3 h-3 mr-1" />
+                            Pro
+                          </Badge>
                         ) : (
-                          <XCircle className="w-4 h-4 text-red-500 mx-auto" />
-                        )}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {user.phone_verified ? (
-                          <CheckCircle className="w-4 h-4 text-emerald-500 mx-auto" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-muted-foreground mx-auto" />
+                          <span className="text-muted-foreground text-xs">Free</span>
                         )}
                       </TableCell>
                       <TableCell className="text-center">
@@ -574,7 +731,7 @@ export const UserManagement = () => {
           {selectedUser && (
             <div className="flex-1 overflow-hidden">
               {/* User Info Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Balance</p>
                   <p className="text-lg font-bold">₺{(wallets[selectedUser.id]?.balance || 0).toLocaleString()}</p>
@@ -582,6 +739,21 @@ export const UserManagement = () => {
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Status</p>
                   <div className="mt-1">{getStatusBadge(selectedUser.account_status)}</div>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Subscription</p>
+                  <p className="text-lg font-bold flex items-center gap-1">
+                    {isUserPro(selectedUser.id) ? (
+                      <><Crown className="w-4 h-4 text-amber-500" /> Pro</>
+                    ) : (
+                      <><span className="text-muted-foreground">Free</span></>
+                    )}
+                  </p>
+                  {selectedUserSubscription?.expires_at && isUserPro(selectedUser.id) && (
+                    <p className="text-xs text-muted-foreground">
+                      Until {format(new Date(selectedUserSubscription.expires_at), 'dd MMM yyyy')}
+                    </p>
+                  )}
                 </div>
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Phone Verified</p>
@@ -606,7 +778,31 @@ export const UserManagement = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-4">
+                {/* Pro Subscription Actions */}
+                {isUserPro(selectedUser.id) ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRevokePro}
+                    disabled={isProcessing}
+                    className="gap-1 text-amber-500 hover:text-amber-600"
+                  >
+                    <Crown className="w-4 h-4" />
+                    Revoke Pro
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setProDialogOpen(true)}
+                    className="gap-1 text-amber-500 hover:text-amber-600"
+                  >
+                    <Gift className="w-4 h-4" />
+                    Grant Pro
+                  </Button>
+                )}
+
                 {selectedUser.account_status === 'active' && (
                   <>
                     <Button
@@ -865,6 +1061,64 @@ export const UserManagement = () => {
             >
               {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
               Pause Account
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Grant Pro Dialog */}
+      <Dialog open={proDialogOpen} onOpenChange={setProDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-500">
+              <Crown className="w-5 h-5" />
+              Grant Pro Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Give {selectedUser?.display_name} free Pro access.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Gift className="w-5 h-5 text-amber-500 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  This will grant Pro features without charging the user. Great for influencers, partners, or special promotions.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pro-duration">Duration</Label>
+              <Select value={proDuration} onValueChange={setProDuration}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="14">14 days</SelectItem>
+                  <SelectItem value="30">30 days (1 month)</SelectItem>
+                  <SelectItem value="90">90 days (3 months)</SelectItem>
+                  <SelectItem value="180">180 days (6 months)</SelectItem>
+                  <SelectItem value="365">365 days (1 year)</SelectItem>
+                  <SelectItem value="3650">10 years (lifetime)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setProDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleGrantPro}
+              disabled={isProcessing}
+              className="bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Crown className="w-4 h-4 mr-2" />}
+              Grant Pro
             </Button>
           </DialogFooter>
         </DialogContent>
