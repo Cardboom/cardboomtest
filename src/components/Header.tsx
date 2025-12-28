@@ -143,7 +143,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
+    <header className="sticky top-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm" style={{ isolation: 'isolate' }}>
       {/* AI Insight Banner */}
       <div className="hidden md:flex items-center justify-center py-1.5 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/20">
         <AIMarketInsight />
@@ -489,13 +489,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden relative"
-              style={{ zIndex: 9999 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                console.log('Mobile menu button clicked, current state:', mobileMenuOpen);
-                setMobileMenuOpen(!mobileMenuOpen);
-              }}
+              className="lg:hidden relative z-[9999] pointer-events-auto"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
