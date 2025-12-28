@@ -142,7 +142,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <img 
               src={isDark ? cardboomLogoDark : cardboomLogo} 
               alt="CardBoom" 
-              className="h-10 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-10 w-10 object-contain group-hover:scale-105 transition-transform duration-200"
+              style={{ height: 40, width: 40 }}
             />
           </Link>
 
