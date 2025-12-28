@@ -119,13 +119,6 @@ export const GradingCTA = () => {
                 <ArrowRight className="w-4 h-4" />
               </motion.div>
             </Button>
-            
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                No credit card required
-              </span>
-            </div>
           </div>
         </motion.div>
       </div>
