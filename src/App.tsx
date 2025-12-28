@@ -57,6 +57,7 @@ import Achievements from "./pages/Achievements";
 import Pricing from "./pages/Pricing";
 import Circle from "./pages/Circle";
 import CreatorPage from "./pages/CreatorPage";
+import CreatorInvite from "./pages/CreatorInvite";
 import Reels from "./pages/Reels";
 import Grading from "./pages/Grading";
 import GradingNew from "./pages/GradingNew";
@@ -141,8 +142,9 @@ const AppContent = () => {
           <Route path="/grading/new" element={<GradingNew />} />
           <Route path="/grading/orders" element={<GradingOrders />} />
           <Route path="/grading/orders/:id" element={<GradingOrderDetail />} />
-          {/* Creator Public Pages */}
+          {/* Creator Routes */}
           <Route path="/@:username" element={<CreatorPage />} />
+          <Route path="/creators" element={<CreatorInvite />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
