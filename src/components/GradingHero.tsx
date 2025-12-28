@@ -9,23 +9,23 @@ export const GradingHero = () => {
 
   return (
     <section className="relative py-20 lg:py-28 overflow-hidden">
-      {/* Flowing gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 via-background to-background" />
+      {/* Flowing gradient background using primary color */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
       <motion.div 
         className="absolute inset-0"
         animate={{ 
           background: [
-            'radial-gradient(ellipse 80% 50% at 20% 40%, hsl(210 100% 50% / 0.08) 0%, transparent 50%)',
-            'radial-gradient(ellipse 80% 50% at 80% 60%, hsl(190 100% 50% / 0.08) 0%, transparent 50%)',
-            'radial-gradient(ellipse 80% 50% at 50% 30%, hsl(210 100% 50% / 0.08) 0%, transparent 50%)',
-            'radial-gradient(ellipse 80% 50% at 20% 40%, hsl(210 100% 50% / 0.08) 0%, transparent 50%)',
+            'radial-gradient(ellipse 80% 50% at 20% 40%, hsl(182 58% 50% / 0.08) 0%, transparent 50%)',
+            'radial-gradient(ellipse 80% 50% at 80% 60%, hsl(182 58% 55% / 0.08) 0%, transparent 50%)',
+            'radial-gradient(ellipse 80% 50% at 50% 30%, hsl(182 58% 50% / 0.08) 0%, transparent 50%)',
+            'radial-gradient(ellipse 80% 50% at 20% 40%, hsl(182 58% 50% / 0.08) 0%, transparent 50%)',
           ]
         }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
       />
       
       {/* Animated grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(hsl(182_58%_50%/0.03)_1px,transparent_1px),linear-gradient(90deg,hsl(182_58%_50%/0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)]" />
       
       <div className="container mx-auto px-4 relative">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -37,7 +37,7 @@ export const GradingHero = () => {
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             <motion.div 
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6"
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -46,9 +46,9 @@ export const GradingHero = () => {
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <Shield className="w-4 h-4 text-blue-500" />
+                <Shield className="w-4 h-4 text-primary" />
               </motion.div>
-              <span className="text-sm font-medium text-blue-500">AI-Powered Grading</span>
+              <span className="text-sm font-medium text-primary">AI-Powered Grading</span>
             </motion.div>
             
             <motion.h1 
@@ -60,9 +60,7 @@ export const GradingHero = () => {
               Grade Your Card
               <br />
               <motion.span 
-                className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 bg-[length:200%_auto]"
-                animate={{ backgroundPosition: ['0% center', '200% center'] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                className="text-primary"
               >
                 In Seconds
               </motion.span>
@@ -86,7 +84,7 @@ export const GradingHero = () => {
               <Button 
                 size="lg"
                 onClick={() => navigate('/grading')}
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-xl shadow-blue-500/25 text-base px-8 group"
+                className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/25 text-base px-8 group"
               >
                 <Shield className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
                 Start Grading
@@ -120,7 +118,7 @@ export const GradingHero = () => {
                 Free credits on signup
               </span>
               <span className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-blue-500" />
+                <Zap className="w-4 h-4 text-primary" />
                 30 second results
               </span>
               <span className="flex items-center gap-2">
@@ -140,7 +138,7 @@ export const GradingHero = () => {
             <div className="relative perspective-1000">
               {/* Animated glow */}
               <motion.div 
-                className="absolute -inset-6 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 rounded-3xl blur-3xl"
+                className="absolute -inset-6 bg-primary/30 rounded-3xl blur-3xl"
                 animate={{ 
                   opacity: [0.3, 0.5, 0.3],
                   scale: [1, 1.05, 1]
@@ -160,7 +158,7 @@ export const GradingHero = () => {
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.8, type: "spring" }}
                   >
-                    <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg">
+                    <Badge className="bg-primary text-primary-foreground shadow-lg">
                       PSA 9 Equivalent
                     </Badge>
                   </motion.div>
@@ -195,7 +193,7 @@ export const GradingHero = () => {
                 </div>
                 
                 <motion.div 
-                  className="p-5 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20"
+                  className="p-5 rounded-xl bg-primary/10 border border-primary/20"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1, duration: 0.5 }}
@@ -203,7 +201,7 @@ export const GradingHero = () => {
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-foreground">Final Grade</span>
                     <motion.span 
-                      className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500"
+                      className="text-3xl font-bold text-primary"
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >

@@ -14,15 +14,15 @@ export const GradingCTA = () => {
 
   return (
     <section className="relative py-20 overflow-hidden">
-      {/* Flowing gradient that connects with sections above */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-blue-500/5 to-background" />
+      {/* Flowing gradient using primary color */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
       <motion.div 
         className="absolute inset-0"
         animate={{ 
           background: [
-            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(210 100% 50% / 0.06) 0%, transparent 50%)',
-            'radial-gradient(ellipse 60% 40% at 70% 50%, hsl(190 100% 50% / 0.06) 0%, transparent 50%)',
-            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(210 100% 50% / 0.06) 0%, transparent 50%)',
+            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(182 58% 50% / 0.08) 0%, transparent 50%)',
+            'radial-gradient(ellipse 60% 40% at 70% 50%, hsl(182 58% 55% / 0.08) 0%, transparent 50%)',
+            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(182 58% 50% / 0.08) 0%, transparent 50%)',
           ]
         }}
         transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
@@ -37,13 +37,13 @@ export const GradingCTA = () => {
           transition={{ duration: 0.6 }}
         >
           <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <Shield className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-blue-500">How It Works</span>
+            <Shield className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">How It Works</span>
           </motion.div>
           
           <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-4">
@@ -70,17 +70,17 @@ export const GradingCTA = () => {
                 whileHover={{ scale: 1.03, y: -5 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                {/* Step number */}
-                <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                {/* Step number - using primary color */}
+                <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-lg shadow-primary/25">
                   {index + 1}
                 </div>
                 
                 {/* Icon */}
                 <motion.div 
-                  className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 flex items-center justify-center mb-4"
+                  className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4"
                   whileHover={{ rotate: 5, scale: 1.1 }}
                 >
-                  <step.icon className="w-7 h-7 text-blue-500" />
+                  <step.icon className="w-7 h-7 text-primary" />
                 </motion.div>
                 
                 <h3 className="font-display text-xl font-bold text-foreground mb-2">{step.title}</h3>
@@ -88,7 +88,7 @@ export const GradingCTA = () => {
                 
                 {/* Connector line (except last) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-0.5 bg-gradient-to-r from-blue-500/50 to-transparent" />
+                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-0.5 bg-gradient-to-r from-primary/50 to-transparent" />
                 )}
               </motion.div>
             </motion.div>
@@ -107,7 +107,7 @@ export const GradingCTA = () => {
             <Button 
               size="lg"
               onClick={() => navigate('/grading')}
-              className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-xl shadow-blue-500/25 text-base px-8 group"
+              className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/25 text-base px-8 group"
             >
               <Shield className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
               Grade Your First Card Free
@@ -122,7 +122,7 @@ export const GradingCTA = () => {
             
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-primary" />
                 No credit card required
               </span>
             </div>
