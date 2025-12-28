@@ -30,7 +30,8 @@ import {
   MessageCircle,
   HelpCircle,
   Bot,
-  Bug
+  Bug,
+  Video
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
@@ -44,6 +45,7 @@ import { DataSyncManager } from '@/components/admin/DataSyncManager';
 import { DiagnosticsDashboard } from '@/components/admin/DiagnosticsDashboard';
 import { GradingManagement } from '@/components/admin/GradingManagement';
 import { CardWarsManager } from '@/components/admin/CardWarsManager';
+import { FanAccountsManager } from '@/components/admin/FanAccountsManager';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -269,6 +271,10 @@ const Admin = () => {
               <Zap className="w-4 h-4" />
               Card Wars
             </TabsTrigger>
+            <TabsTrigger value="fanaccounts" className="gap-2">
+              <Video className="w-4 h-4" />
+              Boom Reels
+            </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
               Price Management
@@ -313,6 +319,10 @@ const Admin = () => {
 
           <TabsContent value="cardwars">
             <CardWarsManager />
+          </TabsContent>
+
+          <TabsContent value="fanaccounts">
+            <FanAccountsManager />
           </TabsContent>
 
           <TabsContent value="prices" className="space-y-6">
