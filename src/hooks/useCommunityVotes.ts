@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface MarketItemForPoll {
+  id: string;
+  name: string;
+  image_url: string | null;
+  current_price: number;
+}
+
 export interface CommunityPoll {
   id: string;
   card_a_id: string | null;
@@ -210,5 +217,82 @@ export const useCommunityVotesAdmin = () => {
     fetchAllPolls();
   };
 
-  return { allPolls, loading, createPoll, finalizePoll, refetch: fetchAllPolls };
+  const generateRandomPoll = async (xpReward: number = 20) => {
+    try {
+      // Fetch cards with similar prices (within 20% of each other)
+      const { data: items, error } = await supabase
+        .from('market_items')
+        .select('id, name, image_url, current_price')
+        .not('image_url', 'is', null)
+        .gt('current_price', 10)
+        .order('current_price', { ascending: false })
+        .limit(200);
+
+      if (error || !items || items.length < 2) {
+        toast.error('Not enough items to generate a poll');
+        return false;
+      }
+
+      // Group items by price ranges (within 30% of each other)
+      const priceGroups: MarketItemForPoll[][] = [];
+      let currentGroup: MarketItemForPoll[] = [];
+      
+      for (const item of items as MarketItemForPoll[]) {
+        if (currentGroup.length === 0) {
+          currentGroup.push(item);
+        } else {
+          const avgPrice = currentGroup.reduce((sum, i) => sum + i.current_price, 0) / currentGroup.length;
+          const priceDiff = Math.abs(item.current_price - avgPrice) / avgPrice;
+          
+          if (priceDiff <= 0.3) {
+            currentGroup.push(item);
+          } else {
+            if (currentGroup.length >= 2) {
+              priceGroups.push([...currentGroup]);
+            }
+            currentGroup = [item];
+          }
+        }
+      }
+      if (currentGroup.length >= 2) {
+        priceGroups.push(currentGroup);
+      }
+
+      // Pick a random group with at least 2 items
+      const validGroups = priceGroups.filter(g => g.length >= 2);
+      if (validGroups.length === 0) {
+        toast.error('No matching price groups found');
+        return false;
+      }
+
+      const randomGroup = validGroups[Math.floor(Math.random() * validGroups.length)];
+      
+      // Pick two random cards from the group
+      const shuffled = randomGroup.sort(() => Math.random() - 0.5);
+      const cardA = shuffled[0];
+      const cardB = shuffled[1];
+
+      // Create the poll
+      const success = await createPoll(
+        cardA.name,
+        cardB.name,
+        cardA.image_url || undefined,
+        cardB.image_url || undefined,
+        cardA.id,
+        cardB.id,
+        xpReward
+      );
+
+      if (success) {
+        toast.success('Random poll created successfully!');
+      }
+      return success;
+    } catch (error) {
+      console.error('Error generating random poll:', error);
+      toast.error('Failed to generate random poll');
+      return false;
+    }
+  };
+
+  return { allPolls, loading, createPoll, finalizePoll, generateRandomPoll, refetch: fetchAllPolls };
 };
