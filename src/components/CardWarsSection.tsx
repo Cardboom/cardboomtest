@@ -9,20 +9,51 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
-// Mock data for showcase when no active wars
-const mockWar = {
-  id: 'mock',
-  card_a_name: 'Charizard 1st Edition',
-  card_b_name: 'Blastoise 1st Edition',
-  card_a_image: '/placeholder.svg',
-  card_b_image: '/placeholder.svg',
-  card_a_votes: 1247,
-  card_b_votes: 892,
-  card_a_pro_votes: 45.50,
-  card_b_pro_votes: 32.25,
-  prize_pool: 100,
-  ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-};
+// Epic matchups using real top-tier cards from database
+const epicMatchups = [
+  {
+    id: 'charizard-vs-exodia',
+    card_a_name: 'Charizard 1st Edition #4',
+    card_b_name: 'Exodia the Forbidden One',
+    card_a_image: 'https://images.tcggo.com/tcggo/storage/24107/mega-charizard-x-ex-pfl-13-phantasmal-flames.png',
+    card_b_image: 'https://images.ygoprodeck.com/images/cards/33396948.jpg',
+    card_a_votes: 2847,
+    card_b_votes: 2654,
+    card_a_pro_votes: 156.50,
+    card_b_pro_votes: 142.25,
+    prize_pool: 100,
+    ends_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'black-lotus-vs-pikachu',
+    card_a_name: 'Black Lotus',
+    card_b_name: 'Pikachu Illustrator',
+    card_a_image: 'https://cards.scryfall.io/large/front/b/d/bd8fa327-dd41-4737-8f19-2cf5eb1f7c14.jpg',
+    card_b_image: 'https://images.tcggo.com/tcggo/storage/21443/pikachu-ex-pre-28-prismatic-evolutions.png',
+    card_a_votes: 3421,
+    card_b_votes: 3187,
+    card_a_pro_votes: 245.00,
+    card_b_pro_votes: 232.50,
+    prize_pool: 100,
+    ends_at: new Date(Date.now() + 18 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'dragonite-vs-blue-eyes',
+    card_a_name: 'Dragonite Tekno #149',
+    card_b_name: 'Blue-Eyes White Dragon',
+    card_a_image: 'https://images.tcggo.com/tcggo/storage/2643/dragonite-mew-149-151-pokemon.png',
+    card_b_image: 'https://images.ygoprodeck.com/images/cards/89631139.jpg',
+    card_a_votes: 1892,
+    card_b_votes: 2156,
+    card_a_pro_votes: 89.50,
+    card_b_pro_votes: 112.00,
+    prize_pool: 100,
+    ends_at: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
+  }
+];
+
+// Use first epic matchup as default showcase
+const mockWar = epicMatchups[0];
 
 // Live animated vote bar component
 const LiveVoteBar = ({ 
