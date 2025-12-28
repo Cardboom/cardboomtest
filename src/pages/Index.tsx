@@ -271,8 +271,8 @@ const Index = () => {
         {/* Global Stats Bar - Hero at top */}
         <GlobalTCGStats />
 
-        {/* Feature Showcase - Why CardBoom */}
-        <FeatureShowcase />
+        {/* Feature Showcase - Why CardBoom (only for non-logged-in users) */}
+        {!user && <FeatureShowcase />}
 
         {/* Grading CTA Section */}
         <GradingCTA />
