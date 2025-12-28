@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { TrendingUp, TrendingDown, ShoppingCart, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { TrendingUp, TrendingDown, ShoppingCart, Heart, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
 import { cn } from '@/lib/utils';
@@ -16,11 +17,17 @@ interface CollectibleCardProps {
 }
 
 export const CollectibleCard = ({ collectible, onAddToCart, onClick }: CollectibleCardProps) => {
+  const navigate = useNavigate();
   const [isFavorited, setIsFavorited] = useState(false);
   const [displayPrice, setDisplayPrice] = useState(collectible.price);
   const [priceDirection, setPriceDirection] = useState<'up' | 'down' | null>(null);
   const prevPriceRef = useRef(collectible.price);
   const isPositive = collectible.priceChange >= 0;
+
+  const handleGoToCard = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/item/${collectible.id}`);
+  };
 
   // Generate sparkline data based on price change trend
   const sparklineData = useMemo(() => {
@@ -204,17 +211,28 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
             </div>
           </div>
 
-          <Button
-            variant="default"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(collectible);
-            }}
-            className="opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <ShoppingCart className="w-4 h-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGoToCard}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ExternalLink className="w-4 h-4 mr-1" />
+              Go To Card
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart(collectible);
+              }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ShoppingCart className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
