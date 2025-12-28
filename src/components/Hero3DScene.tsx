@@ -130,14 +130,12 @@ const Scene = () => {
 
 export const Hero3DScene = () => {
   return (
-    <div className="absolute inset-0 -z-10 pointer-events-none" style={{ pointerEvents: 'none' }}>
+    <div className="absolute inset-0 -z-10" style={{ pointerEvents: 'none' }}>
       <Canvas
         camera={{ position: [0, 0, 6], fov: 45 }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent', pointerEvents: 'none' }}
-        eventSource={undefined}
-        eventPrefix="offset"
       >
         <Suspense fallback={null}>
           <Scene />
