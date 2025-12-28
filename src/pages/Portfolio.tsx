@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Plus, TrendingUp, TrendingDown, Search, Trash2, 
-  Edit, ExternalLink, Package, DollarSign, PieChart, Clock, Upload, Share2
+  Edit, ExternalLink, Package, DollarSign, PieChart, Clock, Upload, Share2,
+  Wallet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,8 +19,9 @@ import { toast } from 'sonner';
 import { AddToPortfolioDialog } from '@/components/portfolio/AddToPortfolioDialog';
 import { PortfolioImport } from '@/components/portfolio/PortfolioImport';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, subDays, format } from 'date-fns';
 import { formatGrade, CardGrade } from '@/hooks/useGradePrices';
+import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 // Portfolio item type
 interface PortfolioItem {
@@ -149,6 +151,33 @@ const Portfolio = () => {
   const totalCost = portfolioItems.reduce((sum, item) => sum + item.purchasePrice * item.quantity, 0);
   const totalPnL = totalValue - totalCost;
   const pnlPercent = totalCost > 0 ? ((totalPnL / totalCost) * 100) : 0;
+  const netWorth = totalValue + fractionalCurrentValue;
+
+  // Generate mock historical data for portfolio chart
+  const chartData = useMemo(() => {
+    const data = [];
+    const baseValue = netWorth * 0.85; // Start from 85% of current value
+    const volatility = 0.03; // 3% daily volatility
+    
+    for (let i = 30; i >= 0; i--) {
+      const date = subDays(new Date(), i);
+      const randomChange = 1 + (Math.random() - 0.45) * volatility;
+      const previousValue = i === 30 ? baseValue : data[data.length - 1]?.value || baseValue;
+      const value = i === 0 ? netWorth : previousValue * randomChange;
+      
+      data.push({
+        date: format(date, 'MMM dd'),
+        fullDate: format(date, 'MMM dd, yyyy'),
+        value: Math.round(value),
+      });
+    }
+    return data;
+  }, [netWorth]);
+
+  const chartChange = chartData.length > 1 ? netWorth - chartData[0].value : 0;
+  const chartChangePercent = chartData.length > 1 && chartData[0].value > 0 
+    ? ((netWorth - chartData[0].value) / chartData[0].value) * 100 
+    : 0;
 
   const filteredPortfolio = portfolioItems.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -174,31 +203,100 @@ const Portfolio = () => {
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <div>
-              <h1 className="font-display text-3xl font-bold text-foreground">My Portfolio</h1>
-              <p className="text-muted-foreground">Track your collection and performance</p>
+        {/* Net Worth Hero Section */}
+        <div className="glass rounded-2xl p-6 md:p-8 mb-6 relative overflow-hidden">
+          {/* Background gradient effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+          
+          <div className="relative z-10">
+            {/* Header with title and actions */}
+            <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Wallet className="w-5 h-5 text-primary" />
+                  <span className="text-muted-foreground text-sm font-medium uppercase tracking-wide">Your Net Worth</span>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground">
+                  {formatPrice(netWorth)}
+                </h1>
+                <div className="flex items-center gap-3 mt-2">
+                  <span className={cn(
+                    "flex items-center gap-1 text-lg font-semibold",
+                    chartChange >= 0 ? "text-gain" : "text-loss"
+                  )}>
+                    {chartChange >= 0 ? <TrendingUp className="w-5 h-5" /> : <TrendingDown className="w-5 h-5" />}
+                    {chartChange >= 0 ? '+' : ''}{formatPrice(chartChange)}
+                  </span>
+                  <span className={cn(
+                    "text-sm px-2 py-0.5 rounded-full font-medium",
+                    chartChangePercent >= 0 ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss"
+                  )}>
+                    {chartChangePercent >= 0 ? '+' : ''}{chartChangePercent.toFixed(2)}%
+                  </span>
+                  <span className="text-muted-foreground text-sm">Past 30 days</span>
+                </div>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
+                  <Upload className="w-4 h-4" />
+                  Import
+                </Button>
+                <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Add Item
+                </Button>
+              </div>
             </div>
-            {fractionalHoldings && fractionalHoldings.length > 0 && (
-              <Link to="/fractional">
-                <Badge variant="secondary" className="gap-1 cursor-pointer hover:bg-secondary/80">
-                  <PieChart className="w-3 h-3" />
-                  {fractionalHoldings.length} Fractional Holdings
-                </Badge>
-              </Link>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowImportDialog(true)} className="gap-2">
-              <Upload className="w-4 h-4" />
-              Import
-            </Button>
-            <Button onClick={() => setShowAddDialog(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Item
-            </Button>
+
+            {/* Portfolio Chart */}
+            <div className="h-[200px] md:h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={chartChange >= 0 ? "hsl(var(--gain))" : "hsl(var(--loss))"} stopOpacity={0.3} />
+                      <stop offset="100%" stopColor={chartChange >= 0 ? "hsl(var(--gain))" : "hsl(var(--loss))"} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    interval="preserveStartEnd"
+                    tickMargin={10}
+                  />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tickFormatter={(value) => formatPrice(value)}
+                    width={80}
+                    domain={['dataMin - 50000', 'dataMax + 50000']}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600, marginBottom: 4 }}
+                    formatter={(value: number) => [formatPrice(value), 'Portfolio Value']}
+                    labelFormatter={(label, payload) => payload?.[0]?.payload?.fullDate || label}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="value" 
+                    stroke={chartChange >= 0 ? "hsl(var(--gain))" : "hsl(var(--loss))"} 
+                    strokeWidth={2}
+                    fill="url(#portfolioGradient)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
