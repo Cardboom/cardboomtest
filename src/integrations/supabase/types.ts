@@ -725,6 +725,60 @@ export type Database = {
           },
         ]
       }
+      creator_applications: {
+        Row: {
+          bio: string | null
+          categories: string[] | null
+          created_at: string
+          creator_name: string
+          email: string
+          follower_count: string | null
+          handle: string
+          id: string
+          notes: string | null
+          platform: string
+          portfolio_url: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          bio?: string | null
+          categories?: string[] | null
+          created_at?: string
+          creator_name: string
+          email: string
+          follower_count?: string | null
+          handle: string
+          id?: string
+          notes?: string | null
+          platform: string
+          portfolio_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bio?: string | null
+          categories?: string[] | null
+          created_at?: string
+          creator_name?: string
+          email?: string
+          follower_count?: string | null
+          handle?: string
+          id?: string
+          notes?: string | null
+          platform?: string
+          portfolio_url?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       creator_call_followups: {
         Row: {
           call_id: string
