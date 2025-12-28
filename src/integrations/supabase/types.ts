@@ -1615,6 +1615,7 @@ export type Database = {
           listing_created_id: string | null
           overlay_coordinates: Json | null
           paid_at: string | null
+          price_cents: number | null
           price_usd: number
           status: Database["public"]["Enums"]["grading_order_status"]
           submitted_at: string | null
@@ -1644,6 +1645,7 @@ export type Database = {
           listing_created_id?: string | null
           overlay_coordinates?: Json | null
           paid_at?: string | null
+          price_cents?: number | null
           price_usd?: number
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
@@ -1673,12 +1675,43 @@ export type Database = {
           listing_created_id?: string | null
           overlay_coordinates?: Json | null
           paid_at?: string | null
+          price_cents?: number | null
           price_usd?: number
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
           suggested_price?: number | null
           surface_grade?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      idempotency_keys: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          idempotency_key: string
+          request_hash: string
+          response: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          idempotency_key: string
+          request_hash: string
+          response?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          idempotency_key?: string
+          request_hash?: string
+          response?: Json | null
           user_id?: string
         }
         Relationships: []
@@ -1711,6 +1744,53 @@ export type Database = {
             columns: ["market_item_id"]
             isOneToOne: false
             referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ledger_entries: {
+        Row: {
+          created_at: string
+          currency: string
+          delta_cents: number
+          description: string | null
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          id: string
+          idempotency_key: string | null
+          reference_id: string | null
+          reference_type: string
+          wallet_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          delta_cents: number
+          description?: string | null
+          entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          id?: string
+          idempotency_key?: string | null
+          reference_id?: string | null
+          reference_type: string
+          wallet_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          delta_cents?: number
+          description?: string | null
+          entry_type?: Database["public"]["Enums"]["ledger_entry_type"]
+          id?: string
+          idempotency_key?: string | null
+          reference_id?: string | null
+          reference_type?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
             referencedColumns: ["id"]
           },
         ]
@@ -1758,9 +1838,11 @@ export type Database = {
           description: string | null
           external_id: string | null
           external_price: number | null
+          external_price_cents: number | null
           id: string
           image_url: string | null
           price: number
+          price_cents: number | null
           seller_id: string
           source: string
           status: Database["public"]["Enums"]["listing_status"]
@@ -1777,9 +1859,11 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           external_price?: number | null
+          external_price_cents?: number | null
           id?: string
           image_url?: string | null
           price: number
+          price_cents?: number | null
           seller_id: string
           source?: string
           status?: Database["public"]["Enums"]["listing_status"]
@@ -1796,9 +1880,11 @@ export type Database = {
           description?: string | null
           external_id?: string | null
           external_price?: number | null
+          external_price_cents?: number | null
           id?: string
           image_url?: string | null
           price?: number
+          price_cents?: number | null
           seller_id?: string
           source?: string
           status?: Database["public"]["Enums"]["listing_status"]
@@ -1910,6 +1996,7 @@ export type Database = {
           character_name: string | null
           created_at: string
           current_price: number
+          current_price_cents: number | null
           data_source: string | null
           external_id: string | null
           id: string
@@ -1944,6 +2031,7 @@ export type Database = {
           character_name?: string | null
           created_at?: string
           current_price?: number
+          current_price_cents?: number | null
           data_source?: string | null
           external_id?: string | null
           id?: string
@@ -1978,6 +2066,7 @@ export type Database = {
           character_name?: string | null
           created_at?: string
           current_price?: number
+          current_price_cents?: number | null
           data_source?: string | null
           external_id?: string | null
           id?: string
@@ -2227,13 +2316,16 @@ export type Database = {
       orders: {
         Row: {
           buyer_fee: number
+          buyer_fee_cents: number | null
           buyer_id: string
           created_at: string
           delivery_option: Database["public"]["Enums"]["delivery_option"]
           id: string
           listing_id: string
           price: number
+          price_cents: number | null
           seller_fee: number
+          seller_fee_cents: number | null
           seller_id: string
           shipping_address: Json | null
           status: Database["public"]["Enums"]["order_status"]
@@ -2242,13 +2334,16 @@ export type Database = {
         }
         Insert: {
           buyer_fee: number
+          buyer_fee_cents?: number | null
           buyer_id: string
           created_at?: string
           delivery_option: Database["public"]["Enums"]["delivery_option"]
           id?: string
           listing_id: string
           price: number
+          price_cents?: number | null
           seller_fee: number
+          seller_fee_cents?: number | null
           seller_id: string
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -2257,13 +2352,16 @@ export type Database = {
         }
         Update: {
           buyer_fee?: number
+          buyer_fee_cents?: number | null
           buyer_id?: string
           created_at?: string
           delivery_option?: Database["public"]["Enums"]["delivery_option"]
           id?: string
           listing_id?: string
           price?: number
+          price_cents?: number | null
           seller_fee?: number
+          seller_fee_cents?: number | null
           seller_id?: string
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -2279,6 +2377,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_intents: {
+        Row: {
+          amount_cents: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          error_message: string | null
+          id: string
+          idempotency_key: string | null
+          intent_type: string
+          metadata: Json | null
+          provider: string
+          provider_intent_id: string | null
+          reference_id: string | null
+          reference_type: string | null
+          status: Database["public"]["Enums"]["payment_intent_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          intent_type: string
+          metadata?: Json | null
+          provider: string
+          provider_intent_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: Database["public"]["Enums"]["payment_intent_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          intent_type?: string
+          metadata?: Json | null
+          provider?: string
+          provider_intent_id?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          status?: Database["public"]["Enums"]["payment_intent_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       pending_payments: {
         Row: {
@@ -2712,6 +2867,59 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json
+          payment_intent_id: string | null
+          process_error: string | null
+          processed: boolean | null
+          processed_at: string | null
+          provider: string
+          signature: string | null
+          signature_verified: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type: string
+          id?: string
+          payload: Json
+          payment_intent_id?: string | null
+          process_error?: string | null
+          processed?: boolean | null
+          processed_at?: string | null
+          provider: string
+          signature?: string | null
+          signature_verified?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          payment_intent_id?: string | null
+          process_error?: string | null
+          processed?: boolean | null
+          processed_at?: string | null
+          provider?: string
+          signature?: string | null
+          signature_verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_events_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       receipts: {
         Row: {
           card_image_url: string | null
@@ -2784,6 +2992,66 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reconciliation_mismatches: {
+        Row: {
+          actual_amount_cents: number | null
+          created_at: string
+          details: Json | null
+          expected_amount_cents: number | null
+          id: string
+          mismatch_type: string
+          payment_intent_id: string | null
+          provider_event_id: string | null
+          resolution_notes: string | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          actual_amount_cents?: number | null
+          created_at?: string
+          details?: Json | null
+          expected_amount_cents?: number | null
+          id?: string
+          mismatch_type: string
+          payment_intent_id?: string | null
+          provider_event_id?: string | null
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          actual_amount_cents?: number | null
+          created_at?: string
+          details?: Json | null
+          expected_amount_cents?: number | null
+          id?: string
+          mismatch_type?: string
+          payment_intent_id?: string | null
+          provider_event_id?: string | null
+          resolution_notes?: string | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reconciliation_mismatches_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_mismatches_provider_event_id_fkey"
+            columns: ["provider_event_id"]
+            isOneToOne: false
+            referencedRelation: "provider_events"
             referencedColumns: ["id"]
           },
         ]
@@ -3099,6 +3367,60 @@ export type Database = {
           tier?: string | null
         }
         Relationships: []
+      }
+      refunds: {
+        Row: {
+          amount_cents: number
+          completed_at: string | null
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          ledger_entry_id: string | null
+          payment_intent_id: string
+          provider_refund_id: string | null
+          reason: string | null
+          status: Database["public"]["Enums"]["payment_intent_status"]
+        }
+        Insert: {
+          amount_cents: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          ledger_entry_id?: string | null
+          payment_intent_id: string
+          provider_refund_id?: string | null
+          reason?: string | null
+          status?: Database["public"]["Enums"]["payment_intent_status"]
+        }
+        Update: {
+          amount_cents?: number
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          ledger_entry_id?: string | null
+          payment_intent_id?: string
+          provider_refund_id?: string | null
+          reason?: string | null
+          status?: Database["public"]["Enums"]["payment_intent_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_ledger_entry_id_fkey"
+            columns: ["ledger_entry_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_payment_intent_id_fkey"
+            columns: ["payment_intent_id"]
+            isOneToOne: false
+            referencedRelation: "payment_intents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       regret_simulations: {
         Row: {
@@ -3900,21 +4222,27 @@ export type Database = {
       wallets: {
         Row: {
           balance: number
+          balance_cents: number | null
           created_at: string
+          currency: string | null
           id: string
           updated_at: string
           user_id: string
         }
         Insert: {
           balance?: number
+          balance_cents?: number | null
           created_at?: string
+          currency?: string | null
           id?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           balance?: number
+          balance_cents?: number | null
           created_at?: string
+          currency?: string | null
           id?: string
           updated_at?: string
           user_id?: string
@@ -4153,12 +4481,24 @@ export type Database = {
         Args: { reel_uuid: string }
         Returns: number
       }
+      check_idempotency: {
+        Args: { p_key: string; p_request_hash: string; p_user_id: string }
+        Returns: Json
+      }
       get_seller_rating: {
         Args: { seller_uuid: string }
         Returns: {
           avg_rating: number
           review_count: number
         }[]
+      }
+      get_user_balance: {
+        Args: { p_currency?: string; p_user_id: string }
+        Returns: number
+      }
+      get_wallet_balance: {
+        Args: { p_currency?: string; p_wallet_id: string }
+        Returns: number
       }
       has_role: {
         Args: {
@@ -4169,6 +4509,28 @@ export type Database = {
       }
       increment_reel_shares: { Args: { reel_uuid: string }; Returns: undefined }
       increment_reel_views: { Args: { reel_uuid: string }; Returns: undefined }
+      post_ledger_entry: {
+        Args: {
+          p_currency: string
+          p_delta_cents: number
+          p_description: string
+          p_entry_type: Database["public"]["Enums"]["ledger_entry_type"]
+          p_idempotency_key: string
+          p_reference_id: string
+          p_reference_type: string
+          p_wallet_id: string
+        }
+        Returns: string
+      }
+      record_idempotency: {
+        Args: {
+          p_key: string
+          p_request_hash: string
+          p_response: Json
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       update_call_outcomes: { Args: never; Returns: undefined }
       update_reputation: {
         Args: {
@@ -4211,6 +4573,16 @@ export type Database = {
         | "completed"
         | "failed"
         | "refunded"
+      ledger_entry_type:
+        | "deposit"
+        | "withdrawal"
+        | "purchase"
+        | "sale"
+        | "refund"
+        | "grading_fee"
+        | "subscription_fee"
+        | "reward"
+        | "adjustment"
       liquidity_level: "high" | "medium" | "low"
       listing_status: "active" | "sold" | "cancelled" | "reserved"
       offer_status:
@@ -4228,6 +4600,14 @@ export type Database = {
         | "delivered"
         | "completed"
         | "cancelled"
+      payment_intent_status:
+        | "pending"
+        | "processing"
+        | "succeeded"
+        | "failed"
+        | "cancelled"
+        | "refunded"
+        | "partially_refunded"
       reward_status: "available" | "claimed" | "expired" | "used"
       reward_type:
         | "voucher"
@@ -4422,6 +4802,17 @@ export const Constants = {
         "failed",
         "refunded",
       ],
+      ledger_entry_type: [
+        "deposit",
+        "withdrawal",
+        "purchase",
+        "sale",
+        "refund",
+        "grading_fee",
+        "subscription_fee",
+        "reward",
+        "adjustment",
+      ],
       liquidity_level: ["high", "medium", "low"],
       listing_status: ["active", "sold", "cancelled", "reserved"],
       offer_status: [
@@ -4440,6 +4831,15 @@ export const Constants = {
         "delivered",
         "completed",
         "cancelled",
+      ],
+      payment_intent_status: [
+        "pending",
+        "processing",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "refunded",
+        "partially_refunded",
       ],
       reward_status: ["available", "claimed", "expired", "used"],
       reward_type: [
