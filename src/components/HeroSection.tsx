@@ -93,7 +93,8 @@ export const HeroSection = () => {
             <Button 
               size="lg" 
               onClick={handleGetStarted}
-              className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all cursor-pointer"
+              className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all cursor-pointer relative z-50"
+              style={{ pointerEvents: 'auto' }}
             >
               {t.hero.startTrading}
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -102,7 +103,8 @@ export const HeroSection = () => {
               variant="outline"
               size="lg" 
               onClick={() => navigate('/markets')}
-              className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50 cursor-pointer"
+              className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50 cursor-pointer relative z-50"
+              style={{ pointerEvents: 'auto' }}
             >
               {t.hero.exploreMarket}
             </Button>
