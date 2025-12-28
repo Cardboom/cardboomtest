@@ -94,7 +94,7 @@ export function GlobalTCGStats() {
   ];
 
   return (
-    <section className="py-12 md:py-20 relative overflow-hidden">
+    <section className="py-8 sm:py-12 md:py-20 relative overflow-hidden">
       {/* Background gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)]" />
       
@@ -104,30 +104,30 @@ export function GlobalTCGStats() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-10 md:mb-14"
+          className="text-center mb-8 sm:mb-10 md:mb-14"
         >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4 leading-[1.1]">
+          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tight mb-3 sm:mb-4 leading-[1.1]">
             Grade your <span className="text-primary">Card</span>
             <span className="block"><span className="text-primary">Boom</span> Your Value</span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
             {t.hero.description}
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
             <Button 
               size="lg" 
               onClick={() => navigate('/auth')}
-              className="h-14 px-10 rounded-full font-bold text-base shadow-lg shadow-primary/25"
+              className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-bold text-sm sm:text-base shadow-lg shadow-primary/25"
             >
               {t.hero.startTrading}
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
             </Button>
             <Button 
               variant="outline"
               size="lg" 
               onClick={() => navigate('/markets')}
-              className="h-14 px-10 rounded-full font-semibold text-base"
+              className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-semibold text-sm sm:text-base"
             >
               {t.hero.exploreMarket}
             </Button>
@@ -150,7 +150,7 @@ export function GlobalTCGStats() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                className={`relative p-6 md:p-8 flex flex-col items-center justify-center text-center
+                className={`relative p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center
                   ${i < 2 ? 'border-b border-border/30 md:border-b-0' : ''}
                   ${i % 2 === 0 ? 'border-r border-border/30' : ''}
                   ${i < 2 ? 'md:border-r md:border-border/30' : i === 2 ? 'md:border-r md:border-border/30' : ''}
@@ -158,20 +158,20 @@ export function GlobalTCGStats() {
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-50`} />
                 
-                <div className="relative z-10 flex flex-col items-center gap-3">
-                  <div className={`p-3 rounded-xl ${item.iconBg}`}>
-                    <item.icon className={`w-5 h-5 md:w-6 md:h-6 ${item.iconColor}`} />
+                <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3">
+                  <div className={`p-2 sm:p-3 rounded-xl ${item.iconBg}`}>
+                    <item.icon className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${item.iconColor}`} />
                   </div>
                   
-                  <div className="space-y-1">
-                    <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
+                  <div className="space-y-0.5 sm:space-y-1">
+                    <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
                       {isLoading ? (
-                        <span className="inline-block w-20 h-8 bg-muted/50 rounded animate-pulse" />
+                        <span className="inline-block w-16 sm:w-20 h-6 sm:h-8 bg-muted/50 rounded animate-pulse" />
                       ) : (
                         item.value
                       )}
                     </div>
-                    <div className="text-xs md:text-sm text-muted-foreground font-medium">
+                    <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground font-medium">
                       {item.label}
                     </div>
                   </div>

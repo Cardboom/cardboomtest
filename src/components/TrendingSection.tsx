@@ -73,15 +73,15 @@ export const TrendingSection = () => {
   }
 
   return (
-    <section className="py-12">
+    <section className="py-8 sm:py-12">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="font-display text-2xl font-bold text-foreground">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">
             Trending Now 🔥
           </h2>
           <Button 
             variant="ghost" 
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground text-sm"
             onClick={() => navigate('/markets')}
           >
             View All
@@ -89,15 +89,15 @@ export const TrendingSection = () => {
           </Button>
         </div>
 
-        <div className="overflow-x-auto pb-4">
-          <div className="flex gap-4 min-w-max">
+        <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex gap-3 sm:gap-4 min-w-max">
             {trending.map((item, index) => {
               const isPositive = item.priceChange >= 0;
               return (
                 <ScrollReveal key={item.id} delay={index * 100} direction="left">
                   <div
                     className={cn(
-                      "glass rounded-xl p-4 w-72 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:scale-[1.02]",
+                      "glass rounded-xl p-3 sm:p-4 w-56 sm:w-72 hover:border-primary/50 transition-all duration-300 cursor-pointer hover:scale-[1.02]",
                       item.priceUpdated && "ring-2 ring-primary/50"
                     )}
                     onClick={() => navigate(`/item/${item.id}`)}

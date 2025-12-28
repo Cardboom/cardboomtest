@@ -280,11 +280,11 @@ const Index = () => {
         
         {/* Live Market Section */}
         <ScrollReveal>
-          <section ref={marketRef} className="py-12 border-t border-border/20 bg-transparent">
+          <section ref={marketRef} className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
             <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-4 sm:mb-8">
                 <div>
-                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
                     {t.market.popularCollections}
                   </h2>
                   <LiveUpdateIndicator 
@@ -303,7 +303,7 @@ const Index = () => {
                 </Button>
               </div>
               
-              <div className="grid lg:grid-cols-2 gap-6">
+              <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
                 <ScrollReveal delay={100}>
                   <LiveMarketTable items={topGainers} title={`${t.market.topGainers} 📈`} />
                 </ScrollReveal>
@@ -317,40 +317,40 @@ const Index = () => {
 
         {/* 2026 Features: AI Insights + Social + Gamification */}
         <ScrollReveal>
-          <section className="py-12 border-t border-border/20 bg-transparent">
+          <section className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
             <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-8">
                 <div>
-                  <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground flex items-center gap-3">
-                    <Brain className="h-7 w-7 text-primary" />
+                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
+                    <Brain className="h-5 w-5 sm:h-7 sm:w-7 text-primary" />
                     {t.smartHub.title}
                   </h2>
-                  <p className="text-muted-foreground mt-1">{t.smartHub.subtitle}</p>
+                  <p className="text-muted-foreground text-sm sm:text-base mt-1">{t.smartHub.subtitle}</p>
                 </div>
                 <Link to="/fractional">
-                  <Button variant="outline" className="gap-2">
-                    <PieChart className="w-4 h-4" />
+                  <Button variant="outline" className="gap-2 text-sm h-9 sm:h-10">
+                    <PieChart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     {t.smartHub.fractionalMarket}
                   </Button>
                 </Link>
               </div>
 
-              <Tabs defaultValue="insights" className="space-y-6">
+              <Tabs defaultValue="insights" className="space-y-4 sm:space-y-6">
                 <TabsList className="glass w-full sm:w-auto overflow-x-auto flex-nowrap justify-start sm:justify-center p-1 h-auto">
-                  <TabsTrigger value="insights" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
-                    <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <TabsTrigger value="insights" className="gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+                    <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
                     {t.smartHub.aiInsights}
                   </TabsTrigger>
-                  <TabsTrigger value="social" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
-                    <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <TabsTrigger value="social" className="gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+                    <Users className="w-3 h-3 sm:w-4 sm:h-4" />
                     {t.smartHub.topTraders}
                   </TabsTrigger>
-                  <TabsTrigger value="quests" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
-                    <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <TabsTrigger value="quests" className="gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+                    <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
                     {t.smartHub.quests}
                   </TabsTrigger>
-                  <TabsTrigger value="alerts" className="gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs sm:text-sm whitespace-nowrap">
-                    <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <TabsTrigger value="alerts" className="gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+                    <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
                     {t.smartHub.alerts}
                   </TabsTrigger>
                 </TabsList>
@@ -386,7 +386,7 @@ const Index = () => {
 
         {/* Card Wars Section - aligned with container */}
         <ScrollReveal>
-          <section className="py-12 border-t border-border/20 bg-transparent">
+          <section className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
             <div className="container mx-auto px-4">
               <CardWarsSection />
             </div>
@@ -394,14 +394,14 @@ const Index = () => {
         </ScrollReveal>
 
         {/* Listings */}
-        <section className="py-12 border-t border-border/20 bg-transparent">
+        <section className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
               <div>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
                   {t.market.explore}
                 </h2>
-                <p className="text-muted-foreground mt-1">{t.market.browseListings}</p>
+                <p className="text-muted-foreground text-sm sm:text-base mt-1">{t.market.browseListings}</p>
               </div>
             </div>
             
