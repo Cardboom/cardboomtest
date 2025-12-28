@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Trophy, Vote, Swords, CheckCircle } from 'lucide-react';
+import { Plus, Trophy, Vote, Swords, CheckCircle, Shuffle } from 'lucide-react';
 import { useCommunityVotesAdmin } from '@/hooks/useCommunityVotes';
 import { format } from 'date-fns';
 
 export const CommunityVotesManager = () => {
-  const { allPolls, loading, createPoll, finalizePoll } = useCommunityVotesAdmin();
+  const { allPolls, loading, createPoll, finalizePoll, generateRandomPoll } = useCommunityVotesAdmin();
   const [createOpen, setCreateOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     cardAName: '',
     cardBName: '',
@@ -40,6 +41,12 @@ export const CommunityVotesManager = () => {
     }
   };
 
+  const handleGenerateRandom = async () => {
+    setIsGenerating(true);
+    await generateRandomPoll(formData.xpReward);
+    setIsGenerating(false);
+  };
+
   if (loading) {
     return <Skeleton className="h-96 w-full" />;
   }
@@ -60,14 +67,23 @@ export const CommunityVotesManager = () => {
               <CardDescription>Daily polls for XP rewards (free feature)</CardDescription>
             </div>
           </div>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Create Daily Poll
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleGenerateRandom}
+              disabled={isGenerating}
+            >
+              <Shuffle className="w-4 h-4 mr-2" />
+              {isGenerating ? 'Generating...' : 'Random Poll'}
+            </Button>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Manual Poll
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
               <DialogHeader>
                 <DialogTitle>Create Daily Card Poll</DialogTitle>
               </DialogHeader>
@@ -123,6 +139,7 @@ export const CommunityVotesManager = () => {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
