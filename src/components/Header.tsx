@@ -32,7 +32,7 @@ import { cn } from '@/lib/utils';
 import { SmartSearch } from '@/components/SmartSearch';
 import { useTheme } from '@/hooks/useTheme';
 import cardboomLogo from '@/assets/cardboom-logo.png';
-import cardboomLogoDark from '@/assets/cardboom-logo-light.png';
+import cardboomLogoDark from '@/assets/cardboom-logo-dark-new.png';
 
 interface HeaderProps {
   cartCount: number;
