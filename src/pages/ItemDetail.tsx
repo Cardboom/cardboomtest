@@ -531,6 +531,7 @@ const ItemDetail = () => {
             itemName={item.name}
             category={item.category}
             currentPrice={item.current_price}
+            marketItemId={item.id}
           />
         </section>
 

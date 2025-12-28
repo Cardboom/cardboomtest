@@ -13,43 +13,23 @@ interface UsePriceHistoryOptions {
   category?: string;
   days?: number;
   enabled?: boolean;
+  marketItemId?: string;
 }
-
-// Generate search patterns from item name
-const generateSearchPatterns = (itemName?: string): string[] => {
-  if (!itemName) return [];
-  
-  const patterns: string[] = [];
-  const cleanName = itemName.toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim();
-  
-  // Add words from the name
-  const words = cleanName.split(/\s+/).filter(w => w.length > 2);
-  words.forEach(word => patterns.push(word));
-  
-  // Add first two words combined
-  if (words.length >= 2) {
-    patterns.push(`${words[0]}-${words[1]}`);
-    patterns.push(`${words[0]}%${words[1]}`);
-  }
-  
-  return [...new Set(patterns)];
-};
 
 export const usePriceHistory = ({ 
   productId, 
   itemName,
   category,
   days = 30, 
-  enabled = true 
+  enabled = true,
+  marketItemId
 }: UsePriceHistoryOptions) => {
   const [data, setData] = useState<PriceHistoryPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchHistory = useCallback(async () => {
-    if (!enabled || !productId) return;
+    if (!enabled || (!productId && !marketItemId)) return;
 
     setIsLoading(true);
     setError(null);
@@ -60,23 +40,40 @@ export const usePriceHistory = ({
 
       let historyData: any[] = [];
 
-      // Strategy 1: Exact match on productId
-      const { data: exactMatch } = await supabase
-        .from('price_history')
-        .select('price, recorded_at, product_id')
-        .eq('product_id', productId)
-        .gte('recorded_at', startDate.toISOString())
-        .order('recorded_at', { ascending: true });
+      // Strategy 1: Direct match by market_item_id (most accurate)
+      if (marketItemId || productId) {
+        const itemId = marketItemId || productId;
+        const { data: directMatch } = await supabase
+          .from('price_history')
+          .select('price, recorded_at, product_id, market_item_id')
+          .eq('market_item_id', itemId)
+          .gte('recorded_at', startDate.toISOString())
+          .order('recorded_at', { ascending: true });
 
-      if (exactMatch && exactMatch.length > 0) {
-        historyData = exactMatch;
+        if (directMatch && directMatch.length > 0) {
+          historyData = directMatch;
+        }
       }
 
-      // Strategy 2: Try partial match - productId contains our search term
-      if (historyData.length === 0) {
+      // Strategy 2: Exact match on productId string
+      if (historyData.length === 0 && productId) {
+        const { data: exactMatch } = await supabase
+          .from('price_history')
+          .select('price, recorded_at, product_id, market_item_id')
+          .eq('product_id', productId)
+          .gte('recorded_at', startDate.toISOString())
+          .order('recorded_at', { ascending: true });
+
+        if (exactMatch && exactMatch.length > 0) {
+          historyData = exactMatch;
+        }
+      }
+
+      // Strategy 3: Try partial match on product_id
+      if (historyData.length === 0 && productId) {
         const { data: partialMatch } = await supabase
           .from('price_history')
-          .select('price, recorded_at, product_id')
+          .select('price, recorded_at, product_id, market_item_id')
           .ilike('product_id', `%${productId}%`)
           .gte('recorded_at', startDate.toISOString())
           .order('recorded_at', { ascending: true })
@@ -87,80 +84,59 @@ export const usePriceHistory = ({
         }
       }
 
-      // Strategy 3: Our productId contains the price_history product_id
-      if (historyData.length === 0 && productId.includes('-')) {
-        const baseName = productId.split('-').slice(0, 2).join('-');
-        const { data: baseMatch } = await supabase
-          .from('price_history')
-          .select('price, recorded_at, product_id')
-          .ilike('product_id', `${baseName}%`)
-          .gte('recorded_at', startDate.toISOString())
-          .order('recorded_at', { ascending: true })
-          .limit(200);
-
-        if (baseMatch && baseMatch.length > 0) {
-          historyData = baseMatch;
-        }
-      }
-
-      // Strategy 4: Search by item name patterns
+      // Strategy 4: Search by item name keywords
       if (historyData.length === 0 && itemName) {
-        const patterns = generateSearchPatterns(itemName);
+        const keywords = itemName.toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .split(/\s+/)
+          .filter(w => w.length > 3)
+          .slice(0, 2);
         
-        for (const pattern of patterns) {
-          const { data: nameMatch } = await supabase
+        for (const keyword of keywords) {
+          const { data: keywordMatch } = await supabase
             .from('price_history')
-            .select('price, recorded_at, product_id')
-            .ilike('product_id', `%${pattern}%`)
+            .select('price, recorded_at, product_id, market_item_id')
+            .ilike('product_id', `%${keyword}%`)
             .gte('recorded_at', startDate.toISOString())
             .order('recorded_at', { ascending: true })
             .limit(200);
 
-          if (nameMatch && nameMatch.length > 0) {
-            historyData = nameMatch;
+          if (keywordMatch && keywordMatch.length > 0) {
+            historyData = keywordMatch;
             break;
           }
         }
       }
 
-      // Strategy 5: Category-based fallback
-      if (historyData.length === 0 && category) {
-        const categoryPrefix = category.split('-')[0].toLowerCase();
-        const { data: categoryMatch } = await supabase
-          .from('price_history')
-          .select('price, recorded_at, product_id')
-          .ilike('product_id', `${categoryPrefix}%`)
-          .gte('recorded_at', startDate.toISOString())
-          .order('recorded_at', { ascending: true })
-          .limit(50);
-
-        if (categoryMatch && categoryMatch.length > 0) {
-          // Take the most recent entries for this category
-          historyData = categoryMatch;
-        }
-      }
-
       if (historyData.length > 0) {
-        // Group by date and average if multiple entries per day
-        const groupedByDate = historyData.reduce((acc: Record<string, { total: number; count: number; recorded_at: string }>, point) => {
+        // Group by date and calculate median price for anti-manipulation
+        const groupedByDate = historyData.reduce((acc: Record<string, { prices: number[]; recorded_at: string }>, point) => {
           const dateKey = new Date(point.recorded_at).toLocaleDateString('en-US', { 
             month: 'short', 
             day: 'numeric' 
           });
           if (!acc[dateKey]) {
-            acc[dateKey] = { total: 0, count: 0, recorded_at: point.recorded_at };
+            acc[dateKey] = { prices: [], recorded_at: point.recorded_at };
           }
-          acc[dateKey].total += Number(point.price);
-          acc[dateKey].count += 1;
+          acc[dateKey].prices.push(Number(point.price));
           return acc;
         }, {});
 
         const formattedData = Object.entries(groupedByDate)
-          .map(([date, value]: [string, { total: number; count: number; recorded_at: string }]) => ({
-            date,
-            price: value.total / value.count,
-            recorded_at: value.recorded_at,
-          }))
+          .map(([date, value]: [string, { prices: number[]; recorded_at: string }]) => {
+            // Use median for more robust pricing (anti-manipulation)
+            const sorted = value.prices.sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            const median = sorted.length % 2 !== 0 
+              ? sorted[mid] 
+              : (sorted[mid - 1] + sorted[mid]) / 2;
+            
+            return {
+              date,
+              price: median,
+              recorded_at: value.recorded_at,
+            };
+          })
           .sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime());
         
         setData(formattedData);
@@ -174,7 +150,7 @@ export const usePriceHistory = ({
     } finally {
       setIsLoading(false);
     }
-  }, [productId, itemName, category, days, enabled]);
+  }, [productId, itemName, category, days, enabled, marketItemId]);
 
   useEffect(() => {
     fetchHistory();
