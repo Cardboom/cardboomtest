@@ -143,7 +143,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm" style={{ isolation: 'isolate' }}>
+    <>
+    <header className="sticky top-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
       {/* AI Insight Banner */}
       <div className="hidden md:flex items-center justify-center py-1.5 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/20">
         <AIMarketInsight />
@@ -499,8 +500,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
         </div>
 
       </div>
+    </header>
       
-      {/* Mobile Menu - Fixed Full Screen - OUTSIDE container for proper positioning */}
+      {/* Mobile Menu - Fixed Full Screen - OUTSIDE header for proper z-index */}
       {mobileMenuOpen && (
         <>
           {/* Backdrop overlay */}
@@ -687,6 +689,6 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           </div>
         </>
       )}
-    </header>
+    </>
   );
 };
