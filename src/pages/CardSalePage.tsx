@@ -103,7 +103,7 @@ const CardSalePage = () => {
     );
   }
 
-  const mockListings = [{ id: '1', condition: item.condition || 'Near Mint', price: item.current_price || 100, sellerId: '1', sellerName: 'CardBoom Seller', sellerRating: 4.8, sellerVerified: true, totalSales: 156, estimatedDelivery: '3-5 days' }];
+  const mockListings = [{ id: '1', condition: 'Near Mint', price: item.current_price || 100, sellerId: '1', sellerName: 'CardBoom Seller', sellerRating: 4.8, sellerVerified: true, totalSales: 156, estimatedDelivery: '3-5 days' }];
   const mockSeller = { id: '1', username: 'CardBoom Seller', isVerified: true, rating: 4.8, totalSales: 156, avgDeliveryDays: 3, memberSince: '2023', responseTime: '< 1 hour' };
 
   return (
@@ -124,7 +124,7 @@ const CardSalePage = () => {
           {/* Left Column - Image */}
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-4 space-y-4">
-              <CardImageModule imageUrl={item.image_url} name={item.name} grade={item.grade} condition={item.condition} />
+              <CardImageModule imageUrl={item.image_url} name={item.name} condition="Near Mint" />
             </div>
           </div>
 
@@ -155,7 +155,7 @@ const CardSalePage = () => {
 
             <EscrowSection onRequestGrading={() => navigate('/grading')} />
             
-            <CardDetailsSection metadata={{ game: item.category, setName: item.set_name, rarity: item.rarity, cardNumber: item.external_id, language: item.language }} />
+            <CardDetailsSection metadata={{ game: item.category, setName: item.set_name, rarity: item.rarity, cardNumber: item.external_id, language: 'English' }} />
           </div>
         </div>
 
