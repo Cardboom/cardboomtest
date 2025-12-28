@@ -92,7 +92,7 @@ export const FeatureShowcase = () => {
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
 
   return (
-    <section className="pt-8 pb-16 relative overflow-hidden">
+    <section className="pt-6 sm:pt-8 pb-10 sm:pb-16 relative overflow-hidden">
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
       <motion.div 
@@ -113,23 +113,23 @@ export const FeatureShowcase = () => {
       <div className="container mx-auto px-4 relative">
         {/* Header */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-8 sm:mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           <motion.div 
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4 sm:mb-6"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
           >
-            <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-            <span className="text-sm font-medium text-primary">Why CardBoom</span>
+            <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-primary animate-pulse" />
+            <span className="text-xs sm:text-sm font-medium text-primary">Why CardBoom</span>
           </motion.div>
           
           <motion.h1 
-            className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-4"
+            className="font-display text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight mb-2 sm:mb-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -137,7 +137,7 @@ export const FeatureShowcase = () => {
             Everything you need.
           </motion.h1>
           <motion.p 
-            className="text-2xl md:text-3xl lg:text-4xl font-bold text-muted-foreground"
+            className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold text-muted-foreground"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -147,7 +147,7 @@ export const FeatureShowcase = () => {
         </motion.div>
 
         {/* Feature Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 lg:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4">
           {features.map((feature, index) => (
             <motion.div
               key={feature.id}
@@ -165,7 +165,7 @@ export const FeatureShowcase = () => {
               className="group cursor-pointer"
             >
               <div className={cn(
-                "relative h-full p-5 rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm",
+                "relative h-full p-3 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm",
                 "transition-all duration-500 ease-out",
                 "hover:border-border hover:bg-card hover:shadow-2xl hover:-translate-y-2",
                 hoveredFeature && hoveredFeature !== feature.id && "opacity-40 scale-95"
@@ -173,7 +173,7 @@ export const FeatureShowcase = () => {
                 {/* Gradient glow on hover */}
                 <motion.div 
                   className={cn(
-                    "absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500",
+                    "absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 transition-opacity duration-500",
                     "bg-gradient-to-br",
                     feature.gradient,
                     "group-hover:opacity-[0.12]"
@@ -187,7 +187,7 @@ export const FeatureShowcase = () => {
                 {/* Icon with pulse animation on hover */}
                 <motion.div 
                   className={cn(
-                    "relative w-11 h-11 rounded-xl flex items-center justify-center mb-3",
+                    "relative w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-3",
                     "bg-gradient-to-br",
                     feature.gradient,
                     "shadow-lg"
@@ -195,16 +195,16 @@ export const FeatureShowcase = () => {
                   whileHover={{ scale: 1.15, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  <feature.icon className="w-5 h-5 text-white" />
+                  <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </motion.div>
 
                 {/* Content */}
                 <div className="relative space-y-0.5">
-                  <h3 className="font-display text-base font-bold text-foreground group-hover:text-foreground transition-colors">
+                  <h3 className="font-display text-sm sm:text-base font-bold text-foreground group-hover:text-foreground transition-colors line-clamp-1">
                     {feature.title}
                   </h3>
                   <p className={cn(
-                    "text-xs font-medium transition-colors",
+                    "text-[10px] sm:text-xs font-medium transition-colors",
                     feature.accentColor
                   )}>
                     {feature.tagline}
@@ -243,21 +243,21 @@ export const FeatureShowcase = () => {
 
         {/* Bottom CTA */}
         <motion.div 
-          className="mt-10 text-center"
+          className="mt-6 sm:mt-10 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 1 }}
         >
-          <p className="text-muted-foreground text-sm mb-4">
+          <p className="text-muted-foreground text-xs sm:text-sm mb-3 sm:mb-4">
             Built for collectors, by collectors.
           </p>
           <motion.div
-            className="inline-flex items-center gap-2 text-sm font-medium text-primary"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-primary"
             animate={{ y: [0, -3, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             <span>Scroll to explore</span>
-            <ArrowRight className="w-4 h-4 rotate-90" />
+            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-90" />
           </motion.div>
         </motion.div>
       </div>
