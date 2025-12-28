@@ -89,11 +89,11 @@ export const HeroSection = () => {
           </p>
           
           {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-in relative z-50" style={{ animationDelay: '300ms' }}>
             <Button 
               size="lg" 
               onClick={handleGetStarted}
-              className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
+              className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all cursor-pointer"
             >
               {t.hero.startTrading}
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -102,7 +102,7 @@ export const HeroSection = () => {
               variant="outline"
               size="lg" 
               onClick={() => navigate('/markets')}
-              className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50"
+              className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50 cursor-pointer"
             >
               {t.hero.exploreMarket}
             </Button>
