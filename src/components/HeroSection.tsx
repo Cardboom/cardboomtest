@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, Users, Layers, DollarSign } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Hero3DScene } from './Hero3DScene';
 
 export const HeroSection = () => {
   const { t } = useLanguage();
@@ -61,14 +60,30 @@ export const HeroSection = () => {
   ];
 
   return (
-    <section className="relative min-h-[100vh] flex items-center overflow-hidden">
-      {/* 3D Scene Background */}
-      <Hero3DScene />
+    <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-gradient-to-b from-background via-background to-background">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Gradient orbs */}
+        <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-primary/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+        
+        {/* Grid pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
+            backgroundSize: '60px 60px'
+          }}
+        />
+        
+        {/* Floating cards decoration */}
+        <div className="absolute top-1/4 left-[10%] w-20 h-28 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg border border-primary/20 rotate-12 animate-float" />
+        <div className="absolute top-1/3 right-[15%] w-16 h-24 bg-gradient-to-br from-primary/15 to-primary/5 rounded-lg border border-primary/15 -rotate-6 animate-float" style={{ animationDelay: '0.5s' }} />
+        <div className="absolute bottom-1/3 left-[20%] w-14 h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/10 rotate-6 animate-float" style={{ animationDelay: '1s' }} />
+      </div>
       
-      {/* Gradient overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background pointer-events-none" />
-      
-      <div className="container mx-auto px-4 py-20 lg:py-32 relative z-20">
+      <div className="container mx-auto px-4 py-20 lg:py-32 relative z-10">
         <div className="max-w-3xl mx-auto text-center space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-sm font-medium text-primary backdrop-blur-sm animate-fade-in">
@@ -88,13 +103,12 @@ export const HeroSection = () => {
             {t.hero.description}
           </p>
           
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-in relative z-50" style={{ animationDelay: '300ms' }}>
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
             <Button 
               size="lg" 
               onClick={handleGetStarted}
-              className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all cursor-pointer relative z-50"
-              style={{ pointerEvents: 'auto' }}
+              className="h-14 px-10 rounded-full font-semibold text-base shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all"
             >
               {t.hero.startTrading}
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -103,8 +117,7 @@ export const HeroSection = () => {
               variant="outline"
               size="lg" 
               onClick={() => navigate('/markets')}
-              className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50 cursor-pointer relative z-50"
-              style={{ pointerEvents: 'auto' }}
+              className="h-14 px-10 rounded-full font-semibold text-base backdrop-blur-sm bg-background/50"
             >
               {t.hero.exploreMarket}
             </Button>
