@@ -45,6 +45,7 @@ import { DataSyncManager } from '@/components/admin/DataSyncManager';
 import { DiagnosticsDashboard } from '@/components/admin/DiagnosticsDashboard';
 import { GradingManagement } from '@/components/admin/GradingManagement';
 import { CardWarsManager } from '@/components/admin/CardWarsManager';
+import { CommunityVotesManager } from '@/components/admin/CommunityVotesManager';
 import { FanAccountsManager } from '@/components/admin/FanAccountsManager';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
@@ -269,7 +270,11 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="cardwars" className="gap-2">
               <Zap className="w-4 h-4" />
-              Card Wars
+              Card Wars $
+            </TabsTrigger>
+            <TabsTrigger value="communityvotes" className="gap-2">
+              <Users className="w-4 h-4" />
+              Community Votes
             </TabsTrigger>
             <TabsTrigger value="fanaccounts" className="gap-2">
               <Video className="w-4 h-4" />
@@ -319,6 +324,10 @@ const Admin = () => {
 
           <TabsContent value="cardwars">
             <CardWarsManager />
+          </TabsContent>
+
+          <TabsContent value="communityvotes">
+            <CommunityVotesManager />
           </TabsContent>
 
           <TabsContent value="fanaccounts">

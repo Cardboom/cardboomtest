@@ -527,6 +527,125 @@ export type Database = {
           },
         ]
       }
+      community_card_votes: {
+        Row: {
+          card_a_id: string | null
+          card_a_image: string | null
+          card_a_name: string
+          card_a_votes: number | null
+          card_a_weighted_votes: number | null
+          card_b_id: string | null
+          card_b_image: string | null
+          card_b_name: string
+          card_b_votes: number | null
+          card_b_weighted_votes: number | null
+          created_at: string
+          created_by: string | null
+          ends_at: string
+          id: string
+          status: string | null
+          vote_date: string
+          winner: string | null
+          xp_reward: number | null
+        }
+        Insert: {
+          card_a_id?: string | null
+          card_a_image?: string | null
+          card_a_name: string
+          card_a_votes?: number | null
+          card_a_weighted_votes?: number | null
+          card_b_id?: string | null
+          card_b_image?: string | null
+          card_b_name: string
+          card_b_votes?: number | null
+          card_b_weighted_votes?: number | null
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          status?: string | null
+          vote_date?: string
+          winner?: string | null
+          xp_reward?: number | null
+        }
+        Update: {
+          card_a_id?: string | null
+          card_a_image?: string | null
+          card_a_name?: string
+          card_a_votes?: number | null
+          card_a_weighted_votes?: number | null
+          card_b_id?: string | null
+          card_b_image?: string | null
+          card_b_name?: string
+          card_b_votes?: number | null
+          card_b_weighted_votes?: number | null
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string
+          id?: string
+          status?: string | null
+          vote_date?: string
+          winner?: string | null
+          xp_reward?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_card_votes_card_a_id_fkey"
+            columns: ["card_a_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_card_votes_card_b_id_fkey"
+            columns: ["card_b_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_vote_entries: {
+        Row: {
+          created_at: string
+          id: string
+          is_pro_vote: boolean | null
+          poll_id: string
+          user_id: string
+          vote_for: string
+          vote_weight: number | null
+          xp_claimed: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_pro_vote?: boolean | null
+          poll_id: string
+          user_id: string
+          vote_for: string
+          vote_weight?: number | null
+          xp_claimed?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_pro_vote?: boolean | null
+          poll_id?: string
+          user_id?: string
+          vote_for?: string
+          vote_weight?: number | null
+          xp_claimed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_vote_entries_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "community_card_votes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -4537,6 +4656,10 @@ export type Database = {
       check_idempotency: {
         Args: { p_key: string; p_request_hash: string; p_user_id: string }
         Returns: Json
+      }
+      finalize_community_poll: {
+        Args: { poll_uuid: string }
+        Returns: undefined
       }
       get_seller_rating: {
         Args: { seller_uuid: string }

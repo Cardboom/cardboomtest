@@ -19,6 +19,7 @@ import { SocialTradingPanel } from '@/components/SocialTradingPanel';
 import { SmartAlertsPanel } from '@/components/SmartAlertsPanel';
 import { ActivityAnnouncementBanner } from '@/components/ActivityAnnouncementBanner';
 import { DailyXPClaimNotification } from '@/components/DailyXPClaimNotification';
+import { DailyCardVotePopup } from '@/components/DailyCardVotePopup';
 import { GlobalTCGStats } from '@/components/GlobalTCGStats';
 import { useMarketItems, useListings } from '@/hooks/useMarketItems';
 import { LiveUpdateIndicator } from '@/components/LiveUpdateIndicator';
@@ -262,6 +263,7 @@ const Index = () => {
       {showWaitlist && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
       <ActivityAnnouncementBanner />
       {user && <DailyXPClaimNotification />}
+      {user && <DailyCardVotePopup />}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <MarketTicker />
       
