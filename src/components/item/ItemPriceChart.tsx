@@ -11,6 +11,7 @@ interface ItemPriceChartProps {
   itemName?: string;
   category?: string;
   currentPrice?: number;
+  marketItemId?: string;
 }
 
 type TimeRange = '7d' | '30d' | '90d' | '1y' | 'all';
@@ -25,7 +26,7 @@ const getDaysFromRange = (range: TimeRange) => {
   }
 };
 
-export const ItemPriceChart = ({ itemId, productId, itemName, category, currentPrice }: ItemPriceChartProps) => {
+export const ItemPriceChart = ({ itemId, productId, itemName, category, currentPrice, marketItemId }: ItemPriceChartProps) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
 
   const { data: historyData, isLoading, hasData } = usePriceHistory({
@@ -33,6 +34,7 @@ export const ItemPriceChart = ({ itemId, productId, itemName, category, currentP
     itemName,
     category,
     days: getDaysFromRange(timeRange),
+    marketItemId: marketItemId || itemId,
   });
 
   // Calculate stats from real data

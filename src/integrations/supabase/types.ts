@@ -2492,26 +2492,43 @@ export type Database = {
       price_history: {
         Row: {
           id: string
+          market_item_id: string | null
           price: number
           product_id: string
           recorded_at: string
+          sample_count: number | null
           source: string
+          volume: number | null
         }
         Insert: {
           id?: string
+          market_item_id?: string | null
           price: number
           product_id: string
           recorded_at?: string
+          sample_count?: number | null
           source?: string
+          volume?: number | null
         }
         Update: {
           id?: string
+          market_item_id?: string | null
           price?: number
           product_id?: string
           recorded_at?: string
+          sample_count?: number | null
           source?: string
+          volume?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "price_history_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       price_votes: {
         Row: {
