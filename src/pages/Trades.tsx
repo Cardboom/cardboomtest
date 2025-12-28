@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { TradeDetailDialog } from '@/components/trading/TradeDetailDialog';
 import { ProposeTradeDialog } from '@/components/trading/ProposeTradeDialog';
+import { TrustedMerchants } from '@/components/trading/TrustedMerchants';
 
 // Mock trades data
 const MOCK_TRADES = [
@@ -242,6 +243,11 @@ const Trades = () => {
             </div>
           </TabsContent>
         </Tabs>
+
+        {/* Trusted Merchants Section */}
+        <div className="mt-8">
+          <TrustedMerchants />
+        </div>
       </main>
 
       <Footer />
