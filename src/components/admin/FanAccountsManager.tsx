@@ -234,12 +234,12 @@ export function FanAccountsManager() {
           description: null,
           is_active: true,
           is_featured: false,
-          view_count: Math.floor(Math.random() * 500) + 50, // Initial engagement
-          like_count: Math.floor(Math.random() * 100) + 10,
-          comment_count: Math.floor(Math.random() * 20),
-          share_count: Math.floor(Math.random() * 10),
-          save_count: Math.floor(Math.random() * 15),
-          trending_score: Math.random() * 50,
+          view_count: 0, // Real counts - starts at 0
+          like_count: 0,
+          comment_count: 0,
+          share_count: 0,
+          save_count: 0,
+          trending_score: 0,
           hashtags: ['cardboom', 'tcg', 'collectibles'],
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
