@@ -34,27 +34,58 @@ const Blog = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Blog & News | Cardboom - TCG Investment Insights</title>
-        <meta name="description" content="Stay updated with the latest trading card market trends, investment strategies, collecting tips, and platform updates from Cardboom." />
-        <meta property="og:title" content="Blog & News | Cardboom" />
-        <meta property="og:description" content="Expert insights on TCG investing, card grading, market analysis, and more." />
-        <meta name="keywords" content="TCG blog, trading cards, pokemon cards investment, card grading guide, TCG market analysis" />
+        <title>TCG News & Card Collecting Blog | CardBoom - Trading Card Insights</title>
+        <meta name="description" content="Expert TCG news, Pokemon card investment guides, sports card market analysis, AI grading tips, and collecting strategies. Stay ahead with CardBoom's trading card insights." />
+        <meta property="og:title" content="TCG News & Card Collecting Blog | CardBoom" />
+        <meta property="og:description" content="Expert insights on Pokemon, Magic, Yu-Gi-Oh, sports cards investing, AI grading, market trends, and collecting tips." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://cardboom.com/blog" />
+        <meta property="og:image" content="https://cardboom.com/og-blog.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="TCG News & Card Collecting Blog | CardBoom" />
+        <meta name="twitter:description" content="Expert insights on Pokemon, Magic, Yu-Gi-Oh, sports cards investing, AI grading, and market trends." />
+        <meta name="keywords" content="TCG blog, trading card news, Pokemon card investment, sports card market, card grading guide, TCG market analysis, Magic the Gathering prices, Yu-Gi-Oh card values, One Piece TCG, Lorcana cards, PSA grading alternative, AI card grading, card collecting tips, trading card portfolio, card price tracker, TCG investing, vintage cards, modern cards, graded cards, card authentication" />
         <link rel="canonical" href="https://cardboom.com/blog" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Blog",
-            "name": "Cardboom Blog",
-            "description": "Expert insights on TCG investing and collecting",
+            "name": "CardBoom TCG News & Insights",
+            "description": "Expert insights on trading card investing, AI grading, market analysis, Pokemon cards, Magic the Gathering, Yu-Gi-Oh, sports cards, and collecting strategies",
             "url": "https://cardboom.com/blog",
+            "inLanguage": "en-US",
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "CardBoom",
+              "url": "https://cardboom.com"
+            },
             "publisher": {
               "@type": "Organization",
-              "name": "Cardboom",
+              "name": "CardBoom",
               "logo": {
                 "@type": "ImageObject",
                 "url": "https://cardboom.com/logo.png"
-              }
-            }
+              },
+              "sameAs": [
+                "https://twitter.com/cardboom",
+                "https://instagram.com/cardboom",
+                "https://youtube.com/cardboom"
+              ]
+            },
+            "blogPost": blogArticles.slice(0, 10).map(article => ({
+              "@type": "BlogPosting",
+              "headline": article.title,
+              "description": article.excerpt,
+              "datePublished": article.date,
+              "author": {
+                "@type": "Person",
+                "name": article.author
+              },
+              "url": `https://cardboom.com/blog/${article.slug}`,
+              "image": article.image,
+              "keywords": article.category
+            }))
           })}
         </script>
       </Helmet>

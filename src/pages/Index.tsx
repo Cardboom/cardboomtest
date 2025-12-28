@@ -37,6 +37,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { FAQSection } from '@/components/FAQSection';
+import { SEOFeaturesSection } from '@/components/SEOFeaturesSection';
 
 const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
 
@@ -274,8 +275,8 @@ const Index = () => {
         {/* Feature Showcase - Why CardBoom (only for non-logged-in users) */}
         {!user && <FeatureShowcase />}
 
-        {/* Grading CTA Section */}
-        <GradingCTA />
+        {/* Grading CTA Section (only for non-logged-in users) */}
+        {!user && <GradingCTA />}
         
         {/* Live Market Section */}
         <ScrollReveal>
@@ -440,6 +441,9 @@ const Index = () => {
           </div>
         </section>
       </main>
+
+      {/* SEO Features Section - Comprehensive feature listing for search engines */}
+      {!user && <SEOFeaturesSection />}
 
       {/* FAQ Section for non-logged-in users - Great for SEO */}
       {!user && <FAQSection />}
