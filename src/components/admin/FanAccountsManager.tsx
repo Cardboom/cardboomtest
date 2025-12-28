@@ -21,8 +21,10 @@ import {
   Heart,
   MessageCircle,
   Trash2,
-  Play
+  Play,
+  Shuffle
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { formatDistanceToNow } from 'date-fns';
 
 interface FanAccount {
@@ -67,6 +69,7 @@ export function FanAccountsManager() {
   // Batch upload form
   const [videoUrls, setVideoUrls] = useState('');
   const [videoTitles, setVideoTitles] = useState('');
+  const [distributeAcrossAccounts, setDistributeAcrossAccounts] = useState(true);
   const [uploadAccountId, setUploadAccountId] = useState<string>('');
 
   // Fetch fan accounts (accounts created by admins for engagement)
@@ -191,13 +194,8 @@ export function FanAccountsManager() {
     }
   };
 
-  // Batch upload videos to a fan account
+  // Batch upload videos - distribute across fan accounts
   const handleBatchUpload = async () => {
-    if (!uploadAccountId) {
-      toast.error('Please select an account');
-      return;
-    }
-
     const urls = videoUrls.split('\n').filter(url => url.trim());
     const titles = videoTitles.split('\n').filter(title => title.trim());
 
@@ -206,25 +204,46 @@ export function FanAccountsManager() {
       return;
     }
 
+    // Get available fan accounts for distribution
+    const availableAccounts = fanAccounts.filter(a => a.display_name || a.email);
+    
+    if (availableAccounts.length === 0) {
+      toast.error('No fan accounts available. Please create some first.');
+      return;
+    }
+
+    // If not distributing, require a selected account
+    if (!distributeAcrossAccounts && !uploadAccountId) {
+      toast.error('Please select an account or enable distribution');
+      return;
+    }
+
     setIsUploadingVideos(true);
     try {
-      const reelsToInsert = urls.map((url, index) => ({
-        user_id: uploadAccountId,
-        video_url: url.trim(),
-        title: titles[index]?.trim() || `Boom Reel #${index + 1}`,
-        description: null,
-        is_active: true,
-        is_featured: false,
-        view_count: Math.floor(Math.random() * 500) + 50, // Initial engagement
-        like_count: Math.floor(Math.random() * 100) + 10,
-        comment_count: Math.floor(Math.random() * 20),
-        share_count: Math.floor(Math.random() * 10),
-        save_count: Math.floor(Math.random() * 15),
-        trending_score: Math.random() * 50,
-        hashtags: ['cardboom', 'tcg', 'collectibles'],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }));
+      const reelsToInsert = urls.map((url, index) => {
+        // Distribute videos round-robin across accounts if enabled
+        const accountId = distributeAcrossAccounts 
+          ? availableAccounts[index % availableAccounts.length].id
+          : uploadAccountId;
+        
+        return {
+          user_id: accountId,
+          video_url: url.trim(),
+          title: titles[index]?.trim() || `Boom Reel #${index + 1}`,
+          description: null,
+          is_active: true,
+          is_featured: false,
+          view_count: Math.floor(Math.random() * 500) + 50, // Initial engagement
+          like_count: Math.floor(Math.random() * 100) + 10,
+          comment_count: Math.floor(Math.random() * 20),
+          share_count: Math.floor(Math.random() * 10),
+          save_count: Math.floor(Math.random() * 15),
+          trending_score: Math.random() * 50,
+          hashtags: ['cardboom', 'tcg', 'collectibles'],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+      });
 
       const { error } = await supabase
         .from('card_reels')
@@ -232,14 +251,18 @@ export function FanAccountsManager() {
 
       if (error) throw error;
 
-      toast.success(`Successfully uploaded ${urls.length} videos!`);
+      const accountsUsed = distributeAcrossAccounts 
+        ? Math.min(urls.length, availableAccounts.length)
+        : 1;
+      
+      toast.success(`Uploaded ${urls.length} videos across ${accountsUsed} account(s)!`);
       setShowUploadDialog(false);
       setVideoUrls('');
       setVideoTitles('');
       setUploadAccountId('');
       fetchFanAccounts();
-      if (selectedAccount === uploadAccountId) {
-        fetchAccountReels(uploadAccountId);
+      if (selectedAccount) {
+        fetchAccountReels(selectedAccount);
       }
     } catch (error) {
       console.error('Error uploading videos:', error);
@@ -352,25 +375,44 @@ export function FanAccountsManager() {
               <DialogHeader>
                 <DialogTitle>Batch Upload Videos</DialogTitle>
                 <DialogDescription>
-                  Upload multiple videos at once to a fan account
+                  Upload multiple videos - automatically distributed across fan accounts
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Select Account *</Label>
-                  <Select value={uploadAccountId} onValueChange={setUploadAccountId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose an account" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fanAccounts.map(account => (
-                        <SelectItem key={account.id} value={account.id}>
-                          {account.display_name || account.email}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Distribute toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="flex items-center gap-3">
+                    <Shuffle className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="font-medium text-sm">Distribute across all fan accounts</p>
+                      <p className="text-xs text-muted-foreground">Videos will be evenly spread across accounts</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={distributeAcrossAccounts} 
+                    onCheckedChange={setDistributeAcrossAccounts}
+                  />
                 </div>
+
+                {/* Only show account selector if not distributing */}
+                {!distributeAcrossAccounts && (
+                  <div className="space-y-2">
+                    <Label>Select Account *</Label>
+                    <Select value={uploadAccountId} onValueChange={setUploadAccountId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose an account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fanAccounts.map(account => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.display_name || account.email}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="urls">Video URLs (one per line) *</Label>
                   <Textarea

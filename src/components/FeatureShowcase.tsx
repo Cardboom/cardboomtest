@@ -41,8 +41,8 @@ const features: Feature[] = [
     title: 'AI Grading',
     tagline: 'Instant Results',
     description: 'Get AI-powered condition grades in seconds. Professional accuracy at a fraction of the cost.',
-    gradient: 'from-blue-500 to-cyan-500',
-    accentColor: 'text-blue-500',
+    gradient: 'from-[#3CBCC3] to-[#2DA8AE]',
+    accentColor: 'text-primary',
     route: '/grading',
   },
   {
