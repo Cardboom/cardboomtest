@@ -2750,6 +2750,50 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          order_id: string | null
+          rating: number
+          reviewed_user_id: string
+          reviewer_id: string
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          rating: number
+          reviewed_user_id: string
+          reviewer_id: string
+          transaction_type?: string
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          rating?: number
+          reviewed_user_id?: string
+          reviewer_id?: string
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_status: string
@@ -2770,6 +2814,7 @@ export type Database = {
           id: string
           id_document_url: string | null
           is_beta_tester: boolean | null
+          is_fan_account: boolean | null
           is_id_verified: boolean | null
           level: number | null
           national_id: string | null
@@ -2785,6 +2830,8 @@ export type Database = {
           reputation_tier: string | null
           showcase_items: string[] | null
           title: string | null
+          trust_rating: number | null
+          trust_review_count: number | null
           updated_at: string
           wire_transfer_code: string | null
           xp: number | null
@@ -2808,6 +2855,7 @@ export type Database = {
           id: string
           id_document_url?: string | null
           is_beta_tester?: boolean | null
+          is_fan_account?: boolean | null
           is_id_verified?: boolean | null
           level?: number | null
           national_id?: string | null
@@ -2823,6 +2871,8 @@ export type Database = {
           reputation_tier?: string | null
           showcase_items?: string[] | null
           title?: string | null
+          trust_rating?: number | null
+          trust_review_count?: number | null
           updated_at?: string
           wire_transfer_code?: string | null
           xp?: number | null
@@ -2846,6 +2896,7 @@ export type Database = {
           id?: string
           id_document_url?: string | null
           is_beta_tester?: boolean | null
+          is_fan_account?: boolean | null
           is_id_verified?: boolean | null
           level?: number | null
           national_id?: string | null
@@ -2861,6 +2912,8 @@ export type Database = {
           reputation_tier?: string | null
           showcase_items?: string[] | null
           title?: string | null
+          trust_rating?: number | null
+          trust_review_count?: number | null
           updated_at?: string
           wire_transfer_code?: string | null
           xp?: number | null

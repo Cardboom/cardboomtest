@@ -72,15 +72,15 @@ export function FanAccountsManager() {
   const [distributeAcrossAccounts, setDistributeAcrossAccounts] = useState(true);
   const [uploadAccountId, setUploadAccountId] = useState<string>('');
 
-  // Fetch fan accounts (accounts created by admins for engagement)
+  // Fetch fan accounts (only accounts marked as fan/bot accounts)
   const fetchFanAccounts = async () => {
     setIsLoading(true);
     try {
-      // Fetch profiles that have fan-style names or are marked specially
-      // For now, we'll fetch accounts with specific naming patterns or all for selection
+      // Only fetch accounts marked as fan accounts (bot accounts for engagement)
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, display_name, avatar_url, email, account_type, created_at')
+        .eq('is_fan_account', true)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -165,7 +165,7 @@ export function FanAccountsManager() {
       // Generate a unique ID for the fan account
       const fanId = crypto.randomUUID();
       
-      // Create the profile directly (without auth user)
+      // Create the profile directly (without auth user) - mark as fan account
       const { error } = await supabase
         .from('profiles')
         .insert({
@@ -174,6 +174,7 @@ export function FanAccountsManager() {
           email: newAccountEmail,
           bio: newAccountBio,
           account_type: 'buyer', // Default type
+          is_fan_account: true, // Mark as bot/fan account
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });

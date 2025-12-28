@@ -9,13 +9,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   TrendingUp, TrendingDown, Trophy, Star, Share2, Copy,
-  Loader2, ExternalLink, Twitter, Instagram, MessageCircle
+  Loader2, ExternalLink, Twitter, Instagram, MessageCircle, Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { FollowButton } from '@/components/FollowButton';
+import { ProfileTrustReviews } from '@/components/profile/ProfileTrustReviews';
 
 const PublicProfile = () => {
   const { username } = useParams();
@@ -262,6 +263,12 @@ const PublicProfile = () => {
                   Level {profile.level || 1}
                 </span>
                 <span>{followerCount} followers</span>
+                {(profile.trust_review_count || 0) > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Shield className="w-4 h-4 text-primary" />
+                    {(profile.trust_rating || 0).toFixed(1)} trust ({profile.trust_review_count} reviews)
+                  </span>
+                )}
               </div>
             </div>
 
@@ -370,6 +377,16 @@ const PublicProfile = () => {
             </div>
           </div>
         )}
+
+        {/* Trust & Reviews Section */}
+        <div className="mb-8">
+          <ProfileTrustReviews
+            profileId={profile.id}
+            trustRating={profile.trust_rating || 0}
+            reviewCount={profile.trust_review_count || 0}
+            currentUserId={currentUser?.id}
+          />
+        </div>
 
         {/* CTA for non-users */}
         {!currentUser && (
