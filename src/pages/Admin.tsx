@@ -63,6 +63,7 @@ import { PromoManager } from '@/components/admin/PromoManager';
 import { NotificationSender } from '@/components/admin/NotificationSender';
 import { FeaturedManager } from '@/components/admin/FeaturedManager';
 import { MarketControlPanel } from '@/components/admin/MarketControlPanel';
+import { CurrencyRatesManager } from '@/components/admin/CurrencyRatesManager';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -331,6 +332,10 @@ const Admin = () => {
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
               Prices
+            </TabsTrigger>
+            <TabsTrigger value="currency" className="gap-2">
+              <DollarSign className="w-4 h-4" />
+              Currency
             </TabsTrigger>
           </TabsList>
 
@@ -703,6 +708,10 @@ const Admin = () => {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="currency">
+            <CurrencyRatesManager />
           </TabsContent>
         </Tabs>
       </main>

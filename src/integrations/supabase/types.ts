@@ -1182,6 +1182,42 @@ export type Database = {
           },
         ]
       }
+      currency_rates: {
+        Row: {
+          api_rate: number | null
+          from_currency: string
+          id: string
+          is_manual_override: boolean | null
+          last_api_update: string | null
+          rate: number
+          to_currency: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          api_rate?: number | null
+          from_currency: string
+          id?: string
+          is_manual_override?: boolean | null
+          last_api_update?: string | null
+          rate: number
+          to_currency: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          api_rate?: number | null
+          from_currency?: string
+          id?: string
+          is_manual_override?: boolean | null
+          last_api_update?: string | null
+          rate?: number
+          to_currency?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       daily_logins: {
         Row: {
           created_at: string
