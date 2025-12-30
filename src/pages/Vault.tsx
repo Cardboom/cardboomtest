@@ -4,12 +4,29 @@ import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Vault as VaultIcon, Package, TrendingUp, ExternalLink, Plus, Send } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Vault as VaultIcon, 
+  Package, 
+  TrendingUp, 
+  ExternalLink, 
+  Send, 
+  Shield, 
+  Clock, 
+  CheckCircle, 
+  Truck,
+  Sparkles,
+  Lock,
+  BarChart3
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { toast } from 'sonner';
 import { SendToVaultDialog } from '@/components/SendToVaultDialog';
+import { motion } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
 
 interface VaultItem {
   id: string;
@@ -19,16 +36,26 @@ interface VaultItem {
   condition: string;
   image_url: string;
   estimated_value: number;
+  status: string;
   created_at: string;
+  verified_at: string | null;
 }
+
+const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  pending_shipment: { label: 'Awaiting Shipment', color: 'bg-amber-500/10 text-amber-500', icon: <Clock className="w-3 h-3" /> },
+  shipped: { label: 'In Transit', color: 'bg-blue-500/10 text-blue-500', icon: <Truck className="w-3 h-3" /> },
+  received: { label: 'Received', color: 'bg-purple-500/10 text-purple-500', icon: <Package className="w-3 h-3" /> },
+  verified: { label: 'Verified & Stored', color: 'bg-emerald-500/10 text-emerald-500', icon: <CheckCircle className="w-3 h-3" /> },
+};
 
 const VaultPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const [items, setItems] = useState<VaultItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [totalValue, setTotalValue] = useState(0);
   const [sendToVaultOpen, setSendToVaultOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('all');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -50,10 +77,7 @@ const VaultPage = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
       setItems(data || []);
-      const total = (data || []).reduce((sum, item) => sum + (Number(item.estimated_value) || 0), 0);
-      setTotalValue(total);
     } catch (error) {
       console.error('Error fetching vault items:', error);
       toast.error('Failed to load vault items');
@@ -62,17 +86,20 @@ const VaultPage = () => {
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const totalValue = items.reduce((sum, item) => sum + (Number(item.estimated_value) || 0), 0);
+  const verifiedItems = items.filter(i => i.status === 'verified');
+  const pendingItems = items.filter(i => i.status !== 'verified');
+
+  const filteredItems = activeTab === 'all' ? items : 
+    activeTab === 'verified' ? verifiedItems : pendingItems;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="flex flex-col items-center gap-4">
+          <VaultIcon className="w-12 h-12 text-primary animate-pulse" />
+          <p className="text-muted-foreground">Loading your vault...</p>
+        </div>
       </div>
     );
   }
@@ -82,118 +109,297 @@ const VaultPage = () => {
       <Header cartCount={0} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-                My Vault
-              </h1>
-              <p className="text-muted-foreground">
-                Your securely stored collectibles
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button onClick={() => setSendToVaultOpen(true)} className="gap-2">
-                <Send className="h-4 w-4" />
-                Send to Vault
-              </Button>
-              <Card className="px-6 py-4 bg-gradient-to-br from-gold/10 to-gold/5 border-gold/20">
-                <div className="flex items-center gap-4">
-                  <TrendingUp className="h-8 w-8 text-gold" />
+        <div className="max-w-7xl mx-auto">
+          {/* Hero Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-primary/10 to-background border border-primary/20 p-8 md:p-12 mb-8"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+            <div className="absolute top-4 right-4 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-4 left-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 rounded-2xl bg-primary/20 border border-primary/30">
+                    <VaultIcon className="w-8 h-8 text-primary" />
+                  </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Value</p>
-                    <p className="text-2xl font-display font-bold text-foreground">
-                      {formatCurrency(totalValue)}
+                    <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
+                      My Vault
+                    </h1>
+                    <p className="text-muted-foreground">
+                      Secure storage for your collectibles
                     </p>
                   </div>
                 </div>
-              </Card>
+                
+                <div className="flex flex-wrap gap-3">
+                  <Badge variant="outline" className="gap-1.5 px-3 py-1.5 bg-background/50">
+                    <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                    Fully Insured
+                  </Badge>
+                  <Badge variant="outline" className="gap-1.5 px-3 py-1.5 bg-background/50">
+                    <Lock className="w-3.5 h-3.5 text-primary" />
+                    Bank-Grade Security
+                  </Badge>
+                  <Badge variant="outline" className="gap-1.5 px-3 py-1.5 bg-background/50">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    Free Storage
+                  </Badge>
+                </div>
+              </div>
+
+              <Button 
+                size="lg" 
+                onClick={() => setSendToVaultOpen(true)} 
+                className="gap-2 shadow-lg shadow-primary/20"
+              >
+                <Send className="h-4 w-4" />
+                Send to Vault
+              </Button>
             </div>
+          </motion.div>
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-primary/20">
+                      <TrendingUp className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Value</p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {formatPrice(totalValue)}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <Card className="bg-card/50 border-border/50">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-muted">
+                      <Package className="w-5 h-5 text-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Items</p>
+                      <p className="text-2xl font-bold text-foreground">{items.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="bg-emerald-500/5 border-emerald-500/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/20">
+                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Verified</p>
+                      <p className="text-2xl font-bold text-foreground">{verifiedItems.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+            >
+              <Card className="bg-amber-500/5 border-amber-500/20">
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-amber-500/20">
+                      <Clock className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Pending</p>
+                      <p className="text-2xl font-bold text-foreground">{pendingItems.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           </div>
 
-          {/* Vault Items Grid */}
-          {items.length === 0 ? (
-            <Card className="p-12 text-center">
-              <VaultIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-              <h2 className="text-xl font-semibold text-foreground mb-2">
-                Your vault is empty
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Send your own cards to our warehouse or buy cards and choose vault storage.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Button onClick={() => setSendToVaultOpen(true)} variant="outline" className="gap-2">
-                  <Send className="h-4 w-4" />
-                  Send Your Cards
-                </Button>
-                <Button onClick={() => navigate('/')}>
-                  Browse Marketplace
-                </Button>
-              </div>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {items.map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:border-primary/50 transition-colors">
-                  <div className="aspect-[3/4] bg-muted relative">
-                    {item.image_url ? (
-                      <img
-                        src={item.image_url}
-                        alt={item.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Package className="h-12 w-12 text-muted-foreground/50" />
-                      </div>
-                    )}
-                    <Badge className="absolute top-2 right-2 bg-gold text-gold-foreground">
-                      In Vault
-                    </Badge>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-foreground line-clamp-2 mb-1">
-                      {item.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                      <span>{item.category}</span>
-                      <span>•</span>
-                      <span>{item.condition}</span>
-                    </div>
-                    {item.estimated_value && (
-                      <p className="text-lg font-bold text-foreground">
-                        {formatCurrency(item.estimated_value)}
-                      </p>
-                    )}
-                    <div className="flex gap-2 mt-4">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        List for Sale
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+          {/* Tabs & Items */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="bg-muted/50">
+              <TabsTrigger value="all" className="gap-2">
+                <Package className="w-4 h-4" />
+                All Items ({items.length})
+              </TabsTrigger>
+              <TabsTrigger value="verified" className="gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Verified ({verifiedItems.length})
+              </TabsTrigger>
+              <TabsTrigger value="pending" className="gap-2">
+                <Clock className="w-4 h-4" />
+                Pending ({pendingItems.length})
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Info Section */}
-          <Card className="mt-8 p-6 bg-muted/30">
-            <div className="flex items-start gap-4">
-              <VaultIcon className="h-8 w-8 text-primary shrink-0" />
-              <div>
-                <h3 className="font-semibold text-foreground mb-1">Free Vault Storage</h3>
+            <TabsContent value={activeTab}>
+              {filteredItems.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                >
+                  <Card className="p-12 text-center border-dashed">
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
+                      <VaultIcon className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-foreground mb-2">
+                      {activeTab === 'all' ? 'Your vault is empty' : `No ${activeTab} items`}
+                    </h2>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Send your collectibles to our secure warehouse for free storage, authentication, and easy selling.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <Button onClick={() => setSendToVaultOpen(true)} variant="outline" className="gap-2">
+                        <Send className="h-4 w-4" />
+                        Send Your Cards
+                      </Button>
+                      <Button onClick={() => navigate('/')}>
+                        Browse Marketplace
+                      </Button>
+                    </div>
+                  </Card>
+                </motion.div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {filteredItems.map((item, index) => {
+                    const status = statusConfig[item.status] || statusConfig.pending_shipment;
+                    return (
+                      <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <Card className="group overflow-hidden hover:border-primary/50 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
+                          <div className="aspect-[3/4] bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
+                            {item.image_url ? (
+                              <img
+                                src={item.image_url}
+                                alt={item.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Package className="h-16 w-16 text-muted-foreground/30" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Badge className={`absolute top-3 right-3 gap-1 ${status.color}`}>
+                              {status.icon}
+                              {status.label}
+                            </Badge>
+                          </div>
+                          <CardContent className="p-4">
+                            <h3 className="font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+                              {item.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                              <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                              <span>•</span>
+                              <span>{item.condition}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <p className="text-lg font-bold text-foreground">
+                                {formatPrice(item.estimated_value || 0)}
+                              </p>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                              </span>
+                            </div>
+                            <div className="flex gap-2 mt-4">
+                              <Button variant="default" size="sm" className="flex-1">
+                                List for Sale
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <BarChart3 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Features Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 grid md:grid-cols-3 gap-6"
+          >
+            <Card className="bg-gradient-to-br from-emerald-500/5 to-emerald-500/0 border-emerald-500/20">
+              <CardContent className="p-6">
+                <div className="p-3 rounded-xl bg-emerald-500/10 w-fit mb-4">
+                  <Shield className="w-6 h-6 text-emerald-500" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Fully Insured</h3>
                 <p className="text-sm text-muted-foreground">
-                  All vault storage is completely free. Your cards are securely stored, insured, 
-                  and can be listed for sale or shipped to you at any time. We handle authentication 
-                  and grading verification.
+                  Every item in your vault is insured for its full market value against damage, loss, or theft.
                 </p>
-              </div>
-            </div>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-primary/5 to-primary/0 border-primary/20">
+              <CardContent className="p-6">
+                <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4">
+                  <CheckCircle className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Expert Verification</h3>
+                <p className="text-sm text-muted-foreground">
+                  Our team authenticates and grades every item, adding trust badges to boost your sales.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-amber-500/5 to-amber-500/0 border-amber-500/20">
+              <CardContent className="p-6">
+                <div className="p-3 rounded-xl bg-amber-500/10 w-fit mb-4">
+                  <Sparkles className="w-6 h-6 text-amber-500" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">Instant Listings</h3>
+                <p className="text-sm text-muted-foreground">
+                  List your vault items for sale with one click. We handle photos, shipping, and buyer protection.
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </main>
 

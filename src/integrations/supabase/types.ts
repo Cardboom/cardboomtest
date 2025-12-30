@@ -4677,6 +4677,7 @@ export type Database = {
       }
       vault_items: {
         Row: {
+          admin_notes: string | null
           category: string
           condition: string
           created_at: string
@@ -4687,9 +4688,15 @@ export type Database = {
           listing_id: string | null
           order_id: string | null
           owner_id: string
+          received_at: string | null
+          shipped_at: string | null
+          status: string | null
           title: string
+          tracking_number: string | null
+          verified_at: string | null
         }
         Insert: {
+          admin_notes?: string | null
           category: string
           condition: string
           created_at?: string
@@ -4700,9 +4707,15 @@ export type Database = {
           listing_id?: string | null
           order_id?: string | null
           owner_id: string
+          received_at?: string | null
+          shipped_at?: string | null
+          status?: string | null
           title: string
+          tracking_number?: string | null
+          verified_at?: string | null
         }
         Update: {
+          admin_notes?: string | null
           category?: string
           condition?: string
           created_at?: string
@@ -4713,7 +4726,12 @@ export type Database = {
           listing_id?: string | null
           order_id?: string | null
           owner_id?: string
+          received_at?: string | null
+          shipped_at?: string | null
+          status?: string | null
           title?: string
+          tracking_number?: string | null
+          verified_at?: string | null
         }
         Relationships: [
           {
