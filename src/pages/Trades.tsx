@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { TradeDetailDialog } from '@/components/trading/TradeDetailDialog';
 import { ProposeTradeDialog } from '@/components/trading/ProposeTradeDialog';
 import { TrustedMerchants } from '@/components/trading/TrustedMerchants';
+import { TradeMatchFinder } from '@/components/trading/TradeMatchFinder';
 
 // Mock trades data
 const MOCK_TRADES = [
@@ -75,7 +76,7 @@ const Trades = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [user, setUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('active');
+  const [activeTab, setActiveTab] = useState('matches');
   const [selectedTrade, setSelectedTrade] = useState<string | null>(null);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
 
@@ -141,6 +142,9 @@ const Trades = () => {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-secondary/50 p-1 rounded-xl mb-4">
+            <TabsTrigger value="matches" className="rounded-lg">
+              Find Matches
+            </TabsTrigger>
             <TabsTrigger value="active" className="rounded-lg">
               Active ({activeTrades.length})
             </TabsTrigger>
@@ -148,6 +152,10 @@ const Trades = () => {
               Completed ({completedTrades.length})
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="matches">
+            <TradeMatchFinder />
+          </TabsContent>
 
           <TabsContent value="active">
             <div className="space-y-4">

@@ -23,6 +23,7 @@ import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
 import { useCardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { BulkImportDialog } from '@/components/seller/BulkImportDialog';
+import { SmartPriceSuggestion } from '@/components/listing/SmartPriceSuggestion';
 interface Listing {
   id: string;
   title: string;
@@ -608,13 +609,20 @@ const SellPage = () => {
                             className="pl-7"
                           />
                         </div>
-                        {/* Average Price Indicator */}
-                        <div className="mt-2 p-2 rounded-lg bg-muted/50 border border-border/50">
-                          <p className="text-xs text-muted-foreground">
-                            💡 <span className="font-medium">Pricing Tip:</span> Use the Card Scanner to see market average prices before setting your price.
-                          </p>
-                        </div>
                       </div>
+
+                      {/* Smart Price Suggestions */}
+                      {formData.title.length >= 3 && (
+                        <div className="sm:col-span-2">
+                          <SmartPriceSuggestion
+                            itemName={formData.title}
+                            category={formData.category}
+                            condition={formData.condition}
+                            currentPrice={formData.price ? parseFloat(formData.price) : undefined}
+                            onPriceSelect={(price) => setFormData({ ...formData, price: price.toFixed(2) })}
+                          />
+                        </div>
+                      )}
 
                       <div className="sm:col-span-2">
                         <Label htmlFor="description">Description</Label>
