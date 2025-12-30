@@ -14,11 +14,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info, Zap, DollarSign } from 'lucide-react';
+import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info, Zap, DollarSign, Sparkles, Camera } from 'lucide-react';
 import { CardScanner } from '@/components/CardScanner';
+import { CardPricingIntelligence } from '@/components/CardPricingIntelligence';
 import { toast } from 'sonner';
 import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
 import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
+import { useCardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface Listing {
@@ -42,7 +44,9 @@ const conditions = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Fair', 'Poor'];
 const SellPage = () => {
   const navigate = useNavigate();
   const { checkListingAchievements } = useAchievementTriggers();
+  const { analysis, isAnalyzing, analyzeImage, clearAnalysis } = useCardAnalysis();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [userId, setUserId] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -82,6 +86,7 @@ const SellPage = () => {
         navigate('/auth');
         return;
       }
+      setUserId(session.user.id);
       fetchListings();
     };
     checkAuth();
@@ -107,7 +112,7 @@ const SellPage = () => {
     }
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -118,8 +123,22 @@ const SellPage = () => {
 
     setImageFile(file);
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
+    reader.onloadend = async () => {
+      const base64 = reader.result as string;
+      setImagePreview(base64);
+      
+      // Trigger AI analysis
+      const result = await analyzeImage(base64);
+      
+      // Auto-fill form if card was detected
+      if (result?.detected) {
+        setFormData(prev => ({
+          ...prev,
+          title: result.cardName || prev.title,
+          category: result.category || prev.category,
+          condition: result.estimatedCondition || prev.condition,
+        }));
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -127,6 +146,7 @@ const SellPage = () => {
   const clearImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    clearAnalysis();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -650,6 +670,25 @@ const SellPage = () => {
                           )}
                         </div>
                       </div>
+
+                      {/* AI Pricing Intelligence */}
+                      {(imagePreview || isAnalyzing) && (
+                        <div className="sm:col-span-2">
+                          <CardPricingIntelligence
+                            analysis={analysis}
+                            isLoading={isAnalyzing}
+                            userId={userId}
+                            onAutoList={(price) => {
+                              setFormData(prev => ({ ...prev, price: price.toString() }));
+                              toast.success(`Price set to $${price.toFixed(2)}`);
+                            }}
+                            onApplyPrice={(price) => {
+                              setFormData(prev => ({ ...prev, price: price.toString() }));
+                              toast.success(`Price applied: $${price.toFixed(2)}`);
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* Delivery Options */}

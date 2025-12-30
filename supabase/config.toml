@@ -68,3 +68,6 @@ verify_jwt = false
 
 [functions.sitemap]
 verify_jwt = false
+
+[functions.analyze-card]
+verify_jwt = false
