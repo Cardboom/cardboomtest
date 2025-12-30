@@ -57,11 +57,11 @@ serve(async (req) => {
 
     const { action, orderId, status } = await req.json();
 
-    if (action === 'list') {
-      // List all orders with user info
+  if (action === 'list') {
+      // List all orders
       const { data: orders, error } = await supabase
         .from('grading_orders')
-        .select('*, profiles:user_id(display_name, email)')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -71,8 +71,22 @@ serve(async (req) => {
         );
       }
 
+      // Get unique user IDs and fetch profiles
+      const userIds = [...new Set(orders?.map(o => o.user_id) || [])];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, display_name, email')
+        .in('id', userIds);
+
+      // Map profiles to orders
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+      const ordersWithProfiles = orders?.map(order => ({
+        ...order,
+        profiles: profileMap.get(order.user_id) || null
+      })) || [];
+
       return new Response(
-        JSON.stringify({ orders }),
+        JSON.stringify({ orders: ordersWithProfiles }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
