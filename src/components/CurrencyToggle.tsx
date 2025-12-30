@@ -7,11 +7,11 @@ export const CurrencyToggle = () => {
   return (
     <Button
       variant="ghost"
-      size="sm"
+      size="icon"
       onClick={() => setCurrency(currency === 'TRY' ? 'USD' : 'TRY')}
-      className="text-muted-foreground hover:text-foreground font-medium px-2"
+      className="text-muted-foreground hover:text-foreground font-bold h-8 w-8"
     >
-      {currency === 'TRY' ? '₺ TRY' : '$ USD'}
+      {currency === 'TRY' ? '₺' : '$'}
     </Button>
   );
 };

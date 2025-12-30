@@ -369,6 +369,14 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <Gamepad2 className="w-3.5 h-3.5" />
               {t.nav.gaming}
             </Link>
+            
+            <Link 
+              to="/vault" 
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+            >
+              <Vault className="w-3.5 h-3.5" />
+              {t.nav.myVault}
+            </Link>
           </nav>
           
           {/* Sell Button - Compact */}
