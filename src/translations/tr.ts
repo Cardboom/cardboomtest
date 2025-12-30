@@ -20,7 +20,7 @@ export const tr: Translations = {
     gaming: "Oyun",
     wallet: "Cüzdan",
     myProfile: "Profilim",
-    myVault: "Kasa",
+    myVault: "Kasam",
     myListings: "İlanlarım",
     referrals: "Davetler & XP",
     verifiedSeller: "Onaylı Satıcı",

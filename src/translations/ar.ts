@@ -20,7 +20,7 @@ export const ar: Translations = {
     gaming: "الألعاب",
     wallet: "المحفظة المالية",
     myProfile: "ملفي الشخصي",
-    myVault: "خزنة",
+    myVault: "خزنتي",
     myListings: "إعلاناتي",
     referrals: "الإحالات و XP",
     verifiedSeller: "بائع موثق",

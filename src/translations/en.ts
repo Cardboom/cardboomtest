@@ -19,7 +19,7 @@ export const en = {
     gaming: "Gaming",
     wallet: "Wallet",
     myProfile: "My Profile",
-    myVault: "Vault",
+    myVault: "My Vault",
     myListings: "My Listings",
     referrals: "Referrals & XP",
     verifiedSeller: "Verified Seller",

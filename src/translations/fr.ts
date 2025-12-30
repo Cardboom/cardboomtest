@@ -20,7 +20,7 @@ export const fr: Translations = {
     gaming: "Jeux",
     wallet: "Portefeuille",
     myProfile: "Mon Profil",
-    myVault: "Coffre",
+    myVault: "Mon Coffre",
     myListings: "Mes Annonces",
     referrals: "Parrainages & XP",
     verifiedSeller: "Vendeur Vérifié",
