@@ -634,7 +634,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     </Link>
                     <Link to="/vault" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                       <Vault className="w-5 h-5 text-muted-foreground" />
-                      <span>My Vault</span>
+                      <span>{t.nav.myVault}</span>
                     </Link>
                     <Link to="/messages" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                       <MessageCircle className="w-5 h-5 text-muted-foreground" />
