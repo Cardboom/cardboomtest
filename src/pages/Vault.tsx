@@ -128,7 +128,7 @@ const VaultPage = () => {
                   </div>
                   <div>
                     <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-                      My Vault
+                      Vault
                     </h1>
                     <p className="text-muted-foreground">
                       Secure storage for your collectibles
