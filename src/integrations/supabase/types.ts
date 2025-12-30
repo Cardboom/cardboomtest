@@ -59,6 +59,48 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notifications: {
+        Row: {
+          body: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_sent: boolean | null
+          scheduled_at: string | null
+          sent_at: string | null
+          sent_count: number | null
+          target_audience: string
+          target_user_ids: string[] | null
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_sent?: boolean | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          target_audience?: string
+          target_user_ids?: string[] | null
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_sent?: boolean | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          target_audience?: string
+          target_user_ids?: string[] | null
+          title?: string
+        }
+        Relationships: []
+      }
       api_request_logs: {
         Row: {
           api_key: string
@@ -1499,6 +1541,63 @@ export type Database = {
           },
         ]
       }
+      featured_items: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          feature_type: string
+          featured_until: string | null
+          id: string
+          is_active: boolean | null
+          is_sponsored: boolean | null
+          listing_id: string | null
+          market_item_id: string | null
+          position: number | null
+          sponsor_fee: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          feature_type?: string
+          featured_until?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_sponsored?: boolean | null
+          listing_id?: string | null
+          market_item_id?: string | null
+          position?: number | null
+          sponsor_fee?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          feature_type?: string
+          featured_until?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_sponsored?: boolean | null
+          listing_id?: string | null
+          market_item_id?: string | null
+          position?: number | null
+          sponsor_fee?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "featured_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "featured_items_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -2000,6 +2099,53 @@ export type Database = {
           },
         ]
       }
+      listing_reports: {
+        Row: {
+          action_taken: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          listing_id: string
+          report_type: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+        }
+        Insert: {
+          action_taken?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          listing_id: string
+          report_type: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Update: {
+          action_taken?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          listing_id?: string
+          report_type?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           allows_shipping: boolean
@@ -2482,6 +2628,68 @@ export type Database = {
             columns: ["parent_offer_id"]
             isOneToOne: false
             referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_disputes: {
+        Row: {
+          created_at: string | null
+          description: string
+          dispute_type: string
+          evidence_urls: string[] | null
+          id: string
+          opened_by: string
+          order_id: string
+          refund_amount: number | null
+          resolved_at: string | null
+          resolved_by: string | null
+          ruling: string | null
+          seller_evidence_urls: string[] | null
+          seller_response: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          dispute_type: string
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by: string
+          order_id: string
+          refund_amount?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          ruling?: string | null
+          seller_evidence_urls?: string[] | null
+          seller_response?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          dispute_type?: string
+          evidence_urls?: string[] | null
+          id?: string
+          opened_by?: string
+          order_id?: string
+          refund_amount?: number | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          ruling?: string | null
+          seller_evidence_urls?: string[] | null
+          seller_response?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_disputes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -3090,6 +3298,105 @@ export type Database = {
           updated_at?: string
           wire_transfer_code?: string | null
           xp?: number | null
+        }
+        Relationships: []
+      }
+      promo_code_uses: {
+        Row: {
+          created_at: string | null
+          discount_applied: number
+          id: string
+          order_id: string | null
+          promo_code_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          discount_applied: number
+          id?: string
+          order_id?: string | null
+          promo_code_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          discount_applied?: number
+          id?: string
+          order_id?: string | null
+          promo_code_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_uses_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_code_uses_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          category_restriction: string | null
+          code: string
+          created_at: string | null
+          created_by: string | null
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_discount_amount: number | null
+          min_order_amount: number | null
+          per_user_limit: number | null
+          starts_at: string | null
+          updated_at: string | null
+          usage_limit: number | null
+          used_count: number | null
+        }
+        Insert: {
+          category_restriction?: string | null
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          discount_type: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          min_order_amount?: number | null
+          per_user_limit?: number | null
+          starts_at?: string | null
+          updated_at?: string | null
+          usage_limit?: number | null
+          used_count?: number | null
+        }
+        Update: {
+          category_restriction?: string | null
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          min_order_amount?: number | null
+          per_user_limit?: number | null
+          starts_at?: string | null
+          updated_at?: string | null
+          usage_limit?: number | null
+          used_count?: number | null
         }
         Relationships: []
       }
@@ -3811,6 +4118,63 @@ export type Database = {
           type?: Database["public"]["Enums"]["reward_type"]
           value_amount?: number | null
           xp_cost?: number
+        }
+        Relationships: []
+      }
+      seller_verifications: {
+        Row: {
+          address_proof_url: string | null
+          admin_notes: string | null
+          business_document_url: string | null
+          business_name: string | null
+          business_type: string | null
+          created_at: string | null
+          id: string
+          id_document_url: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_url: string | null
+          status: string
+          submitted_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address_proof_url?: string | null
+          admin_notes?: string | null
+          business_document_url?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          created_at?: string | null
+          id?: string
+          id_document_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address_proof_url?: string | null
+          admin_notes?: string | null
+          business_document_url?: string | null
+          business_name?: string | null
+          business_type?: string | null
+          created_at?: string | null
+          id?: string
+          id_document_url?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string | null
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
