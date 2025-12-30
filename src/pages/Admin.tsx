@@ -64,6 +64,7 @@ import { NotificationSender } from '@/components/admin/NotificationSender';
 import { FeaturedManager } from '@/components/admin/FeaturedManager';
 import { MarketControlPanel } from '@/components/admin/MarketControlPanel';
 import { CurrencyRatesManager } from '@/components/admin/CurrencyRatesManager';
+import { VaultManagement } from '@/components/admin/VaultManagement';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -336,6 +337,10 @@ const Admin = () => {
             <TabsTrigger value="currency" className="gap-2">
               <DollarSign className="w-4 h-4" />
               Currency
+            </TabsTrigger>
+            <TabsTrigger value="vault" className="gap-2">
+              <Package className="w-4 h-4" />
+              Vault
             </TabsTrigger>
           </TabsList>
 
@@ -712,6 +717,10 @@ const Admin = () => {
 
           <TabsContent value="currency">
             <CurrencyRatesManager />
+          </TabsContent>
+
+          <TabsContent value="vault">
+            <VaultManagement />
           </TabsContent>
         </Tabs>
       </main>
