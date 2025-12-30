@@ -61,13 +61,15 @@ export const SellerVerificationQueue = () => {
           .select('id, display_name, email, avatar_url, created_at')
           .in('id', userIds);
 
+        const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
         return data.map(v => ({
           ...v,
-          profile: profiles?.find(p => p.id === v.user_id)
-        }));
+          profile: profileMap.get(v.user_id) || null
+        })) as Array<typeof data[0] & { profile: { id: string; display_name: string | null; email: string | null; avatar_url: string | null; created_at: string } | null }>;
       }
 
-      return data || [];
+      return (data || []).map(v => ({ ...v, profile: null }));
     }
   });
 
