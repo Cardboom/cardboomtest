@@ -66,6 +66,7 @@ import { MarketControlPanel } from '@/components/admin/MarketControlPanel';
 import { CurrencyRatesManager } from '@/components/admin/CurrencyRatesManager';
 import { VaultManagement } from '@/components/admin/VaultManagement';
 import { EmailManager } from '@/components/admin/EmailManager';
+import { ConversionDashboard } from '@/components/analytics/ConversionDashboard';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -346,6 +347,10 @@ const Admin = () => {
             <TabsTrigger value="email" className="gap-2">
               <Bell className="w-4 h-4" />
               Email
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Analytics
             </TabsTrigger>
           </TabsList>
 
@@ -730,6 +735,10 @@ const Admin = () => {
 
           <TabsContent value="email">
             <EmailManager />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <ConversionDashboard />
           </TabsContent>
         </Tabs>
       </main>

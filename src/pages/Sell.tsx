@@ -22,7 +22,7 @@ import { CreateFractionalDialog } from '@/components/fractional/CreateFractional
 import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
 import { useCardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-
+import { BulkImportDialog } from '@/components/seller/BulkImportDialog';
 interface Listing {
   id: string;
   title: string;
@@ -893,6 +893,12 @@ const SellPage = () => {
             </TabsContent>
 
             <TabsContent value="listings">
+              {/* Bulk Import Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Your Listings</h3>
+                <BulkImportDialog onImportComplete={fetchListings} />
+              </div>
+
               {listings.length === 0 ? (
                 <Card className="p-12 text-center">
                   <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
@@ -900,12 +906,15 @@ const SellPage = () => {
                     No listings yet
                   </h2>
                   <p className="text-muted-foreground mb-6">
-                    Create your first listing to start selling.
+                    Create your first listing or use bulk import to add multiple cards at once.
                   </p>
-                  <Button onClick={() => setActiveTab('create')}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Listing
-                  </Button>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <Button onClick={() => setActiveTab('create')}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Listing
+                    </Button>
+                    <BulkImportDialog onImportComplete={fetchListings} />
+                  </div>
                 </Card>
               ) : (
                 <div className="space-y-4">
