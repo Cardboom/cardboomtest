@@ -1527,6 +1527,114 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string | null
+          email: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          resend_id: string | null
+          status: string | null
+          subject: string
+          template_key: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          resend_id?: string | null
+          status?: string | null
+          subject: string
+          template_key: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          resend_id?: string | null
+          status?: string | null
+          subject?: string
+          template_key?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      email_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          marketing_emails: boolean | null
+          order_updates: boolean | null
+          price_alerts: boolean | null
+          sold_notifications: boolean | null
+          updated_at: string | null
+          user_id: string
+          weekly_digest: boolean | null
+          welcome_emails: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          marketing_emails?: boolean | null
+          order_updates?: boolean | null
+          price_alerts?: boolean | null
+          sold_notifications?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          weekly_digest?: boolean | null
+          welcome_emails?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          marketing_emails?: boolean | null
+          order_updates?: boolean | null
+          price_alerts?: boolean | null
+          sold_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_digest?: boolean | null
+          welcome_emails?: boolean | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          created_at: string | null
+          html_content: string
+          id: string
+          is_active: boolean | null
+          subject: string
+          template_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          html_content: string
+          id?: string
+          is_active?: boolean | null
+          subject: string
+          template_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean | null
+          subject?: string
+          template_key?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       external_liquidity_signals: {
         Row: {
           avg_price: number | null
