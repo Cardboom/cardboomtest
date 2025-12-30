@@ -89,8 +89,11 @@ const handler = async (req: Request): Promise<Response> => {
     const htmlContent = replaceVariables(template.html_content, variables);
 
     // Send email via Resend
+    // Use resend.dev for testing until cardboom.com domain is verified
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "CardBoom <onboarding@resend.dev>";
+    
     const emailResponse = await resend.emails.send({
-      from: "CardBoom <noreply@cardboom.com>",
+      from: fromEmail,
       to: [to],
       subject: subject,
       html: htmlContent,
