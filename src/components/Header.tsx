@@ -353,13 +353,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               {t.nav.grading}
             </Link>
             
-            {/* Card Wars Link */}
+            {/* Creators Link */}
             <Link 
-              to="/#card-wars" 
+              to="/creators" 
               className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
-              <Swords className="w-3.5 h-3.5" />
-              Card Wars
+              <Mic className="w-3.5 h-3.5" />
+              Creators
             </Link>
             
             <Link 
