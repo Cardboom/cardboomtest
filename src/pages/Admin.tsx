@@ -31,7 +31,15 @@ import {
   HelpCircle,
   Bot,
   Bug,
-  Video
+  Video,
+  DollarSign,
+  Package,
+  Shield,
+  Flag,
+  Gift,
+  Bell,
+  Star,
+  AlertTriangle
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
@@ -47,6 +55,14 @@ import { GradingManagement } from '@/components/admin/GradingManagement';
 import { CardWarsManager } from '@/components/admin/CardWarsManager';
 import { CommunityVotesManager } from '@/components/admin/CommunityVotesManager';
 import { FanAccountsManager } from '@/components/admin/FanAccountsManager';
+import { RevenueDashboard } from '@/components/admin/RevenueDashboard';
+import { OrderManagement } from '@/components/admin/OrderManagement';
+import { SellerVerificationQueue } from '@/components/admin/SellerVerificationQueue';
+import { ListingModeration } from '@/components/admin/ListingModeration';
+import { PromoManager } from '@/components/admin/PromoManager';
+import { NotificationSender } from '@/components/admin/NotificationSender';
+import { FeaturedManager } from '@/components/admin/FeaturedManager';
+import { MarketControlPanel } from '@/components/admin/MarketControlPanel';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -78,7 +94,7 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedItem, setEditedItem] = useState<Partial<MarketItem>>({});
   const [isSyncing, setIsSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('revenue');
 
   // Redirect if not admin
   useEffect(() => {
@@ -232,9 +248,41 @@ const Admin = () => {
         {/* Admin Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="bg-card/50 border border-border/50 flex-wrap h-auto gap-1">
+            <TabsTrigger value="revenue" className="gap-2">
+              <DollarSign className="w-4 h-4" />
+              Revenue
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="gap-2">
+              <Package className="w-4 h-4" />
+              Orders
+            </TabsTrigger>
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" />
               Users
+            </TabsTrigger>
+            <TabsTrigger value="verification" className="gap-2">
+              <Shield className="w-4 h-4" />
+              Seller KYC
+            </TabsTrigger>
+            <TabsTrigger value="moderation" className="gap-2">
+              <Flag className="w-4 h-4" />
+              Moderation
+            </TabsTrigger>
+            <TabsTrigger value="promos" className="gap-2">
+              <Gift className="w-4 h-4" />
+              Promos
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="gap-2">
+              <Bell className="w-4 h-4" />
+              Notifications
+            </TabsTrigger>
+            <TabsTrigger value="featured" className="gap-2">
+              <Star className="w-4 h-4" />
+              Featured
+            </TabsTrigger>
+            <TabsTrigger value="controls" className="gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              Market Controls
             </TabsTrigger>
             <TabsTrigger value="support" className="gap-2">
               <MessageCircle className="w-4 h-4" />
@@ -246,11 +294,11 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="fractional" className="gap-2">
               <PieChart className="w-4 h-4" />
-              Fractional Shares
+              Fractional
             </TabsTrigger>
             <TabsTrigger value="api" className="gap-2">
               <Key className="w-4 h-4" />
-              API Analytics
+              API
             </TabsTrigger>
             <TabsTrigger value="autobuy" className="gap-2">
               <Bot className="w-4 h-4" />
@@ -282,12 +330,44 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="prices" className="gap-2">
               <TrendingUp className="w-4 h-4" />
-              Price Management
+              Prices
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="revenue">
+            <RevenueDashboard />
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <OrderManagement />
+          </TabsContent>
+
           <TabsContent value="users">
             <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="verification">
+            <SellerVerificationQueue />
+          </TabsContent>
+
+          <TabsContent value="moderation">
+            <ListingModeration />
+          </TabsContent>
+
+          <TabsContent value="promos">
+            <PromoManager />
+          </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationSender />
+          </TabsContent>
+
+          <TabsContent value="featured">
+            <FeaturedManager />
+          </TabsContent>
+
+          <TabsContent value="controls">
+            <MarketControlPanel />
           </TabsContent>
 
           <TabsContent value="support">
