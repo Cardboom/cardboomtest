@@ -4460,6 +4460,53 @@ export type Database = {
           },
         ]
       }
+      trade_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          market_item_id: string | null
+          max_price: number | null
+          min_grade: string | null
+          notes: string | null
+          preference_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          market_item_id?: string | null
+          max_price?: number | null
+          min_grade?: string | null
+          notes?: string | null
+          preference_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          market_item_id?: string | null
+          max_price?: number | null
+          min_grade?: string | null
+          notes?: string | null
+          preference_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_preferences_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trades: {
         Row: {
           cash_adjustment: number | null
