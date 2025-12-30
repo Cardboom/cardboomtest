@@ -14,11 +14,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info } from 'lucide-react';
+import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info, Zap, DollarSign } from 'lucide-react';
 import { CardScanner } from '@/components/CardScanner';
 import { toast } from 'sonner';
 import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
 import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface Listing {
   id: string;
@@ -45,6 +46,16 @@ const SellPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [instantSelling, setInstantSelling] = useState(false);
+  const [showInstantSellDialog, setShowInstantSellDialog] = useState(false);
+  const [instantSellData, setInstantSellData] = useState<{
+    title: string;
+    category: string;
+    condition: string;
+    marketPrice: number;
+    instantPrice: number;
+    imageUrl: string | null;
+  } | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [activeTab, setActiveTab] = useState('create');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -293,6 +304,135 @@ const SellPage = () => {
         return <Badge variant="outline">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  // Prepare instant sell with current form data
+  const prepareInstantSell = () => {
+    if (!formData.title.trim()) {
+      toast.error('Please enter a title for the card');
+      return;
+    }
+
+    const price = parseFloat(formData.price);
+    if (!price || price <= 0) {
+      toast.error('Please enter the market price first');
+      return;
+    }
+
+    const instantPrice = Math.round(price * 0.80 * 100) / 100; // 80% of market price
+    
+    setInstantSellData({
+      title: formData.title,
+      category: formData.category,
+      condition: formData.condition,
+      marketPrice: price,
+      instantPrice: instantPrice,
+      imageUrl: imagePreview,
+    });
+    setShowInstantSellDialog(true);
+  };
+
+  // Execute instant sell to CardBoom
+  const executeInstantSell = async () => {
+    if (!instantSellData) return;
+
+    setInstantSelling(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
+      // Get user's wallet
+      const { data: wallet, error: walletError } = await supabase
+        .from('wallets')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (walletError || !wallet) {
+        throw new Error('Wallet not found. Please contact support.');
+      }
+
+      // Upload image if exists
+      let uploadedImageUrl = instantSellData.imageUrl;
+      if (imageFile) {
+        uploadedImageUrl = await uploadImage(session.user.id);
+      }
+
+      // Generate idempotency key
+      const idempotencyKey = `instant_sell_${session.user.id}_${Date.now()}`;
+
+      // Convert to cents for ledger
+      const amountCents = Math.round(instantSellData.instantPrice * 100);
+
+      // Post ledger entry to credit seller (using 'sale' type for instant sales)
+      const { data: ledgerEntry, error: ledgerError } = await supabase.rpc('post_ledger_entry', {
+        p_wallet_id: wallet.id,
+        p_delta_cents: amountCents,
+        p_currency: 'USD',
+        p_entry_type: 'sale',
+        p_reference_type: 'instant_sale',
+        p_reference_id: null,
+        p_description: `Instant sale to CardBoom: ${instantSellData.title}`,
+        p_idempotency_key: idempotencyKey,
+      });
+
+      if (ledgerError) {
+        console.error('Ledger error:', ledgerError);
+        throw new Error('Failed to process payment. Please try again.');
+      }
+
+      // Create a vault item record for CardBoom's inventory (optional tracking)
+      const { error: vaultError } = await supabase
+        .from('vault_items')
+        .insert({
+          owner_id: session.user.id, // Will be transferred to system account
+          title: `[CardBoom Inventory] ${instantSellData.title}`,
+          description: `Instant purchase from seller at $${instantSellData.instantPrice.toFixed(2)} (80% of $${instantSellData.marketPrice.toFixed(2)})`,
+          category: instantSellData.category,
+          condition: instantSellData.condition,
+          estimated_value: instantSellData.marketPrice,
+          image_url: uploadedImageUrl,
+        });
+
+      if (vaultError) {
+        console.error('Vault item creation failed:', vaultError);
+        // Non-critical - payment already processed
+      }
+
+      toast.success(`Sold! $${instantSellData.instantPrice.toFixed(2)} has been added to your wallet.`);
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        category: 'nba',
+        condition: 'Near Mint',
+        price: '',
+        allowsVault: true,
+        allowsTrade: true,
+        allowsShipping: true,
+        enableFractional: false,
+        totalShares: 100,
+        minShares: 10,
+        dailyVerification: true,
+      });
+      clearImage();
+      setShowInstantSellDialog(false);
+      setInstantSellData(null);
+
+      // Check achievements
+      try {
+        await checkListingAchievements(session.user.id);
+      } catch (achievementError) {
+        console.error('Error checking achievements:', achievementError);
+      }
+
+    } catch (error: any) {
+      console.error('Error executing instant sell:', error);
+      toast.error(error.message || 'Failed to complete instant sale');
+    } finally {
+      setInstantSelling(false);
     }
   };
 
@@ -678,10 +818,36 @@ const SellPage = () => {
                       )}
                     </div>
 
-                    <Button type="submit" disabled={submitting || uploading} className="w-full gap-2">
-                      {(submitting || uploading) && <Loader2 className="h-4 w-4 animate-spin" />}
-                      {uploading ? 'Uploading Image...' : submitting ? 'Creating...' : formData.enableFractional ? 'Create Fractional Listing' : 'Create Listing'}
-                    </Button>
+                    <div className="flex flex-col gap-3">
+                      <Button type="submit" disabled={submitting || uploading} className="w-full gap-2">
+                        {(submitting || uploading) && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {uploading ? 'Uploading Image...' : submitting ? 'Creating...' : formData.enableFractional ? 'Create Fractional Listing' : 'Create Listing'}
+                      </Button>
+                      
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                          <span className="bg-card px-2 text-muted-foreground">or</span>
+                        </div>
+                      </div>
+
+                      {/* Instant Sell to CardBoom Option */}
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        disabled={instantSelling || !formData.title || !formData.price}
+                        onClick={prepareInstantSell}
+                        className="w-full gap-2 border-gold/50 bg-gradient-to-r from-gold/10 to-transparent hover:from-gold/20 hover:border-gold"
+                      >
+                        <Zap className="h-4 w-4 text-gold" />
+                        <span>Instant Sell to CardBoom @ 80%</span>
+                      </Button>
+                      <p className="text-xs text-center text-muted-foreground">
+                        Get paid instantly! We buy your card at 80% of market price - no waiting for buyers.
+                      </p>
+                    </div>
                   </form>
                 </CardContent>
               </Card>
@@ -797,6 +963,83 @@ const SellPage = () => {
           </Tabs>
         </div>
       </main>
+
+      {/* Instant Sell Confirmation Dialog */}
+      <Dialog open={showInstantSellDialog} onOpenChange={setShowInstantSellDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-gold" />
+              Instant Sell to CardBoom
+            </DialogTitle>
+            <DialogDescription>
+              Sell your card instantly at 80% of market price. Funds will be credited to your wallet immediately.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {instantSellData && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-muted/50 space-y-3">
+                <div className="flex items-center gap-4">
+                  {instantSellData.imageUrl && (
+                    <img 
+                      src={instantSellData.imageUrl} 
+                      alt={instantSellData.title}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p className="font-medium">{instantSellData.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {instantSellData.category.toUpperCase()} • {instantSellData.condition}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="border-t pt-3 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Market Price</span>
+                    <span className="font-medium">${instantSellData.marketPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">CardBoom Rate (80%)</span>
+                    <span className="text-muted-foreground">×0.80</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t">
+                    <span className="font-semibold">You Receive</span>
+                    <span className="font-bold text-lg text-gain">${instantSellData.instantPrice.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 p-3 rounded-lg bg-gold/10 border border-gold/20">
+                <Shield className="h-5 w-5 text-gold flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  Your wallet will be credited immediately upon confirmation. This sale cannot be reversed.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowInstantSellDialog(false)}
+              disabled={instantSelling}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={executeInstantSell}
+              disabled={instantSelling}
+              className="gap-2 bg-gradient-to-r from-gold to-gold/80 text-background hover:from-gold/90"
+            >
+              {instantSelling && <Loader2 className="h-4 w-4 animate-spin" />}
+              {instantSelling ? 'Processing...' : `Sell for $${instantSellData?.instantPrice.toFixed(2)}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
