@@ -20,7 +20,7 @@ export const it: Translations = {
     gaming: "Gaming",
     wallet: "Portafoglio",
     myProfile: "Il Mio Profilo",
-    myVault: "Il Mio Vault",
+    myVault: "Vault",
     myListings: "I Miei Annunci",
     referrals: "Referral & XP",
     verifiedSeller: "Venditore Verificato",
