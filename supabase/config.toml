@@ -71,3 +71,12 @@ verify_jwt = false
 
 [functions.analyze-card]
 verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-weekly-digest]
+verify_jwt = false
