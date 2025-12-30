@@ -62,9 +62,9 @@ const Gaming = () => {
       const { data, error } = await supabase
         .from('market_items')
         .select('id, name, category, subcategory, current_price, image_url, change_24h')
-        .in('category', ['gamepoints', 'gaming', 'coaching'])
+        .in('category', ['gamepoints', 'gaming', 'coaching', 'figures'])
         .order('current_price', { ascending: false })
-        .limit(50);
+        .limit(100);
 
       if (error) {
         console.error('Error fetching gaming items:', error);
@@ -77,31 +77,51 @@ const Gaming = () => {
     fetchGamingItems();
   }, []);
 
+  // Game Points: items with category 'gamepoints'
   const gamePointsItems = useMemo(() => {
     return gamingItems.filter(item => item.category === 'gamepoints');
   }, [gamingItems]);
 
-  const collectibleItems = useMemo(() => {
-    return gamingItems.filter(item => item.category === 'gaming');
+  // Figures: items with category 'figures' OR gaming collectibles
+  const figuresItems = useMemo(() => {
+    return gamingItems.filter(item => 
+      item.category === 'figures' || 
+      (item.category === 'gaming' && !item.subcategory?.toLowerCase().includes('coaching'))
+    );
   }, [gamingItems]);
 
+  // Coaching: items with category 'coaching' OR subcategory includes 'coaching' or 'vod'
   const coachingItems = useMemo(() => {
-    return gamingItems.filter(item => item.category === 'coaching');
+    return gamingItems.filter(item => 
+      item.category === 'coaching' || 
+      item.subcategory?.toLowerCase().includes('coaching') ||
+      item.subcategory?.toLowerCase().includes('vod')
+    );
   }, [gamingItems]);
+
+  // Helper to filter by game - checks both subcategory AND name for the game keyword
+  const filterByGame = (items: GamingItem[], gameKeyword: string) => {
+    const keyword = gameKeyword.toLowerCase();
+    return items.filter(item => 
+      item.subcategory?.toLowerCase().includes(keyword) ||
+      item.name?.toLowerCase().includes(keyword)
+    );
+  };
 
   const filteredItems = useMemo(() => {
     if (activeTab === 'all') return gamingItems;
     if (activeTab === 'points') return gamePointsItems;
-    if (activeTab === 'collectibles') return collectibleItems;
+    if (activeTab === 'figures') return figuresItems;
     if (activeTab === 'coaching') return coachingItems;
-    if (activeTab === 'valorant') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('valorant'));
-    if (activeTab === 'lol') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('league'));
-    if (activeTab === 'csgo') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('cs'));
-    if (activeTab === 'pubg') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('pubg'));
-    if (activeTab === 'fortnite') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('fortnite'));
-    if (activeTab === 'genshin') return gamingItems.filter(i => i.subcategory?.toLowerCase().includes('genshin'));
+    // Game-specific tabs show ALL items for that game (points + coaching + VOD)
+    if (activeTab === 'valorant') return filterByGame(gamingItems, 'valorant');
+    if (activeTab === 'lol') return filterByGame(gamingItems, 'league');
+    if (activeTab === 'csgo') return filterByGame(gamingItems, 'cs');
+    if (activeTab === 'pubg') return filterByGame(gamingItems, 'pubg');
+    if (activeTab === 'fortnite') return filterByGame(gamingItems, 'fortnite');
+    if (activeTab === 'genshin') return filterByGame(gamingItems, 'genshin');
     return gamingItems;
-  }, [activeTab, gamingItems, gamePointsItems, collectibleItems, coachingItems]);
+  }, [activeTab, gamingItems, gamePointsItems, figuresItems, coachingItems]);
 
   const handleRemoveFromCart = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
@@ -166,13 +186,13 @@ const Gaming = () => {
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Package className="w-5 h-5 text-purple-500 mb-2" />
-            <p className="text-2xl font-bold">{collectibleItems.length}</p>
-            <p className="text-sm text-muted-foreground">Collectibles</p>
+            <p className="text-2xl font-bold">{figuresItems.length}</p>
+            <p className="text-sm text-muted-foreground">Figures & Collectibles</p>
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Trophy className="w-5 h-5 text-primary mb-2" />
             <p className="text-2xl font-bold">{coachingItems.length}</p>
-            <p className="text-sm text-muted-foreground">Coaching Services</p>
+            <p className="text-sm text-muted-foreground">Coaching & VOD</p>
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Users className="w-5 h-5 text-gain mb-2" />
@@ -193,11 +213,11 @@ const Gaming = () => {
             <TabsTrigger value="points" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               🎮 Game Points
             </TabsTrigger>
-            <TabsTrigger value="collectibles" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              📦 Collectibles
+            <TabsTrigger value="figures" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
+              🎨 Figures
             </TabsTrigger>
             <TabsTrigger value="coaching" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              🎓 Coaching
+              🎓 Coaching & VOD
             </TabsTrigger>
             <TabsTrigger value="valorant" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               Valorant
