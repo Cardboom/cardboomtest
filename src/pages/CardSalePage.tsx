@@ -13,12 +13,14 @@ import { CardSocialProof } from '@/components/CardSocialProof';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
 import { CardDiscussionPanel } from '@/components/discussions/CardDiscussionPanel';
 import { generateCardUrl } from '@/lib/seoSlug';
+import { PurchaseDialog } from '@/components/purchase/PurchaseDialog';
 
 const CardSalePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState<any>(null);
+  const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
@@ -103,8 +105,31 @@ const CardSalePage = () => {
     );
   }
 
-  const mockListings = [{ id: '1', condition: 'Near Mint', price: item.current_price || 100, sellerId: '1', sellerName: 'CardBoom Seller', sellerRating: 4.8, sellerVerified: true, totalSales: 156, estimatedDelivery: '3-5 days' }];
+  const mockListings = [{ id: item.id, condition: 'Near Mint', price: item.current_price || 100, sellerId: '1', sellerName: 'CardBoom Seller', sellerRating: 4.8, sellerVerified: true, totalSales: 156, estimatedDelivery: '3-5 days' }];
   const mockSeller = { id: '1', username: 'CardBoom Seller', isVerified: true, rating: 4.8, totalSales: 156, avgDeliveryDays: 3, memberSince: '2023', responseTime: '< 1 hour' };
+  
+  // Create a listing object for PurchaseDialog
+  const purchaseListing = {
+    id: item.id,
+    title: item.name,
+    price: item.current_price || 100,
+    seller_id: '1', // Mock seller
+    allows_vault: true,
+    allows_shipping: true,
+    allows_trade: true,
+    category: item.category,
+    condition: 'Near Mint',
+    image_url: item.image_url,
+  };
+
+  const handleBuyNow = () => {
+    if (!user) {
+      toast.error('Please sign in to purchase');
+      navigate('/auth');
+      return;
+    }
+    setPurchaseDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,17 +162,17 @@ const CardSalePage = () => {
               medianSellTime={3}
               isWatching={isWatching || false}
               onToggleWatchlist={() => user ? toggleWatchlistMutation.mutate() : navigate('/auth')}
-              onBuyNow={() => toast.info('Purchase flow coming soon')}
+              onBuyNow={handleBuyNow}
               isPending={toggleWatchlistMutation.isPending}
             />
 
             <div className="grid md:grid-cols-2 gap-6">
               <BuyBox
                 listings={mockListings}
-                selectedListingId="1"
+                selectedListingId={item.id}
                 onSelectListing={() => {}}
-                onBuyNow={() => toast.info('Purchase flow coming soon')}
-                onMakeOffer={() => toast.info('Offer dialog coming soon')}
+                onBuyNow={handleBuyNow}
+                onMakeOffer={() => toast.info('Make an offer feature coming soon')}
                 userBalance={250}
               />
               <SellerInfoCard seller={mockSeller} onViewProfile={() => navigate('/seller/1')} onMessage={() => navigate('/messages')} otherListingsCount={23} />
@@ -168,9 +193,16 @@ const CardSalePage = () => {
         </div>
       </main>
 
+      {/* Purchase Dialog */}
+      <PurchaseDialog
+        open={purchaseDialogOpen}
+        onOpenChange={setPurchaseDialogOpen}
+        listing={purchaseListing}
+      />
+
       {/* Mobile Sticky Buy Button */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border z-50">
-        <Button className="w-full h-12 text-base font-semibold gap-2" onClick={() => toast.info('Purchase flow coming soon')}>
+        <Button className="w-full h-12 text-base font-semibold gap-2" onClick={handleBuyNow}>
           <ShoppingCart className="w-5 h-5" /> Buy Now - ${(item.current_price || 0).toLocaleString()}
         </Button>
       </div>
