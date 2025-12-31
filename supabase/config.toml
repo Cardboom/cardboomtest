@@ -63,6 +63,9 @@ verify_jwt = false
 [functions.bulk-sync-cards]
 verify_jwt = false
 
+[functions.sync-optcg-images]
+verify_jwt = false
+
 [functions.market-api]
 verify_jwt = false
 
