@@ -59,8 +59,7 @@ const navGroups: NavGroup[] = [
     icon: LayoutDashboard,
     items: [
       { id: "revenue", label: "Revenue", icon: DollarSign },
-      { id: "analytics", label: "API Analytics", icon: BarChart3 },
-      { id: "diagnostics", label: "Diagnostics", icon: Activity },
+      { id: "analytics", label: "Analytics", icon: BarChart3 },
     ],
   },
   {
@@ -80,9 +79,8 @@ const navGroups: NavGroup[] = [
     icon: Users,
     items: [
       { id: "users", label: "User Management", icon: Users },
-      { id: "seller-kyc", label: "Seller KYC", icon: Shield },
-      { id: "whale-program", label: "Whale Program", icon: Crown },
-      { id: "fan-accounts", label: "Fan Accounts", icon: Star },
+      { id: "verification", label: "Seller KYC", icon: Shield },
+      { id: "whale", label: "Whale Program", icon: Crown },
     ],
   },
   {
@@ -90,11 +88,11 @@ const navGroups: NavGroup[] = [
     label: "Marketplace",
     icon: Package,
     items: [
-      { id: "listings", label: "Listing Moderation", icon: ListChecks },
-      { id: "featured", label: "Featured Items", icon: Star },
-      { id: "prices", label: "Price Management", icon: Tag },
-      { id: "market-controls", label: "Market Controls", icon: Settings },
-      { id: "vault", label: "Vault Management", icon: Vault },
+      { id: "moderation", label: "Moderation", icon: ListChecks },
+      { id: "featured", label: "Featured", icon: Star },
+      { id: "prices", label: "Prices", icon: Tag },
+      { id: "controls", label: "Market Controls", icon: Settings },
+      { id: "fractional", label: "Fractional", icon: BarChart3 },
     ],
   },
   {
@@ -102,10 +100,10 @@ const navGroups: NavGroup[] = [
     label: "Engagement",
     icon: Sword,
     items: [
-      { id: "card-wars", label: "Card Wars", icon: Sword },
-      { id: "community-votes", label: "Community Votes", icon: Vote },
+      { id: "cardwars", label: "Card Wars $", icon: Sword },
+      { id: "communityvotes", label: "Community Votes", icon: Vote },
+      { id: "fanaccounts", label: "Boom Reels", icon: Video },
       { id: "auctions", label: "Auctions", icon: Gavel },
-      { id: "reels", label: "Reels", icon: Video },
     ],
   },
   {
@@ -113,9 +111,8 @@ const navGroups: NavGroup[] = [
     label: "Rewards & Points",
     icon: Coins,
     items: [
-      { id: "points", label: "Cardboom Points", icon: Coins },
-      { id: "promos", label: "Promo Codes", icon: Tag },
-      { id: "grading", label: "Grading Credits", icon: Shield },
+      { id: "points", label: "Points Manager", icon: Coins },
+      { id: "promos", label: "Promos", icon: Tag },
     ],
   },
   {
@@ -124,8 +121,8 @@ const navGroups: NavGroup[] = [
     icon: MessageSquare,
     items: [
       { id: "support", label: "Support Tickets", icon: HelpCircle },
-      { id: "notifications", label: "Push Notifications", icon: Bell },
-      { id: "email", label: "Email Management", icon: Mail },
+      { id: "notifications", label: "Notifications", icon: Bell },
+      { id: "email", label: "Email", icon: Mail },
     ],
   },
   {
@@ -133,9 +130,13 @@ const navGroups: NavGroup[] = [
     label: "System",
     icon: Settings,
     items: [
-      { id: "currency", label: "Currency Rates", icon: Wallet },
-      { id: "data-sync", label: "Data Sync", icon: RefreshCw },
-      { id: "api", label: "API Settings", icon: Globe },
+      { id: "api", label: "API", icon: Globe },
+      { id: "diagnostics", label: "Diagnostics", icon: Activity },
+      { id: "currency", label: "Currency", icon: Wallet },
+      { id: "vault", label: "Vault", icon: Vault },
+      { id: "grading", label: "Grading", icon: Shield },
+      { id: "datasync", label: "Data Sync", icon: RefreshCw },
+      { id: "autobuy", label: "Deal Scooper", icon: Timer },
     ],
   },
 ];
@@ -143,16 +144,13 @@ const navGroups: NavGroup[] = [
 interface AdminSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
-  collapsed: boolean;
-  onCollapsedChange: (collapsed: boolean) => void;
 }
 
 export function AdminSidebar({
   activeSection,
   onSectionChange,
-  collapsed,
-  onCollapsedChange,
 }: AdminSidebarProps) {
+  const [collapsed, setCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>(
     navGroups.map((g) => g.id)
   );
@@ -191,7 +189,7 @@ export function AdminSidebar({
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onCollapsedChange(!collapsed)}
+          onClick={() => setCollapsed(!collapsed)}
           className="h-8 w-8"
         >
           {collapsed ? (
@@ -221,7 +219,7 @@ export function AdminSidebar({
                   )}
                   onClick={() => {
                     if (collapsed) {
-                      onCollapsedChange(false);
+                      setCollapsed(false);
                       setOpenGroups((prev) =>
                         prev.includes(group.id) ? prev : [...prev, group.id]
                       );
