@@ -62,7 +62,7 @@ const Gaming = () => {
       const { data, error } = await supabase
         .from('market_items')
         .select('id, name, category, subcategory, current_price, image_url, change_24h')
-        .in('category', ['gamepoints', 'gaming', 'coaching', 'figures'])
+        .in('category', ['gamepoints', 'gaming', 'coaching'])
         .order('current_price', { ascending: false })
         .limit(100);
 
@@ -82,11 +82,10 @@ const Gaming = () => {
     return gamingItems.filter(item => item.category === 'gamepoints');
   }, [gamingItems]);
 
-  // Figures: items with category 'figures' OR gaming collectibles
-  const figuresItems = useMemo(() => {
+  // Gaming collectibles (non-coaching gaming items)
+  const gamingCollectibles = useMemo(() => {
     return gamingItems.filter(item => 
-      item.category === 'figures' || 
-      (item.category === 'gaming' && !item.subcategory?.toLowerCase().includes('coaching'))
+      item.category === 'gaming' && !item.subcategory?.toLowerCase().includes('coaching')
     );
   }, [gamingItems]);
 
@@ -111,7 +110,7 @@ const Gaming = () => {
   const filteredItems = useMemo(() => {
     if (activeTab === 'all') return gamingItems;
     if (activeTab === 'points') return gamePointsItems;
-    if (activeTab === 'figures') return figuresItems;
+    if (activeTab === 'gaming') return gamingCollectibles;
     if (activeTab === 'coaching') return coachingItems;
     // Game-specific tabs show ALL items for that game (points + coaching + VOD)
     if (activeTab === 'valorant') return filterByGame(gamingItems, 'valorant');
@@ -121,7 +120,7 @@ const Gaming = () => {
     if (activeTab === 'fortnite') return filterByGame(gamingItems, 'fortnite');
     if (activeTab === 'genshin') return filterByGame(gamingItems, 'genshin');
     return gamingItems;
-  }, [activeTab, gamingItems, gamePointsItems, figuresItems, coachingItems]);
+  }, [activeTab, gamingItems, gamePointsItems, gamingCollectibles, coachingItems]);
 
   const handleRemoveFromCart = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
@@ -186,8 +185,8 @@ const Gaming = () => {
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Package className="w-5 h-5 text-purple-500 mb-2" />
-            <p className="text-2xl font-bold">{figuresItems.length}</p>
-            <p className="text-sm text-muted-foreground">Figures & Collectibles</p>
+            <p className="text-2xl font-bold">{gamingCollectibles.length}</p>
+            <p className="text-sm text-muted-foreground">Gaming Items</p>
           </div>
           <div className="p-4 rounded-xl bg-card border border-border">
             <Trophy className="w-5 h-5 text-primary mb-2" />
@@ -213,8 +212,8 @@ const Gaming = () => {
             <TabsTrigger value="points" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               🎮 Game Points
             </TabsTrigger>
-            <TabsTrigger value="figures" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              🎨 Figures
+            <TabsTrigger value="gaming" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
+              🎮 Gaming Items
             </TabsTrigger>
             <TabsTrigger value="coaching" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
               🎓 Coaching & VOD
