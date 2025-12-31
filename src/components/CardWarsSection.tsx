@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Trophy, Clock, Users, Flame, Crown, Sparkles, Lock, ArrowRight, TrendingUp } from 'lucide-react';
+import { Swords, Trophy, Clock, Users, Flame, Crown, Sparkles, Lock, ArrowRight, TrendingUp, Gem } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -256,7 +256,10 @@ export const CardWarsSection = () => {
         </div>
         <div>
           <h2 className="text-xl font-bold">Card Wars</h2>
-          <p className="text-xs text-muted-foreground">Vote for your champion • Pro votes share $100 prize</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            Vote for your champion • Pro votes share $100 prize + 
+            <Gem className="w-3 h-3 text-primary" /> Cardboom Points
+          </p>
         </div>
         {useMockData && (
           <Badge variant="secondary" className="ml-auto text-xs">
@@ -285,8 +288,8 @@ export const CardWarsSection = () => {
                     </div>
                     <h3 className="text-xl font-bold">Card Wars</h3>
                     <p className="text-muted-foreground max-w-md mx-auto text-sm px-4">
-                      Vote on epic card battles! Pro members compete for real cash prizes. 
-                      Each Pro vote adds $2.50 to the winning pot.
+                      Vote on epic card battles! Pro members compete for real cash prizes 
+                      and earn <span className="text-primary font-medium">Cardboom Points</span> from prize pool shares.
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -305,14 +308,14 @@ export const CardWarsSection = () => {
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
-                  <div className="flex items-center gap-6 text-sm text-muted-foreground mt-2">
+                  <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground mt-2">
                     <span className="flex items-center gap-1">
                       <Trophy className="w-4 h-4 text-yellow-500" />
                       $100 Prize Pools
                     </span>
                     <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4 text-blue-500" />
-                      Community Voting
+                      <Gem className="w-4 h-4 text-primary" />
+                      Earn Points
                     </span>
                     <span className="flex items-center gap-1">
                       <Flame className="w-4 h-4 text-orange-500" />
