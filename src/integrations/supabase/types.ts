@@ -167,6 +167,165 @@ export type Database = {
         }
         Relationships: []
       }
+      auction_bids: {
+        Row: {
+          amount: number
+          auction_id: string
+          bidder_id: string
+          created_at: string
+          id: string
+          is_auto_bid: boolean
+          is_winning: boolean
+          max_bid: number | null
+        }
+        Insert: {
+          amount: number
+          auction_id: string
+          bidder_id: string
+          created_at?: string
+          id?: string
+          is_auto_bid?: boolean
+          is_winning?: boolean
+          max_bid?: number | null
+        }
+        Update: {
+          amount?: number
+          auction_id?: string
+          bidder_id?: string
+          created_at?: string
+          id?: string
+          is_auto_bid?: boolean
+          is_winning?: boolean
+          max_bid?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auction_watchers: {
+        Row: {
+          auction_id: string
+          created_at: string
+          id: string
+          notify_before_end: boolean
+          notify_on_outbid: boolean
+          user_id: string
+        }
+        Insert: {
+          auction_id: string
+          created_at?: string
+          id?: string
+          notify_before_end?: boolean
+          notify_on_outbid?: boolean
+          user_id: string
+        }
+        Update: {
+          auction_id?: string
+          created_at?: string
+          id?: string
+          notify_before_end?: boolean
+          notify_on_outbid?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_watchers_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auctions: {
+        Row: {
+          bid_count: number
+          bid_increment: number
+          buy_now_price: number | null
+          category: string
+          condition: string
+          created_at: string
+          current_bid: number | null
+          description: string | null
+          ends_at: string
+          final_price: number | null
+          highest_bidder_id: string | null
+          id: string
+          image_url: string | null
+          listing_id: string | null
+          reserve_price: number | null
+          seller_id: string
+          starting_price: number
+          starts_at: string
+          status: string
+          title: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          bid_count?: number
+          bid_increment?: number
+          buy_now_price?: number | null
+          category: string
+          condition?: string
+          created_at?: string
+          current_bid?: number | null
+          description?: string | null
+          ends_at: string
+          final_price?: number | null
+          highest_bidder_id?: string | null
+          id?: string
+          image_url?: string | null
+          listing_id?: string | null
+          reserve_price?: number | null
+          seller_id: string
+          starting_price: number
+          starts_at?: string
+          status?: string
+          title: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          bid_count?: number
+          bid_increment?: number
+          buy_now_price?: number | null
+          category?: string
+          condition?: string
+          created_at?: string
+          current_bid?: number | null
+          description?: string | null
+          ends_at?: string
+          final_price?: number | null
+          highest_bidder_id?: string | null
+          id?: string
+          image_url?: string | null
+          listing_id?: string | null
+          reserve_price?: number | null
+          seller_id?: string
+          starting_price?: number
+          starts_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auto_buy_config: {
         Row: {
           created_at: string
@@ -458,6 +617,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      card_sets: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          release_date: string | null
+          series: string | null
+          total_cards: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          release_date?: string | null
+          series?: string | null
+          total_cards?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          release_date?: string | null
+          series?: string | null
+          total_cards?: number
+        }
+        Relationships: []
       }
       card_war_votes: {
         Row: {
@@ -2367,6 +2559,7 @@ export type Database = {
           external_price_cents: number | null
           id: string
           image_url: string | null
+          is_auction: boolean
           price: number
           price_cents: number | null
           seller_id: string
@@ -2388,6 +2581,7 @@ export type Database = {
           external_price_cents?: number | null
           id?: string
           image_url?: string | null
+          is_auction?: boolean
           price: number
           price_cents?: number | null
           seller_id: string
@@ -2409,6 +2603,7 @@ export type Database = {
           external_price_cents?: number | null
           id?: string
           image_url?: string | null
+          is_auction?: boolean
           price?: number
           price_cents?: number | null
           seller_id?: string
@@ -3185,6 +3380,33 @@ export type Database = {
           },
         ]
       }
+      portfolio_snapshots: {
+        Row: {
+          id: string
+          item_count: number
+          recorded_at: string
+          total_cost: number
+          total_value: number
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          item_count?: number
+          recorded_at?: string
+          total_cost?: number
+          total_value: number
+          user_id: string
+        }
+        Update: {
+          id?: string
+          item_count?: number
+          recorded_at?: string
+          total_cost?: number
+          total_value?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       price_alerts: {
         Row: {
           alert_type: string
@@ -3659,6 +3881,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       receipts: {
         Row: {
@@ -4384,6 +4633,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      set_completion: {
+        Row: {
+          completion_percent: number | null
+          created_at: string
+          id: string
+          owned_cards: Json
+          set_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completion_percent?: number | null
+          created_at?: string
+          id?: string
+          owned_cards?: Json
+          set_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completion_percent?: number | null
+          created_at?: string
+          id?: string
+          owned_cards?: Json
+          set_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "set_completion_set_id_fkey"
+            columns: ["set_id"]
+            isOneToOne: false
+            referencedRelation: "card_sets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shadow_wishlists: {
         Row: {
