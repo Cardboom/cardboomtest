@@ -32,6 +32,7 @@ serve(async (req) => {
       tcgdex: { updated: 0 },
       ygopro: { updated: 0 },
       scryfall: { updated: 0 },
+      optcg: { updated: 0 },
     };
 
     // Get count of items needing images per category
@@ -101,6 +102,10 @@ serve(async (req) => {
         supabase.functions.invoke("sync-scryfall-images", { body: { limit: 200 } })
           .then(r => { results.scryfall.updated = r.data?.updated || 0; })
           .catch(e => console.error("[bulk-sync] Scryfall error:", e)),
+        
+        supabase.functions.invoke("sync-optcg-images", { body: { limit: 50 } })
+          .then(r => { results.optcg.updated = r.data?.updated || 0; })
+          .catch(e => console.error("[bulk-sync] OPTCG error:", e)),
       ];
 
       await Promise.allSettled(freeSourcePromises);

@@ -95,6 +95,8 @@ export const DataSyncManager = () => {
         ? 'sync-scryfall-images'
         : source === 'ygopro'
         ? 'sync-ygopro-images'
+        : source === 'optcg'
+        ? 'sync-optcg-images'
         : 'sync-pricecharting-listings';
 
       const body: Record<string, unknown> = { limit: batchSize };
@@ -140,6 +142,7 @@ export const DataSyncManager = () => {
     { id: 'tcgdex', name: 'TCGdex', description: 'Free - Pokemon only', color: 'bg-yellow-500', categories: ['pokemon'] },
     { id: 'scryfall', name: 'Scryfall', description: 'Free - MTG only', color: 'bg-orange-500', categories: ['mtg'] },
     { id: 'ygopro', name: 'YGOPro', description: 'Free - Yu-Gi-Oh only', color: 'bg-purple-500', categories: ['yugioh'] },
+    { id: 'optcg', name: 'OPTCG API', description: 'Free - One Piece TCG', color: 'bg-red-500', categories: ['one-piece', 'onepiece'] },
     { id: 'pricecharting', name: 'PriceCharting', description: 'Prices & some images', color: 'bg-green-500', categories: ['all'] },
   ];
 
@@ -381,11 +384,12 @@ export const DataSyncManager = () => {
           <Button 
             variant="default"
             onClick={async () => {
-              // Sync all free sources
+              // Sync all free sources including One Piece
               await Promise.all([
                 triggerSync('tcgdex'),
                 triggerSync('scryfall'),
                 triggerSync('ygopro'),
+                triggerSync('optcg'),
               ]);
             }}
             disabled={Object.values(isSyncing).some(Boolean)}
