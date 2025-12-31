@@ -57,6 +57,7 @@ const categoryToGame: Record<string, string> = {
   yugioh: "yugioh", 
   mtg: "mtg", // Try 'mtg' instead of 'magic'
   onepiece: "onepiece",
+  "one-piece": "onepiece",
   lorcana: "lorcana",
   digimon: "digimon",
 };

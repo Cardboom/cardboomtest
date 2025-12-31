@@ -21,7 +21,7 @@ serve(async (req) => {
       cardmarket_batches = 10,
       batch_size = 30,
       delay_between_batches = 5000,
-      categories = ["pokemon", "yugioh", "mtg", "onepiece", "lorcana"],
+      categories = ["pokemon", "yugioh", "mtg", "one-piece", "onepiece", "lorcana"],
       also_run_free_sources = true
     } = await req.json().catch(() => ({}));
 
