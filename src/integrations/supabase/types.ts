@@ -569,6 +569,69 @@ export type Database = {
           },
         ]
       }
+      cardboom_points: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      cardboom_points_history: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          source: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          source: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          source?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_card_votes: {
         Row: {
           card_a_id: string | null
@@ -5270,6 +5333,16 @@ export type Database = {
       }
     }
     Functions: {
+      award_cardboom_points: {
+        Args: {
+          p_description?: string
+          p_reference_id?: string
+          p_source: string
+          p_transaction_amount: number
+          p_user_id: string
+        }
+        Returns: number
+      }
       calculate_card_war_payouts: {
         Args: { war_id: string }
         Returns: undefined
@@ -5333,6 +5406,16 @@ export type Database = {
           p_user_id: string
         }
         Returns: undefined
+      }
+      spend_cardboom_points: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_reference_id?: string
+          p_source: string
+          p_user_id: string
+        }
+        Returns: boolean
       }
       update_call_outcomes: { Args: never; Returns: undefined }
       update_reputation: {

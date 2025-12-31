@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload, Crown } from 'lucide-react';
+import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload, Crown, Gem } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ProBadge } from '@/components/subscription/ProBadge';
 import { SubscriptionUpgradeDialog } from '@/components/subscription/SubscriptionUpgradeDialog';
+import { useCardboomPoints } from '@/hooks/useCardboomPoints';
+import { CardboomPointsDialog } from '@/components/CardboomPointsDialog';
 
 interface ProfileHeaderProps {
   profile: {
@@ -49,6 +51,7 @@ export const ProfileHeader = ({
   onUnlockBackground
 }: ProfileHeaderProps) => {
   const [editing, setEditing] = useState(false);
+  const [pointsDialogOpen, setPointsDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     display_name: profile.display_name || '',
     bio: profile.bio || '',
@@ -59,6 +62,7 @@ export const ProfileHeader = ({
   const { uploadAvatar, uploading } = useAvatarUpload();
   const { t } = useLanguage();
   const { isPro, subscription, refetch: refetchSubscription } = useSubscription(profile.id);
+  const { balance: pointsBalance, loading: pointsLoading } = useCardboomPoints(isOwnProfile ? profile.id : undefined);
 
   const selectedBackground = backgrounds.find(b => b.id === profile.profile_background);
   const backgroundStyle = selectedBackground?.css_value || 'hsl(240, 10%, 4%)';
@@ -201,13 +205,24 @@ export const ProfileHeader = ({
                   </>
                 )}
                 
-                <div className="flex items-center gap-4 mt-2">
+                <div className="flex items-center gap-4 mt-2 flex-wrap">
                   <p className="text-sm text-muted-foreground">
                     {t.profile.memberSince} {memberSince}
                   </p>
                   <Badge variant="outline" className="gap-1">
                     {t.profile.level}: {profile.level}
                   </Badge>
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => setPointsDialogOpen(true)}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 transition-colors cursor-pointer"
+                    >
+                      <Gem className="w-3.5 h-3.5 text-sky-400" />
+                      <span className="text-xs font-medium text-sky-400">
+                        {pointsLoading ? '...' : pointsBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} pts
+                      </span>
+                    </button>
+                  )}
                 </div>
 
                 {/* Guru Expertise Tags */}
@@ -314,6 +329,9 @@ export const ProfileHeader = ({
           </div>
         </div>
       </div>
+
+      {/* Cardboom Points Dialog */}
+      <CardboomPointsDialog open={pointsDialogOpen} onOpenChange={setPointsDialogOpen} />
     </div>
   );
 };

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Gem } from 'lucide-react';
+import { CardboomPointsBadge } from '@/components/CardboomPointsBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
@@ -394,7 +395,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <ThemeToggle />
             <LanguageSelector />
             {user && (
-              <div className="hidden sm:flex">
+              <div className="hidden sm:flex items-center gap-1">
+                <CardboomPointsBadge />
                 <NotificationCenter />
               </div>
             )}
