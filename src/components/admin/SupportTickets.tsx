@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,66 +10,73 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RefreshCw, MessageCircle, Search, Clock, CheckCircle, AlertCircle, XCircle, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface SupportTicket {
   id: string;
   user_id: string;
   subject: string;
   message: string;
-  status: 'open' | 'in_progress' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high';
+  status: string;
+  priority: string;
+  category: string | null;
   created_at: string;
   updated_at: string;
-  admin_response?: string;
+  admin_response: string | null;
+  assigned_to: string | null;
+  resolved_at: string | null;
   profiles?: { display_name: string | null; email: string | null };
 }
 
-// Mock data since we don't have a support_tickets table yet
-const mockTickets: SupportTicket[] = [
-  {
-    id: '1',
-    user_id: 'user1',
-    subject: 'Cannot withdraw funds',
-    message: 'I have been trying to withdraw my balance for 3 days but it keeps failing.',
-    status: 'open',
-    priority: 'high',
-    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    profiles: { display_name: 'Ahmet Y.', email: 'ahmet@example.com' }
-  },
-  {
-    id: '2',
-    user_id: 'user2',
-    subject: 'Card condition dispute',
-    message: 'The card I received was listed as Near Mint but has visible scratches.',
-    status: 'in_progress',
-    priority: 'medium',
-    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    admin_response: 'We are reviewing the photos you sent.',
-    profiles: { display_name: 'Mehmet K.', email: 'mehmet@example.com' }
-  },
-  {
-    id: '3',
-    user_id: 'user3',
-    subject: 'How to verify my account?',
-    message: 'I uploaded my ID but the verification is still pending after 5 days.',
-    status: 'resolved',
-    priority: 'low',
-    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    admin_response: 'Your account has been verified. Thank you for your patience.',
-    profiles: { display_name: 'Zeynep A.', email: 'zeynep@example.com' }
-  },
-];
-
 export const SupportTickets = () => {
-  const [tickets, setTickets] = useState<SupportTicket[]>(mockTickets);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [response, setResponse] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Fetch tickets from database
+  const { data: tickets = [], isLoading, refetch } = useQuery({
+    queryKey: ['support-tickets'],
+    queryFn: async () => {
+      // Fetch tickets first
+      const { data: ticketsData, error: ticketsError } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (ticketsError) throw ticketsError;
+      
+      // Fetch profiles separately
+      const userIds = [...new Set(ticketsData?.map(t => t.user_id) || [])];
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, display_name, email')
+        .in('id', userIds);
+      
+      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+      
+      return (ticketsData || []).map(ticket => ({
+        ...ticket,
+        profiles: profilesMap.get(ticket.user_id) || null
+      })) as SupportTicket[];
+    }
+  });
+
+  // Update ticket mutation
+  const updateTicketMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<SupportTicket> }) => {
+      const { error } = await supabase
+        .from('support_tickets')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+    }
+  });
 
   const stats = {
     open: tickets.filter(t => t.status === 'open').length,
@@ -102,6 +109,8 @@ export const SupportTickets = () => {
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
+      case 'urgent':
+        return <Badge variant="destructive">Urgent</Badge>;
       case 'high':
         return <Badge variant="destructive">High</Badge>;
       case 'medium':
@@ -116,24 +125,34 @@ export const SupportTickets = () => {
   const handleRespond = async () => {
     if (!selectedTicket || !response) return;
     
-    // Update mock data
-    setTickets(prev => prev.map(t => 
-      t.id === selectedTicket.id 
-        ? { ...t, admin_response: response, status: 'in_progress' as const, updated_at: new Date().toISOString() }
-        : t
-    ));
-    toast.success('Response sent successfully');
-    setResponse('');
-    setSelectedTicket(null);
+    try {
+      await updateTicketMutation.mutateAsync({
+        id: selectedTicket.id,
+        updates: {
+          admin_response: response,
+          status: 'in_progress'
+        }
+      });
+      toast.success('Response sent successfully');
+      setResponse('');
+      setDialogOpen(false);
+      setSelectedTicket(null);
+    } catch (error) {
+      toast.error('Failed to send response');
+    }
   };
 
-  const handleUpdateStatus = (ticketId: string, newStatus: string) => {
-    setTickets(prev => prev.map(t => 
-      t.id === ticketId 
-        ? { ...t, status: newStatus as any, updated_at: new Date().toISOString() }
-        : t
-    ));
-    toast.success('Status updated');
+  const handleUpdateStatus = async (ticketId: string, newStatus: string) => {
+    try {
+      const updates: Partial<SupportTicket> = { status: newStatus };
+      if (newStatus === 'resolved') {
+        updates.resolved_at = new Date().toISOString();
+      }
+      await updateTicketMutation.mutateAsync({ id: ticketId, updates });
+      toast.success('Status updated');
+    } catch (error) {
+      toast.error('Failed to update status');
+    }
   };
 
   const timeAgo = (dateString: string) => {
@@ -230,6 +249,10 @@ export const SupportTickets = () => {
                 <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>
             </Select>
+            <Button variant="outline" onClick={() => refetch()} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -242,6 +265,7 @@ export const SupportTickets = () => {
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Subject</TableHead>
+                <TableHead>Category</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
@@ -249,76 +273,102 @@ export const SupportTickets = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTickets.map((ticket) => (
-                <TableRow key={ticket.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{ticket.profiles?.display_name || 'Unknown'}</p>
-                      <p className="text-xs text-muted-foreground">{ticket.profiles?.email}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <p className="font-medium">{ticket.subject}</p>
-                    <p className="text-xs text-muted-foreground line-clamp-1">{ticket.message}</p>
-                  </TableCell>
-                  <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
-                  <TableCell>{getStatusBadge(ticket.status)}</TableCell>
-                  <TableCell className="text-muted-foreground">{timeAgo(ticket.created_at)}</TableCell>
-                  <TableCell className="text-center">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" onClick={() => setSelectedTicket(ticket)}>
-                          <Eye className="w-4 h-4 mr-1" />
-                          View
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>{ticket.subject}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="flex gap-2">
-                            {getPriorityBadge(ticket.priority)}
-                            {getStatusBadge(ticket.status)}
-                          </div>
-                          <div className="p-4 bg-muted/50 rounded-lg">
-                            <p className="text-sm font-medium mb-1">From: {ticket.profiles?.display_name} ({ticket.profiles?.email})</p>
-                            <p className="text-muted-foreground">{ticket.message}</p>
-                          </div>
-                          {ticket.admin_response && (
-                            <div className="p-4 bg-primary/10 rounded-lg border-l-4 border-primary">
-                              <p className="text-sm font-medium mb-1">Admin Response:</p>
-                              <p className="text-muted-foreground">{ticket.admin_response}</p>
-                            </div>
-                          )}
-                          <div className="space-y-2">
-                            <Textarea
-                              placeholder="Write your response..."
-                              value={response}
-                              onChange={(e) => setResponse(e.target.value)}
-                              rows={4}
-                            />
-                            <div className="flex gap-2">
-                              <Button onClick={handleRespond} disabled={!response}>Send Response</Button>
-                              <Select value={ticket.status} onValueChange={(v) => handleUpdateStatus(ticket.id, v)}>
-                                <SelectTrigger className="w-[150px]">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="open">Open</SelectItem>
-                                  <SelectItem value="in_progress">In Progress</SelectItem>
-                                  <SelectItem value="resolved">Resolved</SelectItem>
-                                  <SelectItem value="closed">Closed</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredTickets.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No tickets found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredTickets.map((ticket) => (
+                  <TableRow key={ticket.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{ticket.profiles?.display_name || 'Unknown'}</p>
+                        <p className="text-xs text-muted-foreground">{ticket.profiles?.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium">{ticket.subject}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{ticket.message}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{ticket.category || 'General'}</Badge>
+                    </TableCell>
+                    <TableCell>{getPriorityBadge(ticket.priority)}</TableCell>
+                    <TableCell>{getStatusBadge(ticket.status)}</TableCell>
+                    <TableCell className="text-muted-foreground">{timeAgo(ticket.created_at)}</TableCell>
+                    <TableCell className="text-center">
+                      <Dialog open={dialogOpen && selectedTicket?.id === ticket.id} onOpenChange={(open) => {
+                        setDialogOpen(open);
+                        if (!open) setSelectedTicket(null);
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" onClick={() => {
+                            setSelectedTicket(ticket);
+                            setDialogOpen(true);
+                          }}>
+                            <Eye className="w-4 h-4 mr-1" />
+                            View
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>{ticket.subject}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="flex gap-2">
+                              {getPriorityBadge(ticket.priority)}
+                              {getStatusBadge(ticket.status)}
+                              {ticket.category && <Badge variant="outline">{ticket.category}</Badge>}
+                            </div>
+                            <div className="p-4 bg-muted/50 rounded-lg">
+                              <p className="text-sm font-medium mb-1">From: {ticket.profiles?.display_name} ({ticket.profiles?.email})</p>
+                              <p className="text-muted-foreground whitespace-pre-wrap">{ticket.message}</p>
+                            </div>
+                            {ticket.admin_response && (
+                              <div className="p-4 bg-primary/10 rounded-lg border-l-4 border-primary">
+                                <p className="text-sm font-medium mb-1">Admin Response:</p>
+                                <p className="text-muted-foreground whitespace-pre-wrap">{ticket.admin_response}</p>
+                              </div>
+                            )}
+                            <div className="space-y-2">
+                              <Textarea
+                                placeholder="Write your response..."
+                                value={response}
+                                onChange={(e) => setResponse(e.target.value)}
+                                rows={4}
+                              />
+                              <div className="flex gap-2">
+                                <Button onClick={handleRespond} disabled={!response || updateTicketMutation.isPending}>
+                                  {updateTicketMutation.isPending ? 'Sending...' : 'Send Response'}
+                                </Button>
+                                <Select value={ticket.status} onValueChange={(v) => handleUpdateStatus(ticket.id, v)}>
+                                  <SelectTrigger className="w-[150px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="open">Open</SelectItem>
+                                    <SelectItem value="in_progress">In Progress</SelectItem>
+                                    <SelectItem value="resolved">Resolved</SelectItem>
+                                    <SelectItem value="closed">Closed</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

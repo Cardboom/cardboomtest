@@ -3,46 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { 
-  Settings, 
   RefreshCw, 
   TrendingUp, 
-  TrendingDown, 
   Search, 
   Edit2,
   Save,
   X,
   Database,
   Zap,
-  Banknote,
-  ShieldCheck,
-  Users,
-  PieChart,
-  Truck,
-  Key,
-  MessageCircle,
-  HelpCircle,
-  Bot,
-  Bug,
-  Video,
-  DollarSign,
-  Package,
-  Shield,
-  Flag,
-  Gift,
-  Bell,
-  Star,
-  AlertTriangle
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useAdminRole } from '@/hooks/useAdminRole';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { WireTransferManagement } from '@/components/admin/WireTransferManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { FractionalManagement } from '@/components/admin/FractionalManagement';
@@ -67,7 +45,11 @@ import { CurrencyRatesManager } from '@/components/admin/CurrencyRatesManager';
 import { VaultManagement } from '@/components/admin/VaultManagement';
 import { EmailManager } from '@/components/admin/EmailManager';
 import { ConversionDashboard } from '@/components/analytics/ConversionDashboard';
-import cardboomLogo from '@/assets/cardboom-logo.png';
+import { DisputeManagement } from '@/components/admin/DisputeManagement';
+import { PayoutManager } from '@/components/admin/PayoutManager';
+import { AuctionManager } from '@/components/admin/AuctionManager';
+import { PointsManager } from '@/components/admin/PointsManager';
+import { WhaleInviteManager } from '@/components/admin/WhaleInviteManager';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -98,7 +80,7 @@ const Admin = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedItem, setEditedItem] = useState<Partial<MarketItem>>({});
   const [isSyncing, setIsSyncing] = useState(false);
-  const [activeTab, setActiveTab] = useState('revenue');
+  const [activeSection, setActiveSection] = useState('revenue');
 
   // Redirect if not admin
   useEffect(() => {
@@ -129,10 +111,10 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (isAdmin && activeTab === 'prices') {
+    if (isAdmin && activeSection === 'prices') {
       fetchItems();
     }
-  }, [isAdmin, activeTab]);
+  }, [isAdmin, activeSection]);
 
   // Get unique categories
   const categories = [...new Set(items.map(item => item.category))];
@@ -224,531 +206,320 @@ const Admin = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Simple admin header */}
-      <header className="border-b border-border/50 bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={cardboomLogo} alt="CardBoom" className="h-20 w-auto" />
-            <span className="font-bold text-xl text-primary">Admin</span>
-          </div>
-          <Button variant="outline" onClick={() => navigate('/')}>Back to Site</Button>
-        </div>
-      </header>
-      
-      <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <ShieldCheck className="w-8 h-8 text-primary" />
-              Admin Panel
-            </h1>
-            <p className="text-muted-foreground mt-1">Manage wire transfers, prices, and platform settings</p>
-          </div>
-        </div>
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'revenue':
+        return <RevenueDashboard />;
+      case 'analytics':
+        return <ConversionDashboard />;
+      case 'orders':
+        return <OrderManagement />;
+      case 'wire-transfers':
+        return <WireTransferManagement />;
+      case 'payouts':
+        return <PayoutManager />;
+      case 'disputes':
+        return <DisputeManagement />;
+      case 'users':
+        return <UserManagement />;
+      case 'verification':
+        return <SellerVerificationQueue />;
+      case 'whale':
+        return <WhaleInviteManager />;
+      case 'moderation':
+        return <ListingModeration />;
+      case 'featured':
+        return <FeaturedManager />;
+      case 'prices':
+        return renderPricesSection();
+      case 'controls':
+        return <MarketControlPanel />;
+      case 'fractional':
+        return <FractionalManagement />;
+      case 'cardwars':
+        return <CardWarsManager />;
+      case 'communityvotes':
+        return <CommunityVotesManager />;
+      case 'fanaccounts':
+        return <FanAccountsManager />;
+      case 'auctions':
+        return <AuctionManager />;
+      case 'points':
+        return <PointsManager />;
+      case 'promos':
+        return <PromoManager />;
+      case 'support':
+        return <SupportTickets />;
+      case 'notifications':
+        return <NotificationSender />;
+      case 'email':
+        return <EmailManager />;
+      case 'api':
+        return <APIAnalytics />;
+      case 'diagnostics':
+        return <DiagnosticsDashboard />;
+      case 'currency':
+        return <CurrencyRatesManager />;
+      case 'vault':
+        return <VaultManagement />;
+      case 'grading':
+        return <GradingManagement />;
+      case 'datasync':
+        return <DataSyncManager />;
+      case 'autobuy':
+        return <AutoBuyManager />;
+      default:
+        return <RevenueDashboard />;
+    }
+  };
 
-        {/* Admin Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-card/50 border border-border/50 flex-wrap h-auto gap-1">
-            <TabsTrigger value="revenue" className="gap-2">
-              <DollarSign className="w-4 h-4" />
-              Revenue
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
-              <Package className="w-4 h-4" />
-              Orders
-            </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="w-4 h-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="verification" className="gap-2">
-              <Shield className="w-4 h-4" />
-              Seller KYC
-            </TabsTrigger>
-            <TabsTrigger value="moderation" className="gap-2">
-              <Flag className="w-4 h-4" />
-              Moderation
-            </TabsTrigger>
-            <TabsTrigger value="promos" className="gap-2">
-              <Gift className="w-4 h-4" />
-              Promos
-            </TabsTrigger>
-            <TabsTrigger value="notifications" className="gap-2">
-              <Bell className="w-4 h-4" />
-              Notifications
-            </TabsTrigger>
-            <TabsTrigger value="featured" className="gap-2">
-              <Star className="w-4 h-4" />
-              Featured
-            </TabsTrigger>
-            <TabsTrigger value="controls" className="gap-2">
-              <AlertTriangle className="w-4 h-4" />
-              Market Controls
-            </TabsTrigger>
-            <TabsTrigger value="support" className="gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Support
-            </TabsTrigger>
-            <TabsTrigger value="wire-transfers" className="gap-2">
-              <Banknote className="w-4 h-4" />
-              Wire Transfers
-            </TabsTrigger>
-            <TabsTrigger value="fractional" className="gap-2">
-              <PieChart className="w-4 h-4" />
-              Fractional
-            </TabsTrigger>
-            <TabsTrigger value="api" className="gap-2">
-              <Key className="w-4 h-4" />
-              API
-            </TabsTrigger>
-            <TabsTrigger value="autobuy" className="gap-2">
-              <Bot className="w-4 h-4" />
-              Deal Scooper
-            </TabsTrigger>
-            <TabsTrigger value="datasync" className="gap-2">
-              <Database className="w-4 h-4" />
-              Data Sync
-            </TabsTrigger>
-            <TabsTrigger value="diagnostics" className="gap-2">
-              <Bug className="w-4 h-4" />
-              Diagnostics
-            </TabsTrigger>
-            <TabsTrigger value="grading" className="gap-2">
-              <ShieldCheck className="w-4 h-4" />
-              Grading
-            </TabsTrigger>
-            <TabsTrigger value="cardwars" className="gap-2">
-              <Zap className="w-4 h-4" />
-              Card Wars $
-            </TabsTrigger>
-            <TabsTrigger value="communityvotes" className="gap-2">
-              <Users className="w-4 h-4" />
-              Community Votes
-            </TabsTrigger>
-            <TabsTrigger value="fanaccounts" className="gap-2">
-              <Video className="w-4 h-4" />
-              Boom Reels
-            </TabsTrigger>
-            <TabsTrigger value="prices" className="gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Prices
-            </TabsTrigger>
-            <TabsTrigger value="currency" className="gap-2">
-              <DollarSign className="w-4 h-4" />
-              Currency
-            </TabsTrigger>
-            <TabsTrigger value="vault" className="gap-2">
-              <Package className="w-4 h-4" />
-              Vault
-            </TabsTrigger>
-            <TabsTrigger value="email" className="gap-2">
-              <Bell className="w-4 h-4" />
-              Email
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-2">
-              <TrendingUp className="w-4 h-4" />
-              Analytics
-            </TabsTrigger>
-          </TabsList>
+  const renderPricesSection = () => (
+    <div className="space-y-6">
+      {/* Sync Button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Price Management</h2>
+        <Button 
+          onClick={handleSyncPrices} 
+          disabled={isSyncing}
+          className="gap-2"
+        >
+          {isSyncing ? (
+            <RefreshCw className="w-4 h-4 animate-spin" />
+          ) : (
+            <Zap className="w-4 h-4" />
+          )}
+          Sync PriceCharting API
+        </Button>
+      </div>
 
-          <TabsContent value="revenue">
-            <RevenueDashboard />
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <OrderManagement />
-          </TabsContent>
-
-          <TabsContent value="users">
-            <UserManagement />
-          </TabsContent>
-
-          <TabsContent value="verification">
-            <SellerVerificationQueue />
-          </TabsContent>
-
-          <TabsContent value="moderation">
-            <ListingModeration />
-          </TabsContent>
-
-          <TabsContent value="promos">
-            <PromoManager />
-          </TabsContent>
-
-          <TabsContent value="notifications">
-            <NotificationSender />
-          </TabsContent>
-
-          <TabsContent value="featured">
-            <FeaturedManager />
-          </TabsContent>
-
-          <TabsContent value="controls">
-            <MarketControlPanel />
-          </TabsContent>
-
-          <TabsContent value="support">
-            <SupportTickets />
-          </TabsContent>
-
-          <TabsContent value="wire-transfers">
-            <WireTransferManagement />
-          </TabsContent>
-
-          <TabsContent value="fractional">
-            <FractionalManagement />
-          </TabsContent>
-
-          <TabsContent value="api">
-            <APIAnalytics />
-          </TabsContent>
-
-          <TabsContent value="autobuy">
-            <AutoBuyManager />
-          </TabsContent>
-
-          <TabsContent value="datasync">
-            <DataSyncManager />
-          </TabsContent>
-
-          <TabsContent value="diagnostics">
-            <DiagnosticsDashboard />
-          </TabsContent>
-
-          <TabsContent value="grading">
-            <GradingManagement />
-          </TabsContent>
-
-          <TabsContent value="cardwars">
-            <CardWarsManager />
-          </TabsContent>
-
-          <TabsContent value="communityvotes">
-            <CommunityVotesManager />
-          </TabsContent>
-
-          <TabsContent value="fanaccounts">
-            <FanAccountsManager />
-          </TabsContent>
-
-          <TabsContent value="prices" className="space-y-6">
-            {/* Sync Button */}
-            <div className="flex justify-end">
-              <Button 
-                onClick={handleSyncPrices} 
-                disabled={isSyncing}
-                className="gap-2"
-              >
-                {isSyncing ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Zap className="w-4 h-4" />
-                )}
-                Sync PriceCharting API
-              </Button>
-            </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-card/50 border-border/50">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Database className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Items</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.totalItems}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-card/50 border-border/50">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-500/10">
-                  <TrendingUp className="w-5 h-5 text-orange-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Trending</p>
-                  <p className="text-2xl font-bold text-foreground">{stats.trending}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-card/50 border-border/50">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10">
-                  <TrendingUp className="w-5 h-5 text-emerald-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Gainers (24h)</p>
-                  <p className="text-2xl font-bold text-emerald-500">{stats.gainers}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-card/50 border-border/50">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-red-500/10">
-                  <TrendingDown className="w-5 h-5 text-red-500" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Losers (24h)</p>
-                  <p className="text-2xl font-bold text-red-500">{stats.losers}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters */}
-        <Card className="mb-6 bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <Label htmlFor="search" className="sr-only">Search</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    placeholder="Search items..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-background/50"
-                  />
-                </div>
-              </div>
-              
-              <div className="w-full md:w-48">
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="bg-background/50">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <Button variant="outline" onClick={fetchItems} className="gap-2">
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Items Table */}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-card/50 border-border/50">
-          <CardHeader>
-            <CardTitle>Market Items ({filteredItems.length})</CardTitle>
-            <CardDescription>Click edit to update prices and details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Database className="w-5 h-5 text-primary" />
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead className="text-right">Price</TableHead>
-                      <TableHead className="text-right">24h %</TableHead>
-                      <TableHead className="text-right">7d %</TableHead>
-                      <TableHead className="text-center">Trending</TableHead>
-                      <TableHead>Liquidity</TableHead>
-                      <TableHead>Source</TableHead>
-                      <TableHead className="text-center">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredItems.map((item) => (
-                      <TableRow key={item.id}>
-                        {editingId === item.id ? (
-                          <>
-                            <TableCell>
-                              <Input
-                                value={editedItem.name || ''}
-                                onChange={(e) => setEditedItem({ ...editedItem, name: e.target.value })}
-                                className="h-8"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={editedItem.category || ''}
-                                onChange={(e) => setEditedItem({ ...editedItem, category: e.target.value })}
-                                className="h-8"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                value={editedItem.current_price || 0}
-                                onChange={(e) => setEditedItem({ ...editedItem, current_price: parseFloat(e.target.value) })}
-                                className="h-8 w-24 text-right"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                step="0.1"
-                                value={editedItem.change_24h || 0}
-                                onChange={(e) => setEditedItem({ ...editedItem, change_24h: parseFloat(e.target.value) })}
-                                className="h-8 w-20 text-right"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                type="number"
-                                step="0.1"
-                                value={editedItem.change_7d || 0}
-                                onChange={(e) => setEditedItem({ ...editedItem, change_7d: parseFloat(e.target.value) })}
-                                className="h-8 w-20 text-right"
-                              />
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <input
-                                type="checkbox"
-                                checked={editedItem.is_trending || false}
-                                onChange={(e) => setEditedItem({ ...editedItem, is_trending: e.target.checked })}
-                                className="w-4 h-4"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Select
-                                value={editedItem.liquidity || 'medium'}
-                                onValueChange={(v) => setEditedItem({ ...editedItem, liquidity: v as LiquidityLevel })}
-                              >
-                                <SelectTrigger className="h-8 w-24">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="high">High</SelectItem>
-                                  <SelectItem value="medium">Medium</SelectItem>
-                                  <SelectItem value="low">Low</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-xs">
-                                {item.data_source || 'manual'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center justify-center gap-1">
-                                <Button size="icon" variant="ghost" onClick={handleSave} className="h-8 w-8">
-                                  <Save className="w-4 h-4 text-emerald-500" />
-                                </Button>
-                                <Button size="icon" variant="ghost" onClick={handleCancelEdit} className="h-8 w-8">
-                                  <X className="w-4 h-4 text-red-500" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </>
-                        ) : (
-                          <>
-                            <TableCell className="font-medium">{item.name}</TableCell>
-                            <TableCell>
-                              <Badge variant="secondary" className="text-xs">
-                                {item.category}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-right font-mono">
-                              {formatPrice(item.current_price)}
-                            </TableCell>
-                            <TableCell className={`text-right font-mono ${
-                              (item.change_24h || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'
-                            }`}>
-                              {(item.change_24h || 0) >= 0 ? '+' : ''}{(item.change_24h || 0).toFixed(1)}%
-                            </TableCell>
-                            <TableCell className={`text-right font-mono ${
-                              (item.change_7d || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'
-                            }`}>
-                              {(item.change_7d || 0) >= 0 ? '+' : ''}{(item.change_7d || 0).toFixed(1)}%
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {item.is_trending ? (
-                                <Badge className="bg-orange-500/20 text-orange-400">🔥</Badge>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant="outline" 
-                                className={
-                                  item.liquidity === 'high' ? 'border-emerald-500/50 text-emerald-500' :
-                                  item.liquidity === 'medium' ? 'border-yellow-500/50 text-yellow-500' :
-                                  'border-red-500/50 text-red-500'
-                                }
-                              >
-                                {item.liquidity || 'low'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className="text-xs">
-                                {item.data_source || 'manual'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center justify-center">
-                                <Button size="icon" variant="ghost" onClick={() => handleEdit(item)} className="h-8 w-8">
-                                  <Edit2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </>
-                        )}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Items</p>
+                <p className="text-2xl font-bold text-foreground">{stats.totalItems}</p>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
-          </TabsContent>
+        
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-orange-500/10">
+                <TrendingUp className="w-5 h-5 text-orange-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Trending</p>
+                <p className="text-2xl font-bold text-foreground">{stats.trending}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10">
+                <TrendingUp className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Gainers (24h)</p>
+                <p className="text-2xl font-bold text-emerald-500">{stats.gainers}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-red-500/10">
+                <TrendingUp className="w-5 h-5 text-red-500 rotate-180" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Losers (24h)</p>
+                <p className="text-2xl font-bold text-red-500">{stats.losers}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <TabsContent value="currency">
-            <CurrencyRatesManager />
-          </TabsContent>
+      {/* Filters */}
+      <Card className="bg-card/50 border-border/50">
+        <CardContent className="p-4 flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search items..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
 
-          <TabsContent value="vault">
-            <VaultManagement />
-          </TabsContent>
+      {/* Items Table */}
+      <Card className="bg-card/50 border-border/50">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead className="text-right">24h</TableHead>
+                  <TableHead className="text-right">7d</TableHead>
+                  <TableHead>Liquidity</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredItems.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      No items found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredItems.slice(0, 50).map(item => (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">
+                        {editingId === item.id ? (
+                          <Input
+                            value={editedItem.name || ''}
+                            onChange={(e) => setEditedItem({ ...editedItem, name: e.target.value })}
+                            className="h-8"
+                          />
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            {item.name}
+                            {item.is_trending && <Badge className="bg-orange-500 text-xs">🔥</Badge>}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{item.category}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {editingId === item.id ? (
+                          <Input
+                            type="number"
+                            value={editedItem.current_price || 0}
+                            onChange={(e) => setEditedItem({ ...editedItem, current_price: parseFloat(e.target.value) })}
+                            className="h-8 w-24 text-right"
+                          />
+                        ) : (
+                          formatPrice(item.current_price)
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {editingId === item.id ? (
+                          <Input
+                            type="number"
+                            value={editedItem.change_24h || 0}
+                            onChange={(e) => setEditedItem({ ...editedItem, change_24h: parseFloat(e.target.value) })}
+                            className="h-8 w-20 text-right"
+                          />
+                        ) : (
+                          <span className={item.change_24h && item.change_24h > 0 ? 'text-emerald-500' : item.change_24h && item.change_24h < 0 ? 'text-red-500' : 'text-muted-foreground'}>
+                            {item.change_24h ? `${item.change_24h > 0 ? '+' : ''}${item.change_24h.toFixed(1)}%` : '-'}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <span className={item.change_7d && item.change_7d > 0 ? 'text-emerald-500' : item.change_7d && item.change_7d < 0 ? 'text-red-500' : 'text-muted-foreground'}>
+                          {item.change_7d ? `${item.change_7d > 0 ? '+' : ''}${item.change_7d.toFixed(1)}%` : '-'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant="outline"
+                          className={
+                            item.liquidity === 'high' ? 'border-emerald-500 text-emerald-500' :
+                            item.liquidity === 'medium' ? 'border-yellow-500 text-yellow-500' :
+                            'border-red-500 text-red-500'
+                          }
+                        >
+                          {item.liquidity || 'N/A'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {editingId === item.id ? (
+                          <div className="flex items-center justify-center gap-1">
+                            <Button size="icon" variant="ghost" onClick={handleSave} className="h-8 w-8">
+                              <Save className="w-4 h-4 text-emerald-500" />
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={handleCancelEdit} className="h-8 w-8">
+                              <X className="w-4 h-4 text-red-500" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button size="icon" variant="ghost" onClick={() => handleEdit(item)} className="h-8 w-8">
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
-          <TabsContent value="email">
-            <EmailManager />
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <ConversionDashboard />
-          </TabsContent>
-        </Tabs>
-      </main>
+  return (
+    <div className="min-h-screen flex w-full bg-background">
+      <AdminSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
-      {/* Simple footer */}
-      <footer className="border-t border-border/50 py-6">
-        <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-          CardBoom Admin Panel © {new Date().getFullYear()}
-        </div>
-      </footer>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="sticky top-0 z-40 border-b border-border/50 bg-background/95 backdrop-blur">
+          <div className="flex items-center gap-4 px-4 py-3">
+            <div className="flex-1">
+              <h1 className="text-xl font-semibold text-foreground capitalize">
+                {activeSection.replace(/-/g, ' ')}
+              </h1>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => navigate('/')}>
+              Back to Site
+            </Button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
+          {renderContent()}
+        </main>
+      </div>
     </div>
   );
 };
