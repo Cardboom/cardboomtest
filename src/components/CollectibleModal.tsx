@@ -8,6 +8,7 @@ import { ShareButton } from './ShareButton';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { CardSocialProof } from './CardSocialProof';
+import { ItemSellersAndBids } from './item/ItemSellersAndBids';
 import { generateCardUrl } from '@/lib/seoSlug';
 
 interface CollectibleModalProps {
@@ -144,6 +145,14 @@ export const CollectibleModal = ({ collectible, onClose, onAddToCart }: Collecti
                 <div className="font-medium text-foreground capitalize">{collectible.category}</div>
               </div>
             </div>
+
+            {/* Sellers and Bids */}
+            <ItemSellersAndBids 
+              itemId={collectible.id}
+              itemName={collectible.name}
+              category={collectible.category}
+              compact
+            />
 
             {/* Actions */}
             <div className="flex gap-3">
