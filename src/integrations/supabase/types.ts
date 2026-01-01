@@ -5779,9 +5779,15 @@ export type Database = {
           guru_expertise: string[] | null
           id: string | null
           is_beta_tester: boolean | null
+          is_fan_account: boolean | null
           level: number | null
+          profile_background: string | null
+          reputation_score: number | null
+          reputation_tier: string | null
           showcase_items: string[] | null
           title: string | null
+          trust_rating: number | null
+          trust_review_count: number | null
           xp: number | null
         }
         Insert: {
@@ -5795,9 +5801,15 @@ export type Database = {
           guru_expertise?: string[] | null
           id?: string | null
           is_beta_tester?: boolean | null
+          is_fan_account?: boolean | null
           level?: number | null
+          profile_background?: string | null
+          reputation_score?: number | null
+          reputation_tier?: string | null
           showcase_items?: string[] | null
           title?: string | null
+          trust_rating?: number | null
+          trust_review_count?: number | null
           xp?: number | null
         }
         Update: {
@@ -5811,9 +5823,15 @@ export type Database = {
           guru_expertise?: string[] | null
           id?: string | null
           is_beta_tester?: boolean | null
+          is_fan_account?: boolean | null
           level?: number | null
+          profile_background?: string | null
+          reputation_score?: number | null
+          reputation_tier?: string | null
           showcase_items?: string[] | null
           title?: string | null
+          trust_rating?: number | null
+          trust_review_count?: number | null
           xp?: number | null
         }
         Relationships: []
