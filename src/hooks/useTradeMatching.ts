@@ -125,10 +125,10 @@ export const useTradeMatching = () => {
         matchMap.set(item.user_id, existing);
       });
 
-      // Get user profiles for matches
+      // Get user profiles for matches from public view (excludes PII)
       const matchUserIds = Array.from(matchMap.keys());
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, display_name, avatar_url')
         .in('id', matchUserIds);
 

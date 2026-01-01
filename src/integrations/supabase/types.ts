@@ -5780,6 +5780,7 @@ export type Database = {
           id: string | null
           is_beta_tester: boolean | null
           is_fan_account: boolean | null
+          is_id_verified: boolean | null
           level: number | null
           profile_background: string | null
           reputation_score: number | null
@@ -5802,6 +5803,7 @@ export type Database = {
           id?: string | null
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
+          is_id_verified?: boolean | null
           level?: number | null
           profile_background?: string | null
           reputation_score?: number | null
@@ -5824,6 +5826,7 @@ export type Database = {
           id?: string | null
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
+          is_id_verified?: boolean | null
           level?: number | null
           profile_background?: string | null
           reputation_score?: number | null

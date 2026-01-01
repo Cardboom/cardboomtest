@@ -53,10 +53,10 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
       }
 
       if (data && data.length > 0) {
-        // Fetch seller profiles
+        // Fetch seller profiles from public view (excludes PII)
         const sellerIds = [...new Set(data.map(l => l.seller_id))];
         const { data: profiles } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('id, display_name, is_id_verified')
           .in('id', sellerIds);
 

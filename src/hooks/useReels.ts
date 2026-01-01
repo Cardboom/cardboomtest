@@ -96,10 +96,10 @@ export function useReels(feedType: 'for_you' | 'following' | 'trending' = 'for_y
         return;
       }
 
-      // Fetch user profiles separately
+      // Fetch user profiles from public view (excludes PII)
       const userIds = [...new Set(data.map(r => r.user_id))];
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, display_name, avatar_url')
         .in('id', userIds);
 
@@ -365,12 +365,12 @@ export function useReelComments(reelId: string) {
         .not('parent_id', 'is', null)
         .order('created_at', { ascending: true });
 
-      // Fetch user profiles for all comments
+      // Fetch user profiles from public view (excludes PII)
       const allComments = [...parentComments, ...(replies || [])];
       const userIds = [...new Set(allComments.map(c => c.user_id))];
       
       const { data: profiles } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, display_name, avatar_url')
         .in('id', userIds);
 

@@ -34,7 +34,7 @@ const PublicProfile = () => {
     queryFn: async () => {
       // Try to find by display_name first, then by ID
       let { data, error } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('*')
         .ilike('display_name', username || '')
         .maybeSingle();
@@ -42,7 +42,7 @@ const PublicProfile = () => {
       if (!data && username) {
         // Try by ID
         const { data: byId, error: idError } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('*')
           .eq('id', username)
           .maybeSingle();
