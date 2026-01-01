@@ -58,9 +58,9 @@ const SellerProfile = () => {
 
   const fetchSellerData = async () => {
     try {
-      // Fetch seller profile
+      // Fetch seller profile from public view (excludes PII)
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('*')
         .eq('id', sellerId)
         .single();

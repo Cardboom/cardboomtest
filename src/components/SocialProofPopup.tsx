@@ -49,7 +49,7 @@ export const SocialProofPopup = () => {
             .single();
 
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('display_name')
             .eq('id', payload.new.buyer_id)
             .single();
@@ -82,7 +82,7 @@ export const SocialProofPopup = () => {
         },
         async (payload) => {
           const { data: profile } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('display_name')
             .eq('id', payload.new.seller_id)
             .single();

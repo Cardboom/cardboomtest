@@ -49,11 +49,11 @@ export const ReelsPreviewSection = () => {
 
       if (error) throw error;
 
-      // Fetch user profiles
+      // Fetch user profiles from public view (excludes PII)
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(r => r.user_id))];
         const { data: profiles } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('id, display_name, avatar_url')
           .in('id', userIds);
 

@@ -25,9 +25,9 @@ export function TrustedMerchants() {
   const { data: merchants, isLoading } = useQuery({
     queryKey: ['trusted-merchants'],
     queryFn: async () => {
-      // Fetch profiles with their sales data
+      // Fetch profiles from public view (excludes PII)
       const { data: profiles, error } = await supabase
-        .from('profiles')
+        .from('public_profiles')
         .select('id, display_name, avatar_url, trust_rating, trust_review_count, account_type, is_id_verified')
         .eq('is_fan_account', false)
         .order('trust_rating', { ascending: false })
