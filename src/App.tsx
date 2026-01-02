@@ -65,6 +65,7 @@ import GradingNew from "./pages/GradingNew";
 import GradingOrders from "./pages/GradingOrders";
 import GradingOrderDetail from "./pages/GradingOrderDetail";
 import NotFound from "./pages/NotFound";
+import CardWars from "./pages/CardWars";
 
 const queryClient = new QueryClient();
 
@@ -137,6 +138,7 @@ const AppContent = () => {
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/circle" element={<Circle />} />
+          <Route path="/card-wars" element={<CardWars />} />
           <Route path="/reels" element={<Reels />} />
           {/* Grading Routes */}
           <Route path="/grading" element={<Grading />} />
