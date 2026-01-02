@@ -106,11 +106,13 @@ const VaultPage = () => {
     }
   };
 
-  const totalValue = items.reduce((sum, item) => sum + (Number(item.estimated_value) || 0), 0);
-  const verifiedItems = items.filter(i => i.status === 'verified');
-  const pendingItems = items.filter(i => i.status !== 'verified' && i.status !== 'cancelled');
+  // Filter out cancelled items for all calculations - single source of truth
+  const activeItems = items.filter(i => i.status !== 'cancelled');
+  const totalValue = activeItems.reduce((sum, item) => sum + (Number(item.estimated_value) || 0), 0);
+  const verifiedItems = activeItems.filter(i => i.status === 'verified');
+  const pendingItems = activeItems.filter(i => i.status !== 'verified');
 
-  const filteredItems = activeTab === 'all' ? items.filter(i => i.status !== 'cancelled') : 
+  const filteredItems = activeTab === 'all' ? activeItems : 
     activeTab === 'verified' ? verifiedItems : pendingItems;
 
   const handleCancelRequest = async (itemId: string) => {
@@ -245,7 +247,7 @@ const VaultPage = () => {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Total Items</p>
-                      <p className="text-2xl font-bold text-foreground">{items.length}</p>
+                      <p className="text-2xl font-bold text-foreground">{activeItems.length}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -298,7 +300,7 @@ const VaultPage = () => {
             <TabsList className="bg-muted/50">
               <TabsTrigger value="all" className="gap-2">
                 <Package className="w-4 h-4" />
-                All Items ({items.length})
+                All Items ({activeItems.length})
               </TabsTrigger>
               <TabsTrigger value="verified" className="gap-2">
                 <CheckCircle className="w-4 h-4" />
