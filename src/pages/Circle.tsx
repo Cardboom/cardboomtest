@@ -9,13 +9,90 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MessageSquare, TrendingUp, TrendingDown, Minus, Clock, Flame, ArrowRight, Plus, AtSign, X, Search, ChevronUp, Globe, Sparkles, Swords, Trophy, Crown, Gem } from "lucide-react";
+import { MessageSquare, TrendingUp, TrendingDown, Minus, Clock, Flame, ArrowRight, Plus, AtSign, X, Search, ChevronUp, Globe, Sparkles, Swords, Trophy, Crown, Gem, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { normalizeSlug } from "@/lib/seoSlug";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
+import { useCardboomPoints } from "@/hooks/useCardboomPoints";
+
+// Mini Card Wars Vote Banner Component
+const CardWarsMiniVoteBanner = ({ userId }: { userId?: string }) => {
+  const navigate = useNavigate();
+  const { balance } = useCardboomPoints(userId);
+  const [showInsufficientFunds, setShowInsufficientFunds] = useState(false);
+  
+  const hasEnoughFunds = balance >= 100; // Minimum 100 points to participate (~$0.10)
+  
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!userId) {
+      toast.error("Please sign in to participate");
+      navigate("/auth");
+      return;
+    }
+    
+    if (hasEnoughFunds) {
+      navigate("/card-wars");
+    } else {
+      setShowInsufficientFunds(true);
+    }
+  };
+  
+  if (showInsufficientFunds) {
+    return (
+      <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 border border-amber-500/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/20">
+              <AlertCircle className="w-5 h-5 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="font-bold text-amber-500">Not Enough Funds</h3>
+              <p className="text-sm text-muted-foreground">
+                Get Pro for $2.50 free Cardboom Points monthly!
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setShowInsufficientFunds(false)}>
+              Cancel
+            </Button>
+            <Button 
+              size="sm" 
+              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+              onClick={() => navigate("/pricing")}
+            >
+              <Crown className="w-3 h-3 mr-1" />
+              Get Pro
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <button
+      onClick={handleClick}
+      className="w-full mb-6 p-3 rounded-lg bg-gradient-to-r from-orange-500/5 via-red-500/5 to-orange-500/5 border border-orange-500/20 hover:border-orange-500/40 transition-colors text-left group"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Swords className="w-4 h-4 text-orange-500" />
+          <span className="text-sm font-medium">Did you vote this week's Card War battle?</span>
+          <Badge variant="outline" className="border-orange-500/30 text-orange-500 text-xs py-0">
+            <Flame className="w-2.5 h-2.5 mr-0.5 animate-pulse" />
+            LIVE
+          </Badge>
+        </div>
+        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-orange-500 transition-colors" />
+      </div>
+    </button>
+  );
+};
 
 interface MarketItem {
   id: string;
@@ -376,38 +453,8 @@ const Circle = () => {
       
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          {/* Card Wars Banner */}
-          <Link 
-            to="/card-wars"
-            className="block mb-6 p-4 rounded-xl bg-gradient-to-r from-orange-500/10 via-red-500/5 to-orange-500/10 border border-orange-500/30 hover:border-orange-500/50 transition-colors group"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
-                  <Swords className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold flex items-center gap-2">
-                    Card Wars Arena
-                    <Badge variant="outline" className="border-orange-500/50 text-orange-500 text-xs">
-                      <Flame className="w-3 h-3 mr-1 animate-pulse" />
-                      LIVE
-                    </Badge>
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Vote on epic card battles • Pro members get <Gem className="w-3 h-3 inline text-primary" /> $2.50 free points/month
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">
-                  <Trophy className="w-3 h-3 mr-1" />
-                  $100 Prizes
-                </Badge>
-                <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </div>
-            </div>
-          </Link>
+          {/* Card Wars Mini Banner */}
+          <CardWarsMiniVoteBanner userId={user?.id} />
 
           {/* Header */}
           <div className="flex items-start justify-between mb-6">

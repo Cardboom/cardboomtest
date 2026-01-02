@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Gem } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Gem, Flame } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { CardboomPointsBadge } from '@/components/CardboomPointsBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -169,10 +170,11 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           {/* Desktop Nav with Grouped Menus */}
           <nav className="hidden lg:flex items-center gap-0">
             <Link 
-              to="/" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md"
+              to="/card-wars" 
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
-              {t.nav.marketplace}
+              <Swords className="w-3.5 h-3.5" />
+              Card Wars
             </Link>
             
             {/* Reels Link */}
@@ -535,12 +537,16 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               <nav className="flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
                 {/* Main Links */}
                 <Link 
-                  to="/" 
+                  to="/card-wars" 
                   className="flex items-center gap-3 py-3 px-3 rounded-xl text-foreground hover:bg-muted transition-colors" 
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  <TrendingUp className="w-5 h-5 text-muted-foreground" />
-                  <span className="font-medium">{t.nav.marketplace}</span>
+                  <Swords className="w-5 h-5 text-orange-500" />
+                  <span className="font-medium">Card Wars</span>
+                  <Badge variant="outline" className="ml-auto border-orange-500/30 text-orange-500 text-[10px] py-0">
+                    <Flame className="w-2.5 h-2.5 mr-0.5 animate-pulse" />
+                    LIVE
+                  </Badge>
                 </Link>
                 
                 <Link 
