@@ -51,6 +51,7 @@ import { AuctionManager } from '@/components/admin/AuctionManager';
 import { PointsManager } from '@/components/admin/PointsManager';
 import { WhaleInviteManager } from '@/components/admin/WhaleInviteManager';
 import { SystemAccountsManager } from '@/components/admin/SystemAccountsManager';
+import { InventoryIntegrityDashboard } from '@/components/admin/InventoryIntegrityDashboard';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -271,6 +272,8 @@ const Admin = () => {
         return <DataSyncManager />;
       case 'autobuy':
         return <AutoBuyManager />;
+      case 'inventory':
+        return <InventoryIntegrityDashboard />;
       default:
         return <RevenueDashboard />;
     }
