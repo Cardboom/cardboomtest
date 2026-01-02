@@ -117,6 +117,21 @@ export default {
         'gradient-shift': {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' }
+        },
+        'tick-up': {
+          '0%': { transform: 'translateY(0)', opacity: '1' },
+          '50%': { transform: 'translateY(-3px)', opacity: '0.8' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
+        },
+        'tick-down': {
+          '0%': { transform: 'translateY(0)', opacity: '1' },
+          '50%': { transform: 'translateY(3px)', opacity: '0.8' },
+          '100%': { transform: 'translateY(0)', opacity: '1' }
+        },
+        'price-flash': {
+          '0%': { backgroundColor: 'transparent' },
+          '50%': { backgroundColor: 'hsl(var(--primary) / 0.2)' },
+          '100%': { backgroundColor: 'transparent' }
         }
       },
       animation: {
@@ -128,7 +143,10 @@ export default {
         'scale-in': 'scale-in 0.3s ease-out forwards',
         'glow-pulse': 'glow-pulse 2.5s ease-in-out infinite',
         'float': 'float 6s ease-in-out infinite',
-        'gradient-shift': 'gradient-shift 8s ease infinite'
+        'gradient-shift': 'gradient-shift 8s ease infinite',
+        'tick-up': 'tick-up 0.15s ease-out',
+        'tick-down': 'tick-down 0.15s ease-out',
+        'price-flash': 'price-flash 0.3s ease-out'
       },
       boxShadow: {
         '2xs': 'var(--shadow-2xs)',

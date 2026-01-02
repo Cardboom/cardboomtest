@@ -77,19 +77,27 @@ export const LiveTickerPrice = ({
   return (
     <span
       className={cn(
-        'inline-block font-mono tabular-nums transition-colors duration-150',
+        'inline-block font-mono tabular-nums transition-all duration-200',
         isFlashing && direction === 'up' && 'text-gain',
         isFlashing && direction === 'down' && 'text-loss',
         className
       )}
     >
       <span className={cn(
-        'inline-block transition-transform duration-150',
-        isFlashing && direction === 'up' && 'animate-[tick-up_0.15s_ease-out]',
-        isFlashing && direction === 'down' && 'animate-[tick-down_0.15s_ease-out]'
+        'inline-block transition-all duration-150',
+        isFlashing && direction === 'up' && 'animate-tick-up scale-105',
+        isFlashing && direction === 'down' && 'animate-tick-down scale-105'
       )}>
         {formatPrice(displayValue)}
       </span>
+      {isFlashing && (
+        <span className={cn(
+          'ml-1 text-xs opacity-80 animate-fade-in',
+          direction === 'up' ? 'text-gain' : 'text-loss'
+        )}>
+          {direction === 'up' ? '↑' : '↓'}
+        </span>
+      )}
     </span>
   );
 };
