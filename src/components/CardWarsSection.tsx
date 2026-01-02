@@ -301,7 +301,7 @@ export const CardWarsSection = () => {
                     <h3 className="text-xl font-bold">Card Wars</h3>
                     <p className="text-muted-foreground max-w-md mx-auto text-sm px-4">
                       Vote on epic card battles! Pro members compete for real cash prizes 
-                      and earn <span className="text-primary font-medium">Cardboom Points</span> from prize pool shares.
+                      and earn <span className="text-primary font-medium">Cardboom Gems</span> from prize pool shares.
                     </p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -522,7 +522,7 @@ export const CardWarsSection = () => {
                   <div className="p-2 rounded-md bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 text-center text-xs">
                     <span className="flex items-center justify-center gap-2 text-yellow-600 dark:text-yellow-400">
                       <Gift className="w-3 h-3" />
-                      Pro subscribers get <strong>$2.50 in free Cardboom Points</strong> monthly — use them in Card Wars or for purchases!
+                      Pro subscribers get <strong>$2.50 in free Cardboom Gems</strong> monthly — use them in Card Wars or for purchases!
                     </span>
                   </div>
                 </div>

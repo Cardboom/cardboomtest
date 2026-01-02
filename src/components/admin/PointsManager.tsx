@@ -228,8 +228,8 @@ export function PointsManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Cardboom Points</h2>
-          <p className="text-muted-foreground">Manage user points and view statistics</p>
+          <h2 className="text-2xl font-bold">Cardboom Gems</h2>
+          <p className="text-muted-foreground">Manage user gems and view statistics</p>
         </div>
       </div>
 
@@ -325,9 +325,9 @@ export function PointsManager() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5" />
-            Top Point Holders
+            Top Gem Holders
           </CardTitle>
-          <CardDescription>Users with the highest point balances</CardDescription>
+          <CardDescription>Users with the highest gem balances</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (

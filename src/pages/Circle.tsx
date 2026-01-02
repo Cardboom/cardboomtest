@@ -52,7 +52,7 @@ const CardWarsMiniVoteBanner = ({ userId }: { userId?: string }) => {
             <div>
               <h3 className="font-bold text-amber-500">Not Enough Funds</h3>
               <p className="text-sm text-muted-foreground">
-                Get Pro for $2.50 free Cardboom Points monthly!
+                Get Pro for $2.50 free Cardboom Gems monthly!
               </p>
             </div>
           </div>
