@@ -50,6 +50,7 @@ import { PayoutManager } from '@/components/admin/PayoutManager';
 import { AuctionManager } from '@/components/admin/AuctionManager';
 import { PointsManager } from '@/components/admin/PointsManager';
 import { WhaleInviteManager } from '@/components/admin/WhaleInviteManager';
+import { SystemAccountsManager } from '@/components/admin/SystemAccountsManager';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -226,6 +227,8 @@ const Admin = () => {
         return <SellerVerificationQueue />;
       case 'whale':
         return <WhaleInviteManager />;
+      case 'system-accounts':
+        return <SystemAccountsManager />;
       case 'moderation':
         return <ListingModeration />;
       case 'featured':
