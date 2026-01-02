@@ -150,21 +150,35 @@ const CardPage = () => {
     enabled: !!category && !!slug,
   });
 
-  // Handle canonical URL redirect
+  // Handle canonical URL redirect - only redirect if the matched item closely matches the original slug
   useEffect(() => {
-    if (item && !isLoading) {
+    if (item && !isLoading && slug) {
       const canonicalSlug = generateCardSlug(item);
       const canonicalCategory = normalizeCategory(item.category);
       const currentPath = location.pathname;
       const canonicalPath = `/cards/${canonicalCategory}/${canonicalSlug}`;
       
-      // Check if current URL matches canonical - redirect if not
-      if (currentPath !== canonicalPath && !currentPath.startsWith('/item/')) {
-        // 301 redirect to canonical URL (browser handles as client-side)
+      // Only redirect if the current slug is a reasonable match for this item
+      // This prevents redirect loops when fuzzy matching returns a different card
+      const currentSlugNormalized = normalizeSlug(slug).toLowerCase();
+      const itemNameNormalized = normalizeSlug(item.name).toLowerCase();
+      
+      // Check if the original slug contains significant parts of the item name
+      // or if the item name contains significant parts of the slug
+      const slugWords = currentSlugNormalized.split('-').filter(w => w.length >= 3);
+      const nameWords = itemNameNormalized.split('-').filter(w => w.length >= 3);
+      
+      // At least one significant word from slug should appear in item name
+      const hasMatchingWord = slugWords.some(sw => 
+        nameWords.some(nw => nw.includes(sw) || sw.includes(nw))
+      );
+      
+      // Only redirect if there's a good match AND the path differs
+      if (hasMatchingWord && currentPath !== canonicalPath && !currentPath.startsWith('/item/')) {
         navigate(canonicalPath + location.search, { replace: true });
       }
     }
-  }, [item, isLoading, location.pathname, location.search, navigate]);
+  }, [item, isLoading, slug, location.pathname, location.search, navigate]);
 
   // Fetch watchlist count
   const { data: watchlistCount } = useQuery({
