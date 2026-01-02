@@ -20,8 +20,8 @@ const categoryToApiSlug: Record<string, string> = {
   'mtg': 'magic',
   'lorcana': 'lorcana',
   'digimon': 'digimon',
-  'dragonball': 'dragon-ball-fusion',
-  'starwars': 'star-wars-unlimited',
+  'dragon-ball': 'dragon-ball-fusion',
+  'star-wars': 'star-wars-unlimited',
 }
 
 // Riftbound champion name to Data Dragon champion key mapping for fallback images

@@ -56,7 +56,15 @@ export const DataSyncManager = () => {
   const triggerSync = async (source: string) => {
     setIsSyncing(prev => ({ ...prev, [source]: true }));
     try {
-      const functionName = source === 'cardmarket' ? 'sync-cardmarket-images' : source === 'tcgdex' ? 'sync-tcgdex-images' : source === 'scryfall' ? 'sync-scryfall-images' : source === 'ygopro' ? 'sync-ygopro-images' : source === 'optcg' ? 'sync-optcg-images' : 'sync-pricecharting-listings';
+      const functionMap: Record<string, string> = {
+        'cardmarket': 'sync-cardmarket-images',
+        'tcgdex': 'sync-tcgdex-images',
+        'scryfall': 'sync-scryfall-images',
+        'ygopro': 'sync-ygopro-images',
+        'optcg': 'sync-optcg-images',
+        'apitcg': 'sync-apitcg-images',
+      };
+      const functionName = functionMap[source] || 'sync-pricecharting-listings';
       const body: Record<string, unknown> = { limit: batchSize };
       if (source === 'cardmarket') { body.delay_ms = delayMs; body.store_price_history = true; if (selectedCategory !== 'all') body.category = selectedCategory; }
       const { data, error } = await supabase.functions.invoke(functionName, { body });
@@ -86,12 +94,31 @@ export const DataSyncManager = () => {
     finally { setIsRunningBulkSync(false); }
   };
 
+  const [isSeedingCategories, setIsSeedingCategories] = useState(false);
+  
+  const seedNewCategories = async () => {
+    setIsSeedingCategories(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('seed-tcg-categories', { 
+        body: { limit: 100 } 
+      });
+      if (error) throw error;
+      toast.success(`Seeded ${data?.totalSeeded || 0} items across new categories`);
+      fetchStats();
+    } catch (error) {
+      toast.error('Failed to seed categories');
+    } finally {
+      setIsSeedingCategories(false);
+    }
+  };
+  
   const sources = [
     { id: 'cardmarket', name: 'Cardmarket API', description: 'PREMIUM - 3000/day', color: 'bg-blue-500', isPaid: true },
     { id: 'tcgdex', name: 'TCGdex', description: 'Free - Pokemon', color: 'bg-yellow-500', isPaid: false },
     { id: 'scryfall', name: 'Scryfall', description: 'Free - MTG', color: 'bg-orange-500', isPaid: false },
     { id: 'ygopro', name: 'YGOPro', description: 'Free - Yu-Gi-Oh', color: 'bg-purple-500', isPaid: false },
     { id: 'optcg', name: 'OPTCG', description: 'Free - One Piece', color: 'bg-red-500', isPaid: false },
+    { id: 'apitcg', name: 'API TCG', description: 'Free - Multi-TCG', color: 'bg-emerald-500', isPaid: false },
   ];
 
   if (isLoading) return <div className="flex justify-center py-12"><RefreshCw className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -114,15 +141,19 @@ export const DataSyncManager = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div><Label>Batch Size</Label><Input type="number" value={batchSize} onChange={e => setBatchSize(Number(e.target.value))} min={10} max={200} /></div>
             <div><Label>Batches</Label><Input type="number" value={totalBatches} onChange={e => setTotalBatches(Number(e.target.value))} min={1} max={30} /></div>
-            <div><Label>Category</Label><Select value={selectedCategory} onValueChange={setSelectedCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem><SelectItem value="pokemon">Pokemon</SelectItem><SelectItem value="yugioh">Yu-Gi-Oh</SelectItem><SelectItem value="mtg">MTG</SelectItem></SelectContent></Select></div>
+            <div><Label>Category</Label><Select value={selectedCategory} onValueChange={setSelectedCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem><SelectItem value="pokemon">Pokemon</SelectItem><SelectItem value="yugioh">Yu-Gi-Oh</SelectItem><SelectItem value="mtg">MTG</SelectItem><SelectItem value="lorcana">Lorcana</SelectItem><SelectItem value="digimon">Digimon</SelectItem><SelectItem value="dragon-ball">Dragon Ball</SelectItem><SelectItem value="star-wars">Star Wars</SelectItem><SelectItem value="one-piece">One Piece</SelectItem></SelectContent></Select></div>
             <div><Label>Delay (ms)</Label><Input type="number" value={delayMs} onChange={e => setDelayMs(Number(e.target.value))} min={100} /></div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <Button onClick={runBulkCardmarketSync} disabled={isRunningBulkSync} className="gap-2 bg-blue-600 hover:bg-blue-700">
               {isRunningBulkSync ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
               Bulk Cardmarket ({batchSize * totalBatches} items)
             </Button>
-            <Button variant="outline" onClick={() => Promise.all(['tcgdex', 'scryfall', 'ygopro', 'optcg'].map(triggerSync))} disabled={isRunningBulkSync}><Rocket className="w-4 h-4 mr-2" />All Free Sources</Button>
+            <Button variant="outline" onClick={() => Promise.all(['tcgdex', 'scryfall', 'ygopro', 'optcg', 'apitcg'].map(triggerSync))} disabled={isRunningBulkSync}><Rocket className="w-4 h-4 mr-2" />All Free Sources</Button>
+            <Button variant="secondary" onClick={seedNewCategories} disabled={isSeedingCategories} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+              {isSeedingCategories ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              Seed New TCG Categories
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -12,7 +12,7 @@ interface SyncRequest {
 }
 
 // TCG categories that should use Cardmarket as primary source
-const TCG_CATEGORIES = ['pokemon', 'yugioh', 'mtg', 'onepiece', 'lorcana', 'digimon', 'riftbound', 'dragon-ball', 'star-wars', 'dragonball', 'starwars']
+const TCG_CATEGORIES = ['pokemon', 'yugioh', 'mtg', 'one-piece', 'lorcana', 'digimon', 'lol-riftbound', 'dragon-ball', 'star-wars']
 
 // Cardmarket-specific categories (Pokemon, Lorcana use different API endpoint)
 const CARDMARKET_TCG_CATEGORIES = ['pokemon', 'lorcana']
