@@ -7,10 +7,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { RefreshCw, MessageCircle, Search, Clock, CheckCircle, AlertCircle, XCircle, Eye } from 'lucide-react';
+import { RefreshCw, MessageCircle, Search, Clock, CheckCircle, AlertCircle, XCircle, Eye, Sparkles, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+interface AIAnalysis {
+  suggestedPriority: string;
+  suggestedCategory: string;
+  draftResponse: string;
+  keyIssues: string[];
+  summary: string;
+  sentiment: string;
+}
 
 interface SupportTicket {
   id: string;
@@ -25,6 +34,10 @@ interface SupportTicket {
   admin_response: string | null;
   assigned_to: string | null;
   resolved_at: string | null;
+  ai_analysis?: unknown;
+  ai_suggested_priority?: string | null;
+  ai_suggested_category?: string | null;
+  ai_draft_response?: string | null;
   profiles?: { display_name: string | null; email: string | null };
 }
 
@@ -35,12 +48,12 @@ export const SupportTickets = () => {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [response, setResponse] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Fetch tickets from database
   const { data: tickets = [], isLoading, refetch } = useQuery({
     queryKey: ['support-tickets'],
     queryFn: async () => {
-      // Fetch tickets first
       const { data: ticketsData, error: ticketsError } = await supabase
         .from('support_tickets')
         .select('*')
@@ -48,7 +61,6 @@ export const SupportTickets = () => {
 
       if (ticketsError) throw ticketsError;
       
-      // Fetch profiles separately
       const userIds = [...new Set(ticketsData?.map(t => t.user_id) || [])];
       const { data: profilesData } = await supabase
         .from('profiles')
@@ -60,13 +72,13 @@ export const SupportTickets = () => {
       return (ticketsData || []).map(ticket => ({
         ...ticket,
         profiles: profilesMap.get(ticket.user_id) || null
-      })) as SupportTicket[];
+      })) as unknown as SupportTicket[];
     }
   });
 
   // Update ticket mutation
   const updateTicketMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<SupportTicket> }) => {
+    mutationFn: async ({ id, updates }: { id: string; updates: Record<string, unknown> }) => {
       const { error } = await supabase
         .from('support_tickets')
         .update(updates)
@@ -77,6 +89,47 @@ export const SupportTickets = () => {
       queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
     }
   });
+
+  // AI Analysis function
+  const handleAIAnalysis = async (ticket: SupportTicket) => {
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-ticket-assistant', {
+        body: {
+          ticketId: ticket.id,
+          subject: ticket.subject,
+          message: ticket.message,
+          category: ticket.category,
+          existingResponse: ticket.admin_response
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.analysis) {
+        // Pre-fill the response with AI draft
+        if (data.analysis.draftResponse) {
+          setResponse(data.analysis.draftResponse);
+        }
+        // Update selected ticket with AI analysis
+        setSelectedTicket(prev => prev ? {
+          ...prev,
+          ai_analysis: data.analysis,
+          ai_suggested_priority: data.analysis.suggestedPriority,
+          ai_suggested_category: data.analysis.suggestedCategory,
+          ai_draft_response: data.analysis.draftResponse
+        } : null);
+        
+        toast.success('AI analysis complete');
+        refetch();
+      }
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast.error('Failed to get AI analysis');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const stats = {
     open: tickets.filter(t => t.status === 'open').length,
@@ -122,6 +175,19 @@ export const SupportTickets = () => {
     }
   };
 
+  const getSentimentBadge = (sentiment: string) => {
+    switch (sentiment) {
+      case 'angry':
+        return <Badge variant="destructive">😠 Angry</Badge>;
+      case 'negative':
+        return <Badge className="bg-orange-500">😟 Negative</Badge>;
+      case 'positive':
+        return <Badge className="bg-green-500">😊 Positive</Badge>;
+      default:
+        return <Badge variant="outline">😐 Neutral</Badge>;
+    }
+  };
+
   const handleRespond = async () => {
     if (!selectedTicket || !response) return;
     
@@ -152,6 +218,23 @@ export const SupportTickets = () => {
       toast.success('Status updated');
     } catch (error) {
       toast.error('Failed to update status');
+    }
+  };
+
+  const handleApplyAISuggestions = async () => {
+    if (!selectedTicket?.ai_suggested_priority || !selectedTicket?.ai_suggested_category) return;
+    
+    try {
+      await updateTicketMutation.mutateAsync({
+        id: selectedTicket.id,
+        updates: {
+          priority: selectedTicket.ai_suggested_priority,
+          category: selectedTicket.ai_suggested_category
+        }
+      });
+      toast.success('Applied AI suggestions');
+    } catch (error) {
+      toast.error('Failed to apply suggestions');
     }
   };
 
@@ -295,8 +378,18 @@ export const SupportTickets = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="font-medium">{ticket.subject}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{ticket.message}</p>
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <p className="font-medium">{ticket.subject}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{ticket.message}</p>
+                        </div>
+                        {ticket.ai_analysis && (
+                          <Badge variant="outline" className="border-purple-500 text-purple-500 text-xs">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            AI
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">{ticket.category || 'General'}</Badge>
@@ -307,23 +400,29 @@ export const SupportTickets = () => {
                     <TableCell className="text-center">
                       <Dialog open={dialogOpen && selectedTicket?.id === ticket.id} onOpenChange={(open) => {
                         setDialogOpen(open);
-                        if (!open) setSelectedTicket(null);
+                        if (!open) {
+                          setSelectedTicket(null);
+                          setResponse('');
+                        }
                       }}>
                         <DialogTrigger asChild>
                           <Button size="sm" variant="outline" onClick={() => {
                             setSelectedTicket(ticket);
                             setDialogOpen(true);
+                            if (ticket.ai_draft_response) {
+                              setResponse(ticket.ai_draft_response);
+                            }
                           }}>
                             <Eye className="w-4 h-4 mr-1" />
                             View
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>{ticket.subject}</DialogTitle>
                           </DialogHeader>
                           <div className="space-y-4">
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                               {getPriorityBadge(ticket.priority)}
                               {getStatusBadge(ticket.status)}
                               {ticket.category && <Badge variant="outline">{ticket.category}</Badge>}
@@ -332,13 +431,109 @@ export const SupportTickets = () => {
                               <p className="text-sm font-medium mb-1">From: {ticket.profiles?.display_name} ({ticket.profiles?.email})</p>
                               <p className="text-muted-foreground whitespace-pre-wrap">{ticket.message}</p>
                             </div>
+
+                            {/* AI Analysis Section */}
+                            <div className="border border-purple-500/30 bg-purple-500/5 rounded-lg p-4 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Sparkles className="w-5 h-5 text-purple-500" />
+                                  <span className="font-medium text-purple-500">AI Assistant</span>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-purple-500 text-purple-500 hover:bg-purple-500/10"
+                                  onClick={() => handleAIAnalysis(ticket)}
+                                  disabled={isAnalyzing}
+                                >
+                                  {isAnalyzing ? (
+                                    <>
+                                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                      Analyzing...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Sparkles className="w-4 h-4 mr-2" />
+                                      {selectedTicket?.ai_analysis ? 'Re-analyze' : 'Analyze with AI'}
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+
+                              {selectedTicket?.ai_analysis && (
+                                <div className="space-y-3 pt-3 border-t border-purple-500/20">
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">Suggested Priority</p>
+                                      <Badge variant="outline" className="mt-1 capitalize">
+                                        {selectedTicket.ai_analysis.suggestedPriority}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">Suggested Category</p>
+                                      <Badge variant="outline" className="mt-1 capitalize">
+                                        {selectedTicket.ai_analysis.suggestedCategory}
+                                      </Badge>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">Sentiment</p>
+                                      {getSentimentBadge(selectedTicket.ai_analysis.sentiment)}
+                                    </div>
+                                    <div>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="w-full mt-3"
+                                        onClick={handleApplyAISuggestions}
+                                      >
+                                        Apply Suggestions
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  {selectedTicket.ai_analysis.keyIssues?.length > 0 && (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground mb-1">Key Issues</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {selectedTicket.ai_analysis.keyIssues.map((issue, i) => (
+                                          <Badge key={i} variant="secondary" className="text-xs">
+                                            {issue}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  <div>
+                                    <p className="text-xs text-muted-foreground mb-1">AI Summary</p>
+                                    <p className="text-sm">{selectedTicket.ai_analysis.summary}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
                             {ticket.admin_response && (
                               <div className="p-4 bg-primary/10 rounded-lg border-l-4 border-primary">
-                                <p className="text-sm font-medium mb-1">Admin Response:</p>
+                                <p className="text-sm font-medium mb-1">Previous Admin Response:</p>
                                 <p className="text-muted-foreground whitespace-pre-wrap">{ticket.admin_response}</p>
                               </div>
                             )}
+
                             <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium">Your Response</p>
+                                {selectedTicket?.ai_draft_response && !response && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-purple-500"
+                                    onClick={() => setResponse(selectedTicket.ai_draft_response || '')}
+                                  >
+                                    <Sparkles className="w-4 h-4 mr-1" />
+                                    Use AI Draft
+                                  </Button>
+                                )}
+                              </div>
                               <Textarea
                                 placeholder="Write your response..."
                                 value={response}
