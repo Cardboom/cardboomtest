@@ -16,6 +16,7 @@ import { TradeDetailDialog } from '@/components/trading/TradeDetailDialog';
 import { ProposeTradeDialog } from '@/components/trading/ProposeTradeDialog';
 import { TrustedMerchants } from '@/components/trading/TrustedMerchants';
 import { TradeMatchFinder } from '@/components/trading/TradeMatchFinder';
+import { AutoMatchPanel } from '@/components/trading/AutoMatchPanel';
 
 // Mock trades data
 const MOCK_TRADES = [
@@ -76,7 +77,7 @@ const Trades = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [user, setUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState('matches');
+  const [activeTab, setActiveTab] = useState('auto-match');
   const [selectedTrade, setSelectedTrade] = useState<string | null>(null);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
 
@@ -142,6 +143,9 @@ const Trades = () => {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-secondary/50 p-1 rounded-xl mb-4">
+            <TabsTrigger value="auto-match" className="rounded-lg gap-1">
+              <span className="hidden sm:inline">⚡</span> Auto-Match
+            </TabsTrigger>
             <TabsTrigger value="matches" className="rounded-lg">
               Find Matches
             </TabsTrigger>
@@ -152,6 +156,10 @@ const Trades = () => {
               Completed ({completedTrades.length})
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="auto-match">
+            <AutoMatchPanel />
+          </TabsContent>
 
           <TabsContent value="matches">
             <TradeMatchFinder />

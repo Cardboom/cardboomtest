@@ -480,6 +480,69 @@ export type Database = {
           },
         ]
       }
+      auto_match_queue: {
+        Row: {
+          buy_order_id: string | null
+          buyer_id: string
+          created_at: string
+          id: string
+          listing_id: string | null
+          match_score: number
+          match_type: string
+          notified_at: string | null
+          price_match_percent: number | null
+          responded_at: string | null
+          seller_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          buy_order_id?: string | null
+          buyer_id: string
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          match_score?: number
+          match_type: string
+          notified_at?: string | null
+          price_match_percent?: number | null
+          responded_at?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          buy_order_id?: string | null
+          buyer_id?: string
+          created_at?: string
+          id?: string
+          listing_id?: string | null
+          match_score?: number
+          match_type?: string
+          notified_at?: string | null
+          price_match_percent?: number | null
+          responded_at?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auto_match_queue_buy_order_id_fkey"
+            columns: ["buy_order_id"]
+            isOneToOne: false
+            referencedRelation: "buy_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_match_queue_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auto_relist_settings: {
         Row: {
           created_at: string
