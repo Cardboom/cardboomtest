@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, TrendingUp, TrendingDown, ShoppingCart, Heart, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collectible } from '@/types/collectible';
-import { PriceChart } from './PriceChart';
+import { ItemPriceChart } from './ItemPriceChart';
 import { cn } from '@/lib/utils';
 import { ShareButton } from './ShareButton';
 import { useNavigate } from 'react-router-dom';
@@ -82,8 +82,14 @@ export const CollectibleModal = ({ collectible, onClose, onAddToCart }: Collecti
               </div>
             </div>
 
-            {/* Price Chart */}
-            <PriceChart title={`${collectible.name.slice(0, 20)}... Price History`} />
+            {/* Price Chart - Using actual item ID for specific history */}
+            <ItemPriceChart 
+              itemId={collectible.id}
+              itemName={collectible.name}
+              category={collectible.category}
+              title="Price History"
+              days={30}
+            />
           </div>
 
           {/* Details Section */}

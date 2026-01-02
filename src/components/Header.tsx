@@ -356,14 +356,6 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               {t.nav.grading}
             </Link>
             
-            {/* Creators Link */}
-            <Link 
-              to="/creators" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
-            >
-              <Mic className="w-3.5 h-3.5" />
-              Creators
-            </Link>
             
             <Link 
               to="/gaming" 
