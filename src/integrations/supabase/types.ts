@@ -809,6 +809,116 @@ export type Database = {
           },
         ]
       }
+      cardboom_pass_progress: {
+        Row: {
+          claimed_tiers: number[] | null
+          created_at: string
+          current_tier: number
+          current_xp: number
+          id: string
+          is_pro: boolean
+          pro_purchased_at: string | null
+          season_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claimed_tiers?: number[] | null
+          created_at?: string
+          current_tier?: number
+          current_xp?: number
+          id?: string
+          is_pro?: boolean
+          pro_purchased_at?: string | null
+          season_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claimed_tiers?: number[] | null
+          created_at?: string
+          current_tier?: number
+          current_xp?: number
+          id?: string
+          is_pro?: boolean
+          pro_purchased_at?: string | null
+          season_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cardboom_pass_progress_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "cardboom_pass_seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cardboom_pass_seasons: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          season_number: number
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          season_number: number
+          starts_at: string
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          season_number?: number
+          starts_at?: string
+        }
+        Relationships: []
+      }
+      cardboom_pass_tiers: {
+        Row: {
+          created_at: string
+          free_reward_type: string | null
+          free_reward_value: Json | null
+          id: string
+          pro_reward_type: string | null
+          pro_reward_value: Json | null
+          tier_number: number
+          xp_required: number
+        }
+        Insert: {
+          created_at?: string
+          free_reward_type?: string | null
+          free_reward_value?: Json | null
+          id?: string
+          pro_reward_type?: string | null
+          pro_reward_value?: Json | null
+          tier_number: number
+          xp_required: number
+        }
+        Update: {
+          created_at?: string
+          free_reward_type?: string | null
+          free_reward_value?: Json | null
+          id?: string
+          pro_reward_type?: string | null
+          pro_reward_value?: Json | null
+          tier_number?: number
+          xp_required?: number
+        }
+        Relationships: []
+      }
       cardboom_points: {
         Row: {
           balance: number
@@ -5880,6 +5990,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_pass_xp: {
+        Args: { p_source?: string; p_user_id: string; p_xp_amount: number }
+        Returns: number
+      }
       award_cardboom_points: {
         Args: {
           p_description?: string
@@ -5955,6 +6069,7 @@ export type Database = {
         }
         Returns: string
       }
+      purchase_pro_pass: { Args: { p_user_id: string }; Returns: boolean }
       record_idempotency: {
         Args: {
           p_key: string
