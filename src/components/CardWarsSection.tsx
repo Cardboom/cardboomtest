@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Trophy, Clock, Users, Flame, Crown, Sparkles, Lock, ArrowRight, TrendingUp, Gem } from 'lucide-react';
+import { Swords, Trophy, Clock, Users, Flame, Crown, Sparkles, Lock, ArrowRight, TrendingUp, Gem, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -250,23 +250,35 @@ export const CardWarsSection = () => {
 
   return (
     <div className="py-3">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
-          <Swords className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-gradient-to-br from-red-500 to-orange-500">
+            <Swords className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold">Card Wars</h2>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              Pro members get <Gem className="w-3 h-3 text-primary" /> $2.50 free points/month to compete!
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-xl font-bold">Card Wars</h2>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            Vote for your champion • Pro votes share $100 prize + 
-            <Gem className="w-3 h-3 text-primary" /> Cardboom Points
-          </p>
+        <div className="flex items-center gap-2">
+          {useMockData && (
+            <Badge variant="secondary" className="text-xs">
+              <Sparkles className="w-3 h-3 mr-1" />
+              {userId ? 'Demo Battle' : 'Preview'}
+            </Badge>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/card-wars')}
+            className="text-xs h-7"
+          >
+            View All
+            <ArrowRight className="w-3 h-3 ml-1" />
+          </Button>
         </div>
-        {useMockData && (
-          <Badge variant="secondary" className="ml-auto text-xs">
-            <Sparkles className="w-3 h-3 mr-1" />
-            {userId ? 'Demo Battle' : 'Feature Preview'}
-          </Badge>
-        )}
       </div>
 
       <div className="grid gap-4">
@@ -483,7 +495,7 @@ export const CardWarsSection = () => {
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 pb-3">
+                <div className="px-4 pb-3 space-y-2">
                   <div className="p-2 rounded-md bg-muted/50 text-center text-xs">
                     {!userId ? (
                       <span className="flex items-center justify-center gap-1.5">
@@ -498,13 +510,20 @@ export const CardWarsSection = () => {
                     ) : isPro ? (
                       <span className="flex items-center justify-center gap-1.5">
                         <Sparkles className="w-3 h-3 text-yellow-500" />
-                        Your Pro vote adds $2.50 to the winning pot!
+                        Your Pro vote adds $2.50 to the pot! Winners share the ${war.prize_pool} prize.
                       </span>
                     ) : (
                       <span>
                         <a href="/pricing" className="text-primary hover:underline">Upgrade to Pro</a> to compete for the ${war.prize_pool} prize pool!
                       </span>
                     )}
+                  </div>
+                  {/* Pro Benefits Banner */}
+                  <div className="p-2 rounded-md bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 text-center text-xs">
+                    <span className="flex items-center justify-center gap-2 text-yellow-600 dark:text-yellow-400">
+                      <Gift className="w-3 h-3" />
+                      Pro subscribers get <strong>$2.50 in free Cardboom Points</strong> monthly — use them in Card Wars or for purchases!
+                    </span>
                   </div>
                 </div>
               </CardContent>
