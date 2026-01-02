@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Vault as VaultIcon, 
   Package, 
@@ -19,7 +20,10 @@ import {
   Truck,
   Sparkles,
   Lock,
-  BarChart3
+  BarChart3,
+  X,
+  MapPin,
+  Copy
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -47,6 +51,17 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
   shipped: { label: 'In Transit', color: 'bg-blue-500/10 text-blue-500', icon: <Truck className="w-3 h-3" /> },
   received: { label: 'Received', color: 'bg-purple-500/10 text-purple-500', icon: <Package className="w-3 h-3" /> },
   verified: { label: 'Verified & Stored', color: 'bg-emerald-500/10 text-emerald-500', icon: <CheckCircle className="w-3 h-3" /> },
+  return_requested: { label: 'Return Requested', color: 'bg-orange-500/10 text-orange-500', icon: <Truck className="w-3 h-3" /> },
+  cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-500', icon: <X className="w-3 h-3" /> },
+};
+
+const WAREHOUSE_ADDRESS = {
+  name: 'BRAINBABY BİLİŞİM ANONİM ŞİRKETİ',
+  address: 'Atatürk Mah. Turgut Özal Blv.',
+  building: 'Gardenya Plaza 2, No: 16/47',
+  district: 'Eryaman, Etimesgut',
+  city: 'Ankara, Türkiye',
+  postalCode: '06790',
 };
 
 const VaultPage = () => {
@@ -59,6 +74,8 @@ const VaultPage = () => {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<VaultItem | null>(null);
   const [activeTab, setActiveTab] = useState('all');
+  const [addressDialogItem, setAddressDialogItem] = useState<VaultItem | null>(null);
+  const [cancellingItemId, setCancellingItemId] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -91,10 +108,35 @@ const VaultPage = () => {
 
   const totalValue = items.reduce((sum, item) => sum + (Number(item.estimated_value) || 0), 0);
   const verifiedItems = items.filter(i => i.status === 'verified');
-  const pendingItems = items.filter(i => i.status !== 'verified');
+  const pendingItems = items.filter(i => i.status !== 'verified' && i.status !== 'cancelled');
 
-  const filteredItems = activeTab === 'all' ? items : 
+  const filteredItems = activeTab === 'all' ? items.filter(i => i.status !== 'cancelled') : 
     activeTab === 'verified' ? verifiedItems : pendingItems;
+
+  const handleCancelRequest = async (itemId: string) => {
+    setCancellingItemId(itemId);
+    try {
+      const { error } = await supabase
+        .from('vault_items')
+        .update({ status: 'cancelled' })
+        .eq('id', itemId);
+      
+      if (error) throw error;
+      toast.success('Vault request cancelled');
+      fetchVaultItems();
+    } catch (error) {
+      console.error('Error cancelling vault request:', error);
+      toast.error('Failed to cancel request');
+    } finally {
+      setCancellingItemId(null);
+    }
+  };
+
+  const copyAddress = () => {
+    const fullAddress = `${WAREHOUSE_ADDRESS.name}\n${WAREHOUSE_ADDRESS.address}\n${WAREHOUSE_ADDRESS.building}\n${WAREHOUSE_ADDRESS.district}\n${WAREHOUSE_ADDRESS.city} ${WAREHOUSE_ADDRESS.postalCode}`;
+    navigator.clipboard.writeText(fullAddress);
+    toast.success('Address copied to clipboard');
+  };
 
   if (loading) {
     return (
@@ -369,6 +411,27 @@ const VaultPage = () => {
                                     <Truck className="h-4 w-4" />
                                   </Button>
                                 </>
+                              ) : item.status === 'pending_shipment' ? (
+                                <>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="flex-1"
+                                    onClick={() => setAddressDialogItem(item)}
+                                  >
+                                    <MapPin className="h-4 w-4 mr-1.5" />
+                                    View Address
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    className="text-destructive hover:bg-destructive/10"
+                                    onClick={() => handleCancelRequest(item.id)}
+                                    disabled={cancellingItemId === item.id}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </>
                               ) : (
                                 <Button 
                                   variant="outline" 
@@ -379,7 +442,7 @@ const VaultPage = () => {
                                   {item.status === 'shipped' ? 'In Transit' : 
                                    item.status === 'received' ? 'Pending Verification' : 
                                    item.status === 'return_requested' ? 'Return Pending' :
-                                   'Awaiting Shipment'}
+                                   'Processing'}
                                 </Button>
                               )}
                               <Button variant="outline" size="sm">
@@ -449,6 +512,55 @@ const VaultPage = () => {
         item={selectedItem}
         onSuccess={fetchVaultItems}
       />
+
+      {/* Address Dialog for Pending Shipment Items */}
+      <Dialog open={!!addressDialogItem} onOpenChange={(open) => !open && setAddressDialogItem(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Ship to This Address
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/50 rounded-lg border border-border">
+              <p className="font-semibold text-foreground">{WAREHOUSE_ADDRESS.name}</p>
+              <p className="text-sm text-muted-foreground mt-1">{WAREHOUSE_ADDRESS.address}</p>
+              <p className="text-sm text-muted-foreground">{WAREHOUSE_ADDRESS.building}</p>
+              <p className="text-sm text-muted-foreground">{WAREHOUSE_ADDRESS.district}</p>
+              <p className="text-sm text-muted-foreground">{WAREHOUSE_ADDRESS.city} {WAREHOUSE_ADDRESS.postalCode}</p>
+            </div>
+
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                <strong>Important:</strong> Include "{addressDialogItem?.title}" and your username on the package.
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <Button onClick={copyAddress} variant="outline" className="flex-1 gap-2">
+                <Copy className="h-4 w-4" />
+                Copy Address
+              </Button>
+              <Button 
+                variant="destructive" 
+                className="gap-2"
+                onClick={() => {
+                  if (addressDialogItem) {
+                    handleCancelRequest(addressDialogItem.id);
+                    setAddressDialogItem(null);
+                  }
+                }}
+              >
+                <X className="h-4 w-4" />
+                Cancel Request
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
