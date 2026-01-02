@@ -262,7 +262,7 @@ const Index = () => {
         <meta property="og:url" content="https://cardboom.com/" />
         <meta property="og:type" content="website" />
       </Helmet>
-      {showWaitlist && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
+      {showWaitlist && !user && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
       <ActivityAnnouncementBanner />
       {user && <DailyXPClaimNotification />}
       {user && <DailyCardVotePopup />}
