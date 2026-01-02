@@ -21,7 +21,7 @@ import Vault from "./pages/Vault";
 import Sell from "./pages/Sell";
 import VerifiedSeller from "./pages/VerifiedSeller";
 import Markets from "./pages/Markets";
-import Explorer from "./pages/Explorer";
+
 import ItemDetail from "./pages/ItemDetail";
 import CardSalePage from "./pages/CardSalePage";
 import ListingDetail from "./pages/ListingDetail";
@@ -103,7 +103,8 @@ const AppContent = () => {
           <Route path="/sell" element={<Sell />} />
           <Route path="/verified-seller" element={<VerifiedSeller />} />
           <Route path="/markets" element={<Markets />} />
-          <Route path="/explorer" element={<Explorer />} />
+          {/* Explorer redirects to Markets */}
+          <Route path="/explorer" element={<Markets />} />
           <Route path="/item/:id" element={<ItemDetail />} />
           <Route path="/card/:id" element={<CardSalePage />} />
           <Route path="/listing/:id" element={<ListingDetail />} />
