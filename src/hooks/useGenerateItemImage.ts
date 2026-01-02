@@ -46,11 +46,11 @@ export const useGenerateItemImage = () => {
     setIsGenerating(true);
     
     try {
-      // Fetch items without proper images
+      // Fetch items without proper images (null, empty, or data URI placeholder)
       const { data: items, error } = await supabase
         .from('market_items')
         .select('id, name, category, set_name, rarity, image_url')
-        .or('image_url.is.null,image_url.eq./placeholder.svg');
+        .or('image_url.is.null,image_url.eq.,image_url.ilike.data:image%');
 
       if (error) throw error;
 

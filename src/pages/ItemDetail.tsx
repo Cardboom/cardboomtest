@@ -346,7 +346,7 @@ const ItemDetail = () => {
                 alt={item.name}
                 className="w-full h-full object-contain rounded-xl"
               />
-              {(!item.image_url || item.image_url === '/placeholder.svg') && (
+              {(!item.image_url || item.image_url.startsWith('data:') || item.image_url.includes('placeholder')) && (
                 <Button
                   variant="secondary"
                   size="sm"

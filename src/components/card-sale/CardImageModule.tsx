@@ -64,7 +64,7 @@ export const CardImageModule = ({
           onMouseEnter={() => setIsZoomed(true)}
           onMouseLeave={() => setIsZoomed(false)}
         >
-          {currentImage && currentImage !== '/placeholder.svg' ? (
+          {currentImage && !currentImage.startsWith('data:') && !currentImage.includes('placeholder') ? (
             <img 
               src={currentImage} 
               alt={name}

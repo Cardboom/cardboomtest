@@ -51,7 +51,6 @@ const marketItemToProductId: Record<string, string> = Object.entries(productIdTo
 const ALL_PRODUCT_IDS = Object.keys(productIdToMarketItem);
 
 interface ExtendedPriceData extends PriceData {
-  ebayListings?: number;
   minPrice?: number;
   maxPrice?: number;
   liquidity?: string;
@@ -73,13 +72,11 @@ export const PriceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsLoading(true);
     setError(null);
 
-    // Fetch from eBay every 5th request to get real prices
     fetchCount.current += 1;
-    const fetchFromEbay = fetchCount.current % 5 === 1;
 
     try {
       const { data, error: functionError } = await supabase.functions.invoke('fetch-prices', {
-        body: { productIds: ALL_PRODUCT_IDS, source: 'all', fetchFromEbay }
+        body: { productIds: ALL_PRODUCT_IDS, source: 'all' }
       });
 
       if (functionError) throw new Error(functionError.message);
