@@ -61,7 +61,7 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
             <div className="w-8 h-8 rounded-full bg-sky-500/20 flex items-center justify-center">
               <Gem className="w-5 h-5 text-sky-400" />
             </div>
-            Cardboom Points
+            Cardboom Gems
           </DialogTitle>
         </DialogHeader>
 
@@ -83,7 +83,7 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                 Earned: {totalEarned.toLocaleString()} • Spent: {totalSpent.toLocaleString()}
               </p>
               <p className="text-[10px] text-muted-foreground/70 mt-1">
-                1 point = $0.01
+                1 gem = $0.01
               </p>
             </div>
           </div>
@@ -103,7 +103,7 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                   <div>
                     <h4 className="font-medium text-sm">Earn 0.2% on Every Transaction</h4>
                     <p className="text-xs text-muted-foreground">
-                      Top-ups, Card Wars bets, purchases — all earn you Cardboom Points automatically.
+                      Top-ups, Card Wars bets, purchases — all earn you Cardboom Gems automatically.
                     </p>
                   </div>
                 </div>
@@ -113,9 +113,9 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                     <ShoppingBag className="w-4 h-4 text-sky-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-sm">Use Points for Discounts</h4>
+                    <h4 className="font-medium text-sm">Use Gems for Discounts</h4>
                     <p className="text-xs text-muted-foreground">
-                      Redeem your points when making purchases to get instant discounts on cards and collectibles.
+                      Redeem your gems when making purchases to get instant discounts on cards and collectibles.
                     </p>
                   </div>
                 </div>
@@ -125,9 +125,9 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                     <HelpCircle className="w-4 h-4 text-amber-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-sm">Points Cannot Be Withdrawn</h4>
+                    <h4 className="font-medium text-sm">Gems Cannot Be Withdrawn</h4>
                     <p className="text-xs text-muted-foreground">
-                      Cardboom Points are loyalty rewards for use on the platform only — they cannot be converted to cash.
+                      Cardboom Gems are loyalty rewards for use on the platform only — they cannot be converted to cash.
                     </p>
                   </div>
                 </div>
@@ -139,9 +139,9 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                   Example Earnings
                 </h4>
                 <div className="text-xs text-muted-foreground space-y-1">
-                  <p>• $100 top-up → <span className="text-sky-400 font-medium">0.20 points</span></p>
-                  <p>• $500 card purchase → <span className="text-sky-400 font-medium">1.00 points</span></p>
-                  <p>• $2.50 Card War bet → <span className="text-sky-400 font-medium">0.005 points</span></p>
+                  <p>• $100 top-up → <span className="text-sky-400 font-medium">0.20 gems</span></p>
+                  <p>• $500 card purchase → <span className="text-sky-400 font-medium">1.00 gems</span></p>
+                  <p>• $2.50 Card War bet → <span className="text-sky-400 font-medium">0.005 gems</span></p>
                 </div>
               </div>
             </TabsContent>
@@ -150,8 +150,8 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
               {history.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Gem className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">No points activity yet</p>
-                  <p className="text-xs">Start transacting to earn points!</p>
+                  <p className="text-sm">No gems activity yet</p>
+                  <p className="text-xs">Start transacting to earn gems!</p>
                 </div>
               ) : (
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">

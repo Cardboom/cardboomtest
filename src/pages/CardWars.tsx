@@ -136,7 +136,7 @@ const CardWars = () => {
               
               <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                 Vote for your champion in epic card battles. Pro members compete for real prizes 
-                and earn <span className="text-primary font-semibold">Cardboom Points</span> from prize pool shares.
+                and earn <span className="text-primary font-semibold">Cardboom Gems</span> from prize pool shares.
               </p>
 
               {/* Pro Benefits Callout */}
@@ -151,13 +151,13 @@ const CardWars = () => {
                   <h3 className="text-lg font-bold text-yellow-400">Pro Member Exclusive</h3>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Pro subscribers receive <span className="text-primary font-bold">$2.50 worth of Cardboom Points</span> monthly 
+                  Pro subscribers receive <span className="text-primary font-bold">$2.50 worth of Cardboom Gems</span> monthly 
                   to use in Card Wars — completely free with your subscription!
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <Gem className="w-4 h-4 text-primary" />
-                    <span>250 Points/Month</span>
+                    <span>250 Gems/Month</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Trophy className="w-4 h-4 text-yellow-500" />
@@ -433,7 +433,7 @@ const CardWars = () => {
                               <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-center">
                                 <p className="text-sm text-yellow-400">
                                   <Crown className="w-4 h-4 inline mr-1" />
-                                  Pro members get $2.50 in free Cardboom Points monthly to compete for prizes!
+                                  Pro members get $2.50 in free Cardboom Gems monthly to compete for prizes!
                                   <Button variant="link" className="text-yellow-400 px-2" onClick={() => navigate('/pricing')}>
                                     Upgrade Now →
                                   </Button>
@@ -653,13 +653,13 @@ const CardWars = () => {
                   <Crown className="w-12 h-12 mx-auto text-yellow-500 mb-4" />
                   <h2 className="text-2xl font-bold mb-3">Unlock Pro Card Wars Benefits</h2>
                   <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-                    Pro members receive <span className="text-primary font-bold">$2.50 equivalent in Cardboom Points</span> every month 
-                    to participate in Card Wars. Winners share the prize pool and points can be used for marketplace purchases!
+                    Pro members receive <span className="text-primary font-bold">$2.50 equivalent in Cardboom Gems</span> every month 
+                    to participate in Card Wars. Winners share the prize pool and gems can be used for marketplace purchases!
                   </p>
                   <div className="flex flex-wrap justify-center gap-6 mb-6">
                     <div className="flex items-center gap-2">
                       <Gem className="w-5 h-5 text-primary" />
-                      <span>250 Points Monthly</span>
+                      <span>250 Gems Monthly</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Trophy className="w-5 h-5 text-yellow-500" />
@@ -667,7 +667,7 @@ const CardWars = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Gift className="w-5 h-5 text-emerald-500" />
-                      <span>Use Points for Purchases</span>
+                      <span>Use Gems for Purchases</span>
                     </div>
                   </div>
                   <Button 

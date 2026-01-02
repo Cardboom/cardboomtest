@@ -44,7 +44,7 @@ export const useCardboomPoints = (userId?: string) => {
       if (error) throw error;
       setPoints(data as CardboomPoints | null);
     } catch (error) {
-      console.error('Error fetching Cardboom Points:', error);
+      console.error('Error fetching Cardboom Gems:', error);
     } finally {
       setLoading(false);
     }

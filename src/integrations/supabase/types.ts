@@ -5904,6 +5904,16 @@ export type Database = {
         Args: { p_key: string; p_request_hash: string; p_user_id: string }
         Returns: Json
       }
+      earn_cardboom_points: {
+        Args: {
+          p_description?: string
+          p_reference_id?: string
+          p_source: string
+          p_transaction_amount: number
+          p_user_id: string
+        }
+        Returns: number
+      }
       finalize_community_poll: {
         Args: { poll_uuid: string }
         Returns: undefined

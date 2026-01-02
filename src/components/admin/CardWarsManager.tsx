@@ -167,7 +167,7 @@ export const CardWarsManager = () => {
             Card Wars Manager
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Winners earn prize pool share + <Gem className="w-3 h-3 inline text-primary" /> Cardboom Points
+            Winners earn prize pool share + <Gem className="w-3 h-3 inline text-primary" /> Cardboom Gems
           </p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
