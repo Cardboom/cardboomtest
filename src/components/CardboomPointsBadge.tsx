@@ -28,9 +28,14 @@ export const CardboomPointsBadge = () => {
         whileTap={{ scale: 0.98 }}
       >
         <Gem className="w-4 h-4 text-sky-400" />
-        <span className="text-sm font-medium text-sky-400">
-          {loading ? '...' : balance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-        </span>
+        <div className="flex flex-col items-start leading-tight">
+          <span className="text-sm font-medium text-sky-400">
+            {loading ? '...' : balance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+          </span>
+          <span className="text-[10px] text-sky-400/60">
+            ≈ ${loading ? '...' : (balance * 0.01).toFixed(2)}
+          </span>
+        </div>
       </motion.button>
 
       <CardboomPointsDialog open={dialogOpen} onOpenChange={setDialogOpen} />

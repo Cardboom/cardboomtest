@@ -76,8 +76,14 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                   {loading ? '...' : balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
+              <p className="text-sm text-sky-400/80 font-medium mt-1">
+                ≈ ${loading ? '...' : (balance * 0.01).toFixed(2)} USD
+              </p>
               <p className="text-xs text-muted-foreground mt-2">
                 Earned: {totalEarned.toLocaleString()} • Spent: {totalSpent.toLocaleString()}
+              </p>
+              <p className="text-[10px] text-muted-foreground/70 mt-1">
+                1 point = $0.01
               </p>
             </div>
           </div>
