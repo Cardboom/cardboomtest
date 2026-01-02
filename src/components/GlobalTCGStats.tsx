@@ -95,30 +95,40 @@ export function GlobalTCGStats() {
 
   return (
     <section className="py-8 sm:py-12 md:py-20 relative overflow-hidden">
-      {/* Background gradients */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)]" />
+      {/* Background gradients - ensure pointer-events-none */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)] pointer-events-none" />
       
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 relative z-10">
         {/* Hero headline + Stats combined */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-8 sm:mb-10 md:mb-14"
-        >
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tight mb-3 sm:mb-4 leading-[1.1]">
+        <div className="text-center mb-8 sm:mb-10 md:mb-14">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tight mb-3 sm:mb-4 leading-[1.1]"
+          >
             Grade your <span className="text-primary">Card</span>
             <span className="block"><span className="text-primary">Boom</span> Your Value</span>
-          </h1>
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-2">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-2"
+          >
             {t.hero.description}
-          </p>
+          </motion.p>
           
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0"
+          >
             <Button 
               size="lg" 
               onClick={() => navigate('/auth')}
-              className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-bold text-sm sm:text-base shadow-lg shadow-primary/25"
+              className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-bold text-sm sm:text-base shadow-lg shadow-primary/25 cursor-pointer relative z-20"
             >
               {t.hero.startTrading}
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -127,12 +137,12 @@ export function GlobalTCGStats() {
               variant="outline"
               size="lg" 
               onClick={() => navigate('/markets')}
-              className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-semibold text-sm sm:text-base"
+              className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-semibold text-sm sm:text-base cursor-pointer relative z-20"
             >
               {t.hero.exploreMarket}
             </Button>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
         {/* Stats Grid */}
         <motion.div
