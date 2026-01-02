@@ -20,7 +20,7 @@ const BuyOrders = () => {
 
       <div className="min-h-screen bg-background flex flex-col">
         <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
-        <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+        <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} items={[]} onRemoveItem={() => {}} />
         <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
           <div className="mb-6">
             <h1 className="text-3xl font-bold mb-2">Buy Orders</h1>

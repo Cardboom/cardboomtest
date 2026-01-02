@@ -362,10 +362,10 @@ export const CreatorStorefront = ({ slug: propSlug }: CreatorStorefrontProps) =>
           open={shareDialogOpen}
           onOpenChange={setShareDialogOpen}
           creator={{
-            id: creator.id,
             creator_name: storefront.display_name,
-            username: storefront.slug,
+            bio: storefront.description || undefined,
           }}
+          username={storefront.slug}
         />
       )}
     </div>
