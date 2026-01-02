@@ -63,14 +63,21 @@ export const DataSyncManager = () => {
         'ygopro': 'sync-ygopro-images',
         'optcg': 'sync-optcg-images',
         'apitcg': 'sync-apitcg-images',
+        'ebay': 'sync-ebay-images',
       };
       const functionName = functionMap[source] || 'sync-pricecharting-listings';
       const body: Record<string, unknown> = { limit: batchSize };
-      if (source === 'cardmarket') { body.delay_ms = delayMs; body.store_price_history = true; if (selectedCategory !== 'all') body.category = selectedCategory; }
+      if (source === 'cardmarket' || source === 'ebay') { 
+        body.delay_ms = delayMs; 
+        if (selectedCategory !== 'all') body.category = selectedCategory; 
+        if (source === 'ebay') body.updatePrices = true;
+      }
       const { data, error } = await supabase.functions.invoke(functionName, { body });
       if (error) throw error;
-      setSyncResults(prev => ({ ...prev, [source]: { updated: data?.updated || 0, errors: data?.errors || 0 } }));
-      toast.success(`${source}: Synced ${data?.updated || 0} items`);
+      const updated = data?.updated || data?.imagesUpdated || 0;
+      const pricesUpdated = data?.pricesUpdated || 0;
+      setSyncResults(prev => ({ ...prev, [source]: { updated, errors: data?.errors || 0 } }));
+      toast.success(`${source}: ${updated} images${pricesUpdated ? `, ${pricesUpdated} prices` : ''} updated`);
       fetchStats();
     } catch (error) { toast.error(`Failed to sync ${source}`); }
     finally { setIsSyncing(prev => ({ ...prev, [source]: false })); }
@@ -113,6 +120,7 @@ export const DataSyncManager = () => {
   };
   
   const sources = [
+    { id: 'ebay', name: 'eBay API', description: 'PREMIUM - Images & Prices', color: 'bg-green-500', isPaid: true },
     { id: 'cardmarket', name: 'Cardmarket API', description: 'PREMIUM - 3000/day', color: 'bg-blue-500', isPaid: true },
     { id: 'tcgdex', name: 'TCGdex', description: 'Free - Pokemon', color: 'bg-yellow-500', isPaid: false },
     { id: 'scryfall', name: 'Scryfall', description: 'Free - MTG', color: 'bg-orange-500', isPaid: false },
