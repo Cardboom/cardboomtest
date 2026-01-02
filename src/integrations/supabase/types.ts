@@ -740,6 +740,95 @@ export type Database = {
           },
         ]
       }
+      card_instances: {
+        Row: {
+          acquisition_date: string | null
+          acquisition_price: number | null
+          category: string
+          condition: string
+          created_at: string
+          current_value: number
+          deleted_at: string | null
+          grade: string | null
+          grading_company: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          location: Database["public"]["Enums"]["inventory_location"]
+          lock_reason: string | null
+          locked_at: string | null
+          locked_by_order_id: string | null
+          market_item_id: string | null
+          owner_user_id: string
+          source_grading_order_id: string | null
+          source_listing_id: string | null
+          source_vault_item_id: string | null
+          status: Database["public"]["Enums"]["inventory_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          category: string
+          condition?: string
+          created_at?: string
+          current_value?: number
+          deleted_at?: string | null
+          grade?: string | null
+          grading_company?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          location?: Database["public"]["Enums"]["inventory_location"]
+          lock_reason?: string | null
+          locked_at?: string | null
+          locked_by_order_id?: string | null
+          market_item_id?: string | null
+          owner_user_id: string
+          source_grading_order_id?: string | null
+          source_listing_id?: string | null
+          source_vault_item_id?: string | null
+          status?: Database["public"]["Enums"]["inventory_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          acquisition_date?: string | null
+          acquisition_price?: number | null
+          category?: string
+          condition?: string
+          created_at?: string
+          current_value?: number
+          deleted_at?: string | null
+          grade?: string | null
+          grading_company?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          location?: Database["public"]["Enums"]["inventory_location"]
+          lock_reason?: string | null
+          locked_at?: string | null
+          locked_by_order_id?: string | null
+          market_item_id?: string | null
+          owner_user_id?: string
+          source_grading_order_id?: string | null
+          source_listing_id?: string | null
+          source_vault_item_id?: string | null
+          status?: Database["public"]["Enums"]["inventory_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_instances_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_reels: {
         Row: {
           avg_watch_time: number | null
@@ -2347,6 +2436,132 @@ export type Database = {
         }
         Relationships: []
       }
+      escrow_transactions: {
+        Row: {
+          auto_confirm_at: string | null
+          buyer_id: string
+          card_instance_id: string
+          created_at: string
+          delivered_at: string | null
+          delivery_confirmed_by: string | null
+          dispute_opened_at: string | null
+          dispute_outcome: string | null
+          dispute_reason: string | null
+          dispute_resolved_at: string | null
+          escrow_held: number
+          funds_captured: boolean
+          funds_released: boolean
+          id: string
+          lane_reason: string | null
+          marketplace_fee: number
+          order_id: string
+          payout_eligible_at: string | null
+          payout_released_at: string | null
+          payout_transaction_id: string | null
+          requires_verification: boolean
+          sale_amount: number
+          sale_lane: Database["public"]["Enums"]["sale_lane"]
+          seller_id: string
+          seller_payout: number
+          shipped_at: string | null
+          shipping_fee: number
+          status: string
+          updated_at: string
+          verification_fee: number
+          verification_notes: string | null
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          auto_confirm_at?: string | null
+          buyer_id: string
+          card_instance_id: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_confirmed_by?: string | null
+          dispute_opened_at?: string | null
+          dispute_outcome?: string | null
+          dispute_reason?: string | null
+          dispute_resolved_at?: string | null
+          escrow_held: number
+          funds_captured?: boolean
+          funds_released?: boolean
+          id?: string
+          lane_reason?: string | null
+          marketplace_fee?: number
+          order_id: string
+          payout_eligible_at?: string | null
+          payout_released_at?: string | null
+          payout_transaction_id?: string | null
+          requires_verification?: boolean
+          sale_amount: number
+          sale_lane?: Database["public"]["Enums"]["sale_lane"]
+          seller_id: string
+          seller_payout?: number
+          shipped_at?: string | null
+          shipping_fee?: number
+          status?: string
+          updated_at?: string
+          verification_fee?: number
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          auto_confirm_at?: string | null
+          buyer_id?: string
+          card_instance_id?: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_confirmed_by?: string | null
+          dispute_opened_at?: string | null
+          dispute_outcome?: string | null
+          dispute_reason?: string | null
+          dispute_resolved_at?: string | null
+          escrow_held?: number
+          funds_captured?: boolean
+          funds_released?: boolean
+          id?: string
+          lane_reason?: string | null
+          marketplace_fee?: number
+          order_id?: string
+          payout_eligible_at?: string | null
+          payout_released_at?: string | null
+          payout_transaction_id?: string | null
+          requires_verification?: boolean
+          sale_amount?: number
+          sale_lane?: Database["public"]["Enums"]["sale_lane"]
+          seller_id?: string
+          seller_payout?: number
+          shipped_at?: string | null
+          shipping_fee?: number
+          status?: string
+          updated_at?: string
+          verification_fee?: number
+          verification_notes?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_transactions_card_instance_id_fkey"
+            columns: ["card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       external_liquidity_signals: {
         Row: {
           avg_price: number | null
@@ -2841,6 +3056,111 @@ export type Database = {
           request_hash?: string
           response?: Json | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      inventory_audit_log: {
+        Row: {
+          action: string
+          actor_type: string
+          actor_user_id: string | null
+          card_instance_id: string
+          created_at: string
+          from_location:
+            | Database["public"]["Enums"]["inventory_location"]
+            | null
+          from_status: Database["public"]["Enums"]["inventory_status"] | null
+          id: string
+          metadata: Json | null
+          reason: string | null
+          related_escrow_id: string | null
+          related_listing_id: string | null
+          related_order_id: string | null
+          related_payment_id: string | null
+          to_location: Database["public"]["Enums"]["inventory_location"] | null
+          to_status: Database["public"]["Enums"]["inventory_status"]
+        }
+        Insert: {
+          action: string
+          actor_type?: string
+          actor_user_id?: string | null
+          card_instance_id: string
+          created_at?: string
+          from_location?:
+            | Database["public"]["Enums"]["inventory_location"]
+            | null
+          from_status?: Database["public"]["Enums"]["inventory_status"] | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          related_escrow_id?: string | null
+          related_listing_id?: string | null
+          related_order_id?: string | null
+          related_payment_id?: string | null
+          to_location?: Database["public"]["Enums"]["inventory_location"] | null
+          to_status: Database["public"]["Enums"]["inventory_status"]
+        }
+        Update: {
+          action?: string
+          actor_type?: string
+          actor_user_id?: string | null
+          card_instance_id?: string
+          created_at?: string
+          from_location?:
+            | Database["public"]["Enums"]["inventory_location"]
+            | null
+          from_status?: Database["public"]["Enums"]["inventory_status"] | null
+          id?: string
+          metadata?: Json | null
+          reason?: string | null
+          related_escrow_id?: string | null
+          related_listing_id?: string | null
+          related_order_id?: string | null
+          related_payment_id?: string | null
+          to_location?: Database["public"]["Enums"]["inventory_location"] | null
+          to_status?: Database["public"]["Enums"]["inventory_status"]
+        }
+        Relationships: []
+      }
+      inventory_integrity_issues: {
+        Row: {
+          auto_repaired: boolean | null
+          card_instance_id: string | null
+          detected_at: string
+          id: string
+          issue_description: string
+          issue_type: string
+          repair_details: Json | null
+          resolution_action: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+        }
+        Insert: {
+          auto_repaired?: boolean | null
+          card_instance_id?: string | null
+          detected_at?: string
+          id?: string
+          issue_description: string
+          issue_type: string
+          repair_details?: Json | null
+          resolution_action?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+        }
+        Update: {
+          auto_repaired?: boolean | null
+          card_instance_id?: string | null
+          detected_at?: string
+          id?: string
+          issue_description?: string
+          issue_type?: string
+          repair_details?: Json | null
+          resolution_action?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
         }
         Relationships: []
       }
@@ -3585,16 +3905,21 @@ export type Database = {
           buyer_fee: number
           buyer_fee_cents: number | null
           buyer_id: string
+          card_instance_id: string | null
           created_at: string
           delivery_deadline: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
           escrow_locked_at: string | null
           escrow_released_at: string | null
           escrow_status: string | null
+          escrow_transaction_id: string | null
           id: string
+          inventory_locked_at: string | null
           listing_id: string
+          payout_status: string | null
           price: number
           price_cents: number | null
+          sale_lane: Database["public"]["Enums"]["sale_lane"] | null
           seller_fee: number
           seller_fee_cents: number | null
           seller_id: string
@@ -3603,21 +3928,27 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           tracking_number: string | null
           updated_at: string
+          verification_required: boolean | null
         }
         Insert: {
           buyer_fee: number
           buyer_fee_cents?: number | null
           buyer_id: string
+          card_instance_id?: string | null
           created_at?: string
           delivery_deadline?: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
           escrow_locked_at?: string | null
           escrow_released_at?: string | null
           escrow_status?: string | null
+          escrow_transaction_id?: string | null
           id?: string
+          inventory_locked_at?: string | null
           listing_id: string
+          payout_status?: string | null
           price: number
           price_cents?: number | null
+          sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
           seller_fee: number
           seller_fee_cents?: number | null
           seller_id: string
@@ -3626,21 +3957,27 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           tracking_number?: string | null
           updated_at?: string
+          verification_required?: boolean | null
         }
         Update: {
           buyer_fee?: number
           buyer_fee_cents?: number | null
           buyer_id?: string
+          card_instance_id?: string | null
           created_at?: string
           delivery_deadline?: string | null
           delivery_option?: Database["public"]["Enums"]["delivery_option"]
           escrow_locked_at?: string | null
           escrow_released_at?: string | null
           escrow_status?: string | null
+          escrow_transaction_id?: string | null
           id?: string
+          inventory_locked_at?: string | null
           listing_id?: string
+          payout_status?: string | null
           price?: number
           price_cents?: number | null
+          sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
           seller_fee?: number
           seller_fee_cents?: number | null
           seller_id?: string
@@ -3649,6 +3986,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           tracking_number?: string | null
           updated_at?: string
+          verification_required?: boolean | null
         }
         Relationships: [
           {
@@ -4220,6 +4558,8 @@ export type Database = {
           guru_expertise: string[] | null
           id: string
           id_document_url: string | null
+          instant_sale_eligible: boolean | null
+          instant_sale_limit: number | null
           is_beta_tester: boolean | null
           is_fan_account: boolean | null
           is_id_verified: boolean | null
@@ -4236,10 +4576,14 @@ export type Database = {
           referred_by: string | null
           reputation_score: number | null
           reputation_tier: string | null
+          risk_flags: Json | null
+          seller_trust_score: number | null
           showcase_items: string[] | null
           system_account_role: string | null
           system_account_wallet_balance: number | null
           title: string | null
+          total_sales_completed: number | null
+          total_sales_value: number | null
           trust_rating: number | null
           trust_review_count: number | null
           updated_at: string
@@ -4268,6 +4612,8 @@ export type Database = {
           guru_expertise?: string[] | null
           id: string
           id_document_url?: string | null
+          instant_sale_eligible?: boolean | null
+          instant_sale_limit?: number | null
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
@@ -4284,10 +4630,14 @@ export type Database = {
           referred_by?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
+          risk_flags?: Json | null
+          seller_trust_score?: number | null
           showcase_items?: string[] | null
           system_account_role?: string | null
           system_account_wallet_balance?: number | null
           title?: string | null
+          total_sales_completed?: number | null
+          total_sales_value?: number | null
           trust_rating?: number | null
           trust_review_count?: number | null
           updated_at?: string
@@ -4316,6 +4666,8 @@ export type Database = {
           guru_expertise?: string[] | null
           id?: string
           id_document_url?: string | null
+          instant_sale_eligible?: boolean | null
+          instant_sale_limit?: number | null
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
@@ -4332,10 +4684,14 @@ export type Database = {
           referred_by?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
+          risk_flags?: Json | null
+          seller_trust_score?: number | null
           showcase_items?: string[] | null
           system_account_role?: string | null
           system_account_wallet_balance?: number | null
           title?: string | null
+          total_sales_completed?: number | null
+          total_sales_value?: number | null
           trust_rating?: number | null
           trust_review_count?: number | null
           updated_at?: string
@@ -6573,6 +6929,23 @@ export type Database = {
         Args: { p_key: string; p_request_hash: string; p_user_id: string }
         Returns: Json
       }
+      check_inventory_integrity: { Args: never; Returns: Json }
+      complete_sale_transfer: {
+        Args: {
+          p_actor_user_id: string
+          p_escrow_id: string
+          p_order_id: string
+        }
+        Returns: Json
+      }
+      determine_sale_lane: {
+        Args: {
+          p_card_instance_id: string
+          p_card_value: number
+          p_seller_id: string
+        }
+        Returns: Json
+      }
       earn_cardboom_points: {
         Args: {
           p_description?: string
@@ -6611,6 +6984,14 @@ export type Database = {
       }
       increment_reel_shares: { Args: { reel_uuid: string }; Returns: undefined }
       increment_reel_views: { Args: { reel_uuid: string }; Returns: undefined }
+      lock_inventory_for_sale: {
+        Args: {
+          p_actor_user_id: string
+          p_card_instance_id: string
+          p_order_id: string
+        }
+        Returns: Json
+      }
       post_ledger_entry: {
         Args: {
           p_currency: string
@@ -6643,6 +7024,15 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      unlock_inventory: {
+        Args: {
+          p_actor_user_id: string
+          p_card_instance_id: string
+          p_order_id: string
+          p_reason: string
+        }
+        Returns: Json
       }
       update_call_outcomes: { Args: never; Returns: undefined }
       update_reputation: {
@@ -6686,6 +7076,28 @@ export type Database = {
         | "completed"
         | "failed"
         | "refunded"
+      inventory_location:
+        | "user_vault"
+        | "marketplace"
+        | "grading_facility"
+        | "verification_hub"
+        | "in_transit"
+        | "buyer_received"
+        | "external"
+      inventory_status:
+        | "in_vault"
+        | "listed_for_sale"
+        | "reserved_checkout"
+        | "sold_pending"
+        | "in_verification"
+        | "verified"
+        | "verification_failed"
+        | "shipped"
+        | "delivered"
+        | "completed"
+        | "disputed"
+        | "refunded"
+        | "archived"
       ledger_entry_type:
         | "deposit"
         | "withdrawal"
@@ -6727,6 +7139,7 @@ export type Database = {
         | "free_shipping"
         | "early_access"
         | "exclusive_drop"
+      sale_lane: "instant" | "escrow_verification"
       trade_status:
         | "proposed"
         | "pending_photos"
@@ -6915,6 +7328,30 @@ export const Constants = {
         "failed",
         "refunded",
       ],
+      inventory_location: [
+        "user_vault",
+        "marketplace",
+        "grading_facility",
+        "verification_hub",
+        "in_transit",
+        "buyer_received",
+        "external",
+      ],
+      inventory_status: [
+        "in_vault",
+        "listed_for_sale",
+        "reserved_checkout",
+        "sold_pending",
+        "in_verification",
+        "verified",
+        "verification_failed",
+        "shipped",
+        "delivered",
+        "completed",
+        "disputed",
+        "refunded",
+        "archived",
+      ],
       ledger_entry_type: [
         "deposit",
         "withdrawal",
@@ -6961,6 +7398,7 @@ export const Constants = {
         "early_access",
         "exclusive_drop",
       ],
+      sale_lane: ["instant", "escrow_verification"],
       trade_status: [
         "proposed",
         "pending_photos",
