@@ -5991,8 +5991,8 @@ export type Database = {
     }
     Functions: {
       add_pass_xp: {
-        Args: { p_source?: string; p_user_id: string; p_xp_amount: number }
-        Returns: number
+        Args: { p_source: string; p_user_id: string; p_xp_amount: number }
+        Returns: undefined
       }
       award_cardboom_points: {
         Args: {
