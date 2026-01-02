@@ -281,7 +281,7 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
   };
 };
 
-// Hook for listings (user-created listings)
+// Hook for listings (user-created listings) with seller info
 export const useListings = (options: { sellerId?: string; status?: 'active' | 'sold' | 'cancelled' | 'reserved' } = {}) => {
   const { sellerId, status = 'active' } = options;
   const [listings, setListings] = useState<any[]>([]);
@@ -297,7 +297,13 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
       
       let query = supabase
         .from('listings')
-        .select('*')
+        .select(`
+          *,
+          profiles:seller_id (
+            display_name,
+            country_code
+          )
+        `)
         .eq('status', status)
         .order('created_at', { ascending: false });
 
@@ -308,7 +314,14 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
       const { data, error } = await query;
       if (error) throw error;
       
-      setListings(data || []);
+      // Transform to include seller info at top level
+      const listingsWithSeller = (data || []).map((listing: any) => ({
+        ...listing,
+        seller_username: listing.profiles?.display_name || 'Seller',
+        seller_country_code: listing.profiles?.country_code || 'TR',
+      }));
+      
+      setListings(listingsWithSeller);
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Error fetching listings:', err);

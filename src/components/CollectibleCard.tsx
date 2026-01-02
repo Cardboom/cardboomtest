@@ -10,6 +10,15 @@ import { formatGrade } from '@/hooks/useGradePrices';
 import { CardPlaceholder } from './market/CardPlaceholder';
 import { MiniSparkline } from './market/MiniSparkline';
 
+// Convert ISO country code to flag emoji
+const getCountryFlag = (countryCode: string): string => {
+  if (!countryCode || countryCode.length !== 2) return '🌍';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
 interface CollectibleCardProps {
   collectible: Collectible;
   onAddToCart: (collectible: Collectible) => void;
@@ -159,6 +168,16 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
             {collectible.name}
           </h3>
         </div>
+
+        {/* Seller Info with Country Flag */}
+        {collectible.sellerUsername && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+            <span className="text-lg leading-none" title={collectible.sellerCountryCode}>
+              {getCountryFlag(collectible.sellerCountryCode || 'TR')}
+            </span>
+            <span className="font-medium text-foreground/80">{collectible.sellerUsername}</span>
+          </div>
+        )}
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 flex-wrap">
           {collectible.grade && (

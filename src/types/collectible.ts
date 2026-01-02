@@ -11,6 +11,8 @@ export interface Collectible {
   priceChange: number;
   rarity: 'common' | 'rare' | 'legendary' | 'grail';
   seller: string;
+  sellerUsername?: string;
+  sellerCountryCode?: string;
   condition: string;
   grade?: CardGrade;
   year: number;
