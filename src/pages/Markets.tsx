@@ -536,7 +536,7 @@ const Markets = () => {
                                 />
                               </div>
                               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span>{item.category}</span>
+                                <span>{getCategoryLabel(item.category)}</span>
                                 <span className="text-border">•</span>
                                 <span>{item.age}d</span>
                               </div>
