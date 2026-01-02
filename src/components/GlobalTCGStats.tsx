@@ -160,6 +160,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-8"
             >
               <HeroNewsTicker />
             </motion.div>
