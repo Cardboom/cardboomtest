@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { HeroNewsTicker } from './HeroNewsTicker';
 
 interface GlobalStats {
   totalVolume: number;
@@ -24,14 +25,19 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
   const { data: stats, isLoading } = useQuery<GlobalStats>({
     queryKey: ['global-tcg-stats'],
     queryFn: async () => {
-      const [ordersResult, usersResult, listingsResult] = await Promise.all([
-        supabase.from('orders').select('price', { count: 'exact' }),
+      // Get real data from market_items table for accurate stats
+      const [marketItemsResult, usersResult, listingsResult, ordersResult] = await Promise.all([
+        supabase.from('market_items').select('current_price', { count: 'exact' }).gt('current_price', 0),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('orders').select('price').eq('status', 'completed'),
       ]);
 
-      const totalVolume = ordersResult.data?.reduce((sum, order) => sum + (order.price || 0), 0) || 0;
+      // Calculate total market value from all items with prices
+      const totalMarketValue = marketItemsResult.data?.reduce((sum, item) => sum + (item.current_price || 0), 0) || 0;
+      const totalOrders = ordersResult.data?.reduce((sum, order) => sum + (order.price || 0), 0) || 0;
       
+      // Get today's sales
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const { count: soldToday } = await supabase
@@ -40,14 +46,15 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
         .gte('created_at', today.toISOString());
 
       return {
-        totalVolume: totalVolume + 2_500_000,
-        totalUsers: (usersResult.count || 0) + 12_500,
-        cardsSoldToday: (soldToday || 0) + 847,
-        activeListings: (listingsResult.count || 0) + 15_000,
+        // Total market value from tracked items + any completed orders
+        totalVolume: totalMarketValue + totalOrders,
+        totalUsers: usersResult.count || 0,
+        cardsSoldToday: soldToday || 0,
+        activeListings: (listingsResult.count || 0) + (marketItemsResult.count || 0),
       };
     },
-    refetchInterval: 60000,
-    staleTime: 30000,
+    refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 15000,
   });
 
   const formatNumber = (num: number) => {
@@ -65,15 +72,15 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
   const statItems = [
     { 
       icon: DollarSign, 
-      value: formatVolume(stats?.totalVolume || 2_500_000), 
-      label: 'Trading Volume',
+      value: formatVolume(stats?.totalVolume || 0), 
+      label: 'Market Value',
       gradient: 'from-emerald-500/20 to-emerald-600/5',
       iconBg: 'bg-emerald-500/10',
       iconColor: 'text-emerald-500',
     },
     { 
       icon: Users, 
-      value: formatNumber(stats?.totalUsers || 12_500), 
+      value: formatNumber(stats?.totalUsers || 0), 
       label: 'Active Traders',
       gradient: 'from-blue-500/20 to-blue-600/5',
       iconBg: 'bg-blue-500/10',
@@ -81,7 +88,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
     },
     { 
       icon: ShoppingCart, 
-      value: formatNumber(stats?.cardsSoldToday || 847), 
+      value: formatNumber(stats?.cardsSoldToday || 0), 
       label: 'Cards Sold Today',
       gradient: 'from-amber-500/20 to-amber-600/5',
       iconBg: 'bg-amber-500/10',
@@ -89,7 +96,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
     },
     { 
       icon: TrendingUp, 
-      value: formatNumber(stats?.activeListings || 15_000), 
+      value: formatNumber(stats?.activeListings || 0), 
       label: 'Live Listings',
       gradient: 'from-purple-500/20 to-purple-600/5',
       iconBg: 'bg-purple-500/10',
@@ -146,6 +153,15 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               >
                 {t.hero.exploreMarket}
               </Button>
+            </motion.div>
+            
+            {/* News Ticker */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <HeroNewsTicker />
             </motion.div>
           </div>
         )}
