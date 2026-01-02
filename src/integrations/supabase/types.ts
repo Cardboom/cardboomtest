@@ -595,6 +595,151 @@ export type Database = {
           },
         ]
       }
+      buy_order_fills: {
+        Row: {
+          buy_order_id: string
+          created_at: string
+          fill_price: number
+          id: string
+          listing_id: string | null
+          order_id: string | null
+          quantity: number
+          seller_id: string
+        }
+        Insert: {
+          buy_order_id: string
+          created_at?: string
+          fill_price: number
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          quantity?: number
+          seller_id: string
+        }
+        Update: {
+          buy_order_id?: string
+          created_at?: string
+          fill_price?: number
+          id?: string
+          listing_id?: string | null
+          order_id?: string | null
+          quantity?: number
+          seller_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buy_order_fills_buy_order_id_fkey"
+            columns: ["buy_order_id"]
+            isOneToOne: false
+            referencedRelation: "buy_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buy_order_fills_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buy_order_fills_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buy_order_fills_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buy_order_fills_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buy_orders: {
+        Row: {
+          buyer_id: string
+          category: string
+          condition: string | null
+          created_at: string
+          expires_at: string | null
+          filled_quantity: number
+          grade: string | null
+          id: string
+          item_name: string
+          market_item_id: string | null
+          max_price: number
+          notes: string | null
+          quantity: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          category: string
+          condition?: string | null
+          created_at?: string
+          expires_at?: string | null
+          filled_quantity?: number
+          grade?: string | null
+          id?: string
+          item_name: string
+          market_item_id?: string | null
+          max_price: number
+          notes?: string | null
+          quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          category?: string
+          condition?: string | null
+          created_at?: string
+          expires_at?: string | null
+          filled_quantity?: number
+          grade?: string | null
+          id?: string
+          item_name?: string
+          market_item_id?: string | null
+          max_price?: number
+          notes?: string | null
+          quantity?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buy_orders_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buy_orders_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buy_orders_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_reels: {
         Row: {
           avg_watch_time: number | null
@@ -1565,6 +1710,94 @@ export type Database = {
           watchlist_public?: boolean | null
         }
         Relationships: []
+      }
+      creator_storefronts: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          display_name: string
+          featured_items: string[] | null
+          follower_count: number | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          logo_url: string | null
+          slug: string
+          social_links: Json | null
+          tagline: string | null
+          theme_color: string | null
+          total_revenue: number | null
+          total_sales: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          display_name: string
+          featured_items?: string[] | null
+          follower_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          logo_url?: string | null
+          slug: string
+          social_links?: Json | null
+          tagline?: string | null
+          theme_color?: string | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          display_name?: string
+          featured_items?: string[] | null
+          follower_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          logo_url?: string | null
+          slug?: string
+          social_links?: Json | null
+          tagline?: string | null
+          theme_color?: string | null
+          total_revenue?: number | null
+          total_sales?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_storefronts_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_storefronts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_storefronts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       creator_watchlist_items: {
         Row: {
@@ -3353,7 +3586,11 @@ export type Database = {
           buyer_fee_cents: number | null
           buyer_id: string
           created_at: string
+          delivery_deadline: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
+          escrow_locked_at: string | null
+          escrow_released_at: string | null
+          escrow_status: string | null
           id: string
           listing_id: string
           price: number
@@ -3361,6 +3598,7 @@ export type Database = {
           seller_fee: number
           seller_fee_cents: number | null
           seller_id: string
+          ship_by_deadline: string | null
           shipping_address: Json | null
           status: Database["public"]["Enums"]["order_status"]
           tracking_number: string | null
@@ -3371,7 +3609,11 @@ export type Database = {
           buyer_fee_cents?: number | null
           buyer_id: string
           created_at?: string
+          delivery_deadline?: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
+          escrow_locked_at?: string | null
+          escrow_released_at?: string | null
+          escrow_status?: string | null
           id?: string
           listing_id: string
           price: number
@@ -3379,6 +3621,7 @@ export type Database = {
           seller_fee: number
           seller_fee_cents?: number | null
           seller_id: string
+          ship_by_deadline?: string | null
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
           tracking_number?: string | null
@@ -3389,7 +3632,11 @@ export type Database = {
           buyer_fee_cents?: number | null
           buyer_id?: string
           created_at?: string
+          delivery_deadline?: string | null
           delivery_option?: Database["public"]["Enums"]["delivery_option"]
+          escrow_locked_at?: string | null
+          escrow_released_at?: string | null
+          escrow_status?: string | null
           id?: string
           listing_id?: string
           price?: number
@@ -3397,6 +3644,7 @@ export type Database = {
           seller_fee?: number
           seller_fee_cents?: number | null
           seller_id?: string
+          ship_by_deadline?: string | null
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
           tracking_number?: string | null
@@ -4934,6 +5182,78 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_trust_scores: {
+        Row: {
+          avg_delivery_days: number | null
+          badge_earned_at: string | null
+          created_at: string
+          delivery_speed_score: number | null
+          dispute_rate: number | null
+          dispute_rate_score: number | null
+          graded_ratio_score: number | null
+          graded_sales_ratio: number | null
+          id: string
+          overall_score: number
+          response_time_score: number | null
+          seller_id: string
+          tier: string
+          total_sales: number | null
+          updated_at: string
+          volume_score: number | null
+        }
+        Insert: {
+          avg_delivery_days?: number | null
+          badge_earned_at?: string | null
+          created_at?: string
+          delivery_speed_score?: number | null
+          dispute_rate?: number | null
+          dispute_rate_score?: number | null
+          graded_ratio_score?: number | null
+          graded_sales_ratio?: number | null
+          id?: string
+          overall_score?: number
+          response_time_score?: number | null
+          seller_id: string
+          tier?: string
+          total_sales?: number | null
+          updated_at?: string
+          volume_score?: number | null
+        }
+        Update: {
+          avg_delivery_days?: number | null
+          badge_earned_at?: string | null
+          created_at?: string
+          delivery_speed_score?: number | null
+          dispute_rate?: number | null
+          dispute_rate_score?: number | null
+          graded_ratio_score?: number | null
+          graded_sales_ratio?: number | null
+          id?: string
+          overall_score?: number
+          response_time_score?: number | null
+          seller_id?: string
+          tier?: string
+          total_sales?: number | null
+          updated_at?: string
+          volume_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_trust_scores_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_trust_scores_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seller_verifications: {
         Row: {
           address_proof_url: string | null
@@ -6184,6 +6504,10 @@ export type Database = {
       calculate_portfolio_heat: { Args: { p_user_id: string }; Returns: number }
       calculate_reel_trending_score: {
         Args: { reel_uuid: string }
+        Returns: number
+      }
+      calculate_seller_trust_score: {
+        Args: { p_seller_id: string }
         Returns: number
       }
       check_idempotency: {
