@@ -460,56 +460,59 @@ export const SupportTickets = () => {
                                 </Button>
                               </div>
 
-                              {selectedTicket?.ai_analysis && (
-                                <div className="space-y-3 pt-3 border-t border-purple-500/20">
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Suggested Priority</p>
-                                      <Badge variant="outline" className="mt-1 capitalize">
-                                        {selectedTicket.ai_analysis.suggestedPriority}
-                                      </Badge>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Suggested Category</p>
-                                      <Badge variant="outline" className="mt-1 capitalize">
-                                        {selectedTicket.ai_analysis.suggestedCategory}
-                                      </Badge>
-                                    </div>
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Sentiment</p>
-                                      {getSentimentBadge(selectedTicket.ai_analysis.sentiment)}
-                                    </div>
-                                    <div>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="w-full mt-3"
-                                        onClick={handleApplyAISuggestions}
-                                      >
-                                        Apply Suggestions
-                                      </Button>
-                                    </div>
-                                  </div>
-
-                                  {selectedTicket.ai_analysis.keyIssues?.length > 0 && (
-                                    <div>
-                                      <p className="text-xs text-muted-foreground mb-1">Key Issues</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {selectedTicket.ai_analysis.keyIssues.map((issue, i) => (
-                                          <Badge key={i} variant="secondary" className="text-xs">
-                                            {issue}
-                                          </Badge>
-                                        ))}
+                              {selectedTicket?.ai_analysis && (() => {
+                                const analysis = selectedTicket.ai_analysis as AIAnalysis;
+                                return (
+                                  <div className="space-y-3 pt-3 border-t border-purple-500/20">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                      <div>
+                                        <p className="text-xs text-muted-foreground">Suggested Priority</p>
+                                        <Badge variant="outline" className="mt-1 capitalize">
+                                          {analysis.suggestedPriority}
+                                        </Badge>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-muted-foreground">Suggested Category</p>
+                                        <Badge variant="outline" className="mt-1 capitalize">
+                                          {analysis.suggestedCategory}
+                                        </Badge>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs text-muted-foreground">Sentiment</p>
+                                        {getSentimentBadge(analysis.sentiment)}
+                                      </div>
+                                      <div>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          className="w-full mt-3"
+                                          onClick={handleApplyAISuggestions}
+                                        >
+                                          Apply Suggestions
+                                        </Button>
                                       </div>
                                     </div>
-                                  )}
 
-                                  <div>
-                                    <p className="text-xs text-muted-foreground mb-1">AI Summary</p>
-                                    <p className="text-sm">{selectedTicket.ai_analysis.summary}</p>
+                                    {analysis.keyIssues?.length > 0 && (
+                                      <div>
+                                        <p className="text-xs text-muted-foreground mb-1">Key Issues</p>
+                                        <div className="flex flex-wrap gap-1">
+                                          {analysis.keyIssues.map((issue, i) => (
+                                            <Badge key={i} variant="secondary" className="text-xs">
+                                              {issue}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    <div>
+                                      <p className="text-xs text-muted-foreground mb-1">AI Summary</p>
+                                      <p className="text-sm">{analysis.summary}</p>
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                );
+                              })()}
                             </div>
 
                             {ticket.admin_response && (

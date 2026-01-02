@@ -18,10 +18,26 @@ import {
   Trash2,
   UserX,
   RefreshCw,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Sparkles,
+  Loader2,
+  Shield,
+  ShieldAlert,
+  ShieldCheck
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { format } from 'date-fns';
+
+interface AIListingAnalysis {
+  qualityScore: number;
+  flags: string[];
+  riskLevel: 'low' | 'medium' | 'high';
+  scamIndicators: string[];
+  policyViolations: string[];
+  suggestions: string[];
+  summary: string;
+  priceAnalysis: string;
+}
 
 const REPORT_TYPES: Record<string, { label: string; color: string }> = {
   fake: { label: 'Fake Item', color: 'bg-red-500/10 text-red-500' },
@@ -40,6 +56,7 @@ export const ListingModeration = () => {
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [actionReason, setActionReason] = useState('');
   const [activeTab, setActiveTab] = useState('pending');
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Fetch listing reports
   const { data: reports, isLoading, refetch } = useQuery({
@@ -209,6 +226,52 @@ export const ListingModeration = () => {
       toast.error('Failed to suspend seller: ' + error.message);
     }
   });
+
+  // AI Listing Analysis
+  const handleAIAnalysis = async (listing: any) => {
+    if (!listing?.id) {
+      toast.error('No listing data available');
+      return;
+    }
+    
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-listing-check', {
+        body: {
+          listingId: listing.id,
+          title: listing.title,
+          description: listing.description || '',
+          price: listing.price,
+          category: listing.category,
+          images: listing.images || []
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.analysis) {
+        toast.success('AI analysis complete');
+        // Refresh the data to show updated AI analysis
+        refetch();
+      }
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast.error('Failed to analyze listing');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const getRiskBadge = (riskLevel: string) => {
+    switch (riskLevel) {
+      case 'high':
+        return <Badge className="bg-red-500/10 text-red-500 gap-1"><ShieldAlert className="w-3 h-3" /> High Risk</Badge>;
+      case 'medium':
+        return <Badge className="bg-orange-500/10 text-orange-500 gap-1"><Shield className="w-3 h-3" /> Medium Risk</Badge>;
+      default:
+        return <Badge className="bg-green-500/10 text-green-500 gap-1"><ShieldCheck className="w-3 h-3" /> Low Risk</Badge>;
+    }
+  };
 
   const pendingCount = reports?.filter(r => r.status === 'pending').length || 0;
 
@@ -425,6 +488,103 @@ export const ListingModeration = () => {
                     <p className="mt-2">{selectedReport.description}</p>
                   )}
                 </div>
+              </div>
+
+              {/* AI Analysis Section */}
+              <div className="p-4 rounded-lg border border-purple-500/20 bg-purple-500/5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-500" />
+                    <p className="font-medium text-purple-500">AI Listing Analysis</p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleAIAnalysis(selectedReport.listing)}
+                    disabled={isAnalyzing || !(selectedReport.listing as any)?.id}
+                    className="gap-2 border-purple-500/30 text-purple-500 hover:bg-purple-500/10"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Analyze with AI
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {(selectedReport.listing as any)?.ai_analysis && (() => {
+                  const analysis = (selectedReport.listing as any).ai_analysis as AIListingAnalysis;
+                  return (
+                    <div className="space-y-3 pt-3 border-t border-purple-500/20">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-purple-500">{analysis.qualityScore}/100</p>
+                            <p className="text-xs text-muted-foreground">Quality Score</p>
+                          </div>
+                          {getRiskBadge(analysis.riskLevel)}
+                        </div>
+                      </div>
+
+                      {analysis.scamIndicators?.length > 0 && (
+                        <div>
+                          <p className="text-xs text-red-500 font-medium mb-1">⚠️ Scam Indicators</p>
+                          <div className="flex flex-wrap gap-1">
+                            {analysis.scamIndicators.map((indicator, i) => (
+                              <Badge key={i} variant="destructive" className="text-xs">
+                                {indicator}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {analysis.policyViolations?.length > 0 && (
+                        <div>
+                          <p className="text-xs text-orange-500 font-medium mb-1">Policy Violations</p>
+                          <div className="flex flex-wrap gap-1">
+                            {analysis.policyViolations.map((violation, i) => (
+                              <Badge key={i} className="bg-orange-500/10 text-orange-500 text-xs">
+                                {violation}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {analysis.flags?.length > 0 && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Flags</p>
+                          <div className="flex flex-wrap gap-1">
+                            {analysis.flags.map((flag, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                {flag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">AI Summary</p>
+                        <p className="text-sm">{analysis.summary}</p>
+                      </div>
+
+                      {analysis.priceAnalysis && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Price Analysis</p>
+                          <p className="text-sm">{analysis.priceAnalysis}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Action Buttons */}
