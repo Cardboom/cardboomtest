@@ -377,30 +377,45 @@ export type Database = {
       auto_buy_config: {
         Row: {
           created_at: string
+          daily_buy_count: number | null
           discount_threshold: number
           id: string
           is_enabled: boolean
+          last_reset_date: string | null
           max_buy_amount: number | null
+          max_daily_buys: number | null
+          min_delay_between_buys_seconds: number | null
           system_buyer_id: string | null
           updated_at: string
+          use_rotating_buyers: boolean | null
         }
         Insert: {
           created_at?: string
+          daily_buy_count?: number | null
           discount_threshold?: number
           id?: string
           is_enabled?: boolean
+          last_reset_date?: string | null
           max_buy_amount?: number | null
+          max_daily_buys?: number | null
+          min_delay_between_buys_seconds?: number | null
           system_buyer_id?: string | null
           updated_at?: string
+          use_rotating_buyers?: boolean | null
         }
         Update: {
           created_at?: string
+          daily_buy_count?: number | null
           discount_threshold?: number
           id?: string
           is_enabled?: boolean
+          last_reset_date?: string | null
           max_buy_amount?: number | null
+          max_daily_buys?: number | null
+          min_delay_between_buys_seconds?: number | null
           system_buyer_id?: string | null
           updated_at?: string
+          use_rotating_buyers?: boolean | null
         }
         Relationships: []
       }
@@ -3397,6 +3412,100 @@ export type Database = {
           },
         ]
       }
+      organic_transactions: {
+        Row: {
+          buyer_account_id: string | null
+          created_at: string | null
+          discount_percent: number | null
+          executed_at: string | null
+          id: string
+          listing_id: string | null
+          market_item_id: string | null
+          market_price: number | null
+          notes: string | null
+          price: number
+          scheduled_at: string | null
+          seller_account_id: string | null
+          status: string | null
+          transaction_type: string
+        }
+        Insert: {
+          buyer_account_id?: string | null
+          created_at?: string | null
+          discount_percent?: number | null
+          executed_at?: string | null
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          market_price?: number | null
+          notes?: string | null
+          price: number
+          scheduled_at?: string | null
+          seller_account_id?: string | null
+          status?: string | null
+          transaction_type: string
+        }
+        Update: {
+          buyer_account_id?: string | null
+          created_at?: string | null
+          discount_percent?: number | null
+          executed_at?: string | null
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          market_price?: number | null
+          notes?: string | null
+          price?: number
+          scheduled_at?: string | null
+          seller_account_id?: string | null
+          status?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organic_transactions_buyer_account_id_fkey"
+            columns: ["buyer_account_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organic_transactions_buyer_account_id_fkey"
+            columns: ["buyer_account_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organic_transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organic_transactions_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organic_transactions_seller_account_id_fkey"
+            columns: ["seller_account_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organic_transactions_seller_account_id_fkey"
+            columns: ["seller_account_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_intents: {
         Row: {
           amount_cents: number
@@ -3845,6 +3954,7 @@ export type Database = {
           account_status: string
           account_type: Database["public"]["Enums"]["account_type"]
           activation_unlocked: boolean | null
+          auto_actions_count: number | null
           avatar_url: string | null
           badges: Json | null
           banned_at: string | null
@@ -3862,6 +3972,7 @@ export type Database = {
           is_beta_tester: boolean | null
           is_fan_account: boolean | null
           is_id_verified: boolean | null
+          last_auto_action_at: string | null
           level: number | null
           national_id: string | null
           paused_at: string | null
@@ -3875,6 +3986,8 @@ export type Database = {
           reputation_score: number | null
           reputation_tier: string | null
           showcase_items: string[] | null
+          system_account_role: string | null
+          system_account_wallet_balance: number | null
           title: string | null
           trust_rating: number | null
           trust_review_count: number | null
@@ -3886,6 +3999,7 @@ export type Database = {
           account_status?: string
           account_type?: Database["public"]["Enums"]["account_type"]
           activation_unlocked?: boolean | null
+          auto_actions_count?: number | null
           avatar_url?: string | null
           badges?: Json | null
           banned_at?: string | null
@@ -3903,6 +4017,7 @@ export type Database = {
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          last_auto_action_at?: string | null
           level?: number | null
           national_id?: string | null
           paused_at?: string | null
@@ -3916,6 +4031,8 @@ export type Database = {
           reputation_score?: number | null
           reputation_tier?: string | null
           showcase_items?: string[] | null
+          system_account_role?: string | null
+          system_account_wallet_balance?: number | null
           title?: string | null
           trust_rating?: number | null
           trust_review_count?: number | null
@@ -3927,6 +4044,7 @@ export type Database = {
           account_status?: string
           account_type?: Database["public"]["Enums"]["account_type"]
           activation_unlocked?: boolean | null
+          auto_actions_count?: number | null
           avatar_url?: string | null
           badges?: Json | null
           banned_at?: string | null
@@ -3944,6 +4062,7 @@ export type Database = {
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          last_auto_action_at?: string | null
           level?: number | null
           national_id?: string | null
           paused_at?: string | null
@@ -3957,6 +4076,8 @@ export type Database = {
           reputation_score?: number | null
           reputation_tier?: string | null
           showcase_items?: string[] | null
+          system_account_role?: string | null
+          system_account_wallet_balance?: number | null
           title?: string | null
           trust_rating?: number | null
           trust_review_count?: number | null

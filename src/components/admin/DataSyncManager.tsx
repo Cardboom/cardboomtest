@@ -6,18 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { 
-  RefreshCw, 
-  Image as ImageIcon, 
-  Database, 
-  Play, 
-  Pause,
-  CheckCircle,
-  AlertCircle,
-  Clock
-} from 'lucide-react';
+import { RefreshCw, Database, Play, Zap, CheckCircle, AlertCircle, Crown, Rocket } from 'lucide-react';
 
 interface SyncStats {
   total: number;
@@ -32,372 +24,121 @@ export const DataSyncManager = () => {
   const [isSyncing, setIsSyncing] = useState<Record<string, boolean>>({});
   const [syncResults, setSyncResults] = useState<Record<string, { updated: number; errors: number }>>({});
   
-  // Sync settings
-  const [batchSize, setBatchSize] = useState(50);
+  const [batchSize, setBatchSize] = useState(100);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [delayMs, setDelayMs] = useState(200);
+  const [totalBatches, setTotalBatches] = useState(10);
+  const [isRunningBulkSync, setIsRunningBulkSync] = useState(false);
 
   const fetchStats = async () => {
     setIsLoading(true);
     try {
-      // Get overall stats
-      const { data: allItems } = await supabase
-        .from('market_items')
-        .select('category, image_url');
-
+      const { data: allItems } = await supabase.from('market_items').select('category, image_url');
       if (allItems) {
         const byCategory: Record<string, { total: number; withImages: number }> = {};
         let totalWithImages = 0;
-
         allItems.forEach(item => {
-          if (!byCategory[item.category]) {
-            byCategory[item.category] = { total: 0, withImages: 0 };
-          }
+          if (!byCategory[item.category]) byCategory[item.category] = { total: 0, withImages: 0 };
           byCategory[item.category].total++;
-          
-          const hasImage = item.image_url && 
-            !item.image_url.includes('placeholder') && 
-            item.image_url !== '';
-          
-          if (hasImage) {
+          if (item.image_url && !item.image_url.includes('placeholder') && item.image_url !== '') {
             byCategory[item.category].withImages++;
             totalWithImages++;
           }
         });
-
-        setStats({
-          total: allItems.length,
-          withImages: totalWithImages,
-          missingImages: allItems.length - totalWithImages,
-          byCategory
-        });
+        setStats({ total: allItems.length, withImages: totalWithImages, missingImages: allItems.length - totalWithImages, byCategory });
       }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (error) { console.error('Error:', error); }
+    finally { setIsLoading(false); }
   };
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
+  useEffect(() => { fetchStats(); }, []);
 
   const triggerSync = async (source: string) => {
     setIsSyncing(prev => ({ ...prev, [source]: true }));
-    
     try {
-      const functionName = source === 'cardmarket' 
-        ? 'sync-cardmarket-images'
-        : source === 'tcgdex'
-        ? 'sync-tcgdex-images'
-        : source === 'scryfall'
-        ? 'sync-scryfall-images'
-        : source === 'ygopro'
-        ? 'sync-ygopro-images'
-        : source === 'optcg'
-        ? 'sync-optcg-images'
-        : 'sync-pricecharting-listings';
-
+      const functionName = source === 'cardmarket' ? 'sync-cardmarket-images' : source === 'tcgdex' ? 'sync-tcgdex-images' : source === 'scryfall' ? 'sync-scryfall-images' : source === 'ygopro' ? 'sync-ygopro-images' : source === 'optcg' ? 'sync-optcg-images' : 'sync-pricecharting-listings';
       const body: Record<string, unknown> = { limit: batchSize };
-      
-      if (source === 'cardmarket') {
-        body.delay_ms = delayMs;
-        body.store_price_history = true;
-        if (selectedCategory !== 'all') {
-          body.category = selectedCategory;
-        }
-      } else if (selectedCategory !== 'all') {
-        body.category = selectedCategory;
-      }
-
+      if (source === 'cardmarket') { body.delay_ms = delayMs; body.store_price_history = true; if (selectedCategory !== 'all') body.category = selectedCategory; }
       const { data, error } = await supabase.functions.invoke(functionName, { body });
-      
       if (error) throw error;
-
-      setSyncResults(prev => ({
-        ...prev,
-        [source]: {
-          updated: data?.updated || data?.images_added || 0,
-          errors: data?.errors || 0
-        }
-      }));
-
+      setSyncResults(prev => ({ ...prev, [source]: { updated: data?.updated || 0, errors: data?.errors || 0 } }));
       toast.success(`${source}: Synced ${data?.updated || 0} items`);
       fetchStats();
-    } catch (error) {
-      console.error(`Error syncing ${source}:`, error);
-      toast.error(`Failed to sync from ${source}`);
-      setSyncResults(prev => ({
-        ...prev,
-        [source]: { updated: 0, errors: 1 }
-      }));
-    } finally {
-      setIsSyncing(prev => ({ ...prev, [source]: false }));
-    }
+    } catch (error) { toast.error(`Failed to sync ${source}`); }
+    finally { setIsSyncing(prev => ({ ...prev, [source]: false })); }
+  };
+
+  const runBulkCardmarketSync = async () => {
+    setIsRunningBulkSync(true);
+    let totalUpdated = 0, offset = 0;
+    try {
+      for (let batch = 0; batch < totalBatches; batch++) {
+        const body: Record<string, unknown> = { limit: batchSize, offset, delay_ms: delayMs, store_price_history: true };
+        if (selectedCategory !== 'all') body.category = selectedCategory;
+        const { data } = await supabase.functions.invoke('sync-cardmarket-images', { body });
+        totalUpdated += data?.updated || 0;
+        offset += batchSize;
+        if (batch < totalBatches - 1) await new Promise(r => setTimeout(r, 2000));
+      }
+      toast.success(`Cardmarket bulk sync: ${totalUpdated} items`);
+      fetchStats();
+    } catch (error) { toast.error('Bulk sync failed'); }
+    finally { setIsRunningBulkSync(false); }
   };
 
   const sources = [
-    { id: 'cardmarket', name: 'Cardmarket API', description: 'Premium - 3000/day, 300/min', color: 'bg-blue-500', categories: ['pokemon', 'yugioh', 'mtg', 'onepiece', 'lorcana'] },
-    { id: 'tcgdex', name: 'TCGdex', description: 'Free - Pokemon only', color: 'bg-yellow-500', categories: ['pokemon'] },
-    { id: 'scryfall', name: 'Scryfall', description: 'Free - MTG only', color: 'bg-orange-500', categories: ['mtg'] },
-    { id: 'ygopro', name: 'YGOPro', description: 'Free - Yu-Gi-Oh only', color: 'bg-purple-500', categories: ['yugioh'] },
-    { id: 'optcg', name: 'OPTCG API', description: 'Free - One Piece TCG', color: 'bg-red-500', categories: ['one-piece', 'onepiece'] },
-    { id: 'pricecharting', name: 'PriceCharting', description: 'Prices & some images', color: 'bg-green-500', categories: ['all'] },
+    { id: 'cardmarket', name: 'Cardmarket API', description: 'PREMIUM - 3000/day', color: 'bg-blue-500', isPaid: true },
+    { id: 'tcgdex', name: 'TCGdex', description: 'Free - Pokemon', color: 'bg-yellow-500', isPaid: false },
+    { id: 'scryfall', name: 'Scryfall', description: 'Free - MTG', color: 'bg-orange-500', isPaid: false },
+    { id: 'ygopro', name: 'YGOPro', description: 'Free - Yu-Gi-Oh', color: 'bg-purple-500', isPaid: false },
+    { id: 'optcg', name: 'OPTCG', description: 'Free - One Piece', color: 'bg-red-500', isPaid: false },
   ];
 
-  const categoryOptions = [
-    { value: 'all', label: 'All Categories' },
-    { value: 'pokemon', label: 'Pokemon' },
-    { value: 'yugioh', label: 'Yu-Gi-Oh' },
-    { value: 'mtg', label: 'Magic: The Gathering' },
-    { value: 'onepiece', label: 'One Piece' },
-    { value: 'lorcana', label: 'Disney Lorcana' },
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <RefreshCw className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (isLoading) return <div className="flex justify-center py-12"><RefreshCw className="w-8 h-8 animate-spin text-primary" /></div>;
 
   const imageProgress = stats ? (stats.withImages / stats.total) * 100 : 0;
 
   return (
     <div className="space-y-6">
-      {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Database className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Items</p>
-                <p className="text-2xl font-bold">{stats?.total.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">With Images</p>
-                <p className="text-2xl font-bold text-emerald-500">{stats?.withImages.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10">
-                <AlertCircle className="w-5 h-5 text-amber-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Missing Images</p>
-                <p className="text-2xl font-bold text-amber-500">{stats?.missingImages.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Card className="bg-card/50"><CardContent className="p-4 flex items-center gap-3"><Database className="w-5 h-5 text-primary" /><div><p className="text-sm text-muted-foreground">Total</p><p className="text-2xl font-bold">{stats?.total.toLocaleString()}</p></div></CardContent></Card>
+        <Card className="bg-card/50"><CardContent className="p-4 flex items-center gap-3"><CheckCircle className="w-5 h-5 text-emerald-500" /><div><p className="text-sm text-muted-foreground">With Images</p><p className="text-2xl font-bold text-emerald-500">{stats?.withImages.toLocaleString()}</p></div></CardContent></Card>
+        <Card className="bg-card/50"><CardContent className="p-4 flex items-center gap-3"><AlertCircle className="w-5 h-5 text-amber-500" /><div><p className="text-sm text-muted-foreground">Missing</p><p className="text-2xl font-bold text-amber-500">{stats?.missingImages.toLocaleString()}</p></div></CardContent></Card>
       </div>
 
-      {/* Progress Bar */}
-      <Card className="bg-card/50 border-border/50">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Image Coverage</span>
-            <span className="text-sm text-muted-foreground">{imageProgress.toFixed(1)}%</span>
-          </div>
-          <Progress value={imageProgress} className="h-3" />
-        </CardContent>
-      </Card>
+      <Card><CardContent className="p-4"><div className="flex justify-between mb-2"><span className="text-sm font-medium">Coverage</span><span className="text-sm text-muted-foreground">{imageProgress.toFixed(1)}%</span></div><Progress value={imageProgress} className="h-3" /></CardContent></Card>
 
-      {/* Category Breakdown */}
-      <Card className="bg-card/50 border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Category Breakdown</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {stats?.byCategory && Object.entries(stats.byCategory).map(([category, data]) => {
-              const progress = (data.withImages / data.total) * 100;
-              return (
-                <div key={category} className="p-3 rounded-lg bg-muted/30 border border-border/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium capitalize">{category}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {data.withImages}/{data.total}
-                    </Badge>
-                  </div>
-                  <Progress value={progress} className="h-1.5" />
-                </div>
-              );
-            })}
+      <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30">
+        <CardHeader><CardTitle className="flex items-center gap-2"><Crown className="w-5 h-5 text-gold" />Premium API Maximizer</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div><Label>Batch Size</Label><Input type="number" value={batchSize} onChange={e => setBatchSize(Number(e.target.value))} min={10} max={200} /></div>
+            <div><Label>Batches</Label><Input type="number" value={totalBatches} onChange={e => setTotalBatches(Number(e.target.value))} min={1} max={30} /></div>
+            <div><Label>Category</Label><Select value={selectedCategory} onValueChange={setSelectedCategory}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All</SelectItem><SelectItem value="pokemon">Pokemon</SelectItem><SelectItem value="yugioh">Yu-Gi-Oh</SelectItem><SelectItem value="mtg">MTG</SelectItem></SelectContent></Select></div>
+            <div><Label>Delay (ms)</Label><Input type="number" value={delayMs} onChange={e => setDelayMs(Number(e.target.value))} min={100} /></div>
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={runBulkCardmarketSync} disabled={isRunningBulkSync} className="gap-2 bg-blue-600 hover:bg-blue-700">
+              {isRunningBulkSync ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
+              Bulk Cardmarket ({batchSize * totalBatches} items)
+            </Button>
+            <Button variant="outline" onClick={() => Promise.all(['tcgdex', 'scryfall', 'ygopro', 'optcg'].map(triggerSync))} disabled={isRunningBulkSync}><Rocket className="w-4 h-4 mr-2" />All Free Sources</Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Sync Settings */}
-      <Card className="bg-card/50 border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <RefreshCw className="w-5 h-5" />
-            Sync Settings
-          </CardTitle>
-          <CardDescription>Configure batch sync parameters</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Batch Size</Label>
-              <Input
-                type="number"
-                value={batchSize}
-                onChange={(e) => setBatchSize(Number(e.target.value))}
-                min={10}
-                max={200}
-              />
-              <p className="text-xs text-muted-foreground">Items per sync (10-200)</p>
+      <Card>
+        <CardHeader><CardTitle>Data Sources</CardTitle></CardHeader>
+        <CardContent className="grid gap-3">
+          {sources.map(source => (
+            <div key={source.id} className={`flex items-center justify-between p-4 rounded-lg border ${source.isPaid ? 'bg-blue-500/5 border-blue-500/30' : 'bg-muted/30'}`}>
+              <div className="flex items-center gap-3"><div className={`w-3 h-3 rounded-full ${source.color}`} /><div><p className="font-medium">{source.name} {source.isPaid && <Crown className="w-4 h-4 inline text-gold" />}</p><p className="text-xs text-muted-foreground">{source.description}</p></div></div>
+              <div className="flex items-center gap-3">
+                {syncResults[source.id] && <span className="text-xs text-emerald-500">{syncResults[source.id].updated} updated</span>}
+                <Button size="sm" onClick={() => triggerSync(source.id)} disabled={isSyncing[source.id]}>{isSyncing[source.id] ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}</Button>
+              </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Category Filter</Label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categoryOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>API Delay (ms)</Label>
-              <Input
-                type="number"
-                value={delayMs}
-                onChange={(e) => setDelayMs(Number(e.target.value))}
-                min={100}
-                max={5000}
-                step={100}
-              />
-              <p className="text-xs text-muted-foreground">200ms = 300 req/min</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Data Sources */}
-      <Card className="bg-card/50 border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <ImageIcon className="w-5 h-5" />
-            Data Sources
-          </CardTitle>
-          <CardDescription>Click to sync images from each source</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3">
-            {sources.map(source => {
-              const isSourceSyncing = isSyncing[source.id];
-              const result = syncResults[source.id];
-              
-              return (
-                <div 
-                  key={source.id} 
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${source.color}`} />
-                    <div>
-                      <p className="font-medium">{source.name}</p>
-                      <p className="text-xs text-muted-foreground">{source.description}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {result && (
-                      <div className="text-xs text-right">
-                        <span className="text-emerald-500">{result.updated} updated</span>
-                        {result.errors > 0 && (
-                          <span className="text-destructive ml-2">{result.errors} errors</span>
-                        )}
-                      </div>
-                    )}
-                    
-                    <Button
-                      size="sm"
-                      variant={isSourceSyncing ? "secondary" : "default"}
-                      onClick={() => triggerSync(source.id)}
-                      disabled={isSourceSyncing}
-                      className="min-w-[100px]"
-                    >
-                      {isSourceSyncing ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                          Syncing...
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-2" />
-                          Sync
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card className="bg-card/50 border-border/50">
-        <CardHeader>
-          <CardTitle className="text-lg">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-3">
-          <Button 
-            variant="outline" 
-            onClick={fetchStats}
-            className="gap-2"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Refresh Stats
-          </Button>
-          
-          <Button 
-            variant="default"
-            onClick={async () => {
-              // Sync all free sources including One Piece
-              await Promise.all([
-                triggerSync('tcgdex'),
-                triggerSync('scryfall'),
-                triggerSync('ygopro'),
-                triggerSync('optcg'),
-              ]);
-            }}
-            disabled={Object.values(isSyncing).some(Boolean)}
-            className="gap-2"
-          >
-            <Play className="w-4 h-4" />
-            Sync All Free Sources
-          </Button>
+          ))}
         </CardContent>
       </Card>
     </div>
