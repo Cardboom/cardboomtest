@@ -109,10 +109,20 @@ serve(async (req) => {
       buyerIp
     } = await req.json();
 
-    const fee = amount * 0.07;
+    // Validate amount
+    if (typeof amount !== 'number' || isNaN(amount) || amount < 10 || amount > 10000) {
+      throw new Error('Invalid amount. Must be between $10 and $10,000');
+    }
+
+    // Get fee rate from request (passed from frontend based on user subscription)
+    const feePercent = 0.065; // Default 6.5%, frontend already calculates correct fee
+    const flatFee = 0.50;
+    const fee = (amount * feePercent) + flatFee;
     const total = amount + fee;
     const conversationId = `topup_${user.id.substring(0, 8)}_${Date.now()}`;
     const basketId = `basket_${Date.now()}`;
+
+    console.log('[iyzico-init-3ds] Processing payment:', { amount, fee, total, userId: user.id });
 
     const { error: insertError } = await supabase
       .from('pending_payments')
@@ -126,12 +136,13 @@ serve(async (req) => {
       });
 
     if (insertError) {
-      console.error('Error inserting pending payment:', insertError);
+      console.error('[iyzico-init-3ds] Error inserting pending payment:', insertError);
       throw new Error('Failed to create pending payment');
     }
 
     const callbackUrl = `${supabaseUrl}/functions/v1/iyzico-callback`;
     
+    // iyzico expects price as string with 2 decimal places
     const iyzicoRequest: Record<string, unknown> = {
       locale: 'en',
       conversationId,
@@ -142,7 +153,7 @@ serve(async (req) => {
       basketId,
       paymentGroup: 'PRODUCT',
       callbackUrl,
-      currency: 'TRY',
+      currency: 'USD',
       paymentCard: {
         cardHolderName,
         cardNumber: cardNumber.replace(/\s/g, ''),
@@ -189,14 +200,15 @@ serve(async (req) => {
       ]
     };
 
-    console.log('Sending 3DS init request to iyzico:', IYZICO_BASE_URL);
-    console.log('Callback URL:', callbackUrl);
+    console.log('[iyzico-init-3ds] Sending 3DS init request to:', IYZICO_BASE_URL);
+    console.log('[iyzico-init-3ds] Callback URL:', callbackUrl);
 
     const randomString = Date.now().toString();
     const authorization = await generateAuthorizationV1(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, iyzicoRequest);
     
-    console.log('Random string:', randomString);
-    console.log('API Key (first 8 chars):', IYZICO_API_KEY?.substring(0, 8));
+    console.log('[iyzico-init-3ds] Random string:', randomString);
+    console.log('[iyzico-init-3ds] API Key configured:', !!IYZICO_API_KEY);
+    console.log('[iyzico-init-3ds] Secret Key configured:', !!IYZICO_SECRET_KEY);
 
     const response = await fetch(`${IYZICO_BASE_URL}/payment/3dsecure/initialize`, {
       method: 'POST',
@@ -209,11 +221,12 @@ serve(async (req) => {
     });
 
     const data = await response.json();
-    console.log('iyzico response status:', data.status);
-    console.log('iyzico response:', JSON.stringify(data, null, 2));
+    console.log('[iyzico-init-3ds] Response status:', data.status);
+    console.log('[iyzico-init-3ds] Response errorCode:', data.errorCode);
+    console.log('[iyzico-init-3ds] Response errorMessage:', data.errorMessage);
 
     if (data.status !== 'success') {
-      console.error('iyzico error:', data.errorMessage, data.errorCode);
+      console.error('[iyzico-init-3ds] Payment failed:', data.errorMessage, data.errorCode);
       
       await supabase
         .from('pending_payments')
