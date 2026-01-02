@@ -269,8 +269,8 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Global Stats Bar - Hero at top */}
-        <GlobalTCGStats />
+        {/* Global Stats Bar - Hero at top (hide hero for logged in users) */}
+        <GlobalTCGStats hideHero={!!user} />
 
         {/* Feature Showcase - Why CardBoom (only for non-logged-in users) */}
         {!user && <FeatureShowcase />}

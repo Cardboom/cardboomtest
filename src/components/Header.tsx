@@ -331,6 +331,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
+                          <Link to="/news" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
+                              <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-xs">Cardboom News</div>
+                              <div className="text-[10px] text-muted-foreground">TCG & market updates</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
                           <Link to="/creators" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
                             <div className="w-8 h-8 rounded-md bg-pink-500/10 flex items-center justify-center group-hover:bg-pink/20 transition-colors">
                               <Mic className="w-3.5 h-3.5 text-pink-500" />
