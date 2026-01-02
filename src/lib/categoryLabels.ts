@@ -65,13 +65,16 @@ export const getCategoryIcon = (category: string): string => {
   return categoryIcons[category] || '📦';
 };
 
-// Main categories to display in navigation (sorted by count)
+// Main categories to display in navigation (sorted by popularity)
 export const mainCategories = [
   { id: 'all', label: 'All', icon: '📦', count: 35000 },
   { id: 'mtg', label: 'Magic: The Gathering', icon: '🪄', count: 9790 },
   { id: 'yugioh', label: 'Yu-Gi-Oh!', icon: '🔮', count: 9690 },
   { id: 'pokemon', label: 'Pokémon', icon: '⚡', count: 9151 },
   { id: 'gaming', label: 'Video Games', icon: '🎮', count: 7006 },
+  { id: 'digimon', label: 'Digimon TCG', icon: '🦖', count: 500 },
+  { id: 'dragon-ball', label: 'Dragon Ball Super', icon: '🐉', count: 400 },
+  { id: 'star-wars', label: 'Star Wars', icon: '⭐', count: 350 },
   { id: 'one-piece', label: 'One Piece', icon: '🏴‍☠️', count: 15 },
   { id: 'lol-riftbound', label: 'Riftbound', icon: '🎮', count: 16 },
   { id: 'lorcana', label: 'Disney Lorcana', icon: '✨', count: 8 },

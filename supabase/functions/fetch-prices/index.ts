@@ -117,8 +117,24 @@ const mockIdToPriceChartingQuery: Record<string, string> = {
   'riftbound-volibear': 'Volibear Relentless Storm Riftbound Origins',
 };
 
-// Fetch price from PriceCharting API by search query
-async function fetchPriceChartingPrice(query: string): Promise<{ price: number; source: string } | null> {
+// Grade price fields from PriceCharting
+interface GradedPrices {
+  raw: number | null;
+  psa7: number | null;
+  psa8: number | null;
+  psa9: number | null;
+  psa10: number | null;
+  bgs9_5: number | null;
+  bgs10: number | null;
+  cgc10: number | null;
+}
+
+// Fetch price from PriceCharting API by search query (with graded prices)
+async function fetchPriceChartingPrice(query: string): Promise<{ 
+  price: number; 
+  source: string;
+  gradedPrices?: GradedPrices;
+} | null> {
   if (!PRICECHARTING_API_KEY) {
     console.log('[fetch-prices] PriceCharting API key not configured');
     return null;
@@ -146,12 +162,24 @@ async function fetchPriceChartingPrice(query: string): Promise<{ price: number; 
       const newPrice = product['new-price'] ? product['new-price'] / 100 : 0;
       const gradedPrice = product['graded-price'] ? product['graded-price'] / 100 : 0;
       
+      // Extract graded prices by grade (PriceCharting extended data)
+      const gradedPrices: GradedPrices = {
+        raw: loosePrice || null,
+        psa7: product['psa-7'] ? product['psa-7'] / 100 : null,
+        psa8: product['psa-8'] ? product['psa-8'] / 100 : null,
+        psa9: product['psa-9'] ? product['psa-9'] / 100 : null,
+        psa10: product['psa-10'] ? product['psa-10'] / 100 : null,
+        bgs9_5: product['bgs-9-5'] ? product['bgs-9-5'] / 100 : null,
+        bgs10: product['bgs-10'] ? product['bgs-10'] / 100 : null,
+        cgc10: product['cgc-10'] ? product['cgc-10'] / 100 : null,
+      };
+      
       // Use graded price if available (for collectible cards), otherwise best available
       const price = gradedPrice || cibPrice || newPrice || loosePrice;
       
       if (price > 0) {
         console.log(`[fetch-prices] PriceCharting found: $${price} for ${query}`);
-        return { price, source: 'pricecharting' };
+        return { price, source: 'pricecharting', gradedPrices };
       }
     }
     
@@ -163,8 +191,12 @@ async function fetchPriceChartingPrice(query: string): Promise<{ price: number; 
   }
 }
 
-// Fetch price from PriceCharting by numeric ID
-async function fetchPriceChartingByNumericId(numericId: string): Promise<{ price: number; source: string } | null> {
+// Fetch price from PriceCharting by numeric ID (with graded prices)
+async function fetchPriceChartingByNumericId(numericId: string): Promise<{ 
+  price: number; 
+  source: string;
+  gradedPrices?: GradedPrices;
+} | null> {
   if (!PRICECHARTING_API_KEY) {
     console.log('[fetch-prices] PriceCharting API key not configured');
     return null;
@@ -190,12 +222,24 @@ async function fetchPriceChartingByNumericId(numericId: string): Promise<{ price
       const newPrice = product['new-price'] ? product['new-price'] / 100 : 0;
       const gradedPrice = product['graded-price'] ? product['graded-price'] / 100 : 0;
       
+      // Extract graded prices by grade (PSA 7-10, BGS, CGC)
+      const gradedPrices: GradedPrices = {
+        raw: loosePrice || null,
+        psa7: product['psa-7'] ? product['psa-7'] / 100 : null,
+        psa8: product['psa-8'] ? product['psa-8'] / 100 : null,
+        psa9: product['psa-9'] ? product['psa-9'] / 100 : null,
+        psa10: product['psa-10'] ? product['psa-10'] / 100 : null,
+        bgs9_5: product['bgs-9-5'] ? product['bgs-9-5'] / 100 : null,
+        bgs10: product['bgs-10'] ? product['bgs-10'] / 100 : null,
+        cgc10: product['cgc-10'] ? product['cgc-10'] / 100 : null,
+      };
+      
       // For TCG cards: use loose price (ungraded card value), then graded, cib, new
       const price = loosePrice || gradedPrice || cibPrice || newPrice;
       
       if (price > 0) {
         console.log(`[fetch-prices] PriceCharting ID ${numericId} found: $${price}`);
-        return { price, source: 'pricecharting' };
+        return { price, source: 'pricecharting', gradedPrices };
       }
     }
     

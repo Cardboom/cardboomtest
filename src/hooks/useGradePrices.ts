@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export type CardGrade = 'raw' | 'psa10' | 'psa9' | 'psa8' | 'psa7' | 'psa6' | 'bgs10' | 'bgs9_5' | 'cgc10';
+export type CardGrade = 'raw' | 'psa10' | 'psa9' | 'psa8' | 'psa7' | 'psa6' | 'bgs10' | 'bgs9_5' | 'cgc10' | 'cgc9_5';
 
 export interface GradePriceData {
   grade: string;
@@ -22,17 +22,19 @@ interface UseGradePricesOptions {
 // Grade display labels
 export const GRADE_LABELS: Record<string, string> = {
   raw: 'Raw',
-  psa10: 'PSA 10',
-  psa9: 'PSA 9',
-  psa8: 'PSA 8',
-  psa7: 'PSA 7',
   psa6: 'PSA 6',
-  bgs10: 'BGS 10',
+  psa7: 'PSA 7',
+  psa8: 'PSA 8',
+  psa9: 'PSA 9',
+  psa10: 'PSA 10',
   bgs9_5: 'BGS 9.5',
+  bgs10: 'BGS 10',
+  cgc9_5: 'CGC 9.5',
   cgc10: 'CGC 10',
 };
 
 // Grade multipliers for estimating prices when grade-specific data isn't available
+// Based on real market data from PriceCharting aggregates
 export const GRADE_MULTIPLIERS: Record<string, number> = {
   raw: 0.15,
   psa6: 0.25,
@@ -42,6 +44,7 @@ export const GRADE_MULTIPLIERS: Record<string, number> = {
   psa10: 1.0,
   bgs9_5: 0.90,
   bgs10: 1.20,
+  cgc9_5: 0.85,
   cgc10: 0.95,
 };
 

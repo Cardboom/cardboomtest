@@ -12,7 +12,10 @@ interface SyncRequest {
 }
 
 // TCG categories that should use Cardmarket as primary source
-const TCG_CATEGORIES = ['pokemon', 'yugioh', 'mtg', 'onepiece', 'lorcana', 'digimon', 'riftbound']
+const TCG_CATEGORIES = ['pokemon', 'yugioh', 'mtg', 'onepiece', 'lorcana', 'digimon', 'riftbound', 'dragon-ball', 'star-wars', 'dragonball', 'starwars']
+
+// Cardmarket-specific categories (Pokemon, Lorcana use different API endpoint)
+const CARDMARKET_TCG_CATEGORIES = ['pokemon', 'lorcana']
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
