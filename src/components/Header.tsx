@@ -431,6 +431,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <User className="w-4 h-4 mr-2" />
                     {t.nav.myProfile}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/pass')} className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 hover:from-amber-500/20 hover:via-orange-500/20 hover:to-rose-500/20 border border-amber-500/20 rounded-md my-1">
+                    <Flame className="w-4 h-4 mr-2 text-amber-500" />
+                    <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent font-semibold">CardBoom Pass</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/pricing')} className="text-primary">
                     <Crown className="w-4 h-4 mr-2" />
                     Upgrade to Pro
