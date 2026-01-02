@@ -4208,6 +4208,7 @@ export type Database = {
           banned_at: string | null
           banned_reason: string | null
           bio: string | null
+          country_code: string | null
           created_at: string
           custom_guru: string | null
           display_name: string | null
@@ -4255,6 +4256,7 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
+          country_code?: string | null
           created_at?: string
           custom_guru?: string | null
           display_name?: string | null
@@ -4302,6 +4304,7 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
+          country_code?: string | null
           created_at?: string
           custom_guru?: string | null
           display_name?: string | null

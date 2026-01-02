@@ -147,7 +147,7 @@ const Index = () => {
     } as Collectible & { source: string; listingId?: string }));
   }, [marketItems]);
 
-  // Transform user listings to Collectible format
+  // Transform user listings to Collectible format with seller info
   const listingCollectibles = useMemo(() => {
     return listings.map(listing => ({
       id: listing.id,
@@ -159,7 +159,9 @@ const Index = () => {
       previousPrice: listing.price,
       priceChange: 0,
       rarity: 'rare' as const,
-      seller: 'User Listing',
+      seller: listing.seller_username || 'Seller',
+      sellerUsername: listing.seller_username || 'Seller',
+      sellerCountryCode: listing.seller_country_code || 'TR',
       condition: listing.condition || 'Near Mint',
       year: new Date(listing.created_at).getFullYear(),
       brand: listing.category,
