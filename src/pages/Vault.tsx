@@ -340,9 +340,32 @@ const VaultPage = () => {
                               </span>
                             </div>
                             <div className="flex gap-2 mt-4">
-                              <Button variant="default" size="sm" className="flex-1">
-                                List for Sale
-                              </Button>
+                              {item.status === 'verified' ? (
+                                <Button 
+                                  variant="default" 
+                                  size="sm" 
+                                  className="flex-1"
+                                  onClick={() => navigate('/sell', { 
+                                    state: { 
+                                      fromVault: true, 
+                                      vaultItem: item 
+                                    } 
+                                  })}
+                                >
+                                  List for Sale
+                                </Button>
+                              ) : (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="flex-1 opacity-60"
+                                  disabled
+                                >
+                                  {item.status === 'shipped' ? 'In Transit' : 
+                                   item.status === 'received' ? 'Pending Verification' : 
+                                   'Awaiting Shipment'}
+                                </Button>
+                              )}
                               <Button variant="outline" size="sm">
                                 <BarChart3 className="h-4 w-4" />
                               </Button>
