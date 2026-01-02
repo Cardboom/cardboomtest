@@ -4214,6 +4214,8 @@ export type Database = {
           email: string | null
           first_deposit_at: string | null
           first_deposit_completed: boolean | null
+          first_vault_card_sent: boolean | null
+          first_vault_card_sent_at: string | null
           guru_expertise: string[] | null
           id: string
           id_document_url: string | null
@@ -4259,6 +4261,8 @@ export type Database = {
           email?: string | null
           first_deposit_at?: string | null
           first_deposit_completed?: boolean | null
+          first_vault_card_sent?: boolean | null
+          first_vault_card_sent_at?: string | null
           guru_expertise?: string[] | null
           id: string
           id_document_url?: string | null
@@ -4304,6 +4308,8 @@ export type Database = {
           email?: string | null
           first_deposit_at?: string | null
           first_deposit_completed?: boolean | null
+          first_vault_card_sent?: boolean | null
+          first_vault_card_sent_at?: string | null
           guru_expertise?: string[] | null
           id?: string
           id_document_url?: string | null
@@ -5951,13 +5957,17 @@ export type Database = {
           created_at: string
           description: string | null
           estimated_value: number | null
+          first_card_bonus_amount: number | null
+          first_card_bonus_applied: boolean | null
           id: string
           image_url: string | null
           listing_id: string | null
           order_id: string | null
           owner_id: string
           received_at: string | null
+          return_shipping_fee: number | null
           shipped_at: string | null
+          shipping_fee_paid: number | null
           status: string | null
           title: string
           tracking_number: string | null
@@ -5970,13 +5980,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           estimated_value?: number | null
+          first_card_bonus_amount?: number | null
+          first_card_bonus_applied?: boolean | null
           id?: string
           image_url?: string | null
           listing_id?: string | null
           order_id?: string | null
           owner_id: string
           received_at?: string | null
+          return_shipping_fee?: number | null
           shipped_at?: string | null
+          shipping_fee_paid?: number | null
           status?: string | null
           title: string
           tracking_number?: string | null
@@ -5989,13 +6003,17 @@ export type Database = {
           created_at?: string
           description?: string | null
           estimated_value?: number | null
+          first_card_bonus_amount?: number | null
+          first_card_bonus_applied?: boolean | null
           id?: string
           image_url?: string | null
           listing_id?: string | null
           order_id?: string | null
           owner_id?: string
           received_at?: string | null
+          return_shipping_fee?: number | null
           shipped_at?: string | null
+          shipping_fee_paid?: number | null
           status?: string | null
           title?: string
           tracking_number?: string | null
@@ -6017,6 +6035,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vault_shipping_rates: {
+        Row: {
+          created_at: string | null
+          direction: string
+          id: string
+          is_active: boolean | null
+          rate_try: number
+          rate_usd: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          direction: string
+          id?: string
+          is_active?: boolean | null
+          rate_try?: number
+          rate_usd?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          direction?: string
+          id?: string
+          is_active?: boolean | null
+          rate_try?: number
+          rate_usd?: number
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       verified_sellers: {
         Row: {
@@ -6485,6 +6533,14 @@ export type Database = {
       add_pass_xp: {
         Args: { p_source: string; p_user_id: string; p_xp_amount: number }
         Returns: undefined
+      }
+      apply_first_vault_card_bonus: {
+        Args: {
+          p_estimated_value_try: number
+          p_user_id: string
+          p_vault_item_id: string
+        }
+        Returns: number
       }
       award_cardboom_points: {
         Args: {

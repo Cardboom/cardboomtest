@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,10 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { Vault, Package, MapPin, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Vault, Package, MapPin, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface SendToVaultDialogProps {
   open: boolean;
@@ -31,16 +33,59 @@ const conditions = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Fair', 'Poor'];
 
 export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps) => {
   const { t } = useLanguage();
+  const { formatPrice, currency } = useCurrency();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [shippingRate, setShippingRate] = useState({ try: 50, usd: 5 });
+  const [isFirstCard, setIsFirstCard] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'pokemon',
     condition: 'Near Mint',
     estimatedValue: '',
+    estimatedValueTRY: '',
     images: [] as File[],
   });
+
+  useEffect(() => {
+    if (open) {
+      fetchShippingRates();
+      checkFirstCardEligibility();
+    }
+  }, [open]);
+
+  const fetchShippingRates = async () => {
+    const { data } = await supabase
+      .from('vault_shipping_rates')
+      .select('*')
+      .eq('direction', 'to_vault')
+      .eq('is_active', true)
+      .single();
+    
+    if (data) {
+      setShippingRate({ try: data.rate_try, usd: data.rate_usd });
+    }
+  };
+
+  const checkFirstCardEligibility = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_vault_card_sent')
+      .eq('id', session.user.id)
+      .single();
+
+    setIsFirstCard(!profile?.first_vault_card_sent);
+  };
+
+  const estimatedValueTRY = formData.estimatedValueTRY 
+    ? parseFloat(formData.estimatedValueTRY) 
+    : (parseFloat(formData.estimatedValue) || 0) * 35; // Rough USD to TRY
+
+  const bonusEligible = isFirstCard && estimatedValueTRY >= 1000;
 
   const handleCopyAddress = () => {
     const fullAddress = `${WAREHOUSE_ADDRESS.company}\n${WAREHOUSE_ADDRESS.name}\n${WAREHOUSE_ADDRESS.address}\n${WAREHOUSE_ADDRESS.district}\n${WAREHOUSE_ADDRESS.city}, ${WAREHOUSE_ADDRESS.country}`;
@@ -63,8 +108,10 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
         return;
       }
 
+      const estimatedValue = formData.estimatedValue ? parseFloat(formData.estimatedValue) : null;
+
       // Create a pending vault item
-      const { error } = await supabase
+      const { data: vaultItem, error } = await supabase
         .from('vault_items')
         .insert({
           owner_id: session.user.id,
@@ -72,11 +119,24 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
           description: formData.description || `Pending arrival - ${formData.category}`,
           category: formData.category,
           condition: formData.condition,
-          estimated_value: formData.estimatedValue ? parseFloat(formData.estimatedValue) : null,
+          estimated_value: estimatedValue,
           status: 'pending_shipment',
-        });
+          shipping_fee_paid: shippingRate.usd,
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Check and apply first card bonus
+      if (bonusEligible && vaultItem) {
+        await supabase.rpc('apply_first_vault_card_bonus', {
+          p_user_id: session.user.id,
+          p_vault_item_id: vaultItem.id,
+          p_estimated_value_try: estimatedValueTRY
+        });
+        toast.success('🎉 First card bonus of ₺50 applied to your wallet!');
+      }
 
       toast.success(t.vault?.requestSubmitted || 'Vault request submitted! Ship your card to the address shown.');
       setStep(3);
@@ -96,6 +156,7 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
       category: 'pokemon',
       condition: 'Near Mint',
       estimatedValue: '',
+      estimatedValueTRY: '',
       images: [],
     });
     onOpenChange(false);
@@ -140,6 +201,27 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
             </div>
           ))}
         </div>
+
+        {/* First Card Bonus Banner */}
+        {step === 1 && isFirstCard && (
+          <Card className="border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-600/5">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-amber-500/20">
+                  <Gift className="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                    First Card Bonus! <Sparkles className="h-4 w-4" />
+                  </h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Send your first card worth ₺1,000+ to earn <span className="font-bold text-amber-600">₺50 bonus</span> credit!
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Step 1: Card Details */}
         {step === 1 && (
@@ -208,20 +290,43 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="estimatedValue">{t.vault?.estimatedValue || 'Estimated Value (USD)'}</Label>
-                <div className="relative mt-1.5">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                  <Input
-                    id="estimatedValue"
-                    type="number"
-                    placeholder="0.00"
-                    value={formData.estimatedValue}
-                    onChange={(e) => setFormData({ ...formData, estimatedValue: e.target.value })}
-                    className="pl-7"
-                  />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="estimatedValue">Estimated Value (USD)</Label>
+                  <div className="relative mt-1.5">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input
+                      id="estimatedValue"
+                      type="number"
+                      placeholder="0.00"
+                      value={formData.estimatedValue}
+                      onChange={(e) => setFormData({ ...formData, estimatedValue: e.target.value })}
+                      className="pl-7"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="estimatedValueTRY">or in TRY</Label>
+                  <div className="relative mt-1.5">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₺</span>
+                    <Input
+                      id="estimatedValueTRY"
+                      type="number"
+                      placeholder="0"
+                      value={formData.estimatedValueTRY}
+                      onChange={(e) => setFormData({ ...formData, estimatedValueTRY: e.target.value })}
+                      className="pl-7"
+                    />
+                  </div>
                 </div>
               </div>
+
+              {bonusEligible && (
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-gain/10 border border-gain/20">
+                  <CheckCircle className="h-4 w-4 text-gain" />
+                  <span className="text-sm text-gain font-medium">Eligible for ₺50 first card bonus!</span>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="description">{t.vault?.additionalNotes || 'Additional Notes'}</Label>
@@ -250,6 +355,25 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
                 <p className="text-sm text-muted-foreground">
                   {t.vault?.step2Desc || 'Follow these instructions to ensure your card arrives safely.'}
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Shipping Fee Info */}
+            <Card className="border-blue-500/20 bg-blue-500/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Truck className="h-5 w-5 text-blue-500" />
+                    <div>
+                      <p className="font-medium">Shipping Fee</p>
+                      <p className="text-xs text-muted-foreground">Paid by sender</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-lg">₺{shippingRate.try}</p>
+                    <p className="text-xs text-muted-foreground">~${shippingRate.usd} USD</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
