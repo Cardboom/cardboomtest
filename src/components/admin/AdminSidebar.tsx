@@ -37,6 +37,7 @@ import {
   Crown,
   AlertTriangle,
   HelpCircle,
+  Bot,
 } from "lucide-react";
 
 interface NavItem {
@@ -81,6 +82,7 @@ const navGroups: NavGroup[] = [
       { id: "users", label: "User Management", icon: Users },
       { id: "verification", label: "Seller KYC", icon: Shield },
       { id: "whale", label: "Whale Program", icon: Crown },
+      { id: "system-accounts", label: "System Accounts", icon: Bot },
     ],
   },
   {
