@@ -331,7 +331,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/referrals" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                          <Link to="/creators" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
                             <div className="w-8 h-8 rounded-md bg-pink-500/10 flex items-center justify-center group-hover:bg-pink/20 transition-colors">
                               <Mic className="w-3.5 h-3.5 text-pink-500" />
                             </div>
