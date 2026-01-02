@@ -41,7 +41,7 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link to="/about" className="hover:text-foreground transition-colors">{t.footer.about}</Link></li>
               <li><Link to="/careers" className="hover:text-foreground transition-colors">{t.footer.careers}</Link></li>
-              <li><Link to="/referrals" className="hover:text-foreground transition-colors">{t.footer.creatorsAmbassadors}</Link></li>
+              <li><Link to="/creators" className="hover:text-foreground transition-colors">{t.footer.creatorsAmbassadors}</Link></li>
               <li><Link to="/pricing" className="hover:text-foreground transition-colors">{t.footer.pricingPro}</Link></li>
               <li><Link to="/blog" className="hover:text-foreground transition-colors">{t.footer.blog}</Link></li>
               <li><Link to="/press" className="hover:text-foreground transition-colors">{t.footer.press}</Link></li>
