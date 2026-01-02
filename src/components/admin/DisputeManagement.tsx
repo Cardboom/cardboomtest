@@ -11,7 +11,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { AlertTriangle, CheckCircle, XCircle, Clock, Eye, DollarSign, MessageSquare } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Clock, Eye, DollarSign, Sparkles, Loader2 } from "lucide-react";
+
+interface AIAnalysis {
+  summary: string;
+  buyerPosition: string;
+  sellerPosition: string;
+  keyFactors: string[];
+  recommendation: string;
+  recommendedRefundPercent: number;
+  confidenceScore: number;
+  reasoning: string;
+  suggestedNextSteps: string[];
+}
 
 interface Dispute {
   id: string;
@@ -25,6 +37,10 @@ interface Dispute {
   refund_amount: number | null;
   created_at: string;
   resolved_at: string | null;
+  ai_analysis?: AIAnalysis | null;
+  ai_summary?: string | null;
+  ai_recommendation?: string | null;
+  ai_confidence_score?: number | null;
   order?: {
     id: string;
     price: number;
@@ -54,6 +70,7 @@ export function DisputeManagement() {
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [refundAmount, setRefundAmount] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const { data: disputes = [], isLoading } = useQuery({
     queryKey: ["admin-disputes"],
@@ -99,7 +116,6 @@ export function DisputeManagement() {
 
       if (error) throw error;
 
-      // Log admin action
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         await supabase.from("admin_audit_log").insert({
@@ -124,6 +140,56 @@ export function DisputeManagement() {
     },
   });
 
+  // AI Analysis function
+  const handleAIAnalysis = async (dispute: Dispute) => {
+    setIsAnalyzing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-dispute-analyzer', {
+        body: {
+          disputeId: dispute.id,
+          disputeType: dispute.reason,
+          description: dispute.description,
+          orderAmount: dispute.order?.price || 0,
+          buyerEvidence: null,
+          sellerResponse: null,
+          sellerEvidence: null
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.analysis) {
+        setSelectedDispute(prev => prev ? {
+          ...prev,
+          ai_analysis: data.analysis,
+          ai_summary: data.analysis.summary,
+          ai_recommendation: data.analysis.recommendation,
+          ai_confidence_score: data.analysis.confidenceScore
+        } : null);
+
+        // Pre-fill resolution based on AI recommendation
+        if (data.analysis.recommendation) {
+          setResolution(data.analysis.recommendation);
+        }
+        if (data.analysis.recommendedRefundPercent && dispute.order?.price) {
+          const suggestedRefund = (dispute.order.price * data.analysis.recommendedRefundPercent / 100).toFixed(2);
+          setRefundAmount(suggestedRefund);
+        }
+        if (data.analysis.reasoning) {
+          setResolutionNotes(data.analysis.reasoning);
+        }
+
+        toast.success('AI analysis complete');
+        queryClient.invalidateQueries({ queryKey: ["admin-disputes"] });
+      }
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      toast.error('Failed to get AI analysis');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -137,6 +203,12 @@ export function DisputeManagement() {
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
+  };
+
+  const getConfidenceBadge = (score: number) => {
+    if (score >= 80) return <Badge className="bg-green-500">High ({score}%)</Badge>;
+    if (score >= 50) return <Badge className="bg-yellow-500">Medium ({score}%)</Badge>;
+    return <Badge className="bg-red-500">Low ({score}%)</Badge>;
   };
 
   const filteredDisputes = disputes.filter((d) =>
@@ -170,7 +242,7 @@ export function DisputeManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Dispute Resolution Center</h2>
-          <p className="text-muted-foreground">Review and resolve order disputes</p>
+          <p className="text-muted-foreground">Review and resolve order disputes with AI assistance</p>
         </div>
       </div>
 
@@ -250,7 +322,7 @@ export function DisputeManagement() {
       <Card>
         <CardHeader>
           <CardTitle>Disputes</CardTitle>
-          <CardDescription>Click on a dispute to review and resolve</CardDescription>
+          <CardDescription>Click on a dispute to review with AI assistance</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -278,11 +350,19 @@ export function DisputeManagement() {
                 {filteredDisputes.map((dispute) => (
                   <TableRow key={dispute.id}>
                     <TableCell>
-                      <div>
-                        <p className="font-medium">{dispute.order?.listing?.title || "Unknown"}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {dispute.order_id.slice(0, 8)}...
-                        </p>
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <p className="font-medium">{dispute.order?.listing?.title || "Unknown"}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {dispute.order_id.slice(0, 8)}...
+                          </p>
+                        </div>
+                        {dispute.ai_analysis && (
+                          <Badge variant="outline" className="border-purple-500 text-purple-500 text-xs">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            AI
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -303,7 +383,12 @@ export function DisputeManagement() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setSelectedDispute(dispute)}
+                        onClick={() => {
+                          setSelectedDispute(dispute);
+                          setResolution("");
+                          setResolutionNotes("");
+                          setRefundAmount("");
+                        }}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         Review
@@ -319,7 +404,7 @@ export function DisputeManagement() {
 
       {/* Dispute Detail Dialog */}
       <Dialog open={!!selectedDispute} onOpenChange={() => setSelectedDispute(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Dispute Details</DialogTitle>
             <DialogDescription>
@@ -363,6 +448,86 @@ export function DisputeManagement() {
                 <p className="text-sm text-muted-foreground">{selectedDispute.description}</p>
               </div>
 
+              {/* AI Analysis Section */}
+              <div className="border border-purple-500/30 bg-purple-500/5 rounded-lg p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-purple-500" />
+                    <span className="font-medium text-purple-500">AI Dispute Analyzer</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-purple-500 text-purple-500 hover:bg-purple-500/10"
+                    onClick={() => handleAIAnalysis(selectedDispute)}
+                    disabled={isAnalyzing}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        {selectedDispute.ai_analysis ? 'Re-analyze' : 'Analyze with AI'}
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {selectedDispute.ai_analysis && (
+                  <div className="space-y-3 pt-3 border-t border-purple-500/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground">AI Recommendation</p>
+                        <Badge className="mt-1 capitalize">
+                          {selectedDispute.ai_analysis.recommendation?.replace(/_/g, " ")}
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Confidence</p>
+                        {getConfidenceBadge(selectedDispute.ai_analysis.confidenceScore)}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Summary</p>
+                      <p className="text-sm">{selectedDispute.ai_analysis.summary}</p>
+                    </div>
+
+                    {selectedDispute.ai_analysis.keyFactors?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Key Factors</p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedDispute.ai_analysis.keyFactors.map((factor, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                              {factor}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">AI Reasoning</p>
+                      <p className="text-sm text-muted-foreground">{selectedDispute.ai_analysis.reasoning}</p>
+                    </div>
+
+                    {selectedDispute.ai_analysis.suggestedNextSteps?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Suggested Next Steps</p>
+                        <ul className="text-sm list-disc list-inside space-y-1">
+                          {selectedDispute.ai_analysis.suggestedNextSteps.map((step, i) => (
+                            <li key={i}>{step}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {selectedDispute.status === "pending" || selectedDispute.status === "under_review" ? (
                 <>
                   {/* Resolution Form */}
@@ -377,12 +542,14 @@ export function DisputeManagement() {
                           <SelectItem value="full_refund">Full Refund to Buyer</SelectItem>
                           <SelectItem value="partial_refund">Partial Refund</SelectItem>
                           <SelectItem value="favor_seller">Favor Seller (No Refund)</SelectItem>
+                          <SelectItem value="require_return">Require Return First</SelectItem>
+                          <SelectItem value="need_more_info">Need More Information</SelectItem>
                           <SelectItem value="mutual_agreement">Mutual Agreement</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {resolution === "partial_refund" && (
+                    {(resolution === "partial_refund" || resolution === "full_refund") && (
                       <div>
                         <p className="text-sm font-medium mb-2">Refund Amount</p>
                         <div className="flex items-center gap-2">

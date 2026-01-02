@@ -2549,6 +2549,7 @@ export type Database = {
       listing_reports: {
         Row: {
           action_taken: string | null
+          ai_analysis: Json | null
           created_at: string | null
           description: string | null
           id: string
@@ -2561,6 +2562,7 @@ export type Database = {
         }
         Insert: {
           action_taken?: string | null
+          ai_analysis?: Json | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -2573,6 +2575,7 @@ export type Database = {
         }
         Update: {
           action_taken?: string | null
+          ai_analysis?: Json | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -2595,6 +2598,10 @@ export type Database = {
       }
       listings: {
         Row: {
+          ai_analysis: Json | null
+          ai_checked_at: string | null
+          ai_flags: string[] | null
+          ai_quality_score: number | null
           allows_shipping: boolean
           allows_trade: boolean
           allows_vault: boolean
@@ -2617,6 +2624,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_analysis?: Json | null
+          ai_checked_at?: string | null
+          ai_flags?: string[] | null
+          ai_quality_score?: number | null
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
@@ -2639,6 +2650,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_analysis?: Json | null
+          ai_checked_at?: string | null
+          ai_flags?: string[] | null
+          ai_quality_score?: number | null
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
@@ -3084,6 +3099,10 @@ export type Database = {
       }
       order_disputes: {
         Row: {
+          ai_analysis: Json | null
+          ai_confidence_score: number | null
+          ai_recommendation: string | null
+          ai_summary: string | null
           created_at: string | null
           description: string
           dispute_type: string
@@ -3101,6 +3120,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          ai_analysis?: Json | null
+          ai_confidence_score?: number | null
+          ai_recommendation?: string | null
+          ai_summary?: string | null
           created_at?: string | null
           description: string
           dispute_type: string
@@ -3118,6 +3141,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          ai_analysis?: Json | null
+          ai_confidence_score?: number | null
+          ai_recommendation?: string | null
+          ai_summary?: string | null
           created_at?: string | null
           description?: string
           dispute_type?: string
@@ -4764,6 +4791,10 @@ export type Database = {
       support_tickets: {
         Row: {
           admin_response: string | null
+          ai_analysis: Json | null
+          ai_draft_response: string | null
+          ai_suggested_category: string | null
+          ai_suggested_priority: string | null
           assigned_to: string | null
           category: string | null
           created_at: string
@@ -4778,6 +4809,10 @@ export type Database = {
         }
         Insert: {
           admin_response?: string | null
+          ai_analysis?: Json | null
+          ai_draft_response?: string | null
+          ai_suggested_category?: string | null
+          ai_suggested_priority?: string | null
           assigned_to?: string | null
           category?: string | null
           created_at?: string
@@ -4792,6 +4827,10 @@ export type Database = {
         }
         Update: {
           admin_response?: string | null
+          ai_analysis?: Json | null
+          ai_draft_response?: string | null
+          ai_suggested_category?: string | null
+          ai_suggested_priority?: string | null
           assigned_to?: string | null
           category?: string | null
           created_at?: string
