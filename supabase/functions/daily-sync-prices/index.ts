@@ -11,6 +11,9 @@ interface SyncRequest {
   forceAll?: boolean
 }
 
+// TCG categories that should use Cardmarket as primary source
+const TCG_CATEGORIES = ['pokemon', 'yugioh', 'mtg', 'onepiece', 'lorcana', 'digimon', 'riftbound']
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -20,7 +23,8 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const priceChartingKey = Deno.env.get('PRICECHARTING_API_KEY')
-    const ebayKey = Deno.env.get('EBAY_BROWSE_API_KEY')
+    const cardmarketKey = Deno.env.get('CARDMARKET_RAPIDAPI_KEY')
+    const justTcgKey = Deno.env.get('JUSTTCG_API_KEY')
     
     const supabase = createClient(supabaseUrl, supabaseKey)
     
@@ -67,10 +71,68 @@ Deno.serve(async (req) => {
           let newPrice: number | null = null
           let source = 'api'
           
-          // Determine which API to use based on data_source
-          if (item.data_source === 'pricecharting' && priceChartingKey && item.external_id) {
-            // Parse external_id to get PriceCharting product ID
-            const pcId = item.external_id.replace('pc:', '')
+          // Determine which API to use based on category
+          const isTcgCategory = TCG_CATEGORIES.includes(item.category?.toLowerCase() || '')
+          
+          // TCG Categories: Try Cardmarket first, then JustTCG, then PriceCharting
+          if (isTcgCategory && cardmarketKey) {
+            try {
+              const searchQuery = encodeURIComponent(item.name)
+              const cmResponse = await fetch(
+                `https://cardmarket-api.p.rapidapi.com/products/search?search=${searchQuery}&game=${item.category}&limit=1`,
+                {
+                  headers: {
+                    'X-RapidAPI-Key': cardmarketKey,
+                    'X-RapidAPI-Host': 'cardmarket-api.p.rapidapi.com',
+                  }
+                }
+              )
+              
+              if (cmResponse.ok) {
+                const cmData = await cmResponse.json()
+                if (cmData.products?.[0]) {
+                  const product = cmData.products[0]
+                  // Use averageSellPrice or trendPrice
+                  newPrice = product.averageSellPrice || product.trendPrice || product.lowestPrice
+                  if (newPrice && newPrice > 0) {
+                    source = 'cardmarket'
+                  }
+                }
+              }
+            } catch (cmError) {
+              console.error(`[daily-sync-prices] Cardmarket error for ${item.id}:`, cmError)
+            }
+          }
+          
+          // Fallback to JustTCG for TCG items
+          if (!newPrice && isTcgCategory && justTcgKey) {
+            try {
+              const jtResponse = await fetch(
+                `https://api.justtcg.com/v1/products/search?q=${encodeURIComponent(item.name)}&limit=1`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${justTcgKey}`,
+                  }
+                }
+              )
+              
+              if (jtResponse.ok) {
+                const jtData = await jtResponse.json()
+                if (jtData.data?.[0]) {
+                  newPrice = jtData.data[0].marketPrice || jtData.data[0].lowPrice
+                  if (newPrice && newPrice > 0) {
+                    source = 'justtcg'
+                  }
+                }
+              }
+            } catch (jtError) {
+              console.error(`[daily-sync-prices] JustTCG error for ${item.id}:`, jtError)
+            }
+          }
+          
+          // Non-TCG or fallback: Use PriceCharting
+          if (!newPrice && priceChartingKey) {
+            const pcId = item.external_id?.replace('pc:', '') || ''
             
             // Try numeric ID first
             if (/^\d+$/.test(pcId)) {
@@ -98,42 +160,6 @@ Deno.serve(async (req) => {
                   source = 'pricecharting'
                 }
               }
-            }
-          }
-          
-          // Fallback to eBay if available
-          if (!newPrice && ebayKey) {
-            try {
-              const ebayResponse = await fetch(
-                `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(item.name)}&limit=5&filter=buyingOptions:{FIXED_PRICE},conditions:{NEW|LIKE_NEW}`,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${ebayKey}`,
-                    'Content-Type': 'application/json',
-                    'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
-                  }
-                }
-              )
-              
-              if (ebayResponse.ok) {
-                const ebayData = await ebayResponse.json()
-                const items = ebayData.itemSummaries || []
-                
-                if (items.length > 0) {
-                  // Get median price from results
-                  const prices = items
-                    .map((i: any) => parseFloat(i.price?.value || '0'))
-                    .filter((p: number) => p > 0)
-                    .sort((a: number, b: number) => a - b)
-                  
-                  if (prices.length > 0) {
-                    newPrice = prices[Math.floor(prices.length / 2)]
-                    source = 'ebay'
-                  }
-                }
-              }
-            } catch (ebayError) {
-              console.error(`[daily-sync-prices] eBay error for ${item.id}:`, ebayError)
             }
           }
           

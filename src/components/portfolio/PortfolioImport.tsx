@@ -196,7 +196,7 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
                 <Upload className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                 <h3 className="font-semibold mb-2">Upload CSV File</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Drag & drop or click to browse. Supports exports from eBay, TCGPlayer, and more.
+                  Drag & drop or click to browse. Supports exports from TCGPlayer, Cardmarket, and more.
                 </p>
                 <input
                   ref={fileInputRef}

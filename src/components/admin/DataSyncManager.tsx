@@ -40,7 +40,7 @@ export const DataSyncManager = () => {
         allItems.forEach(item => {
           if (!byCategory[item.category]) byCategory[item.category] = { total: 0, withImages: 0 };
           byCategory[item.category].total++;
-          if (item.image_url && !item.image_url.includes('placeholder') && item.image_url !== '') {
+          if (item.image_url && !item.image_url.includes('placeholder') && !item.image_url.startsWith('data:') && item.image_url !== '') {
             byCategory[item.category].withImages++;
             totalWithImages++;
           }
