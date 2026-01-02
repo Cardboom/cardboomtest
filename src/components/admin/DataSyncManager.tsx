@@ -53,8 +53,14 @@ export const DataSyncManager = () => {
 
   useEffect(() => { fetchStats(); }, []);
 
-  const triggerSync = async (source: string) => {
+  const triggerSync = async (source: string, autoComplete = false) => {
     setIsSyncing(prev => ({ ...prev, [source]: true }));
+    let totalUpdated = 0;
+    let totalPrices = 0;
+    let totalErrors = 0;
+    let offset = 0;
+    let hasMore = true;
+    
     try {
       const functionMap: Record<string, string> = {
         'cardmarket': 'sync-cardmarket-images',
@@ -66,20 +72,46 @@ export const DataSyncManager = () => {
         'ebay': 'sync-ebay-images',
       };
       const functionName = functionMap[source] || 'sync-pricecharting-listings';
-      const body: Record<string, unknown> = { limit: batchSize };
-      if (source === 'cardmarket' || source === 'ebay') { 
-        body.delay_ms = delayMs; 
-        if (selectedCategory !== 'all') body.category = selectedCategory; 
-        if (source === 'ebay') body.updatePrices = true;
+      
+      // For eBay and other sources, auto-continue until complete
+      const maxBatches = autoComplete ? 100 : 1; // Safety limit
+      let batchCount = 0;
+      
+      while (hasMore && batchCount < maxBatches) {
+        const body: Record<string, unknown> = { limit: batchSize, offset };
+        if (source === 'cardmarket' || source === 'ebay') { 
+          body.delay_ms = delayMs; 
+          if (selectedCategory !== 'all') body.category = selectedCategory; 
+          if (source === 'ebay') body.updatePrices = true;
+        }
+        
+        const { data, error } = await supabase.functions.invoke(functionName, { body });
+        if (error) throw error;
+        
+        const updated = data?.updated || data?.imagesUpdated || 0;
+        const pricesUpdated = data?.pricesUpdated || 0;
+        totalUpdated += updated;
+        totalPrices += pricesUpdated;
+        totalErrors += data?.errors || 0;
+        hasMore = data?.hasMore === true && autoComplete;
+        offset = data?.nextOffset || offset + batchSize;
+        batchCount++;
+        
+        // Update progress in real-time
+        setSyncResults(prev => ({ ...prev, [source]: { updated: totalUpdated, errors: totalErrors } }));
+        
+        // Rate limit delay between batches
+        if (hasMore) {
+          await new Promise(r => setTimeout(r, 1000));
+        }
       }
-      const { data, error } = await supabase.functions.invoke(functionName, { body });
-      if (error) throw error;
-      const updated = data?.updated || data?.imagesUpdated || 0;
-      const pricesUpdated = data?.pricesUpdated || 0;
-      setSyncResults(prev => ({ ...prev, [source]: { updated, errors: data?.errors || 0 } }));
-      toast.success(`${source}: ${updated} images${pricesUpdated ? `, ${pricesUpdated} prices` : ''} updated`);
+      
+      toast.success(`${source}: ${totalUpdated} images${totalPrices ? `, ${totalPrices} prices` : ''} synced`);
       fetchStats();
-    } catch (error) { toast.error(`Failed to sync ${source}`); }
+    } catch (error) { 
+      toast.error(`Failed to sync ${source}`); 
+      console.error(error);
+    }
     finally { setIsSyncing(prev => ({ ...prev, [source]: false })); }
   };
 
@@ -153,11 +185,15 @@ export const DataSyncManager = () => {
             <div><Label>Delay (ms)</Label><Input type="number" value={delayMs} onChange={e => setDelayMs(Number(e.target.value))} min={100} /></div>
           </div>
           <div className="flex flex-wrap gap-3">
+            <Button onClick={() => triggerSync('ebay', true)} disabled={isSyncing['ebay']} className="gap-2 bg-green-600 hover:bg-green-700">
+              {isSyncing['ebay'] ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              Auto-Sync eBay (All Items)
+            </Button>
             <Button onClick={runBulkCardmarketSync} disabled={isRunningBulkSync} className="gap-2 bg-blue-600 hover:bg-blue-700">
               {isRunningBulkSync ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
               Bulk Cardmarket ({batchSize * totalBatches} items)
             </Button>
-            <Button variant="outline" onClick={() => Promise.all(['tcgdex', 'scryfall', 'ygopro', 'optcg', 'apitcg'].map(triggerSync))} disabled={isRunningBulkSync}><Rocket className="w-4 h-4 mr-2" />All Free Sources</Button>
+            <Button variant="outline" onClick={() => Promise.all(['tcgdex', 'scryfall', 'ygopro', 'optcg', 'apitcg'].map(s => triggerSync(s, false)))} disabled={isRunningBulkSync}><Rocket className="w-4 h-4 mr-2" />All Free Sources</Button>
             <Button variant="secondary" onClick={seedNewCategories} disabled={isSeedingCategories} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
               {isSeedingCategories ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
               Seed New TCG Categories
