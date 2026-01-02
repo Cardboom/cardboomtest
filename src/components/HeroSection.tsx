@@ -5,6 +5,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { AnimatedCounter } from './AnimatedCounter';
 
 export const HeroSection = () => {
   const { t } = useLanguage();
@@ -53,16 +54,16 @@ export const HeroSection = () => {
   };
 
   const stats = [
-    { label: t.hero.totalVolume, value: formatValue(realStats?.totalVolume || 0, 'currency') },
-    { label: t.hero.volume24h, value: formatValue(realStats?.volume24h || 0, 'currency') },
-    { label: t.hero.activeListings, value: formatValue(realStats?.activeListings || 0, 'number') },
-    { label: t.hero.traders, value: formatValue(realStats?.traders || 0, 'number') }
+    { label: t.hero.totalVolume, rawValue: realStats?.totalVolume || 0, type: 'currency' as const },
+    { label: t.hero.volume24h, rawValue: realStats?.volume24h || 0, type: 'currency' as const },
+    { label: t.hero.activeListings, rawValue: realStats?.activeListings || 0, type: 'number' as const },
+    { label: t.hero.traders, rawValue: realStats?.traders || 0, type: 'number' as const }
   ];
 
   return (
     <section className="relative min-h-[100vh] flex items-center overflow-hidden bg-gradient-to-b from-background via-background to-background">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Animated background elements - pointer-events-none only on this container */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         {/* Gradient orbs */}
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 -right-32 w-80 h-80 bg-primary/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -128,7 +129,11 @@ export const HeroSection = () => {
             {stats.map(stat => (
               <div key={stat.label} className="text-center">
                 <div className="text-3xl md:text-5xl font-bold font-display text-foreground">
-                  {stat.value}
+                  <AnimatedCounter 
+                    value={stat.rawValue} 
+                    formatFn={(v) => formatValue(v, stat.type)}
+                    duration={1000}
+                  />
                 </div>
                 <div className="text-xs text-muted-foreground uppercase tracking-widest mt-2">
                   {stat.label}
