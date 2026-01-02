@@ -111,20 +111,20 @@ export function PopularCardsPanel() {
                   {card.name}
                 </h3>
                 
-                <div className="flex items-center justify-between mt-2">
-                  <span className="text-lg font-bold text-foreground">
+                <div className="flex items-center justify-between gap-2 mt-2">
+                  <span className="text-lg font-bold text-foreground shrink-0">
                     {formatPrice(card.current_price)}
                   </span>
                   
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
                     {(card.views_24h || 0) > 0 && (
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-0.5">
                         <Eye className="w-3 h-3" />
                         {card.views_24h}
                       </span>
                     )}
                     {(card.sales_count_30d || 0) > 0 && (
-                      <span className="flex items-center gap-1">
+                      <span className="flex items-center gap-0.5">
                         <DollarSign className="w-3 h-3" />
                         {card.sales_count_30d}
                       </span>
