@@ -103,6 +103,50 @@ Deno.serve(async (req) => {
       }
     }
 
+    // PRICING HIERARCHY FALLBACK: For items with no external price, use active listings
+    const { data: zeroPriceItems } = await supabase
+      .from('market_items')
+      .select('id, name, category')
+      .eq('current_price', 0)
+      .limit(500)
+
+    if (zeroPriceItems && zeroPriceItems.length > 0) {
+      console.log(`[daily-price-snapshot] Found ${zeroPriceItems.length} items with zero price, checking listings...`)
+      
+      for (const item of zeroPriceItems) {
+        // Find active listings that match this item
+        const { data: matchingListings } = await supabase
+          .from('listings')
+          .select('price')
+          .eq('status', 'active')
+          .eq('category', item.category)
+          .ilike('title', `%${item.name.split(' ').slice(0, 3).join('%')}%`)
+          .order('price', { ascending: true })
+          .limit(10)
+
+        if (matchingListings && matchingListings.length > 0) {
+          // Use median price from listings (anti-manipulation: not min, not max)
+          const prices = matchingListings.map(l => Number(l.price)).filter(p => p > 0)
+          if (prices.length > 0) {
+            const medianPrice = prices.length === 1 
+              ? prices[0] 
+              : prices[Math.floor(prices.length / 2)]
+            
+            await supabase
+              .from('market_items')
+              .update({ 
+                current_price: medianPrice,
+                data_source: 'user_listing',
+                updated_at: now
+              })
+              .eq('id', item.id)
+            
+            console.log(`[daily-price-snapshot] Set ${item.name} price to $${medianPrice} from ${prices.length} listings`)
+          }
+        }
+      }
+    }
+
     // Update historical price references in market_items for accurate % changes
     if (update_historical && items.length > 0) {
       const sevenDaysAgo = new Date()
