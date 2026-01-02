@@ -69,6 +69,8 @@ import GradingOrderDetail from "./pages/GradingOrderDetail";
 import NotFound from "./pages/NotFound";
 import CardWars from "./pages/CardWars";
 import CardBoomPass from "./pages/CardBoomPass";
+import BuyOrders from "./pages/BuyOrders";
+import StorefrontPage from "./pages/StorefrontPage";
 
 const queryClient = new QueryClient();
 
@@ -154,6 +156,9 @@ const AppContent = () => {
           {/* Creator Routes */}
           <Route path="/@:username" element={<CreatorPage />} />
           <Route path="/creators" element={<CreatorInvite />} />
+          <Route path="/store/:slug" element={<StorefrontPage />} />
+          {/* Buy Orders */}
+          <Route path="/buy-orders" element={<BuyOrders />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

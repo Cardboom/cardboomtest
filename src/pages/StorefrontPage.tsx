@@ -22,7 +22,7 @@ const StorefrontPage = () => {
 
       <div className="min-h-screen bg-background flex flex-col">
         <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
-        <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+        <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} items={[]} onRemoveItem={() => {}} />
         <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
           <CreatorStorefront slug={slug} />
         </main>
