@@ -69,16 +69,19 @@ const TierCard = ({
   tier, 
   currentTier, 
   isPro, 
-  claimedTiers 
+  claimedTiers,
+  cumulativeXp
 }: { 
   tier: PassTier; 
   currentTier: number; 
   isPro: boolean; 
   claimedTiers: number[];
+  cumulativeXp: number;
 }) => {
   const isUnlocked = tier.tier_number <= currentTier;
   const isClaimed = claimedTiers.includes(tier.tier_number);
   const isMilestone = tier.tier_number % 5 === 0;
+  const isFinalTier = tier.tier_number === 30;
 
   return (
     <motion.div
@@ -90,20 +93,23 @@ const TierCard = ({
         isUnlocked 
           ? "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30" 
           : "bg-card/50 border-border/50",
-        isMilestone && "ring-2 ring-amber-500/30"
+        isMilestone && "ring-2 ring-amber-500/30",
+        isFinalTier && "ring-2 ring-purple-500/50"
       )}
     >
       {/* Tier Number Badge */}
       <div className={cn(
         "absolute -top-2 -left-2 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
-        isUnlocked ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+        isUnlocked ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+        isFinalTier && !isUnlocked && "bg-gradient-to-br from-purple-500 to-pink-500 text-white"
       )}>
         {tier.tier_number}
       </div>
 
       {/* XP Required */}
-      <div className="text-right text-xs text-muted-foreground mb-3">
-        {tier.xp_required.toLocaleString()} XP
+      <div className="text-right mb-3">
+        <div className="text-xs font-medium text-foreground">+{tier.xp_required.toLocaleString()} XP</div>
+        <div className="text-[10px] text-muted-foreground">{cumulativeXp.toLocaleString()} total</div>
       </div>
 
       {/* Free Track */}
@@ -190,12 +196,14 @@ const CardBoomPass = () => {
     loading, 
     purchaseProPass, 
     getProgressToNextTier,
-    getSeasonTimeRemaining 
+    getSeasonTimeRemaining,
+    getTotalXpRequired
   } = useCardboomPass(userId);
   
   const { balance } = useCardboomPoints(userId);
   const progressToNext = getProgressToNextTier();
   const timeRemaining = getSeasonTimeRemaining();
+  const totalXpRequired = getTotalXpRequired();
 
   const handlePurchasePro = async () => {
     setPurchasing(true);
@@ -208,9 +216,9 @@ const CardBoomPass = () => {
     { feature: 'Tier Rewards', free: 'Free track only', pro: 'Free + Pro track' },
     { feature: 'Exclusive Cosmetics', free: '—', pro: '✓ All seasons' },
     { feature: 'Priority Support', free: '—', pro: '✓ Faster response' },
-    { feature: 'Checkout Discounts', free: 'Up to 3%', pro: 'Up to 5%' },
+    { feature: 'Checkout Discounts', free: 'Up to 3%', pro: 'Up to 7%' },
     { feature: 'Profile Badges', free: 'Basic', pro: 'Exclusive Pro badges' },
-    { feature: 'Listing Boost', free: '—', pro: '10% visibility boost' },
+    { feature: 'Listing Boost', free: '—', pro: '✓ Priority placement' },
   ];
 
   return (
@@ -286,9 +294,10 @@ const CardBoomPass = () => {
                       <span className="font-medium">{progressToNext.current.toLocaleString()} / {progressToNext.required.toLocaleString()} XP</span>
                     </div>
                     <Progress value={progressToNext.percent} className="h-3" />
-                    <p className="text-xs text-muted-foreground">
-                      Earn XP by making transactions: $1 spent = 1 XP
-                    </p>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Total XP: {progressToNext.totalXp?.toLocaleString() || 0} / {totalXpRequired.toLocaleString()}</span>
+                      <span>$1 = 1 XP • Grading = 500 XP</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -342,15 +351,23 @@ const CardBoomPass = () => {
 
             <TabsContent value="tiers">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {tiers.map((tier) => (
-                  <TierCard
-                    key={tier.id}
-                    tier={tier}
-                    currentTier={progress?.current_tier || 0}
-                    isPro={progress?.is_pro || false}
-                    claimedTiers={progress?.claimed_tiers || []}
-                  />
-                ))}
+                {tiers.map((tier, index) => {
+                  // Calculate cumulative XP for this tier
+                  const cumulativeXp = tiers
+                    .slice(0, index + 1)
+                    .reduce((sum, t) => sum + t.xp_required, 0);
+                  
+                  return (
+                    <TierCard
+                      key={tier.id}
+                      tier={tier}
+                      currentTier={progress?.current_tier || 0}
+                      isPro={progress?.is_pro || false}
+                      claimedTiers={progress?.claimed_tiers || []}
+                      cumulativeXp={cumulativeXp}
+                    />
+                  );
+                })}
               </div>
             </TabsContent>
 
@@ -401,7 +418,7 @@ const CardBoomPass = () => {
                 { 
                   icon: TrendingUp, 
                   title: 'Earn XP Through Activity', 
-                  description: 'Every $1 you spend on transactions, purchases, or grading earns you 1 XP. Real activity drives your progress.' 
+                  description: 'Top-ups, purchases, and sales: $1 = 1 XP. Grading requests: 500 XP flat. Real activity drives progress.' 
                 },
                 { 
                   icon: Gem, 

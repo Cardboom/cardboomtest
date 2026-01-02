@@ -129,24 +129,50 @@ export const useCardboomPass = (userId?: string) => {
     return tiers.find(t => t.tier_number === progress.current_tier + 1) || null;
   };
 
+  const getCumulativeXpForTier = (tierNum: number) => {
+    // Sum up all XP required for tiers 1 through tierNum
+    return tiers
+      .filter(t => t.tier_number <= tierNum)
+      .reduce((sum, t) => sum + t.xp_required, 0);
+  };
+
   const getProgressToNextTier = () => {
-    if (!progress) return { current: 0, required: 100, percent: 0 };
+    if (!progress || tiers.length === 0) return { current: 0, required: 125, percent: 0, totalXp: 0, cumulativeForNext: 125 };
     
-    const currentTierData = tiers.find(t => t.tier_number === progress.current_tier);
-    const nextTierData = tiers.find(t => t.tier_number === progress.current_tier + 1);
+    const currentTier = progress.current_tier;
+    const nextTierData = tiers.find(t => t.tier_number === currentTier + 1);
     
-    if (!nextTierData) return { current: progress.current_xp, required: progress.current_xp, percent: 100 };
+    // Max tier reached
+    if (!nextTierData) {
+      return { 
+        current: progress.current_xp, 
+        required: progress.current_xp, 
+        percent: 100, 
+        totalXp: progress.current_xp,
+        cumulativeForNext: getCumulativeXpForTier(30)
+      };
+    }
     
-    const baseXp = currentTierData?.xp_required || 0;
-    const targetXp = nextTierData.xp_required;
-    const progressXp = progress.current_xp - baseXp;
-    const neededXp = targetXp - baseXp;
+    // Cumulative XP needed to complete current tier
+    const cumulativeForCurrent = getCumulativeXpForTier(currentTier);
+    // Cumulative XP needed to complete next tier
+    const cumulativeForNext = getCumulativeXpForTier(currentTier + 1);
+    // XP needed just for the next tier
+    const xpNeededForNextTier = nextTierData.xp_required;
+    // How much XP user has towards next tier (after completing current tier)
+    const progressInCurrentTier = progress.current_xp - cumulativeForCurrent;
     
     return {
-      current: progressXp,
-      required: neededXp,
-      percent: Math.min(100, (progressXp / neededXp) * 100)
+      current: Math.max(0, progressInCurrentTier),
+      required: xpNeededForNextTier,
+      percent: Math.min(100, Math.max(0, (progressInCurrentTier / xpNeededForNextTier) * 100)),
+      totalXp: progress.current_xp,
+      cumulativeForNext
     };
+  };
+
+  const getTotalXpRequired = () => {
+    return tiers.reduce((sum, t) => sum + t.xp_required, 0);
   };
 
   const getSeasonTimeRemaining = () => {
@@ -202,6 +228,7 @@ export const useCardboomPass = (userId?: string) => {
     getNextTier,
     getProgressToNextTier,
     getSeasonTimeRemaining,
+    getTotalXpRequired,
     refetch: fetchData
   };
 };
