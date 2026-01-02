@@ -12,6 +12,7 @@ const EBAY_RAPIDAPI_KEY = Deno.env.get("EBAY_RAPIDAPI_KEY");
 interface EbayProduct {
   title: string;
   image?: string;
+  images?: string[];
   price?: {
     value: string;
     currency: string;
@@ -19,11 +20,141 @@ interface EbayProduct {
   condition?: string;
   itemId?: string;
   itemWebUrl?: string;
+  soldDate?: string;
+  isSold?: boolean;
 }
 
 interface EbaySearchResponse {
   products?: EbayProduct[];
   total?: number;
+}
+
+interface GradeInfo {
+  company: string | null;
+  grade: string | null;
+  numericGrade: number | null;
+}
+
+interface VariantInfo {
+  isFirstEdition: boolean;
+  isHolo: boolean;
+  isReverseHolo: boolean;
+  isUnlimited: boolean;
+  variant: string | null;
+}
+
+// Parse grading info from title
+function parseGradingInfo(title: string): GradeInfo {
+  const gradePatterns = [
+    { regex: /PSA\s*(\d+(?:\.\d+)?)/i, company: 'PSA' },
+    { regex: /BGS\s*(\d+(?:\.\d+)?)/i, company: 'BGS' },
+    { regex: /CGC\s*(\d+(?:\.\d+)?)/i, company: 'CGC' },
+    { regex: /SGC\s*(\d+(?:\.\d+)?)/i, company: 'SGC' },
+  ];
+
+  for (const { regex, company } of gradePatterns) {
+    const match = title.match(regex);
+    if (match) {
+      const numericGrade = parseFloat(match[1]);
+      return {
+        company,
+        grade: `${company} ${match[1]}`,
+        numericGrade,
+      };
+    }
+  }
+
+  return { company: null, grade: null, numericGrade: null };
+}
+
+// Parse variant info from title
+function parseVariantInfo(title: string): VariantInfo {
+  const lowerTitle = title.toLowerCase();
+  
+  return {
+    isFirstEdition: /1st\s*edition|first\s*edition/i.test(title),
+    isHolo: /\bholo\b|holofoil/i.test(title) && !/reverse\s*holo/i.test(title),
+    isReverseHolo: /reverse\s*holo/i.test(title),
+    isUnlimited: /\bunlimited\b/i.test(title),
+    variant: lowerTitle.includes('shadowless') ? 'shadowless' 
+           : lowerTitle.includes('secret rare') ? 'secret_rare'
+           : lowerTitle.includes('full art') ? 'full_art'
+           : lowerTitle.includes('alt art') ? 'alt_art'
+           : null,
+  };
+}
+
+// Map eBay condition to internal condition
+function mapCondition(ebayCondition: string | undefined): string {
+  if (!ebayCondition) return 'unknown';
+  
+  const lower = ebayCondition.toLowerCase();
+  if (lower.includes('mint') || lower.includes('gem')) return 'near_mint';
+  if (lower.includes('excellent') || lower.includes('lightly')) return 'excellent';
+  if (lower.includes('good') || lower.includes('moderately')) return 'good';
+  if (lower.includes('fair') || lower.includes('heavily')) return 'fair';
+  if (lower.includes('poor') || lower.includes('damaged')) return 'poor';
+  if (lower.includes('new') || lower.includes('sealed')) return 'mint';
+  return 'good';
+}
+
+// Calculate fuzzy match score between item name and eBay title
+function calculateMatchScore(itemName: string, ebayTitle: string): number {
+  const normalizedItem = itemName.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+  const normalizedTitle = ebayTitle.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+  
+  const itemWords = normalizedItem.split(/\s+/).filter(w => w.length > 2);
+  const titleWords = normalizedTitle.split(/\s+/);
+  
+  let matchCount = 0;
+  for (const word of itemWords) {
+    if (titleWords.some(tw => tw.includes(word) || word.includes(tw))) {
+      matchCount++;
+    }
+  }
+  
+  return itemWords.length > 0 ? matchCount / itemWords.length : 0;
+}
+
+// Apply outlier detection using Median Absolute Deviation (MAD)
+function filterOutliers(prices: number[]): number[] {
+  if (prices.length < 5) return prices;
+  
+  const sorted = [...prices].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  
+  // Calculate MAD
+  const deviations = sorted.map(p => Math.abs(p - median));
+  deviations.sort((a, b) => a - b);
+  const mad = deviations[Math.floor(deviations.length / 2)] * 1.4826; // Scale factor for normal distribution
+  
+  // Filter outliers (within 3 MAD)
+  const threshold = 3 * mad;
+  return prices.filter(p => Math.abs(p - median) <= threshold);
+}
+
+// Calculate robust price from multiple listings
+function calculateRobustPrice(prices: number[]): { price: number; confidence: string; sampleSize: number } {
+  if (prices.length === 0) return { price: 0, confidence: 'none', sampleSize: 0 };
+  
+  const filtered = filterOutliers(prices);
+  
+  if (filtered.length < 3) {
+    return { 
+      price: prices.length === 1 ? prices[0] : prices.reduce((a, b) => a + b, 0) / prices.length,
+      confidence: 'low',
+      sampleSize: prices.length 
+    };
+  }
+  
+  // Trimmed mean (drop bottom/top 10%)
+  const trimCount = Math.floor(filtered.length * 0.1);
+  const trimmed = filtered.slice(trimCount, filtered.length - trimCount);
+  const price = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+  
+  const confidence = filtered.length >= 10 ? 'high' : filtered.length >= 5 ? 'medium' : 'low';
+  
+  return { price, confidence, sampleSize: filtered.length };
 }
 
 // Clean card name for better eBay search
@@ -36,61 +167,57 @@ function cleanSearchQuery(name: string): string {
     .trim();
 }
 
-// Map internal categories to eBay search terms
-function getCategorySearchTerm(category: string): string {
-  const categoryMap: Record<string, string> = {
-    'pokemon': 'pokemon card',
-    'yugioh': 'yugioh card',
-    'mtg': 'magic the gathering card',
-    'one-piece': 'one piece card game',
-    'lorcana': 'disney lorcana card',
-    'sports': 'sports trading card',
-    'sports-nba': 'nba basketball card',
-    'sports-nfl': 'nfl football card',
-    'sports-mlb': 'mlb baseball card',
-    'figures': 'collectible figure',
-    'lol-riftbound': 'league of legends card',
+// Map internal categories to eBay search terms with category IDs
+function getCategoryConfig(category: string): { searchTerm: string; categoryId?: string } {
+  const categoryMap: Record<string, { searchTerm: string; categoryId?: string }> = {
+    'pokemon': { searchTerm: 'pokemon card', categoryId: '183454' },
+    'yugioh': { searchTerm: 'yugioh card', categoryId: '183452' },
+    'mtg': { searchTerm: 'magic the gathering card', categoryId: '183454' },
+    'one-piece': { searchTerm: 'one piece card game', categoryId: '183454' },
+    'lorcana': { searchTerm: 'disney lorcana card', categoryId: '183454' },
+    'sports': { searchTerm: 'sports trading card', categoryId: '212' },
+    'sports-nba': { searchTerm: 'nba basketball card', categoryId: '214' },
+    'sports-nfl': { searchTerm: 'nfl football card', categoryId: '215' },
+    'sports-mlb': { searchTerm: 'mlb baseball card', categoryId: '213' },
+    'figures': { searchTerm: 'collectible figure', categoryId: '246' },
+    'lol-riftbound': { searchTerm: 'league of legends riftbound card', categoryId: '183454' },
   };
-  return categoryMap[category] || 'trading card';
+  return categoryMap[category] || { searchTerm: 'trading card' };
 }
 
-async function searchEbay(query: string, category: string): Promise<EbayProduct | null> {
+async function searchEbay(query: string, category: string, options: { soldOnly?: boolean } = {}): Promise<EbayProduct[]> {
   if (!EBAY_RAPIDAPI_KEY) {
     console.log('eBay RapidAPI key not configured');
-    return null;
+    return [];
   }
 
   try {
-    const categoryTerm = getCategorySearchTerm(category);
-    const searchQuery = `${query} ${categoryTerm}`;
+    const config = getCategoryConfig(category);
+    const searchQuery = `${query} ${config.searchTerm}`;
     
-    const response = await fetch(
-      `https://api-for-ebay.p.rapidapi.com/searchProducts?query=${encodeURIComponent(searchQuery)}&page=1`,
-      {
-        headers: {
-          'X-RapidAPI-Key': EBAY_RAPIDAPI_KEY,
-          'X-RapidAPI-Host': 'api-for-ebay.p.rapidapi.com',
-        },
-      }
-    );
+    // Build URL with parameters
+    let url = `https://api-for-ebay.p.rapidapi.com/searchProducts?query=${encodeURIComponent(searchQuery)}&page=1`;
+    if (config.categoryId) {
+      url += `&category=${config.categoryId}`;
+    }
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-RapidAPI-Key': EBAY_RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'api-for-ebay.p.rapidapi.com',
+      },
+    });
 
     if (!response.ok) {
       console.error(`eBay API error: ${response.status}`);
-      return null;
+      return [];
     }
 
     const data: EbaySearchResponse = await response.json();
-    
-    if (data.products && data.products.length > 0) {
-      // Return the first product with an image
-      const productWithImage = data.products.find(p => p.image);
-      return productWithImage || data.products[0];
-    }
-
-    return null;
+    return data.products || [];
   } catch (error) {
     console.error('Error searching eBay:', error);
-    return null;
+    return [];
   }
 }
 
@@ -98,7 +225,7 @@ function parsePrice(priceStr: string | undefined): number | null {
   if (!priceStr) return null;
   const cleaned = priceStr.replace(/[^0-9.]/g, '');
   const price = parseFloat(cleaned);
-  return isNaN(price) ? null : price;
+  return isNaN(price) || price <= 0 ? null : price;
 }
 
 Deno.serve(async (req) => {
@@ -109,22 +236,28 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { limit = 50, offset = 0, category = null, updatePrices = true } = await req.json().catch(() => ({}));
+    const { 
+      limit = 50, 
+      offset = 0, 
+      category = null, 
+      updatePrices = true,
+      soldListingsOnly = false,
+      minMatchScore = 0.6 
+    } = await req.json().catch(() => ({}));
 
-    // Build query for items missing images OR needing price updates
+    // Build query for items needing data
     let query = supabase
       .from('market_items')
-      .select('id, name, category, current_price, image_url, data_source')
+      .select('id, name, category, current_price, image_url, data_source, price_confidence')
       .order('current_price', { ascending: false, nullsFirst: false })
       .range(offset, offset + limit - 1);
 
-    // Filter by category if specified
-    if (category) {
+    if (category && category !== 'all') {
       query = query.eq('category', category);
     }
 
-    // Get items missing images or with placeholder images, OR items with low confidence prices
-    query = query.or('image_url.is.null,image_url.eq.,image_url.ilike.%placeholder%,data_source.is.null,data_source.eq.internal');
+    // Get items missing images or with low-confidence prices
+    query = query.or('image_url.is.null,image_url.eq.,image_url.ilike.%placeholder%,data_source.is.null,data_source.eq.internal,price_confidence.eq.low');
 
     const { data: items, error: fetchError } = await query;
 
@@ -132,13 +265,16 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to fetch items: ${fetchError.message}`);
     }
 
-    console.log(`Found ${items?.length || 0} items to process with eBay API`);
+    console.log(`Processing ${items?.length || 0} items with enhanced eBay sync`);
 
     const results = {
       processed: 0,
       imagesUpdated: 0,
       pricesUpdated: 0,
+      gradedDetected: 0,
+      variantsDetected: 0,
       notFound: 0,
+      lowMatch: 0,
       errors: 0,
     };
 
@@ -147,57 +283,115 @@ Deno.serve(async (req) => {
         const searchQuery = cleanSearchQuery(item.name);
         console.log(`Searching eBay for: ${searchQuery} (${item.category})`);
 
-        const product = await searchEbay(searchQuery, item.category);
+        const products = await searchEbay(searchQuery, item.category, { soldOnly: soldListingsOnly });
         results.processed++;
 
-        if (product) {
-          const updates: Record<string, any> = {
-            updated_at: new Date().toISOString(),
-          };
-
-          // Update image if found and current is missing/placeholder
-          if (product.image && (!item.image_url || item.image_url === '' || item.image_url.includes('placeholder'))) {
-            updates.image_url = product.image;
-            results.imagesUpdated++;
-          }
-
-          // Update price if enabled and found
-          if (updatePrices && product.price) {
-            const ebayPrice = parsePrice(product.price.value);
-            if (ebayPrice && ebayPrice > 0) {
-              // Only update if we don't have a trusted source already
-              if (!item.data_source || item.data_source === 'internal' || !item.current_price || item.current_price <= 0) {
-                updates.current_price = ebayPrice;
-                updates.data_source = 'ebay';
-                updates.price_confidence = 'medium';
-                results.pricesUpdated++;
-
-                // Also record in price history
-                await supabase.from('price_history').insert({
-                  product_id: item.id,
-                  market_item_id: item.id,
-                  price: ebayPrice,
-                  source: 'ebay',
-                });
-              }
-            }
-          }
-
-          // Update the market item
-          if (Object.keys(updates).length > 1) { // More than just updated_at
-            const { error: updateError } = await supabase
-              .from('market_items')
-              .update(updates)
-              .eq('id', item.id);
-
-            if (updateError) {
-              console.error(`Error updating ${item.name}:`, updateError);
-              results.errors++;
-            }
-          }
-        } else {
+        if (products.length === 0) {
           results.notFound++;
           console.log(`No eBay results for: ${item.name}`);
+          continue;
+        }
+
+        // Find best matching products
+        const scoredProducts = products
+          .map(p => ({
+            product: p,
+            score: calculateMatchScore(item.name, p.title),
+            gradeInfo: parseGradingInfo(p.title),
+            variantInfo: parseVariantInfo(p.title),
+          }))
+          .filter(sp => sp.score >= minMatchScore)
+          .sort((a, b) => b.score - a.score);
+
+        if (scoredProducts.length === 0) {
+          results.lowMatch++;
+          console.log(`No good match for: ${item.name} (best score < ${minMatchScore})`);
+          continue;
+        }
+
+        const updates: Record<string, unknown> = {
+          updated_at: new Date().toISOString(),
+        };
+
+        // Best match for image
+        const bestMatch = scoredProducts[0];
+        
+        // Update image if found and current is missing/placeholder
+        if (bestMatch.product.image && (!item.image_url || item.image_url === '' || item.image_url.includes('placeholder'))) {
+          updates.image_url = bestMatch.product.image;
+          results.imagesUpdated++;
+        }
+
+        // Store additional images if available
+        if (bestMatch.product.images && bestMatch.product.images.length > 1) {
+          updates.additional_images = bestMatch.product.images.slice(0, 5);
+        }
+
+        // Detect graded cards
+        if (bestMatch.gradeInfo.company) {
+          updates.detected_grade = bestMatch.gradeInfo.grade;
+          updates.grading_company = bestMatch.gradeInfo.company;
+          results.gradedDetected++;
+        }
+
+        // Detect variants
+        if (bestMatch.variantInfo.isFirstEdition || bestMatch.variantInfo.isHolo || bestMatch.variantInfo.variant) {
+          const variants: string[] = [];
+          if (bestMatch.variantInfo.isFirstEdition) variants.push('1st_edition');
+          if (bestMatch.variantInfo.isHolo) variants.push('holo');
+          if (bestMatch.variantInfo.isReverseHolo) variants.push('reverse_holo');
+          if (bestMatch.variantInfo.variant) variants.push(bestMatch.variantInfo.variant);
+          updates.detected_variants = variants;
+          results.variantsDetected++;
+        }
+
+        // Calculate robust price from multiple listings
+        if (updatePrices) {
+          const prices = scoredProducts
+            .map(sp => parsePrice(sp.product.price?.value))
+            .filter((p): p is number => p !== null && p > 0);
+
+          if (prices.length > 0) {
+            const { price: robustPrice, confidence, sampleSize } = calculateRobustPrice(prices);
+            
+            // Only update if we don't have a trusted source or current price is very different
+            const shouldUpdate = !item.data_source || 
+                                 item.data_source === 'internal' || 
+                                 item.price_confidence === 'low' ||
+                                 !item.current_price || 
+                                 item.current_price <= 0;
+
+            if (shouldUpdate && robustPrice > 0) {
+              updates.current_price = Math.round(robustPrice * 100) / 100;
+              updates.data_source = 'ebay';
+              updates.price_confidence = confidence;
+              updates.ebay_sample_size = sampleSize;
+              updates.ebay_last_sync = new Date().toISOString();
+              results.pricesUpdated++;
+
+              // Record in price history
+              await supabase.from('price_history').insert({
+                product_id: item.id,
+                market_item_id: item.id,
+                price: robustPrice,
+                source: 'ebay',
+                sample_size: sampleSize,
+              });
+            }
+          }
+        }
+
+        // Update the market item
+        if (Object.keys(updates).length > 1) {
+          const { error: updateError } = await supabase
+            .from('market_items')
+            .update(updates)
+            .eq('id', item.id);
+
+          if (updateError) {
+            console.error(`Error updating ${item.name}:`, updateError);
+            results.errors++;
+          }
         }
 
         // Rate limiting: 200ms between requests
@@ -209,7 +403,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log('eBay sync completed:', results);
+    console.log('Enhanced eBay sync completed:', results);
 
     return new Response(
       JSON.stringify({
