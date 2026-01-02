@@ -215,15 +215,27 @@ const Index = () => {
     }
   };
 
-  const topGainers = collectiblesWithLivePrices
-    .filter((item) => item.priceChange > 0 && item.image && item.image !== '/placeholder.svg' && !item.image.includes('placeholder'))
-    .sort((a, b) => b.priceChange - a.priceChange)
-    .slice(0, 5);
+  // Helper to diversify results by limiting items per category
+  const diversifyByCategory = (items: typeof collectiblesWithLivePrices, maxPerCategory: number = 2) => {
+    const categoryCount: Record<string, number> = {};
+    return items.filter((item) => {
+      const cat = item.category || 'unknown';
+      categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+      return categoryCount[cat] <= maxPerCategory;
+    });
+  };
 
-  const topLosers = collectiblesWithLivePrices
-    .filter((item) => item.priceChange < 0 && item.image && item.image !== '/placeholder.svg' && !item.image.includes('placeholder'))
-    .sort((a, b) => a.priceChange - b.priceChange)
-    .slice(0, 5);
+  const topGainers = diversifyByCategory(
+    collectiblesWithLivePrices
+      .filter((item) => item.priceChange > 0 && item.image && item.image !== '/placeholder.svg' && !item.image.includes('placeholder'))
+      .sort((a, b) => b.priceChange - a.priceChange)
+  ).slice(0, 5);
+
+  const topLosers = diversifyByCategory(
+    collectiblesWithLivePrices
+      .filter((item) => item.priceChange < 0 && item.image && item.image !== '/placeholder.svg' && !item.image.includes('placeholder'))
+      .sort((a, b) => a.priceChange - b.priceChange)
+  ).slice(0, 5);
 
   // Platform features now handled by FeatureShowcase component
 

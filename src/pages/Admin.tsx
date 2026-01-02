@@ -68,6 +68,7 @@ interface MarketItem {
   is_trending: boolean | null;
   liquidity: LiquidityLevel | null;
   data_source: string | null;
+  image_url: string | null;
   updated_at: string;
 }
 
@@ -158,6 +159,7 @@ const Admin = () => {
           liquidity: editedItem.liquidity,
           category: editedItem.category,
           subcategory: editedItem.subcategory,
+          image_url: editedItem.image_url,
         })
         .eq('id', editingId);
 
@@ -390,6 +392,7 @@ const Admin = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Image</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead className="text-right">Price</TableHead>
@@ -402,19 +405,37 @@ const Admin = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredItems.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       No items found
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredItems.slice(0, 50).map(item => (
                     <TableRow key={item.id}>
+                      <TableCell className="w-20">
+                        {editingId === item.id ? (
+                          <Input
+                            value={editedItem.image_url || ''}
+                            onChange={(e) => setEditedItem({ ...editedItem, image_url: e.target.value })}
+                            className="h-8 text-xs"
+                            placeholder="Image URL"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded overflow-hidden bg-muted">
+                            {item.image_url ? (
+                              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No img</div>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {editingId === item.id ? (
                           <Input
