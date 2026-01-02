@@ -4,8 +4,9 @@ import { tr } from "./tr";
 import { fr } from "./fr";
 import { it } from "./it";
 import { ar } from "./ar";
+import { ja } from "./ja";
 
-export type Locale = "en" | "de" | "tr" | "fr" | "it" | "ar";
+export type Locale = "en" | "de" | "tr" | "fr" | "it" | "ar" | "ja";
 
 export const translations: Record<Locale, Translations> = {
   en,
@@ -14,6 +15,7 @@ export const translations: Record<Locale, Translations> = {
   fr,
   it,
   ar,
+  ja,
 };
 
 export const localeNames: Record<Locale, string> = {
@@ -23,6 +25,7 @@ export const localeNames: Record<Locale, string> = {
   fr: "Français",
   it: "Italiano",
   ar: "العربية",
+  ja: "日本語",
 };
 
 export const localeFlags: Record<Locale, string> = {
@@ -32,6 +35,7 @@ export const localeFlags: Record<Locale, string> = {
   fr: "🇫🇷",
   it: "🇮🇹",
   ar: "🇸🇦",
+  ja: "🇯🇵",
 };
 
 export type { Translations };
