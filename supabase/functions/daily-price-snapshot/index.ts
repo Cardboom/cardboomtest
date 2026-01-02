@@ -9,6 +9,7 @@ interface SnapshotRequest {
   batch_size?: number
   offset?: number
   category?: string
+  update_historical?: boolean
 }
 
 Deno.serve(async (req) => {
@@ -21,7 +22,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    const { batch_size = 1000, offset = 0, category }: SnapshotRequest = await req.json().catch(() => ({}))
+    const { batch_size = 1000, offset = 0, category, update_historical = true }: SnapshotRequest = await req.json().catch(() => ({}))
 
     // Get today's date at midnight UTC for deduplication
     const today = new Date()
@@ -72,19 +73,6 @@ Deno.serve(async (req) => {
     // Filter out items that already have today's snapshot
     const itemsToSnapshot = items.filter(item => !existingIds.has(item.id))
 
-    if (itemsToSnapshot.length === 0) {
-      return new Response(JSON.stringify({ 
-        success: true, 
-        message: 'All items already have snapshots for today',
-        recorded: 0,
-        skipped: items.length,
-        offset,
-        has_more: items.length === batch_size
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-
     // Prepare price history records
     const now = new Date().toISOString()
     const priceRecords = itemsToSnapshot.map(item => ({
@@ -115,6 +103,82 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Update historical price references in market_items for accurate % changes
+    if (update_historical && items.length > 0) {
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+
+      // Fetch historical prices for all items
+      for (const item of items) {
+        try {
+          // Get price from 24h ago
+          const { data: price24h } = await supabase
+            .from('price_history')
+            .select('price')
+            .eq('market_item_id', item.id)
+            .lte('recorded_at', yesterday.toISOString())
+            .order('recorded_at', { ascending: false })
+            .limit(1)
+
+          // Get price from 7 days ago
+          const { data: price7d } = await supabase
+            .from('price_history')
+            .select('price')
+            .eq('market_item_id', item.id)
+            .lte('recorded_at', sevenDaysAgo.toISOString())
+            .order('recorded_at', { ascending: false })
+            .limit(1)
+
+          // Get price from 30 days ago
+          const { data: price30d } = await supabase
+            .from('price_history')
+            .select('price')
+            .eq('market_item_id', item.id)
+            .lte('recorded_at', thirtyDaysAgo.toISOString())
+            .order('recorded_at', { ascending: false })
+            .limit(1)
+
+          const updateData: Record<string, number | null> = {}
+          
+          if (price24h && price24h.length > 0) {
+            updateData.price_24h_ago = Number(price24h[0].price)
+            if (item.current_price && price24h[0].price > 0) {
+              updateData.change_24h = ((item.current_price - price24h[0].price) / price24h[0].price) * 100
+            }
+          }
+          
+          if (price7d && price7d.length > 0) {
+            updateData.price_7d_ago = Number(price7d[0].price)
+            if (item.current_price && price7d[0].price > 0) {
+              updateData.change_7d = ((item.current_price - price7d[0].price) / price7d[0].price) * 100
+            }
+          }
+          
+          if (price30d && price30d.length > 0) {
+            updateData.price_30d_ago = Number(price30d[0].price)
+            if (item.current_price && price30d[0].price > 0) {
+              updateData.change_30d = ((item.current_price - price30d[0].price) / price30d[0].price) * 100
+            }
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            await supabase
+              .from('market_items')
+              .update(updateData)
+              .eq('id', item.id)
+          }
+        } catch (err) {
+          console.error(`Error updating historical prices for ${item.id}:`, err)
+        }
+      }
+    }
+
     console.log(`[daily-price-snapshot] Recorded: ${totalInserted}/${itemsToSnapshot.length}, Offset: ${offset}, Errors: ${errors.length}`)
 
     return new Response(JSON.stringify({
@@ -125,6 +189,7 @@ Deno.serve(async (req) => {
       offset,
       has_more: items.length === batch_size,
       next_offset: offset + batch_size,
+      historical_updated: update_historical,
       errors: errors.slice(0, 5)
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
