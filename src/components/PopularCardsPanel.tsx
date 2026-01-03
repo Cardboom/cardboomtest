@@ -26,6 +26,8 @@ export function PopularCardsPanel() {
         .select('id, name, category, image_url, current_price, change_24h, views_24h, sales_count_30d')
         .gt('current_price', 0)
         .not('image_url', 'is', null)
+        .neq('image_url', '')
+        .not('data_source', 'is', null)
         .order('views_24h', { ascending: false, nullsFirst: false })
         .limit(12);
       

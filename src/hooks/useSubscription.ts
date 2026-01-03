@@ -17,6 +17,7 @@ export const useSubscription = (userId?: string) => {
   const [loading, setLoading] = useState(true);
 
   const PRO_PRICE = 9.99;
+  const ENTERPRISE_PRICE = 29.99;
 
   useEffect(() => {
     if (userId) {
@@ -63,11 +64,14 @@ export const useSubscription = (userId?: string) => {
     return true;
   };
 
-  const subscribe = async () => {
+  const subscribe = async (tier: 'pro' | 'enterprise' = 'pro') => {
     if (!userId) {
       toast.error('Please sign in to subscribe');
       return false;
     }
+
+    const price = tier === 'enterprise' ? ENTERPRISE_PRICE : PRO_PRICE;
+    const tierLabel = tier === 'enterprise' ? 'Enterprise' : 'Pro';
 
     try {
       // Get user's wallet
@@ -79,13 +83,13 @@ export const useSubscription = (userId?: string) => {
 
       if (walletError) throw walletError;
 
-      if (Number(wallet.balance) < PRO_PRICE) {
-        toast.error(`Insufficient balance. You need $${PRO_PRICE} for Pro subscription.`);
+      if (Number(wallet.balance) < price) {
+        toast.error(`Insufficient balance. You need $${price} for ${tierLabel} subscription.`);
         return false;
       }
 
       // Deduct from wallet
-      const newBalance = Number(wallet.balance) - PRO_PRICE;
+      const newBalance = Number(wallet.balance) - price;
       const { error: deductError } = await supabase
         .from('wallets')
         .update({ balance: newBalance })
@@ -99,8 +103,8 @@ export const useSubscription = (userId?: string) => {
         .insert({
           wallet_id: wallet.id,
           type: 'withdrawal',
-          amount: -PRO_PRICE,
-          description: 'Pro Subscription - Monthly',
+          amount: -price,
+          description: `${tierLabel} Subscription - Monthly`,
         });
 
       // Calculate expiry (30 days from now)
@@ -118,7 +122,8 @@ export const useSubscription = (userId?: string) => {
         const { error: updateError } = await supabase
           .from('user_subscriptions')
           .update({
-            tier: 'pro',
+            tier: tier,
+            price_monthly: price,
             started_at: new Date().toISOString(),
             expires_at: expiresAt.toISOString(),
             auto_renew: true,
@@ -131,8 +136,8 @@ export const useSubscription = (userId?: string) => {
           .from('user_subscriptions')
           .insert({
             user_id: userId,
-            tier: 'pro',
-            price_monthly: PRO_PRICE,
+            tier: tier,
+            price_monthly: price,
             started_at: new Date().toISOString(),
             expires_at: expiresAt.toISOString(),
             auto_renew: true,
@@ -141,7 +146,7 @@ export const useSubscription = (userId?: string) => {
         if (insertError) throw insertError;
       }
 
-      toast.success('Welcome to Pro! Enjoy reduced fees and premium features.');
+      toast.success(`Welcome to ${tierLabel}! Enjoy reduced fees and premium features.`);
       await fetchSubscription();
       return true;
 
@@ -205,7 +210,7 @@ export const useSubscription = (userId?: string) => {
     cancelAutoRenew,
     getFeeRates,
     PRO_PRICE,
-    ENTERPRISE_PRICE: 20,
+    ENTERPRISE_PRICE,
     refetch: fetchSubscription,
   };
 };

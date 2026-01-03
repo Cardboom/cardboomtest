@@ -46,7 +46,7 @@ interface MarketItemsState {
 }
 
 export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
-  const { category, limit = 100, trending, refreshInterval = 30000, requireImage = false } = options;
+  const { category, limit = 100, trending, refreshInterval = 30000, requireImage = true } = options;
   
   const [state, setState] = useState<MarketItemsState>({
     items: [],
