@@ -2133,6 +2133,128 @@ export type Database = {
         }
         Relationships: []
       }
+      digital_code_deliveries: {
+        Row: {
+          code_id: string
+          delivered_at: string
+          delivery_method: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
+          id: string
+          order_id: string
+          product_name: string
+          user_id: string
+        }
+        Insert: {
+          code_id: string
+          delivered_at?: string
+          delivery_method?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          order_id: string
+          product_name: string
+          user_id: string
+        }
+        Update: {
+          code_id?: string
+          delivered_at?: string
+          delivery_method?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          order_id?: string
+          product_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_code_deliveries_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "digital_product_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "digital_code_deliveries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      digital_product_codes: {
+        Row: {
+          code: string
+          cost_price_cents: number
+          created_at: string
+          game_name: string
+          id: string
+          is_reserved: boolean | null
+          is_sold: boolean | null
+          market_item_id: string | null
+          product_name: string
+          product_type: string
+          reserved_by_order_id: string | null
+          reserved_until: string | null
+          sold_at: string | null
+          sold_order_id: string | null
+          sold_to_user_id: string | null
+          source_order_id: string | null
+          source_provider: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          cost_price_cents?: number
+          created_at?: string
+          game_name: string
+          id?: string
+          is_reserved?: boolean | null
+          is_sold?: boolean | null
+          market_item_id?: string | null
+          product_name: string
+          product_type: string
+          reserved_by_order_id?: string | null
+          reserved_until?: string | null
+          sold_at?: string | null
+          sold_order_id?: string | null
+          sold_to_user_id?: string | null
+          source_order_id?: string | null
+          source_provider?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          cost_price_cents?: number
+          created_at?: string
+          game_name?: string
+          id?: string
+          is_reserved?: boolean | null
+          is_sold?: boolean | null
+          market_item_id?: string | null
+          product_name?: string
+          product_type?: string
+          reserved_by_order_id?: string | null
+          reserved_until?: string | null
+          sold_at?: string | null
+          sold_order_id?: string | null
+          sold_to_user_id?: string | null
+          source_order_id?: string | null
+          source_provider?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "digital_product_codes_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discussion_comments: {
         Row: {
           accuracy_score: number | null
@@ -3258,6 +3380,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      key_provider_config: {
+        Row: {
+          api_key_secret_name: string | null
+          auto_purchase_enabled: boolean | null
+          created_at: string
+          id: string
+          is_enabled: boolean | null
+          last_sync_at: string | null
+          markup_percent: number | null
+          min_stock_threshold: number | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_secret_name?: string | null
+          auto_purchase_enabled?: boolean | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          last_sync_at?: string | null
+          markup_percent?: number | null
+          min_stock_threshold?: number | null
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_secret_name?: string | null
+          auto_purchase_enabled?: boolean | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          last_sync_at?: string | null
+          markup_percent?: number | null
+          min_stock_threshold?: number | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       ledger_entries: {
         Row: {

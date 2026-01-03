@@ -52,6 +52,7 @@ import { PointsManager } from '@/components/admin/PointsManager';
 import { WhaleInviteManager } from '@/components/admin/WhaleInviteManager';
 import { SystemAccountsManager } from '@/components/admin/SystemAccountsManager';
 import { InventoryIntegrityDashboard } from '@/components/admin/InventoryIntegrityDashboard';
+import { DigitalProductsManager } from '@/components/admin/DigitalProductsManager';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -276,6 +277,8 @@ const Admin = () => {
         return <AutoBuyManager />;
       case 'inventory':
         return <InventoryIntegrityDashboard />;
+      case 'digital-products':
+        return <DigitalProductsManager />;
       default:
         return <RevenueDashboard />;
     }

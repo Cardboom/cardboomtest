@@ -128,6 +128,14 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: "gaming",
+    label: "Gaming & Digital",
+    icon: Coins,
+    items: [
+      { id: "digital-products", label: "Digital Products", icon: Package },
+    ],
+  },
+  {
     id: "system",
     label: "System",
     icon: Settings,
