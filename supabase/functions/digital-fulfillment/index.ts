@@ -356,23 +356,52 @@ async function syncProductsFromProvider(supabase: any, provider: string) {
     }
 
     // Update or create market items with marked-up prices
+    console.log(`Syncing ${products.length} products from ${provider}`);
+    let successCount = 0;
+    
     for (const product of products) {
       const markedUpPrice = product.price * markupMultiplier;
+      const externalId = `${provider}_${product.id}`;
       
-      // Upsert to market_items
-      await supabase
+      // Check if exists
+      const { data: existing } = await supabase
         .from('market_items')
-        .upsert({
-          name: product.name,
-          category: 'gamepoints',
-          subcategory: product.platform || 'PC',
-          current_price: markedUpPrice,
-          data_source: provider,
-          image_url: product.coverImage,
-          external_id: `${provider}_${product.id}`,
-        }, {
-          onConflict: 'external_id',
-        });
+        .select('id')
+        .eq('external_id', externalId)
+        .maybeSingle();
+      
+      if (existing) {
+        // Update existing
+        const { error } = await supabase
+          .from('market_items')
+          .update({
+            current_price: markedUpPrice,
+            image_url: product.coverImage || product.images?.cover?.url || null,
+            data_source: provider,
+          })
+          .eq('id', existing.id);
+        
+        if (!error) successCount++;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('market_items')
+          .insert({
+            name: product.name,
+            category: 'gamepoints',
+            subcategory: product.platform || 'PC',
+            current_price: markedUpPrice,
+            data_source: provider,
+            image_url: product.coverImage || product.images?.cover?.url || null,
+            external_id: externalId,
+          });
+        
+        if (error) {
+          console.error(`Failed to insert ${product.name}:`, error.message);
+        } else {
+          successCount++;
+        }
+      }
     }
 
     // Update last sync time
@@ -381,8 +410,10 @@ async function syncProductsFromProvider(supabase: any, provider: string) {
       .update({ last_sync_at: new Date().toISOString() })
       .eq('provider', provider);
 
+    console.log(`Sync complete: ${successCount}/${products.length} products saved`);
+    
     return new Response(
-      JSON.stringify({ success: true, synced: products.length }),
+      JSON.stringify({ success: true, synced: successCount, total: products.length }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {
@@ -401,32 +432,53 @@ async function fetchKinguinProducts() {
     throw new Error('Kinguin API key not configured');
   }
 
-  // Fetch top gaming products (game points, gift cards, etc.)
-  const categories = ['Gift Cards', 'Game Points', 'In-Game Currency'];
+  // Fetch gaming products - using broader search
+  const searchTerms = ['Steam', 'Xbox', 'PlayStation', 'Nintendo', 'Gift Card'];
   const products: any[] = [];
 
-  for (const category of categories) {
-    const response = await fetch(
-      `https://gateway.kinguin.net/esa/api/v1/products?category=${encodeURIComponent(category)}&limit=50&sortBy=popularity&sortType=desc`,
-      {
-        headers: { 'X-Api-Key': apiKey },
-      }
-    );
+  for (const term of searchTerms) {
+    try {
+      const response = await fetch(
+        `https://gateway.kinguin.net/esa/api/v1/products?phrase=${encodeURIComponent(term)}&limit=30&sortBy=popularity&sortType=desc`,
+        {
+          headers: { 'X-Api-Key': apiKey },
+        }
+      );
 
-    const data = await response.json();
-    if (data.results) {
-      products.push(...data.results.map((p: any) => ({
-        id: p.kinguinId,
-        name: p.name,
-        price: p.price,
-        platform: p.platform,
-        coverImage: p.coverImage,
-        stock: p.qty,
-      })));
+      if (!response.ok) {
+        console.error(`Kinguin API error for ${term}: ${response.status}`);
+        continue;
+      }
+
+      const data = await response.json();
+      console.log(`Kinguin ${term}: ${data.results?.length || 0} products found`);
+      
+      if (data.results) {
+        products.push(...data.results.map((p: any) => ({
+          id: p.kinguinId,
+          name: p.name,
+          price: p.price,
+          platform: p.platform,
+          // Kinguin uses different image fields
+          coverImage: p.images?.cover?.url || p.coverImage || p.images?.screenshots?.[0]?.url || null,
+          stock: p.qty,
+        })));
+      }
+    } catch (err) {
+      console.error(`Error fetching ${term}:`, err);
     }
   }
 
-  return products;
+  // Deduplicate by id
+  const seen = new Set();
+  const unique = products.filter(p => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+
+  console.log(`Total unique products: ${unique.length}`);
+  return unique;
 }
 
 async function checkStock(supabase: any, marketItemId: string) {
