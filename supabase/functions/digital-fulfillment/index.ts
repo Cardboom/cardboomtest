@@ -432,61 +432,56 @@ async function fetchKinguinProducts() {
     throw new Error('Kinguin API key not configured');
   }
 
-  // Kinguin primarily sells game keys - their API doesn't reliably return gift cards
-  // We'll search for game-related products and filter for what's actually available
-  const searchTerms = [
-    'gift card',
-    'wallet code',
-    'prepaid card',
-    'game pass',
-    'subscription',
-    'points card',
-    'valorant',
-    'fortnite',
-    'roblox',
-    'pubg',
-    'call of duty',
-    'league of legends',
-    'apex legends',
-    'fifa',
-    'ea fc',
-    'world of warcraft',
-    'final fantasy xiv',
-    'genshin impact',
-    'honkai',
-    'steam',
-    'xbox',
-    'playstation',
-    'nintendo',
+  // Only these specific games
+  const gameSearchTerms = [
+    'Valorant',
+    'League of Legends',
+    'Brawl Stars',
+    'PUBG',
+    'Fortnite',
+    'Roblox',
+    'Genshin Impact',
+    'Clash of Clans',
+    'Clash Royale',
+    'Mobile Legends',
+    'Call of Duty',
+    'FIFA 25',
+    'EA FC 25',
+    'Honkai Star Rail',
+    'Apex Legends',
+    'Rainbow Six Siege',
+    'Dota 2',
+    'Counter-Strike 2',
+    'World of Warcraft',
+    'Final Fantasy XIV',
+    'Path of Exile',
+    'EVE Online',
+    'RuneScape',
   ];
+  
   const products: any[] = [];
+  const excludeTerms = ['esim', 'e-sim', 'wallpaper', 'artbook', 'soundtrack', 'poster', 'figure'];
 
-  // Exclude terms for filtering
-  const excludeTerms = ['esim', 'e-sim', 'sim card', 'mobile data', 'travel', 'vpn', 'antivirus', 'wallpaper', 'artbook', 'soundtrack'];
-
-  for (const term of searchTerms) {
+  for (const game of gameSearchTerms) {
     try {
       const response = await fetch(
-        `https://gateway.kinguin.net/esa/api/v1/products?phrase=${encodeURIComponent(term)}&limit=5&sortBy=popularity&sortType=desc`,
-        {
-          headers: { 'X-Api-Key': apiKey },
-        }
+        `https://gateway.kinguin.net/esa/api/v1/products?phrase=${encodeURIComponent(game)}&limit=5&sortBy=popularity&sortType=desc`,
+        { headers: { 'X-Api-Key': apiKey } }
       );
 
-      if (!response.ok) {
-        console.error(`Kinguin API error for ${term}: ${response.status}`);
-        continue;
-      }
+      if (!response.ok) continue;
 
       const data = await response.json();
-      console.log(`Kinguin ${term}: ${data.results?.length || 0} products found`);
+      console.log(`Kinguin ${game}: ${data.results?.length || 0} products`);
+      if (data.results?.[0]) console.log(`Sample: ${data.results[0].name} - hasImage: ${!!(data.results[0].images?.cover?.url || data.results[0].coverImage)}`);
       
       if (data.results) {
-        // Filter out excluded products
         const filtered = data.results.filter((p: any) => {
           const name = p.name?.toLowerCase() || '';
           const hasExcluded = excludeTerms.some(ex => name.includes(ex));
-          return !hasExcluded && p.price > 0;
+          // Accept any image source
+          const imageUrl = p.images?.cover?.url || p.coverImage || p.images?.screenshots?.[0]?.url;
+          return !hasExcluded && imageUrl && p.price > 0;
         });
         
         products.push(...filtered.map((p: any) => ({
@@ -498,15 +493,12 @@ async function fetchKinguinProducts() {
         })));
       }
     } catch (error) {
-      console.error(`Error fetching ${term}:`, error);
+      console.error(`Error fetching ${game}:`, error);
     }
   }
 
-  // Remove duplicates by ID
-  const unique = products.filter((p, i, arr) => {
-    return arr.findIndex(x => x.id === p.id) === i;
-  });
-
+  // Remove duplicates and take top products per game
+  const unique = products.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
   console.log(`Total unique game products: ${unique.length}`);
   return unique;
 }
