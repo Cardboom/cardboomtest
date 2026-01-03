@@ -174,7 +174,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
             >
               <Swords className="w-3.5 h-3.5" />
-              Card Wars
+              {t.nav.cardWars}
             </Link>
             
             {/* Reels Link */}
@@ -273,7 +273,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-8 px-2">
                     <Users className="w-3.5 h-3.5 mr-1" />
-                    Community
+                    {t.nav.community}
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[260px] gap-1 p-2">
@@ -284,8 +284,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <MessageCircle className="w-3.5 h-3.5 text-blue-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">Circle</div>
-                              <div className="text-[10px] text-muted-foreground">Discussions & insights</div>
+                              <div className="font-medium text-xs">{t.nav.circle}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.circleDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -297,8 +297,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <Trophy className="w-3.5 h-3.5 text-amber-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">Leaderboard</div>
-                              <div className="text-[10px] text-muted-foreground">Rankings & tournaments</div>
+                              <div className="font-medium text-xs">{t.nav.leaderboard}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.leaderboardDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -310,8 +310,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <Crown className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">Hall of Fame</div>
-                              <div className="text-[10px] text-muted-foreground">Top collectors</div>
+                              <div className="font-medium text-xs">{t.nav.hallOfFame}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.hallOfFameDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -323,8 +323,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <Award className="w-3.5 h-3.5 text-yellow-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">Achievements</div>
-                              <div className="text-[10px] text-muted-foreground">Earn bragging rights</div>
+                              <div className="font-medium text-xs">{t.nav.achievements}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.achievementsDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -336,8 +336,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">Cardboom News</div>
-                              <div className="text-[10px] text-muted-foreground">TCG & market updates</div>
+                              <div className="font-medium text-xs">{t.nav.news}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.newsDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -349,8 +349,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                               <Mic className="w-3.5 h-3.5 text-pink-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">Creators & Ambassadors</div>
-                              <div className="text-[10px] text-muted-foreground">Become a creator</div>
+                              <div className="font-medium text-xs">{t.nav.creatorsAmbassadors}</div>
+                              <div className="text-[10px] text-muted-foreground">{t.nav.creatorsAmbassadorsDesc}</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -450,11 +450,11 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/pricing')} className="text-primary">
                     <Crown className="w-4 h-4 mr-2" />
-                    Upgrade to Pro
+                    {t.nav.upgradePro}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/messages')} className="relative">
                     <MessageCircle className="w-4 h-4 mr-2" />
-                    Messages
+                    {t.nav.messages}
                     {unreadMessages > 0 && (
                       <span className="ml-auto bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                         {unreadMessages > 99 ? '99+' : unreadMessages}
@@ -463,11 +463,11 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/portfolio')}>
                     <PieChart className="w-4 h-4 mr-2" />
-                    My Portfolio
+                    {t.nav.portfolio}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/trades')}>
                     <ArrowLeftRight className="w-4 h-4 mr-2" />
-                    Trades & Offers
+                    {t.nav.tradesOffers}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/wallet')}>
                     <Wallet className="w-4 h-4 mr-2" />
@@ -551,7 +551,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Swords className="w-5 h-5 text-orange-500" />
-                  <span className="font-medium">Card Wars</span>
+                  <span className="font-medium">{t.nav.cardWars}</span>
                   <Badge variant="outline" className="ml-auto border-orange-500/30 text-orange-500 text-[10px] py-0">
                     <Flame className="w-2.5 h-2.5 mr-0.5 animate-pulse" />
                     LIVE
@@ -569,7 +569,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 
                 {/* Divider with label */}
                 <div className="py-2 px-3 mt-2">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Trading</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t.nav.trading}</span>
                 </div>
                 
                 <Link to="/markets" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
@@ -578,7 +578,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 </Link>
                 <Link to="/explorer" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Search className="w-5 h-5 text-blue-500" />
-                  <span>Explorer</span>
+                  <span>{t.nav.explorer}</span>
                 </Link>
                 <Link to="/deals" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Sparkles className="w-5 h-5 text-amber-500" />
@@ -586,7 +586,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 </Link>
                 <Link to="/trades" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <ArrowLeftRight className="w-5 h-5 text-purple-500" />
-                  <span>Trades & Offers</span>
+                  <span>{t.nav.tradesOffers}</span>
                 </Link>
                 <Link to="/fractional" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <PieChart className="w-5 h-5 text-cyan-500" />
@@ -595,7 +595,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 
                 {/* Services */}
                 <div className="py-2 px-3 mt-2">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Services</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t.nav.services}</span>
                 </div>
                 
                 <Link to="/grading" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
@@ -609,29 +609,29 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 
                 {/* Community */}
                 <div className="py-2 px-3 mt-2">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Community</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t.nav.community}</span>
                 </div>
                 
                 <Link to="/circle" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <MessageCircle className="w-5 h-5 text-blue-500" />
-                  <span>Circle</span>
+                  <span>{t.nav.circle}</span>
                 </Link>
                 <Link to="/leaderboard" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Trophy className="w-5 h-5 text-amber-500" />
-                  <span>Leaderboard</span>
+                  <span>{t.nav.leaderboard}</span>
                 </Link>
                 <Link to="/achievements" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Medal className="w-5 h-5 text-yellow-500" />
-                  <span>Achievements</span>
+                  <span>{t.nav.achievements}</span>
                 </Link>
-                <Link to="/referrals" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/creators" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Mic className="w-5 h-5 text-pink-500" />
-                  <span>Creators</span>
+                  <span>{t.nav.creatorsAmbassadors}</span>
                 </Link>
                 
                 {/* Account */}
                 <div className="py-2 px-3 mt-2">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Account</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t.nav.account}</span>
                 </div>
                 
                 <Link to="/sell" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
@@ -655,7 +655,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     </Link>
                     <Link to="/messages" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                       <MessageCircle className="w-5 h-5 text-muted-foreground" />
-                      <span>Messages</span>
+                      <span>{t.nav.messages}</span>
                       {unreadMessages > 0 && (
                         <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                           {unreadMessages > 99 ? '99+' : unreadMessages}
@@ -687,7 +687,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                         className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-muted hover:bg-muted/80 transition-colors font-medium"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        View Profile
+                        {t.nav.viewProfile}
                       </Link>
                       <Button 
                         variant="destructive" 
