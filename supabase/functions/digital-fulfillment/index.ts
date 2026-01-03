@@ -376,7 +376,7 @@ async function syncProductsFromProvider(supabase: any, provider: string) {
           .from('market_items')
           .update({
             current_price: markedUpPrice,
-            image_url: product.coverImage || product.images?.cover?.url || null,
+            image_url: product.image || null,
             data_source: provider,
           })
           .eq('id', existing.id);
@@ -392,7 +392,7 @@ async function syncProductsFromProvider(supabase: any, provider: string) {
             subcategory: product.platform || 'PC',
             current_price: markedUpPrice,
             data_source: provider,
-            image_url: product.coverImage || product.images?.cover?.url || null,
+            image_url: product.image || null,
             external_id: externalId,
           });
         
@@ -432,19 +432,37 @@ async function fetchKinguinProducts() {
     throw new Error('Kinguin API key not configured');
   }
 
-  // Search for gift cards and game currencies
+  // Kinguin primarily sells game keys - their API doesn't reliably return gift cards
+  // We'll search for game-related products and filter for what's actually available
   const searchTerms = [
-    'Steam Wallet Gift Card',
-    'Xbox Gift Card',
-    'PlayStation Gift Card',
-    'Nintendo eShop Gift Card',
-    'Riot Points Gift Card',
-    'Roblox Gift Card',
+    'gift card',
+    'wallet code',
+    'prepaid card',
+    'game pass',
+    'subscription',
+    'points card',
+    'valorant',
+    'fortnite',
+    'roblox',
+    'pubg',
+    'call of duty',
+    'league of legends',
+    'apex legends',
+    'fifa',
+    'ea fc',
+    'world of warcraft',
+    'final fantasy xiv',
+    'genshin impact',
+    'honkai',
+    'steam',
+    'xbox',
+    'playstation',
+    'nintendo',
   ];
   const products: any[] = [];
 
   // Exclude terms for filtering
-  const excludeTerms = ['esim', 'e-sim', 'sim card', 'mobile data', 'travel', 'vpn', 'antivirus'];
+  const excludeTerms = ['esim', 'e-sim', 'sim card', 'mobile data', 'travel', 'vpn', 'antivirus', 'wallpaper', 'artbook', 'soundtrack'];
 
   for (const term of searchTerms) {
     try {
@@ -464,39 +482,32 @@ async function fetchKinguinProducts() {
       console.log(`Kinguin ${term}: ${data.results?.length || 0} products found`);
       
       if (data.results) {
-        // Filter: must have image and exclude bad terms
+        // Filter out excluded products
         const filtered = data.results.filter((p: any) => {
           const name = p.name?.toLowerCase() || '';
-          const hasImage = p.images?.cover?.url || p.coverImage || p.images?.screenshots?.[0]?.url;
           const hasExcluded = excludeTerms.some(ex => name.includes(ex));
-          // Must contain "gift card" or "wallet" or platform-specific terms
-          const isGiftCard = name.includes('gift card') || name.includes('wallet') || name.includes('eshop') || name.includes('points');
-          return hasImage && !hasExcluded && isGiftCard;
+          return !hasExcluded && p.price > 0;
         });
         
         products.push(...filtered.map((p: any) => ({
-          id: p.kinguinId,
+          id: p.productId || p.kinguinId,
           name: p.name,
-          price: p.price,
-          platform: p.platform,
-          coverImage: p.images?.cover?.url || p.coverImage || p.images?.screenshots?.[0]?.url || null,
-          stock: p.qty,
+          price: p.price || 0,
+          image: p.images?.cover?.url || p.coverImage || p.images?.screenshots?.[0]?.url,
+          platform: p.platform || 'PC',
         })));
       }
-    } catch (err) {
-      console.error(`Error fetching ${term}:`, err);
+    } catch (error) {
+      console.error(`Error fetching ${term}:`, error);
     }
   }
 
-  // Deduplicate by id
-  const seen = new Set();
-  const unique = products.filter(p => {
-    if (seen.has(p.id)) return false;
-    seen.add(p.id);
-    return true;
+  // Remove duplicates by ID
+  const unique = products.filter((p, i, arr) => {
+    return arr.findIndex(x => x.id === p.id) === i;
   });
 
-  console.log(`Total unique game currency products: ${unique.length}`);
+  console.log(`Total unique game products: ${unique.length}`);
   return unique;
 }
 
