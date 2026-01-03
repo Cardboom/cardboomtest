@@ -432,28 +432,24 @@ async function fetchKinguinProducts() {
     throw new Error('Kinguin API key not configured');
   }
 
-  // Fetch only popular game points - Valorant, PUBG, and popular games (no eSIM)
+  // Search for gift cards and game currencies
   const searchTerms = [
-    'Valorant Points',
-    'PUBG UC',
-    'PUBG Mobile',
-    'Roblox Robux',
-    'Fortnite V-Bucks',
-    'League of Legends RP',
-    'FIFA Points',
-    'EA FC Points',
-    'Call of Duty Points',
-    'Apex Coins',
+    'Steam Wallet Gift Card',
+    'Xbox Gift Card',
+    'PlayStation Gift Card',
+    'Nintendo eShop Gift Card',
+    'Riot Points Gift Card',
+    'Roblox Gift Card',
   ];
   const products: any[] = [];
 
   // Exclude terms for filtering
-  const excludeTerms = ['esim', 'e-sim', 'sim card', 'mobile data', 'travel'];
+  const excludeTerms = ['esim', 'e-sim', 'sim card', 'mobile data', 'travel', 'vpn', 'antivirus'];
 
   for (const term of searchTerms) {
     try {
       const response = await fetch(
-        `https://gateway.kinguin.net/esa/api/v1/products?phrase=${encodeURIComponent(term)}&limit=10&sortBy=popularity&sortType=desc`,
+        `https://gateway.kinguin.net/esa/api/v1/products?phrase=${encodeURIComponent(term)}&limit=5&sortBy=popularity&sortType=desc`,
         {
           headers: { 'X-Api-Key': apiKey },
         }
@@ -468,10 +464,14 @@ async function fetchKinguinProducts() {
       console.log(`Kinguin ${term}: ${data.results?.length || 0} products found`);
       
       if (data.results) {
-        // Filter out eSIM and unwanted products
+        // Filter: must have image and exclude bad terms
         const filtered = data.results.filter((p: any) => {
           const name = p.name?.toLowerCase() || '';
-          return !excludeTerms.some(ex => name.includes(ex));
+          const hasImage = p.images?.cover?.url || p.coverImage || p.images?.screenshots?.[0]?.url;
+          const hasExcluded = excludeTerms.some(ex => name.includes(ex));
+          // Must contain "gift card" or "wallet" or platform-specific terms
+          const isGiftCard = name.includes('gift card') || name.includes('wallet') || name.includes('eshop') || name.includes('points');
+          return hasImage && !hasExcluded && isGiftCard;
         });
         
         products.push(...filtered.map((p: any) => ({
@@ -496,7 +496,7 @@ async function fetchKinguinProducts() {
     return true;
   });
 
-  console.log(`Total unique products: ${unique.length}`);
+  console.log(`Total unique game currency products: ${unique.length}`);
   return unique;
 }
 
