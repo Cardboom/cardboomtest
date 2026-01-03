@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload, Crown, Gem } from 'lucide-react';
+import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload, Crown, Gem, Building2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,9 @@ import { useAvatarUpload } from '@/hooks/useAvatarUpload';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/hooks/useSubscription';
 import { ProBadge } from '@/components/subscription/ProBadge';
+import { EnterpriseBadge } from '@/components/subscription/EnterpriseBadge';
 import { SubscriptionUpgradeDialog } from '@/components/subscription/SubscriptionUpgradeDialog';
+import { EnterpriseUpgradeDialog } from '@/components/subscription/EnterpriseUpgradeDialog';
 import { useCardboomPoints } from '@/hooks/useCardboomPoints';
 import { CardboomPointsDialog } from '@/components/CardboomPointsDialog';
 
@@ -61,7 +63,7 @@ export const ProfileHeader = ({
   const idFileInputRef = useRef<HTMLInputElement>(null);
   const { uploadAvatar, uploading } = useAvatarUpload();
   const { t } = useLanguage();
-  const { isPro, subscription, refetch: refetchSubscription } = useSubscription(profile.id);
+  const { isPro, isEnterprise, subscription, refetch: refetchSubscription } = useSubscription(profile.id);
   const { balance: pointsBalance, loading: pointsLoading } = useCardboomPoints(isOwnProfile ? profile.id : undefined);
 
   const selectedBackground = backgrounds.find(b => b.id === profile.profile_background);
@@ -191,7 +193,7 @@ export const ProfileHeader = ({
                       <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                         {profile.display_name || 'Anonymous'}
                       </h1>
-                      {isPro && <ProBadge />}
+                      {isEnterprise ? <EnterpriseBadge /> : isPro && <ProBadge />}
                       {profile.is_id_verified && (
                         <Badge variant="secondary" className="gap-1 bg-primary/20 text-primary">
                           <ShieldCheck className="h-3 w-3" />
@@ -256,7 +258,7 @@ export const ProfileHeader = ({
                     </>
                   ) : (
                     <>
-                      {!isPro && (
+                      {!isPro && !isEnterprise && (
                         <SubscriptionUpgradeDialog 
                           userId={profile.id} 
                           onSuccess={refetchSubscription}
@@ -269,6 +271,20 @@ export const ProfileHeader = ({
                             Upgrade to Pro
                           </Button>
                         </SubscriptionUpgradeDialog>
+                      )}
+                      {isPro && !isEnterprise && (
+                        <EnterpriseUpgradeDialog 
+                          userId={profile.id} 
+                          onSuccess={refetchSubscription}
+                        >
+                          <Button 
+                            size="sm" 
+                            className="gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white"
+                          >
+                            <Building2 className="h-4 w-4" />
+                            Upgrade to Enterprise
+                          </Button>
+                        </EnterpriseUpgradeDialog>
                       )}
                       <Button size="sm" variant="outline" onClick={() => setEditing(true)} className="gap-2">
                         <Edit2 className="h-4 w-4" />
