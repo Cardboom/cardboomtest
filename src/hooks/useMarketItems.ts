@@ -297,13 +297,7 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
       
       let query = supabase
         .from('listings')
-        .select(`
-          *,
-          profiles:seller_id (
-            display_name,
-            country_code
-          )
-        `)
+        .select('*')
         .eq('status', status)
         .order('created_at', { ascending: false });
 
@@ -317,8 +311,8 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
       // Transform to include seller info at top level
       const listingsWithSeller = (data || []).map((listing: any) => ({
         ...listing,
-        seller_username: listing.profiles?.display_name || 'Seller',
-        seller_country_code: listing.profiles?.country_code || 'TR',
+        seller_username: 'Seller',
+        seller_country_code: 'TR',
       }));
       
       setListings(listingsWithSeller);
