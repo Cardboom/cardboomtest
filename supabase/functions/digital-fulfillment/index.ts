@@ -432,14 +432,28 @@ async function fetchKinguinProducts() {
     throw new Error('Kinguin API key not configured');
   }
 
-  // Fetch gaming products - using broader search
-  const searchTerms = ['Steam', 'Xbox', 'PlayStation', 'Nintendo', 'Gift Card'];
+  // Fetch only popular game points - Valorant, PUBG, and popular games (no eSIM)
+  const searchTerms = [
+    'Valorant Points',
+    'PUBG UC',
+    'PUBG Mobile',
+    'Roblox Robux',
+    'Fortnite V-Bucks',
+    'League of Legends RP',
+    'FIFA Points',
+    'EA FC Points',
+    'Call of Duty Points',
+    'Apex Coins',
+  ];
   const products: any[] = [];
+
+  // Exclude terms for filtering
+  const excludeTerms = ['esim', 'e-sim', 'sim card', 'mobile data', 'travel'];
 
   for (const term of searchTerms) {
     try {
       const response = await fetch(
-        `https://gateway.kinguin.net/esa/api/v1/products?phrase=${encodeURIComponent(term)}&limit=30&sortBy=popularity&sortType=desc`,
+        `https://gateway.kinguin.net/esa/api/v1/products?phrase=${encodeURIComponent(term)}&limit=10&sortBy=popularity&sortType=desc`,
         {
           headers: { 'X-Api-Key': apiKey },
         }
@@ -454,12 +468,17 @@ async function fetchKinguinProducts() {
       console.log(`Kinguin ${term}: ${data.results?.length || 0} products found`);
       
       if (data.results) {
-        products.push(...data.results.map((p: any) => ({
+        // Filter out eSIM and unwanted products
+        const filtered = data.results.filter((p: any) => {
+          const name = p.name?.toLowerCase() || '';
+          return !excludeTerms.some(ex => name.includes(ex));
+        });
+        
+        products.push(...filtered.map((p: any) => ({
           id: p.kinguinId,
           name: p.name,
           price: p.price,
           platform: p.platform,
-          // Kinguin uses different image fields
           coverImage: p.images?.cover?.url || p.coverImage || p.images?.screenshots?.[0]?.url || null,
           stock: p.qty,
         })));

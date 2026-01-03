@@ -20,7 +20,7 @@ export function PopularCardsPanel() {
   const { data: popularCards, isLoading } = useQuery({
     queryKey: ['popular-cards-panel'],
     queryFn: async () => {
-      // Get cards with highest views/sales, with images
+      // Get cards with highest views/sales, with images - exclude gaming/gamepoints
       const { data, error } = await supabase
         .from('market_items')
         .select('id, name, category, image_url, current_price, change_24h, views_24h, sales_count_30d')
@@ -28,6 +28,7 @@ export function PopularCardsPanel() {
         .not('image_url', 'is', null)
         .neq('image_url', '')
         .not('data_source', 'is', null)
+        .not('category', 'in', '("gamepoints","gaming")')
         .order('views_24h', { ascending: false, nullsFirst: false })
         .limit(12);
       
