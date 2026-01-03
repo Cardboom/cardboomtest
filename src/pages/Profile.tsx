@@ -17,6 +17,7 @@ import { TrendingUp, Package, Star, Clock, ShoppingBag, MessageSquare, Heart, Ey
 import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AchievementsShowcase } from '@/components/achievements/AchievementsShowcase';
+import { AppRatingReward } from '@/components/rewards/AppRatingReward';
 
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
@@ -474,7 +475,10 @@ const Profile = () => {
           </TabsContent>
 
           <TabsContent value="achievements">
-            <AchievementsShowcase userId={profile.id} showAll />
+            <div className="space-y-6">
+              {isOwnProfile && <AppRatingReward />}
+              <AchievementsShowcase userId={profile.id} showAll />
+            </div>
           </TabsContent>
 
           <TabsContent value="stats">
