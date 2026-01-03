@@ -92,3 +92,6 @@ verify_jwt = true
 
 [functions.ai-listing-check]
 verify_jwt = true
+
+[functions.digital-fulfillment]
+verify_jwt = false
