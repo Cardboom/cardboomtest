@@ -30,6 +30,8 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { toast } from 'sonner';
 import { SendToVaultDialog } from '@/components/SendToVaultDialog';
 import { RequestReturnDialog } from '@/components/vault/RequestReturnDialog';
+import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard';
+import { ListingSuccessModal } from '@/components/listing/ListingSuccessModal';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -76,6 +78,16 @@ const VaultPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [addressDialogItem, setAddressDialogItem] = useState<VaultItem | null>(null);
   const [cancellingItemId, setCancellingItemId] = useState<string | null>(null);
+  const [showListingWizard, setShowListingWizard] = useState(false);
+  const [selectedListingItem, setSelectedListingItem] = useState<VaultItem | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdListing, setCreatedListing] = useState<{
+    id: string;
+    title: string;
+    price: number;
+    imageUrl?: string | null;
+    category: string;
+  } | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -393,12 +405,10 @@ const VaultPage = () => {
                                     variant="default" 
                                     size="sm" 
                                     className="flex-1"
-                                    onClick={() => navigate('/sell', { 
-                                      state: { 
-                                        fromVault: true, 
-                                        vaultItem: item 
-                                      } 
-                                    })}
+                                    onClick={() => {
+                                      setSelectedListingItem(item);
+                                      setShowListingWizard(true);
+                                    }}
                                   >
                                     List for Sale
                                   </Button>
@@ -562,6 +572,35 @@ const VaultPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Vault to Listing Wizard */}
+      <VaultToListingWizard
+        open={showListingWizard}
+        onOpenChange={setShowListingWizard}
+        vaultItem={selectedListingItem}
+        onSuccess={(listingId) => {
+          setCreatedListing({
+            id: listingId,
+            title: selectedListingItem?.title || '',
+            price: selectedListingItem?.estimated_value || 0,
+            imageUrl: selectedListingItem?.image_url,
+            category: selectedListingItem?.category || 'tcg',
+          });
+          setShowSuccessModal(true);
+          setSelectedListingItem(null);
+          fetchVaultItems();
+        }}
+      />
+
+      {/* Listing Success Modal */}
+      <ListingSuccessModal
+        open={showSuccessModal}
+        onOpenChange={setShowSuccessModal}
+        listing={createdListing}
+        onListAnother={() => {
+          setShowSuccessModal(false);
+        }}
+      />
 
       <Footer />
     </div>
