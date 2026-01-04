@@ -27,10 +27,10 @@ export function TrustedMerchants() {
     queryFn: async () => {
       // Fetch profiles from public view (excludes PII)
       const { data: profiles, error } = await supabase
-        .from('public_profiles')
+        .from('profiles')
         .select('id, display_name, avatar_url, trust_rating, trust_review_count, account_type, is_id_verified')
-        .eq('is_fan_account', false)
-        .order('trust_rating', { ascending: false })
+        .eq('account_status', 'active')
+        .order('trust_rating', { ascending: false, nullsFirst: false })
         .limit(20);
 
       if (error) throw error;

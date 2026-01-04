@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   TrendingUp, TrendingDown, Trophy, Star, Share2, Copy,
-  Loader2, ExternalLink, Twitter, Instagram, MessageCircle, Shield
+  Loader2, ExternalLink, Twitter, Instagram, MessageCircle, Shield, Lock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,6 +17,8 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { FollowButton } from '@/components/FollowButton';
 import { ProfileTrustReviews } from '@/components/profile/ProfileTrustReviews';
+import { ProfileCollectionStats } from '@/components/profile/ProfileCollectionStats';
+import { Featured3DCard } from '@/components/profile/Featured3DCard';
 
 const PublicProfile = () => {
   const { username } = useParams();
@@ -109,6 +111,7 @@ const PublicProfile = () => {
           id,
           custom_name,
           grade,
+          image_url,
           market_items (id, name, image_url, current_price, category)
         `)
         .eq('user_id', profile.id)
@@ -119,6 +122,30 @@ const PublicProfile = () => {
       return data || [];
     },
     enabled: !!profile?.id,
+  });
+
+  // Fetch featured card
+  const { data: featuredCard } = useQuery({
+    queryKey: ['public-featured-card', profile?.featured_card_id],
+    queryFn: async () => {
+      if (!profile?.featured_card_id) return null;
+      const { data, error } = await supabase
+        .from('portfolio_items')
+        .select('id, custom_name, grade, image_url, market_items(id, name, image_url, current_price, category)')
+        .eq('id', profile.featured_card_id)
+        .single();
+      if (error) return null;
+      const marketItem = data.market_items as any;
+      return {
+        id: data.id,
+        name: data.custom_name || marketItem?.name || 'Unknown Card',
+        image_url: data.image_url || marketItem?.image_url || '/placeholder.svg',
+        grade: data.grade,
+        current_price: marketItem?.current_price,
+        category: marketItem?.category,
+      };
+    },
+    enabled: !!profile?.featured_card_id,
   });
 
   // Fetch follower count
@@ -288,95 +315,77 @@ const PublicProfile = () => {
           </div>
         </div>
 
-        {/* Portfolio Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="glass">
-            <CardContent className="p-6 text-center">
-              <Trophy className="w-6 h-6 mx-auto mb-2 text-gold" />
-              <p className="text-3xl font-bold font-display">{portfolioStats?.totalItems || 0}</p>
-              <p className="text-sm text-muted-foreground">Total Items</p>
-            </CardContent>
-          </Card>
-          <Card className="glass">
-            <CardContent className="p-6 text-center">
-              <TrendingUp className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <p className="text-3xl font-bold font-display">
-                {formatValue(portfolioStats?.totalValue || 0)}
-              </p>
-              <p className="text-sm text-muted-foreground">Portfolio Value</p>
-            </CardContent>
-          </Card>
-          <Card className="glass">
-            <CardContent className="p-6 text-center">
-              <div className={cn(
-                "w-6 h-6 mx-auto mb-2",
-                (portfolioStats?.pnl || 0) >= 0 ? "text-gain" : "text-loss"
-              )}>
-                {(portfolioStats?.pnl || 0) >= 0 ? <TrendingUp /> : <TrendingDown />}
-              </div>
-              <p className={cn(
-                "text-3xl font-bold font-display",
-                (portfolioStats?.pnl || 0) >= 0 ? "text-gain" : "text-loss"
-              )}>
-                {(portfolioStats?.pnl || 0) >= 0 ? '+' : ''}{formatValue(portfolioStats?.pnl || 0)}
-              </p>
-              <p className="text-sm text-muted-foreground">Total P&L</p>
-            </CardContent>
-          </Card>
-          <Card className="glass">
-            <CardContent className="p-6 text-center">
-              <Star className="w-6 h-6 mx-auto mb-2 text-accent" />
-              <p className={cn(
-                "text-3xl font-bold font-display",
-                (portfolioStats?.pnlPercent || 0) >= 0 ? "text-gain" : "text-loss"
-              )}>
-                {(portfolioStats?.pnlPercent || 0) >= 0 ? '+' : ''}{(portfolioStats?.pnlPercent || 0).toFixed(1)}%
-              </p>
-              <p className="text-sm text-muted-foreground">Growth</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Collection Stats */}
+        <ProfileCollectionStats
+          totalItems={portfolioStats?.totalItems || 0}
+          totalValue={portfolioStats?.totalValue || 0}
+          pnl={portfolioStats?.pnl || 0}
+          pnlPercent={portfolioStats?.pnlPercent || 0}
+          showCollectionCount={profile.show_collection_count ?? true}
+          showPortfolioValue={profile.show_portfolio_value ?? false}
+          isOwnProfile={false}
+        />
 
-        {/* Top Cards */}
-        {topCards && topCards.length > 0 && (
-          <div className="mb-8">
-            <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-gold" />
-              Top Collection Items
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {topCards.map((item) => {
-                const marketItem = item.market_items as any;
-                return (
-                  <Card key={item.id} className="glass overflow-hidden group hover:border-primary/30 transition-colors">
-                    <div className="aspect-square relative">
-                      <img
-                        src={marketItem?.image_url || '/placeholder.svg'}
-                        alt={marketItem?.name || item.custom_name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      {item.grade && (
-                        <Badge className="absolute top-2 right-2 text-xs">
-                          {item.grade.toUpperCase()}
-                        </Badge>
-                      )}
-                    </div>
-                    <CardContent className="p-3">
-                      <p className="font-semibold text-sm truncate">
-                        {marketItem?.name || item.custom_name}
-                      </p>
-                      {marketItem?.current_price && (
-                        <p className="text-primary font-bold">
-                          ${marketItem.current_price.toLocaleString()}
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })}
+        {/* Featured Card + Top Collection Grid */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Featured 3D Card */}
+          {(profile.featured_card_id || featuredCard) && (
+            <div className="md:col-span-1">
+              <Featured3DCard
+                card={featuredCard || null}
+                isOwnProfile={false}
+              />
             </div>
-          </div>
-        )}
+          )}
+          
+          {/* Top Cards */}
+          {topCards && topCards.length > 0 && (
+            <div className={cn(
+              profile.featured_card_id ? "md:col-span-2" : "md:col-span-3"
+            )}>
+              <h2 className="font-display text-2xl font-bold mb-4 flex items-center gap-2">
+                <Trophy className="w-6 h-6 text-gold" />
+                Top Collection Items
+              </h2>
+              <div className={cn(
+                "grid gap-4",
+                profile.featured_card_id 
+                  ? "grid-cols-2 md:grid-cols-3" 
+                  : "grid-cols-2 md:grid-cols-3 lg:grid-cols-6"
+              )}>
+                {topCards.map((item) => {
+                  const marketItem = item.market_items as any;
+                  return (
+                    <Card key={item.id} className="glass overflow-hidden group hover:border-primary/30 transition-colors">
+                      <div className="aspect-square relative">
+                        <img
+                          src={item.image_url || marketItem?.image_url || '/placeholder.svg'}
+                          alt={marketItem?.name || item.custom_name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        />
+                        {item.grade && (
+                          <Badge className="absolute top-2 right-2 text-xs bg-gold/20 text-gold">
+                            {item.grade.toUpperCase()}
+                          </Badge>
+                        )}
+                      </div>
+                      <CardContent className="p-3">
+                        <p className="font-semibold text-sm truncate">
+                          {marketItem?.name || item.custom_name}
+                        </p>
+                        {marketItem?.current_price && (profile.show_portfolio_value ?? false) && (
+                          <p className="text-primary font-bold">
+                            ${marketItem.current_price.toLocaleString()}
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Trust & Reviews Section */}
         <div className="mb-8">

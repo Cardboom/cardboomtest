@@ -7,6 +7,9 @@ import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileShowcase } from '@/components/profile/ProfileShowcase';
+import { ProfileCollectionStats } from '@/components/profile/ProfileCollectionStats';
+import { Featured3DCard } from '@/components/profile/Featured3DCard';
+import { FeaturedCardSelector } from '@/components/profile/FeaturedCardSelector';
 import { useProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +28,7 @@ const Profile = () => {
   const { formatPrice } = useCurrency();
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [featuredSelectorOpen, setFeaturedSelectorOpen] = useState(false);
   const { profile, backgrounds, unlockedBackgrounds, loading, updateProfile, unlockBackground } = useProfile(userId);
 
   // Get current user on mount
@@ -135,21 +139,69 @@ const Profile = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch user's portfolio items
-  const { data: portfolioItems } = useQuery({
-    queryKey: ['user-portfolio', profile?.id],
+  // Fetch user's portfolio items and stats
+  const { data: portfolioData } = useQuery({
+    queryKey: ['user-portfolio-full', profile?.id],
     queryFn: async () => {
-      if (!profile?.id) return [];
+      if (!profile?.id) return { items: [], stats: { totalItems: 0, totalValue: 0, totalCost: 0, pnl: 0, pnlPercent: 0 } };
       const { data, error } = await supabase
         .from('portfolio_items')
         .select('*, market_item:market_items(*)')
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data || [];
+      
+      const items = data || [];
+      const totalValue = items.reduce((sum, item) => {
+        const price = item.market_item?.current_price || item.purchase_price || 0;
+        return sum + (price * (item.quantity || 1));
+      }, 0);
+      const totalCost = items.reduce((sum, item) => {
+        return sum + ((item.purchase_price || 0) * (item.quantity || 1));
+      }, 0);
+      const pnl = totalValue - totalCost;
+      const pnlPercent = totalCost > 0 ? ((pnl / totalCost) * 100) : 0;
+      
+      return {
+        items,
+        stats: {
+          totalItems: items.length,
+          totalValue,
+          totalCost,
+          pnl,
+          pnlPercent,
+        }
+      };
     },
-    enabled: !!profile?.id && isOwnProfile,
+    enabled: !!profile?.id,
   });
+
+  // Fetch featured card data
+  const { data: featuredCard } = useQuery({
+    queryKey: ['featured-card', profile?.featured_card_id],
+    queryFn: async () => {
+      if (!profile?.featured_card_id) return null;
+      const { data, error } = await supabase
+        .from('portfolio_items')
+        .select('id, custom_name, grade, image_url, market_items(id, name, image_url, current_price, category)')
+        .eq('id', profile.featured_card_id)
+        .single();
+      if (error) return null;
+      const marketItem = data.market_items as any;
+      return {
+        id: data.id,
+        name: data.custom_name || marketItem?.name || 'Unknown Card',
+        image_url: data.image_url || marketItem?.image_url || '/placeholder.svg',
+        grade: data.grade,
+        current_price: marketItem?.current_price,
+        category: marketItem?.category,
+      };
+    },
+    enabled: !!profile?.featured_card_id,
+  });
+
+  const portfolioItems = portfolioData?.items || [];
+  const portfolioStats = portfolioData?.stats || { totalItems: 0, totalValue: 0, pnl: 0, pnlPercent: 0 };
 
   if (loading) {
     return (
@@ -196,6 +248,10 @@ const Profile = () => {
     return await updateProfile({ showcase_items: items });
   };
 
+  const handleUpdateFeaturedCard = async (cardId: string | null) => {
+    return await updateProfile({ featured_card_id: cardId });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -216,12 +272,49 @@ const Profile = () => {
           onUnlockBackground={unlockBackground}
         />
 
-        <Tabs defaultValue="showcase" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
-            <TabsTrigger value="showcase" className="gap-2">
-              <Package className="h-4 w-4" />
-              <span className="hidden md:inline">Showcase</span>
-            </TabsTrigger>
+        {/* Collection Stats */}
+        <ProfileCollectionStats
+          totalItems={portfolioStats.totalItems}
+          totalValue={portfolioStats.totalValue}
+          pnl={portfolioStats.pnl}
+          pnlPercent={portfolioStats.pnlPercent}
+          showCollectionCount={profile.show_collection_count}
+          showPortfolioValue={profile.show_portfolio_value}
+          isOwnProfile={isOwnProfile}
+        />
+
+        {/* Featured Card + Showcase Grid */}
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="md:col-span-1">
+            <Featured3DCard
+              card={featuredCard || null}
+              isOwnProfile={isOwnProfile}
+              onSelectCard={() => setFeaturedSelectorOpen(true)}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <ProfileShowcase
+              userId={profile.id}
+              showcaseItems={profile.showcase_items}
+              isOwnProfile={isOwnProfile}
+              onUpdateShowcase={handleUpdateShowcase}
+            />
+          </div>
+        </div>
+
+        {/* Featured Card Selector Dialog */}
+        {isOwnProfile && (
+          <FeaturedCardSelector
+            open={featuredSelectorOpen}
+            onOpenChange={setFeaturedSelectorOpen}
+            currentFeaturedId={profile.featured_card_id}
+            userId={profile.id}
+            onSelect={handleUpdateFeaturedCard}
+          />
+        )}
+
+        <Tabs defaultValue="listings" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-7">
             <TabsTrigger value="listings" className="gap-2">
               <Store className="h-4 w-4" />
               <span className="hidden md:inline">Listings</span>
@@ -251,15 +344,6 @@ const Profile = () => {
               <span className="hidden md:inline">Activity</span>
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="showcase">
-            <ProfileShowcase
-              userId={profile.id}
-              showcaseItems={profile.showcase_items}
-              isOwnProfile={isOwnProfile}
-              onUpdateShowcase={handleUpdateShowcase}
-            />
-          </TabsContent>
 
           <TabsContent value="listings">
             <Card>

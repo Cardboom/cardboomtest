@@ -4798,6 +4798,7 @@ export type Database = {
           custom_guru: string | null
           display_name: string | null
           email: string | null
+          featured_card_id: string | null
           first_deposit_at: string | null
           first_deposit_completed: boolean | null
           first_vault_card_sent: boolean | null
@@ -4819,12 +4820,16 @@ export type Database = {
           phone_verified: boolean | null
           premium_trial_expires_at: string | null
           profile_background: string | null
+          profile_color_primary: string | null
+          profile_color_secondary: string | null
           referral_code: string | null
           referred_by: string | null
           reputation_score: number | null
           reputation_tier: string | null
           risk_flags: Json | null
           seller_trust_score: number | null
+          show_collection_count: boolean | null
+          show_portfolio_value: boolean | null
           showcase_items: string[] | null
           system_account_role: string | null
           system_account_wallet_balance: number | null
@@ -4852,6 +4857,7 @@ export type Database = {
           custom_guru?: string | null
           display_name?: string | null
           email?: string | null
+          featured_card_id?: string | null
           first_deposit_at?: string | null
           first_deposit_completed?: boolean | null
           first_vault_card_sent?: boolean | null
@@ -4873,12 +4879,16 @@ export type Database = {
           phone_verified?: boolean | null
           premium_trial_expires_at?: string | null
           profile_background?: string | null
+          profile_color_primary?: string | null
+          profile_color_secondary?: string | null
           referral_code?: string | null
           referred_by?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
           risk_flags?: Json | null
           seller_trust_score?: number | null
+          show_collection_count?: boolean | null
+          show_portfolio_value?: boolean | null
           showcase_items?: string[] | null
           system_account_role?: string | null
           system_account_wallet_balance?: number | null
@@ -4906,6 +4916,7 @@ export type Database = {
           custom_guru?: string | null
           display_name?: string | null
           email?: string | null
+          featured_card_id?: string | null
           first_deposit_at?: string | null
           first_deposit_completed?: boolean | null
           first_vault_card_sent?: boolean | null
@@ -4927,12 +4938,16 @@ export type Database = {
           phone_verified?: boolean | null
           premium_trial_expires_at?: string | null
           profile_background?: string | null
+          profile_color_primary?: string | null
+          profile_color_secondary?: string | null
           referral_code?: string | null
           referred_by?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
           risk_flags?: Json | null
           seller_trust_score?: number | null
+          show_collection_count?: boolean | null
+          show_portfolio_value?: boolean | null
           showcase_items?: string[] | null
           system_account_role?: string | null
           system_account_wallet_balance?: number | null
@@ -4945,7 +4960,15 @@ export type Database = {
           wire_transfer_code?: string | null
           xp?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_featured_card_id_fkey"
+            columns: ["featured_card_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       promo_code_uses: {
         Row: {
@@ -7068,18 +7091,23 @@ export type Database = {
           avatar_url: string | null
           badges: Json | null
           bio: string | null
+          country_code: string | null
           created_at: string | null
           custom_guru: string | null
           display_name: string | null
+          featured_card_id: string | null
           guru_expertise: string[] | null
           id: string | null
           is_beta_tester: boolean | null
-          is_fan_account: boolean | null
           is_id_verified: boolean | null
           level: number | null
           profile_background: string | null
+          profile_color_primary: string | null
+          profile_color_secondary: string | null
           reputation_score: number | null
           reputation_tier: string | null
+          show_collection_count: boolean | null
+          show_portfolio_value: boolean | null
           showcase_items: string[] | null
           title: string | null
           trust_rating: number | null
@@ -7091,18 +7119,23 @@ export type Database = {
           avatar_url?: string | null
           badges?: Json | null
           bio?: string | null
+          country_code?: string | null
           created_at?: string | null
           custom_guru?: string | null
           display_name?: string | null
+          featured_card_id?: string | null
           guru_expertise?: string[] | null
           id?: string | null
           is_beta_tester?: boolean | null
-          is_fan_account?: boolean | null
           is_id_verified?: boolean | null
           level?: number | null
           profile_background?: string | null
+          profile_color_primary?: string | null
+          profile_color_secondary?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
+          show_collection_count?: boolean | null
+          show_portfolio_value?: boolean | null
           showcase_items?: string[] | null
           title?: string | null
           trust_rating?: number | null
@@ -7114,25 +7147,38 @@ export type Database = {
           avatar_url?: string | null
           badges?: Json | null
           bio?: string | null
+          country_code?: string | null
           created_at?: string | null
           custom_guru?: string | null
           display_name?: string | null
+          featured_card_id?: string | null
           guru_expertise?: string[] | null
           id?: string | null
           is_beta_tester?: boolean | null
-          is_fan_account?: boolean | null
           is_id_verified?: boolean | null
           level?: number | null
           profile_background?: string | null
+          profile_color_primary?: string | null
+          profile_color_secondary?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
+          show_collection_count?: boolean | null
+          show_portfolio_value?: boolean | null
           showcase_items?: string[] | null
           title?: string | null
           trust_rating?: number | null
           trust_review_count?: number | null
           xp?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_featured_card_id_fkey"
+            columns: ["featured_card_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {

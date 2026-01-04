@@ -31,6 +31,11 @@ interface Profile {
   id_document_url: string | null;
   guru_expertise: string[];
   custom_guru: string | null;
+  show_collection_count: boolean;
+  show_portfolio_value: boolean;
+  featured_card_id: string | null;
+  profile_color_primary: string | null;
+  profile_color_secondary: string | null;
 }
 
 export const useProfile = (userId?: string) => {
@@ -74,7 +79,12 @@ export const useProfile = (userId?: string) => {
         is_id_verified: profileData.is_id_verified || false,
         id_document_url: profileData.id_document_url,
         guru_expertise: (profileData.guru_expertise as string[]) || [],
-        custom_guru: profileData.custom_guru
+        custom_guru: profileData.custom_guru,
+        show_collection_count: profileData.show_collection_count ?? true,
+        show_portfolio_value: profileData.show_portfolio_value ?? false,
+        featured_card_id: profileData.featured_card_id,
+        profile_color_primary: profileData.profile_color_primary,
+        profile_color_secondary: profileData.profile_color_secondary,
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -130,7 +140,12 @@ export const useProfile = (userId?: string) => {
           showcase_items: updates.showcase_items,
           id_document_url: updates.id_document_url,
           guru_expertise: updates.guru_expertise,
-          custom_guru: updates.custom_guru
+          custom_guru: updates.custom_guru,
+          show_collection_count: updates.show_collection_count,
+          show_portfolio_value: updates.show_portfolio_value,
+          featured_card_id: updates.featured_card_id,
+          profile_color_primary: updates.profile_color_primary,
+          profile_color_secondary: updates.profile_color_secondary,
         })
         .eq('id', user.id);
 
