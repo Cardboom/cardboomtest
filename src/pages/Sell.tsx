@@ -18,7 +18,7 @@ import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Uploa
 import { CardScanner } from '@/components/CardScanner';
 import { CardPricingIntelligence } from '@/components/CardPricingIntelligence';
 import { toast } from 'sonner';
-import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
+import { CreateCollectiveDialog } from '@/components/collective';
 import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
 import { useCardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -1010,7 +1010,7 @@ const SellPage = () => {
                           )}
                           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                             {listing.status === 'active' && (
-                              <CreateFractionalDialog
+                              <CreateCollectiveDialog
                                 listingId={listing.id}
                                 itemName={listing.title}
                                 totalValue={Number(listing.price)}

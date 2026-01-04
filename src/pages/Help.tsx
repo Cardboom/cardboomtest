@@ -54,11 +54,11 @@ const Help = () => {
       { q: 'What should I do if my account is compromised?', a: 'Contact support immediately at destek@cardboom.com. We\'ll help you secure your account and investigate any unauthorized activity.' },
       { q: 'How does CardBoom detect fake cards?', a: 'We accept PSA/BGS/CGC graded cards, have a Verified Seller program, AI-assisted card scanning, and full buyer protection with refunds for counterfeits.' },
     ],
-    'fractional': [
-      { q: 'What are fractional shares?', a: 'Buy shares of expensive collectibles you couldn\'t afford alone. For example, own 1% of a $50,000 card for $500.' },
-      { q: 'How do I sell my shares?', a: 'List your shares on the secondary market at your desired price. When someone buys, you receive funds minus the 1% transaction fee.' },
-      { q: 'Where is the physical card stored?', a: 'All fractional cards are stored in CardBoom\'s insured Vault facility. Daily verification photos confirm card condition.' },
-      { q: 'What happens when a fractional card sells?', a: 'Shareholders vote on sale offers. When approved, proceeds are distributed proportionally. You can also trade shares anytime.' },
+    'collective': [
+      { q: 'What is CardBoom COLLECTIVE™?', a: 'Join communities around premium collectibles with participation rights including voting, XP eligibility, and exclusive community access.' },
+      { q: 'What rights do I get as a COLLECTIVE member?', a: 'You receive community voting rights, XP and badge eligibility, exclusive community access, and gamified rewards.' },
+      { q: 'Where is the physical item stored?', a: 'Items are stored in CardBoom\'s insured Vault facility with daily verification photos to confirm condition.' },
+      { q: 'Are COLLECTIVE units an investment?', a: 'No. COLLECTIVE units are non-financial participation rights. They do not represent ownership, equity, or entitlement to financial returns.' },
     ],
     'gaming': [
       { q: 'How do I buy Valorant Points (VP)?', a: 'Go to Gaming → Valorant, select your region and VP amount, complete payment, and receive your VP code via email within minutes.' },

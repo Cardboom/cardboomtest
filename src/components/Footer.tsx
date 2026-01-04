@@ -31,7 +31,7 @@ export const Footer = () => {
               <li><Link to="/explorer?category=pokemon" className="hover:text-foreground transition-colors">{t.footer.tcg}</Link></li>
               <li><Link to="/explorer?category=figures" className="hover:text-foreground transition-colors">{t.footer.figures}</Link></li>
               <li><Link to="/trades" className="hover:text-foreground transition-colors">{t.nav.tradesOffers}</Link></li>
-              <li><Link to="/fractional" className="hover:text-foreground transition-colors">{t.fractional.title}</Link></li>
+              <li><Link to="/collective" className="hover:text-foreground transition-colors">{t.collective.title}</Link></li>
               <li><Link to="/reels" className="hover:text-foreground transition-colors">{t.nav.reels}</Link></li>
             </ul>
           </div>

@@ -34,7 +34,7 @@ import Referrals from "./pages/Referrals";
 import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
 import Admin from "./pages/Admin";
-import FractionalMarket from "./pages/FractionalMarket";
+import CollectiveMarket from "./pages/CollectiveMarket";
 import Gaming from "./pages/Gaming";
 import CardPage from "./pages/CardPage";
 import LegacyCardRedirect from "./components/LegacyCardRedirect";
@@ -119,7 +119,9 @@ const AppContent = () => {
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/fractional" element={<FractionalMarket />} />
+          <Route path="/collective" element={<CollectiveMarket />} />
+          {/* Legacy redirect from old fractional path */}
+          <Route path="/fractional" element={<CollectiveMarket />} />
           <Route path="/gaming" element={<Gaming />} />
           <Route path="/seller/:sellerId" element={<SellerProfile />} />
           <Route path="/hall-of-fame" element={<HallOfFame />} />

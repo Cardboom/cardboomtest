@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { PieChart, Shield, Info } from "lucide-react";
+import { Sparkles, Shield, Info, Vote, Users, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
-interface CreateFractionalDialogProps {
+interface CreateCollectiveDialogProps {
   listingId?: string;
   marketItemId?: string;
   itemName: string;
@@ -19,30 +18,30 @@ interface CreateFractionalDialogProps {
   imageUrl?: string;
 }
 
-export function CreateFractionalDialog({ 
+export function CreateCollectiveDialog({ 
   listingId, 
   marketItemId, 
   itemName, 
   totalValue,
   imageUrl 
-}: CreateFractionalDialogProps) {
+}: CreateCollectiveDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [totalShares, setTotalShares] = useState(100);
-  const [minShares, setMinShares] = useState(10);
+  const [totalUnits, setTotalUnits] = useState(100);
+  const [minUnits, setMinUnits] = useState(10);
   const [dailyVerification, setDailyVerification] = useState(true);
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
 
-  const sharePrice = totalValue / totalShares;
-  const minInvestment = sharePrice * minShares;
+  const unitPrice = totalValue / totalUnits;
+  const minParticipation = unitPrice * minUnits;
 
   const handleCreate = async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Please sign in to create a fractional listing");
+        toast.error("Please sign in to create a Collective");
         navigate("/auth");
         return;
       }
@@ -52,10 +51,10 @@ export function CreateFractionalDialog({
         .insert({
           listing_id: listingId || null,
           market_item_id: marketItemId || null,
-          total_shares: totalShares,
-          available_shares: totalShares,
-          share_price: sharePrice,
-          min_shares: minShares,
+          total_shares: totalUnits,
+          available_shares: totalUnits,
+          share_price: unitPrice,
+          min_shares: minUnits,
           daily_verification_required: dailyVerification,
           owner_id: user.id,
           next_verification_due: dailyVerification ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null,
@@ -63,11 +62,11 @@ export function CreateFractionalDialog({
 
       if (error) throw error;
 
-      toast.success("Fractional listing created! Buyers can now purchase shares.");
+      toast.success("Collective created! Community members can now join.");
       setOpen(false);
     } catch (error: any) {
-      console.error("Error creating fractional listing:", error);
-      toast.error(error.message || "Failed to create fractional listing");
+      console.error("Error creating collective:", error);
+      toast.error(error.message || "Failed to create Collective");
     } finally {
       setLoading(false);
     }
@@ -77,18 +76,18 @@ export function CreateFractionalDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2">
-          <PieChart className="h-4 w-4" />
-          Enable Fractional Buying
+          <Sparkles className="h-4 w-4" />
+          Enable Collective
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <PieChart className="h-5 w-5 text-primary" />
-            Create Fractional Listing
+            <Sparkles className="h-5 w-5 text-primary" />
+            Create CardBoom COLLECTIVE™
           </DialogTitle>
           <DialogDescription>
-            Allow buyers to purchase shares of {itemName}
+            Allow community members to participate in {itemName}
           </DialogDescription>
         </DialogHeader>
 
@@ -104,39 +103,39 @@ export function CreateFractionalDialog({
             </div>
           </div>
 
-          {/* Total Shares */}
+          {/* Total Units */}
           <div className="space-y-3">
             <div className="flex justify-between">
-              <Label>Total Shares</Label>
-              <span className="text-sm text-muted-foreground">{totalShares} shares</span>
+              <Label>Total Collective Units</Label>
+              <span className="text-sm text-muted-foreground">{totalUnits} units</span>
             </div>
             <Slider
-              value={[totalShares]}
-              onValueChange={([value]) => setTotalShares(value)}
+              value={[totalUnits]}
+              onValueChange={([value]) => setTotalUnits(value)}
               min={10}
               max={1000}
               step={10}
             />
             <p className="text-sm text-muted-foreground">
-              Each share = {formatPrice(sharePrice)} ({(100/totalShares).toFixed(2)}% ownership)
+              Each unit = {formatPrice(unitPrice)} ({(100/totalUnits).toFixed(2)}% participation)
             </p>
           </div>
 
-          {/* Minimum Purchase */}
+          {/* Minimum Participation */}
           <div className="space-y-3">
             <div className="flex justify-between">
-              <Label>Minimum Purchase</Label>
-              <span className="text-sm text-muted-foreground">{minShares} shares ({(minShares/totalShares*100).toFixed(1)}%)</span>
+              <Label>Minimum Participation</Label>
+              <span className="text-sm text-muted-foreground">{minUnits} units ({(minUnits/totalUnits*100).toFixed(1)}%)</span>
             </div>
             <Slider
-              value={[minShares]}
-              onValueChange={([value]) => setMinShares(value)}
+              value={[minUnits]}
+              onValueChange={([value]) => setMinUnits(value)}
               min={1}
-              max={Math.min(100, totalShares)}
+              max={Math.min(100, totalUnits)}
               step={1}
             />
             <p className="text-sm text-muted-foreground">
-              Minimum investment: {formatPrice(minInvestment)}
+              Minimum to join: {formatPrice(minParticipation)}
             </p>
           </div>
 
@@ -147,7 +146,7 @@ export function CreateFractionalDialog({
               <div>
                 <Label className="text-base">Daily Verification</Label>
                 <p className="text-sm text-muted-foreground">
-                  Upload daily photos to verify you still own the item
+                  Upload daily photos to verify item condition
                 </p>
               </div>
             </div>
@@ -157,16 +156,24 @@ export function CreateFractionalDialog({
             />
           </div>
 
-          {/* Info Box */}
-          <div className="flex gap-3 p-4 rounded-lg bg-blue-500/10">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          {/* Participation Rights Info */}
+          <div className="flex gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
+            <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
             <div className="text-sm text-muted-foreground">
-              <p className="font-medium text-foreground mb-1">How it works:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Buyers purchase shares of your item</li>
-                <li>You retain physical possession</li>
-                <li>Daily verification builds trust</li>
-                <li>Sell when fully funded or keep partial ownership</li>
+              <p className="font-medium text-foreground mb-2">Collective participants receive:</p>
+              <ul className="space-y-2">
+                <li className="flex items-center gap-2">
+                  <Vote className="h-4 w-4 text-primary" />
+                  Community voting rights
+                </li>
+                <li className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-primary" />
+                  XP rewards & badge eligibility
+                </li>
+                <li className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-primary" />
+                  Exclusive community access
+                </li>
               </ul>
             </div>
           </div>
@@ -174,22 +181,27 @@ export function CreateFractionalDialog({
           {/* Summary */}
           <div className="rounded-lg border p-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Total Value</span>
+              <span className="text-muted-foreground">Item Value</span>
               <span>{formatPrice(totalValue)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Number of Shares</span>
-              <span>{totalShares}</span>
+              <span className="text-muted-foreground">Total Units</span>
+              <span>{totalUnits}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Price per Share</span>
-              <span>{formatPrice(sharePrice)}</span>
+              <span className="text-muted-foreground">Price per Unit</span>
+              <span>{formatPrice(unitPrice)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Min Investment</span>
-              <span>{formatPrice(minInvestment)}</span>
+              <span className="text-muted-foreground">Min Participation</span>
+              <span>{formatPrice(minParticipation)}</span>
             </div>
           </div>
+
+          {/* Legal Disclaimer */}
+          <p className="text-[10px] text-muted-foreground text-center">
+            Collective Units are non-financial digital participation rights. They do not represent ownership, equity, investment products, or entitlement to financial returns or profit distribution.
+          </p>
         </div>
 
         <div className="flex gap-3">
@@ -197,7 +209,7 @@ export function CreateFractionalDialog({
             Cancel
           </Button>
           <Button onClick={handleCreate} disabled={loading} className="flex-1">
-            {loading ? "Creating..." : "Create Fractional Listing"}
+            {loading ? "Creating..." : "Create Collective"}
           </Button>
         </div>
       </DialogContent>
