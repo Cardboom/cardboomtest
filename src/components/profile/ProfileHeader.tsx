@@ -9,6 +9,7 @@ import { XPProgressBar } from '@/components/XPProgressBar';
 import { ProfileBadges } from './ProfileBadges';
 import { ProfileBackgroundSelector } from './ProfileBackgroundSelector';
 import { ProfileGuruSelector } from './ProfileGuruSelector';
+import { ProfilePrivacySettings } from './ProfilePrivacySettings';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -36,6 +37,8 @@ interface ProfileHeaderProps {
     is_id_verified?: boolean;
     guru_expertise?: string[];
     custom_guru?: string | null;
+    show_collection_count?: boolean;
+    show_portfolio_value?: boolean;
   };
   backgrounds: any[];
   unlockedBackgrounds: string[];
@@ -303,6 +306,11 @@ export const ProfileHeader = ({
                         currentExpertise={profile.guru_expertise || []}
                         customGuru={profile.custom_guru || ''}
                         onUpdate={handleGuruUpdate}
+                      />
+                      <ProfilePrivacySettings
+                        showCollectionCount={profile.show_collection_count ?? true}
+                        showPortfolioValue={profile.show_portfolio_value ?? false}
+                        onUpdate={onUpdate}
                       />
                       {!profile.is_id_verified && (
                         <Button 
