@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -24,6 +24,8 @@ import { useCardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { BulkImportDialog } from '@/components/seller/BulkImportDialog';
 import { SmartPriceSuggestion } from '@/components/listing/SmartPriceSuggestion';
+import { ListingSuccessModal } from '@/components/listing/ListingSuccessModal';
+import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard';
 interface Listing {
   id: string;
   title: string;
@@ -44,6 +46,7 @@ const conditions = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Fair', 'Poor'];
 
 const SellPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { checkListingAchievements } = useAchievementTriggers();
   const { analysis, isAnalyzing, analyzeImage, clearAnalysis } = useCardAnalysis();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,6 +66,16 @@ const SellPage = () => {
   } | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [activeTab, setActiveTab] = useState('create');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [createdListing, setCreatedListing] = useState<{
+    id: string;
+    title: string;
+    price: number;
+    imageUrl?: string | null;
+    category: string;
+  } | null>(null);
+  const [showVaultWizard, setShowVaultWizard] = useState(false);
+  const [selectedVaultItem, setSelectedVaultItem] = useState<any>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
@@ -92,6 +105,17 @@ const SellPage = () => {
     };
     checkAuth();
   }, [navigate]);
+
+  // Handle vault-to-listing navigation
+  useEffect(() => {
+    const state = location.state as { fromVault?: boolean; vaultItem?: any } | null;
+    if (state?.fromVault && state?.vaultItem) {
+      setSelectedVaultItem(state.vaultItem);
+      setShowVaultWizard(true);
+      // Clear the state to prevent re-triggering
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
 
   const fetchListings = async () => {
     try {
@@ -260,7 +284,17 @@ const SellPage = () => {
         console.error('Error checking achievements:', achievementError);
       }
 
-      toast.success(formData.enableFractional ? 'Fractional listing created successfully!' : 'Listing created successfully!');
+      // Show success modal instead of toast
+      setCreatedListing({
+        id: listingData.id,
+        title: formData.title,
+        price: price,
+        imageUrl: imageUrl,
+        category: formData.category,
+      });
+      setShowSuccessModal(true);
+
+      // Reset form
       setFormData({
         title: '',
         description: '',
@@ -277,7 +311,6 @@ const SellPage = () => {
       });
       clearImage();
       fetchListings();
-      setActiveTab('listings');
     } catch (error: any) {
       console.error('Error creating listing:', error);
       toast.error(error.message || 'Failed to create listing');
@@ -1096,6 +1129,36 @@ const SellPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Listing Success Modal */}
+      <ListingSuccessModal
+        open={showSuccessModal}
+        onOpenChange={setShowSuccessModal}
+        listing={createdListing}
+        onListAnother={() => {
+          setShowSuccessModal(false);
+          setActiveTab('create');
+        }}
+      />
+
+      {/* Vault to Listing Wizard */}
+      <VaultToListingWizard
+        open={showVaultWizard}
+        onOpenChange={setShowVaultWizard}
+        vaultItem={selectedVaultItem}
+        onSuccess={(listingId) => {
+          setCreatedListing({
+            id: listingId,
+            title: selectedVaultItem?.title || '',
+            price: parseFloat(selectedVaultItem?.estimated_value) || 0,
+            imageUrl: selectedVaultItem?.image_url,
+            category: selectedVaultItem?.category || 'tcg',
+          });
+          setShowSuccessModal(true);
+          setSelectedVaultItem(null);
+          fetchListings();
+        }}
+      />
 
       <Footer />
     </div>

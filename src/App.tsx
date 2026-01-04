@@ -13,6 +13,7 @@ import { DebugProvider } from "@/contexts/DebugContext";
 import { CookieConsent } from "@/components/CookieConsent";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { SocialProofPopup } from "@/components/SocialProofPopup";
+import { SellerShippingNotifier } from "@/components/seller/SellerShippingNotifier";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -165,6 +166,7 @@ const AppContent = () => {
         </Routes>
         <SocialProofPopup />
         <CookieConsent />
+        <SellerShippingNotifier />
       </BrowserRouter>
     </>
   );
