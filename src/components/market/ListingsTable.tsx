@@ -22,7 +22,18 @@ interface Listing {
   created_at: string;
   seller_id: string;
   image_url: string | null;
+  seller_name?: string;
+  seller_country_code?: string;
 }
+
+const getCountryFlag = (countryCode: string): string => {
+  if (!countryCode || countryCode.length !== 2) return '🌍';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
 
 interface ListingsTableProps {
   category?: string;
@@ -63,7 +74,34 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setListings(data || []);
+      
+      // Fetch seller profiles for location data
+      const sellerIds = [...new Set((data || []).map(l => l.seller_id))];
+      let profileMap = new Map<string, { display_name: string; country_code: string }>();
+      
+      if (sellerIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('public_profiles')
+          .select('id, display_name, country_code')
+          .in('id', sellerIds);
+        
+        profileMap = new Map(profiles?.map(p => [p.id, { 
+          display_name: p.display_name || 'Seller', 
+          country_code: p.country_code || 'TR' 
+        }]) || []);
+      }
+      
+      // Enrich listings with seller info
+      const enrichedListings = (data || []).map(listing => {
+        const profile = profileMap.get(listing.seller_id);
+        return {
+          ...listing,
+          seller_name: profile?.display_name || 'Seller',
+          seller_country_code: profile?.country_code || 'TR',
+        };
+      });
+      
+      setListings(enrichedListings);
     } catch (error) {
       console.error('Error fetching listings:', error);
       toast.error('Failed to load listings');
@@ -153,9 +191,14 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
                     {listing.description}
                   </p>
                 )}
-                <p className="text-muted-foreground text-xs">
-                  Listed {new Date(listing.created_at).toLocaleDateString()}
-                </p>
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                  <span className="text-base leading-none" title={listing.seller_country_code}>
+                    {getCountryFlag(listing.seller_country_code || 'TR')}
+                  </span>
+                  <span>{listing.seller_name}</span>
+                  <span>•</span>
+                  <span>Listed {new Date(listing.created_at).toLocaleDateString()}</span>
+                </div>
               </div>
             </div>
 

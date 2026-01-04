@@ -19,12 +19,31 @@ interface SellerInfoProps {
     avgDeliveryDays: number;
     memberSince?: string;
     responseTime?: string;
+    countryCode?: string;
   };
   onViewProfile: () => void;
   onMessage: () => void;
   otherListingsCount?: number;
   onViewOtherListings?: () => void;
 }
+
+const getCountryFlag = (countryCode: string): string => {
+  if (!countryCode || countryCode.length !== 2) return '🌍';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
+
+const getCountryName = (code: string): string => {
+  const countries: Record<string, string> = {
+    'TR': 'Turkey', 'US': 'United States', 'GB': 'United Kingdom', 'DE': 'Germany',
+    'FR': 'France', 'JP': 'Japan', 'CN': 'China', 'KR': 'South Korea', 'CA': 'Canada',
+    'AU': 'Australia', 'IT': 'Italy', 'ES': 'Spain', 'NL': 'Netherlands', 'BR': 'Brazil',
+  };
+  return countries[code?.toUpperCase()] || code || 'Unknown';
+};
 
 export const SellerInfoCard = ({
   seller,
@@ -68,6 +87,12 @@ export const SellerInfoCard = ({
             </div>
             {seller.memberSince && (
               <p className="text-xs text-muted-foreground">Member since {seller.memberSince}</p>
+            )}
+            {seller.countryCode && (
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className="text-base leading-none">{getCountryFlag(seller.countryCode)}</span>
+                <span className="text-xs text-muted-foreground">{getCountryName(seller.countryCode)}</span>
+              </div>
             )}
           </div>
         </div>
