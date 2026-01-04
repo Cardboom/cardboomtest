@@ -17,16 +17,14 @@ export const MarketTicker = () => {
 
   useEffect(() => {
     const fetchTopGainers = async () => {
+      // Maximize price display - only require price > 0 and change_24h
       const { data, error } = await supabase
         .from('market_items')
         .select('id, name, current_price, change_24h')
         .not('change_24h', 'is', null)
-        .not('image_url', 'is', null)
-        .neq('image_url', '')
         .gt('current_price', 0)
-        .not('data_source', 'is', null)
         .order('change_24h', { ascending: false })
-        .limit(50);
+        .limit(80); // Fetch more for better coverage
 
       if (!error && data) {
         setItems(data);

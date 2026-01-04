@@ -20,20 +20,21 @@ export function PopularCardsPanel() {
   const { data: popularCards, isLoading } = useQuery({
     queryKey: ['popular-cards-panel'],
     queryFn: async () => {
-      // Get cards with highest views/sales, with images - exclude gaming/gamepoints
+      // Maximize price coverage - get cards with highest views/sales
+      // Only require current_price > 0, images preferred but not required
       const { data, error } = await supabase
         .from('market_items')
         .select('id, name, category, image_url, current_price, change_24h, views_24h, sales_count_30d')
         .gt('current_price', 0)
-        .not('image_url', 'is', null)
-        .neq('image_url', '')
-        .not('data_source', 'is', null)
         .not('category', 'in', '("gamepoints","gaming")')
         .order('views_24h', { ascending: false, nullsFirst: false })
-        .limit(12);
+        .limit(20); // Fetch more, filter for images client-side
       
       if (error) throw error;
-      return data as PopularCard[];
+      // Prioritize items with images, but include some without
+      const withImages = (data || []).filter((c: PopularCard) => c.image_url);
+      const withoutImages = (data || []).filter((c: PopularCard) => !c.image_url);
+      return [...withImages.slice(0, 10), ...withoutImages.slice(0, 2)] as PopularCard[];
     },
     staleTime: 60000,
   });

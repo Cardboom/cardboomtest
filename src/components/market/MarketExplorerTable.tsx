@@ -53,13 +53,11 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
     const fetchMarketItems = async () => {
       setIsLoading(true);
       try {
+        // Maximize price coverage - only require current_price > 0
         let query = supabase
           .from('market_items')
           .select('*', { count: 'exact' })
-          .not('image_url', 'is', null)
-          .neq('image_url', '')
-          .gt('current_price', 0)
-          .not('data_source', 'is', null);
+          .gt('current_price', 0);
         
         // Apply category filter at database level
         if (filters.category && filters.category !== 'all') {
