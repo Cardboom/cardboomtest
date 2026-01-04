@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { localeNames, localeFlags, type Locale } from "@/translations";
 
-const locales: Locale[] = ["en", "de", "tr", "fr", "it", "ar", "ja"];
+const locales: Locale[] = ["en", "de", "tr", "fr", "it", "ar", "ja", "ko"];
 
 export function LanguageSelector() {
   const { locale, setLocale } = useLanguage();
