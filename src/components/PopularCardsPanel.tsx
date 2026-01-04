@@ -11,6 +11,8 @@ interface PopularCard {
   category: string;
   image_url: string | null;
   current_price: number;
+  psa10_price: number | null;
+  psa9_price: number | null;
   change_24h: number | null;
   views_24h: number | null;
   sales_count_30d: number | null;
@@ -20,21 +22,21 @@ export function PopularCardsPanel() {
   const { data: popularCards, isLoading } = useQuery({
     queryKey: ['popular-cards-panel'],
     queryFn: async () => {
-      // Maximize price coverage - get cards with highest views/sales
-      // Only require current_price > 0, images preferred but not required
+      // Prioritize PSA 10 graded cards first, then by views
       const { data, error } = await supabase
         .from('market_items')
-        .select('id, name, category, image_url, current_price, change_24h, views_24h, sales_count_30d')
+        .select('id, name, category, image_url, current_price, psa10_price, psa9_price, change_24h, views_24h, sales_count_30d')
         .gt('current_price', 0)
         .not('category', 'in', '("gamepoints","gaming")')
+        .order('psa10_price', { ascending: false, nullsFirst: false })
         .order('views_24h', { ascending: false, nullsFirst: false })
-        .limit(20); // Fetch more, filter for images client-side
+        .limit(20);
       
       if (error) throw error;
-      // Prioritize items with images, but include some without
-      const withImages = (data || []).filter((c: PopularCard) => c.image_url);
-      const withoutImages = (data || []).filter((c: PopularCard) => !c.image_url);
-      return [...withImages.slice(0, 10), ...withoutImages.slice(0, 2)] as PopularCard[];
+      // Prioritize items with PSA 10 prices and images
+      const withPsa10 = (data || []).filter((c: PopularCard) => c.psa10_price && c.image_url);
+      const withImages = (data || []).filter((c: PopularCard) => !c.psa10_price && c.image_url);
+      return [...withPsa10.slice(0, 8), ...withImages.slice(0, 4)] as PopularCard[];
     },
     staleTime: 60000,
   });
@@ -55,7 +57,11 @@ export function PopularCardsPanel() {
 
   const formatPrice = (price: number) => {
     if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
-    return `$${price.toFixed(2)}`;
+    return `$${price.toFixed(0)}`;
+  };
+
+  const getDisplayPrice = (card: PopularCard) => {
+    return card.psa10_price || card.current_price;
   };
 
   return (
@@ -89,8 +95,12 @@ export function PopularCardsPanel() {
                   </div>
                 )}
                 
-                {/* Hot badge */}
-                {(card.views_24h || 0) > 10 && (
+                {/* Hot badge or PSA 10 badge */}
+                {card.psa10_price ? (
+                  <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-blue-600/90 text-white text-xs font-medium">
+                    PSA 10
+                  </div>
+                ) : (card.views_24h || 0) > 10 && (
                   <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/90 text-white text-xs font-medium">
                     <Flame className="w-3 h-3" />
                     Hot
@@ -116,9 +126,16 @@ export function PopularCardsPanel() {
                 </h3>
                 
                 <div className="flex items-center justify-between gap-2 mt-2">
-                  <span className="text-lg font-bold text-foreground shrink-0">
-                    {formatPrice(card.current_price)}
-                  </span>
+                  <div className="shrink-0">
+                    <span className="text-lg font-bold text-foreground">
+                      {formatPrice(getDisplayPrice(card))}
+                    </span>
+                    {card.psa10_price && card.current_price !== card.psa10_price && (
+                      <span className="block text-xs text-muted-foreground">
+                        Raw: {formatPrice(card.current_price)}
+                      </span>
+                    )}
+                  </div>
                   
                   <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
                     {(card.views_24h || 0) > 0 && (
