@@ -9,13 +9,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { RefreshCw, Database, Play, Zap, CheckCircle, AlertCircle, Crown, Rocket } from 'lucide-react';
+import { RefreshCw, Database, Play, Zap, CheckCircle, AlertCircle, Crown, Rocket, Clock, Activity, Wifi } from 'lucide-react';
 
 interface SyncStats {
   total: number;
   withImages: number;
   missingImages: number;
   byCategory: Record<string, { total: number; withImages: number }>;
+}
+
+interface SchedulerStatus {
+  lastRun: Date | null;
+  mode: string;
+  updated: number;
+  isRunning: boolean;
 }
 
 export const DataSyncManager = () => {
@@ -29,6 +36,17 @@ export const DataSyncManager = () => {
   const [delayMs, setDelayMs] = useState(200);
   const [totalBatches, setTotalBatches] = useState(10);
   const [isRunningBulkSync, setIsRunningBulkSync] = useState(false);
+  
+  // 24/7 Scheduler state
+  const [schedulerStatus, setSchedulerStatus] = useState<SchedulerStatus>({
+    lastRun: null,
+    mode: 'idle',
+    updated: 0,
+    isRunning: false,
+  });
+  const [schedulerInterval, setSchedulerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [is24x7Enabled, setIs24x7Enabled] = useState(false);
+  const [schedulerMode, setSchedulerMode] = useState<string>('auto');
 
   const fetchStats = async () => {
     setIsLoading(true);
@@ -147,9 +165,69 @@ export const DataSyncManager = () => {
     } catch (error) {
       toast.error('Failed to seed categories');
     } finally {
-      setIsSeedingCategories(false);
+    setIsSeedingCategories(false);
     }
   };
+  
+  // 24/7 Price Scheduler Functions
+  const runSchedulerOnce = async (mode: string = 'auto') => {
+    setSchedulerStatus(prev => ({ ...prev, isRunning: true }));
+    try {
+      const { data, error } = await supabase.functions.invoke('price-scheduler', {
+        body: { mode, batchSize: 50, delayMs: 150 }
+      });
+      
+      if (error) throw error;
+      
+      setSchedulerStatus({
+        lastRun: new Date(),
+        mode: data.mode || mode,
+        updated: data.updated || 0,
+        isRunning: false,
+      });
+      
+      toast.success(`Scheduler: ${data.updated} prices updated (${data.mode})`);
+    } catch (error) {
+      console.error('Scheduler error:', error);
+      toast.error('Scheduler run failed');
+      setSchedulerStatus(prev => ({ ...prev, isRunning: false }));
+    }
+  };
+  
+  const toggle24x7Scheduler = () => {
+    if (is24x7Enabled) {
+      // Stop scheduler
+      if (schedulerInterval) {
+        clearInterval(schedulerInterval);
+        setSchedulerInterval(null);
+      }
+      setIs24x7Enabled(false);
+      toast.info('24/7 Scheduler stopped');
+    } else {
+      // Start scheduler - runs every 5 minutes
+      setIs24x7Enabled(true);
+      toast.success('24/7 Scheduler started (every 5 min)');
+      
+      // Run immediately
+      runSchedulerOnce(schedulerMode);
+      
+      // Set interval for every 5 minutes
+      const interval = setInterval(() => {
+        runSchedulerOnce(schedulerMode);
+      }, 5 * 60 * 1000); // 5 minutes
+      
+      setSchedulerInterval(interval);
+    }
+  };
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (schedulerInterval) {
+        clearInterval(schedulerInterval);
+      }
+    };
+  }, [schedulerInterval]);
   
   const sources = [
     { id: 'ebay', name: 'eBay API', description: 'PREMIUM - Images & Prices', color: 'bg-green-500', isPaid: true },
@@ -174,6 +252,106 @@ export const DataSyncManager = () => {
       </div>
 
       <Card><CardContent className="p-4"><div className="flex justify-between mb-2"><span className="text-sm font-medium">Coverage</span><span className="text-sm text-muted-foreground">{imageProgress.toFixed(1)}%</span></div><Progress value={imageProgress} className="h-3" /></CardContent></Card>
+
+      {/* 24/7 Live Price Scheduler */}
+      <Card className="bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border-emerald-500/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wifi className="w-5 h-5 text-emerald-500" />
+            24/7 Live Price Scheduler
+            {is24x7Enabled && (
+              <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
+                <Activity className="w-3 h-3 mr-1 animate-pulse" />
+                LIVE
+              </Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Continuous price fetching from PriceCharting, Cardmarket & eBay APIs
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-3 rounded-lg bg-muted/30">
+              <p className="text-xs text-muted-foreground">Status</p>
+              <p className="font-medium flex items-center gap-2">
+                {schedulerStatus.isRunning ? (
+                  <><RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />Running</>
+                ) : is24x7Enabled ? (
+                  <><Activity className="w-4 h-4 text-emerald-500" />Active</>
+                ) : (
+                  <><Clock className="w-4 h-4 text-muted-foreground" />Idle</>
+                )}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30">
+              <p className="text-xs text-muted-foreground">Last Run</p>
+              <p className="font-medium">
+                {schedulerStatus.lastRun ? schedulerStatus.lastRun.toLocaleTimeString() : 'Never'}
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30">
+              <p className="text-xs text-muted-foreground">Mode</p>
+              <p className="font-medium capitalize">{schedulerStatus.mode || 'auto'}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30">
+              <p className="text-xs text-muted-foreground">Last Updated</p>
+              <p className="font-medium text-emerald-500">{schedulerStatus.updated} items</p>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch 
+                checked={is24x7Enabled} 
+                onCheckedChange={toggle24x7Scheduler}
+              />
+              <Label>Enable 24/7 Mode</Label>
+            </div>
+            
+            <Select value={schedulerMode} onValueChange={setSchedulerMode}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Auto (Smart)</SelectItem>
+                <SelectItem value="high_priority">High Priority</SelectItem>
+                <SelectItem value="medium_priority">Medium Priority</SelectItem>
+                <SelectItem value="low_priority">Low Priority</SelectItem>
+                <SelectItem value="full_sync">Full Sync</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Button 
+              onClick={() => runSchedulerOnce(schedulerMode)} 
+              disabled={schedulerStatus.isRunning}
+              variant="outline"
+              className="gap-2"
+            >
+              {schedulerStatus.isRunning ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Play className="w-4 h-4" />
+              )}
+              Run Once
+            </Button>
+            
+            <Button 
+              onClick={() => runSchedulerOnce('full_sync')} 
+              disabled={schedulerStatus.isRunning}
+              className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+            >
+              <Zap className="w-4 h-4" />
+              Full Sync Now
+            </Button>
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            When enabled, prices are fetched every 5 minutes. High priority items (trending, popular) are synced more frequently.
+            APIs used: PriceCharting, Cardmarket RapidAPI, eBay RapidAPI.
+          </p>
+        </CardContent>
+      </Card>
 
       <Card className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-500/30">
         <CardHeader><CardTitle className="flex items-center gap-2"><Crown className="w-5 h-5 text-gold" />Premium API Maximizer</CardTitle></CardHeader>
