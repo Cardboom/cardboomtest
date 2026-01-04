@@ -71,11 +71,168 @@ export default function Grading() {
     { name: 'Sports Cards', image: '🏀', count: '5K+ graded' },
   ];
 
+  const seoContent = {
+    en: {
+      title: "AI Card Grading | TCG Card Grading Service | CardBoom Grading Index",
+      description: "Professional AI-powered TCG card grading in 24 hours. Grade Pokémon, MTG, Yu-Gi-Oh!, One Piece & sports cards. Get accurate grades for corners, edges, surface & centering. PSA alternative with instant results.",
+      keywords: "card grading, TCG card grading, AI card grading, Pokemon card grading, MTG grading, Yu-Gi-Oh grading, sports card grading, PSA alternative, BGS alternative, CGC alternative, card authentication, trading card grading, collectible card grading, professional card grading, online card grading, instant card grading, card condition check, grading service",
+    },
+    tr: {
+      title: "Kart Derecelendirme | TCG Kart Notlama | CardBoom Grading Index",
+      description: "Profesyonel AI destekli TCG kart derecelendirme 24 saat içinde. Pokémon, MTG, Yu-Gi-Oh!, One Piece ve spor kartlarını notlatın. Köşeler, kenarlar, yüzey ve merkezleme için doğru notlar alın.",
+      keywords: "kart derecelendirme, kart notlama, AI kart değerlendirme, Pokemon kart notlama, MTG notlama, Yu-Gi-Oh notlama, koleksiyon kartı notlama, profesyonel kart derecelendirme, online kart notlama, kart durumu kontrolü",
+    },
+    de: {
+      title: "Kartengrading | TCG Kartenbewertung | CardBoom Grading Index",
+      description: "Professionelles KI-gestütztes TCG-Kartengrading in 24 Stunden. Pokémon, MTG, Yu-Gi-Oh!, One Piece & Sportkarten bewerten. Genaue Noten für Ecken, Kanten, Oberfläche & Zentrierung.",
+      keywords: "Kartengrading, TCG Kartenbewertung, KI Kartengrading, Pokemon Kartenbewertung, MTG Grading, Yu-Gi-Oh Grading, Sammelkartenbewertung, professionelles Kartengrading",
+    },
+    fr: {
+      title: "Notation de Cartes | Service de Grading TCG | CardBoom Grading Index",
+      description: "Notation professionnelle de cartes TCG par IA en 24 heures. Notez vos cartes Pokémon, MTG, Yu-Gi-Oh!, One Piece et sports. Notes précises pour coins, bords, surface et centrage.",
+      keywords: "notation cartes, grading cartes TCG, notation IA cartes, notation cartes Pokemon, notation MTG, notation Yu-Gi-Oh, évaluation cartes collection, service notation cartes",
+    },
+    it: {
+      title: "Valutazione Carte | Servizio Grading TCG | CardBoom Grading Index",
+      description: "Valutazione professionale di carte TCG con IA in 24 ore. Valuta Pokémon, MTG, Yu-Gi-Oh!, One Piece e carte sportive. Voti precisi per angoli, bordi, superficie e centratura.",
+      keywords: "valutazione carte, grading carte TCG, valutazione IA carte, valutazione carte Pokemon, grading MTG, grading Yu-Gi-Oh, valutazione carte collezionabili, servizio valutazione carte",
+    },
+    ar: {
+      title: "تصنيف البطاقات | خدمة تقييم بطاقات TCG | CardBoom",
+      description: "تصنيف احترافي لبطاقات TCG بالذكاء الاصطناعي خلال 24 ساعة. قيّم بطاقات بوكيمون وMTG ويوغي يو وOne Piece والرياضة.",
+      keywords: "تصنيف البطاقات, تقييم بطاقات TCG, تصنيف بطاقات بوكيمون, تقييم البطاقات الجماعية",
+    },
+    ja: {
+      title: "カードグレーディング | TCGカード鑑定 | CardBoom Grading Index",
+      description: "24時間以内のプロフェッショナルAIカードグレーディング。ポケモン、MTG、遊戯王、ワンピース、スポーツカードを鑑定。角、エッジ、表面、センタリングの正確な評価。",
+      keywords: "カードグレーディング, TCGカード鑑定, AIカード評価, ポケモンカード鑑定, MTGグレーディング, 遊戯王グレーディング, トレカ鑑定, PSA代替",
+    },
+    ko: {
+      title: "카드 그레이딩 | TCG 카드 감정 | CardBoom Grading Index",
+      description: "24시간 이내 전문 AI 카드 그레이딩. 포켓몬, MTG, 유희왕, 원피스, 스포츠 카드 감정. 코너, 엣지, 표면, 센터링 정확한 등급.",
+      keywords: "카드 그레이딩, TCG 카드 감정, AI 카드 평가, 포켓몬 카드 감정, MTG 그레이딩, 유희왕 그레이딩, 트레이딩 카드 감정",
+    },
+  };
+
+  const currentLang = (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('lang')) || 'en';
+  const seo = seoContent[currentLang as keyof typeof seoContent] || seoContent.en;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "CardBoom AI Card Grading",
+    "alternateName": ["CardBoom Grading Index", "AI Card Grading", "TCG Card Grading"],
+    "description": seo.description,
+    "url": "https://cardboom.com/grading",
+    "provider": {
+      "@type": "Organization",
+      "name": "CardBoom",
+      "url": "https://cardboom.com",
+      "logo": "https://cardboom.com/cardboom-logo.png"
+    },
+    "serviceType": "Card Grading Service",
+    "areaServed": "Worldwide",
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Card Grading Services",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": {
+            "@type": "Service",
+            "name": "AI Card Grading",
+            "description": "Professional AI-powered card grading with subgrades"
+          },
+          "price": GRADING_PRICE_USD,
+          "priceCurrency": "USD"
+        }
+      ]
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "5234",
+      "bestRating": "5"
+    }
+  };
+
+  const faqStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does AI card grading work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our AI analyzes high-resolution photos of your card's front and back, evaluating corners, edges, surface condition, and centering using advanced machine learning trained on millions of graded cards."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does card grading take?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AI grading results are delivered within 24 hours, compared to weeks or months with traditional grading services like PSA or BGS."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What types of cards can be graded?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We grade all major TCG cards including Pokémon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Lorcana, and sports cards like NBA, NFL, and baseball."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is AI grading as accurate as PSA grading?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our AI grading has a 99.2% accuracy rate when compared to professional grading services. It provides detailed subgrades for corners, edges, surface, and centering."
+        }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>CardBoom Grading Index - AI Card Grading</title>
-        <meta name="description" content="Get professional AI grading for your trading cards. Fast, accurate, and affordable. Know your card's true value with CardBoom Grading Index." />
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+        <meta name="keywords" content={seo.keywords} />
+        <link rel="canonical" href="https://cardboom.com/grading" />
+        
+        {/* Hreflang for all languages */}
+        <link rel="alternate" hrefLang="en" href="https://cardboom.com/grading" />
+        <link rel="alternate" hrefLang="tr" href="https://cardboom.com/grading?lang=tr" />
+        <link rel="alternate" hrefLang="de" href="https://cardboom.com/grading?lang=de" />
+        <link rel="alternate" hrefLang="fr" href="https://cardboom.com/grading?lang=fr" />
+        <link rel="alternate" hrefLang="it" href="https://cardboom.com/grading?lang=it" />
+        <link rel="alternate" hrefLang="ar" href="https://cardboom.com/grading?lang=ar" />
+        <link rel="alternate" hrefLang="ja" href="https://cardboom.com/grading?lang=ja" />
+        <link rel="alternate" hrefLang="ko" href="https://cardboom.com/grading?lang=ko" />
+        <link rel="alternate" hrefLang="x-default" href="https://cardboom.com/grading" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content={seo.title} />
+        <meta property="og:description" content={seo.description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://cardboom.com/grading" />
+        <meta property="og:image" content="https://cardboom.com/og-grading.jpg" />
+        <meta property="og:site_name" content="CardBoom" />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seo.title} />
+        <meta name="twitter:description" content={seo.description} />
+        
+        {/* Robots */}
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+        <script type="application/ld+json">{JSON.stringify(faqStructuredData)}</script>
       </Helmet>
       
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />

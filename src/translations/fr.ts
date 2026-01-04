@@ -493,6 +493,9 @@ export const fr: Translations = {
     post: 'Publier',
   },
   grading: {
+    seoTitle: 'Notation de Cartes | Service de Grading TCG | CardBoom Grading Index',
+    seoDescription: 'Notation professionnelle de cartes TCG par IA en 24 heures. Notez vos cartes Pokémon, MTG, Yu-Gi-Oh!, One Piece et sports. Notes précises pour coins, bords, surface et centrage.',
+    seoKeywords: 'notation cartes, grading cartes TCG, notation IA cartes, notation cartes Pokemon, notation MTG, notation Yu-Gi-Oh, évaluation cartes collection, service notation cartes',
     pageTitle: 'Notation IA de Cartes',
     pageDescription: 'Obtenez une notation IA professionnelle pour vos cartes à collectionner.',
     badge: 'Notation alimentée par IA',

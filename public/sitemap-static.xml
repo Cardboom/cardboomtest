@@ -49,6 +49,23 @@
     <priority>0.8</priority>
   </url>
   
+  <!-- Grading - High Priority SEO Target -->
+  <url>
+    <loc>https://cardboom.com/grading</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cardboom.com/grading"/>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://cardboom.com/grading?lang=tr"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://cardboom.com/grading?lang=de"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://cardboom.com/grading?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://cardboom.com/grading?lang=it"/>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://cardboom.com/grading?lang=ar"/>
+    <xhtml:link rel="alternate" hreflang="ja" href="https://cardboom.com/grading?lang=ja"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://cardboom.com/grading?lang=ko"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cardboom.com/grading"/>
+  </url>
+  
   <!-- Fractional Market - Temporarily disabled -->
   
   <!-- Gaming -->
