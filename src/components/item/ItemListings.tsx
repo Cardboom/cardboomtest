@@ -22,8 +22,18 @@ interface Listing {
   allows_trade: boolean;
   allows_shipping: boolean;
   seller_name?: string;
+  seller_country_code?: string;
   is_verified?: boolean;
 }
+
+const getCountryFlag = (countryCode: string): string => {
+  if (!countryCode || countryCode.length !== 2) return '🌍';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
 
 export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -53,11 +63,11 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
       }
 
       if (data && data.length > 0) {
-        // Fetch seller profiles from public view (excludes PII)
+        // Fetch seller profiles from public view (excludes PII) including location
         const sellerIds = [...new Set(data.map(l => l.seller_id))];
         const { data: profiles } = await supabase
           .from('public_profiles')
-          .select('id, display_name, is_id_verified')
+          .select('id, display_name, is_id_verified, country_code')
           .in('id', sellerIds);
 
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
@@ -65,6 +75,7 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
         const listingsWithSellers = data.map(listing => ({
           ...listing,
           seller_name: profileMap.get(listing.seller_id)?.display_name || 'Anonymous',
+          seller_country_code: profileMap.get(listing.seller_id)?.country_code || 'TR',
           is_verified: profileMap.get(listing.seller_id)?.is_id_verified || false
         }));
 
@@ -158,6 +169,9 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
+                      <span className="text-lg leading-none" title={listing.seller_country_code}>
+                        {getCountryFlag(listing.seller_country_code || 'TR')}
+                      </span>
                       <span className="text-muted-foreground text-sm">{listing.seller_name}</span>
                       {listing.is_verified && (
                         <span className="flex items-center gap-1 text-xs text-primary">

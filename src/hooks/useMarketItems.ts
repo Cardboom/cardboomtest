@@ -308,12 +308,31 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
       const { data, error } = await query;
       if (error) throw error;
       
+      // Fetch seller profiles to get actual location data
+      const sellerIds = [...new Set((data || []).map((l: any) => l.seller_id))];
+      let profileMap = new Map<string, { display_name: string; country_code: string }>();
+      
+      if (sellerIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('public_profiles')
+          .select('id, display_name, country_code')
+          .in('id', sellerIds);
+        
+        profileMap = new Map(profiles?.map(p => [p.id, { 
+          display_name: p.display_name || 'Seller', 
+          country_code: p.country_code || 'TR' 
+        }]) || []);
+      }
+      
       // Transform to include seller info at top level
-      const listingsWithSeller = (data || []).map((listing: any) => ({
-        ...listing,
-        seller_username: 'Seller',
-        seller_country_code: 'TR',
-      }));
+      const listingsWithSeller = (data || []).map((listing: any) => {
+        const profile = profileMap.get(listing.seller_id);
+        return {
+          ...listing,
+          seller_username: profile?.display_name || 'Seller',
+          seller_country_code: profile?.country_code || 'TR',
+        };
+      });
       
       setListings(listingsWithSeller);
       setLastUpdated(new Date());

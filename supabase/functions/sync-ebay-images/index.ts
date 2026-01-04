@@ -369,14 +369,17 @@ Deno.serve(async (req) => {
               updates.ebay_last_sync = new Date().toISOString();
               results.pricesUpdated++;
 
-              // Record in price history
+              // Record in price history with detailed metadata
               await supabase.from('price_history').insert({
-                product_id: item.id,
+                product_id: item.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 100) || item.id,
                 market_item_id: item.id,
                 price: robustPrice,
                 source: 'ebay',
                 sample_size: sampleSize,
+                recorded_at: new Date().toISOString(),
               });
+              
+              console.log(`[sync-ebay] Recorded price history for ${item.name}: $${robustPrice} (${sampleSize} samples, ${confidence} confidence)`);
             }
           }
         }
