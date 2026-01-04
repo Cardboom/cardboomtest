@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Eye, Clock, Droplets, Heart, Star, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Eye, Heart, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketFilters, SortOption } from '@/pages/Explorer';
 import { cn } from '@/lib/utils';
@@ -170,14 +170,6 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
     return formatCurrency(price);
   };
 
-  const getLiquidityColor = (liquidity: string) => {
-    switch (liquidity) {
-      case 'high': return 'text-gain bg-gain/10';
-      case 'medium': return 'text-accent bg-accent/10';
-      case 'low': return 'text-loss bg-loss/10';
-      default: return 'text-muted-foreground bg-secondary';
-    }
-  };
 
 
   if (isLoading && page === 0) {
@@ -198,14 +190,12 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
 
       <div className="glass rounded-xl overflow-hidden">
       {/* Table Header */}
-      <div className="hidden lg:grid grid-cols-12 gap-4 p-3 bg-secondary/50 text-muted-foreground text-sm font-medium border-b border-border/50">
+      <div className="hidden lg:grid grid-cols-11 gap-4 p-3 bg-secondary/50 text-muted-foreground text-sm font-medium border-b border-border/50">
         <div className="col-span-1">#</div>
         <div className="col-span-4">Name / Set</div>
         <div className="col-span-1 text-right">Price</div>
-        <div className="col-span-1 text-right">24h</div>
         <div className="col-span-1 text-right">7d</div>
         <div className="col-span-1 text-right">30d</div>
-        <div className="col-span-1 text-center">Liquidity</div>
         <div className="col-span-1 text-center">Views</div>
         <div className="col-span-1"></div>
       </div>
@@ -221,7 +211,7 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
             <div
               key={item.id}
               onClick={() => navigate(`/item/${item.id}`)}
-              className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-secondary/30 cursor-pointer transition-colors"
+              className="grid grid-cols-11 gap-4 p-3 items-center hover:bg-secondary/30 cursor-pointer transition-colors"
             >
               {/* Rank */}
               <div className="col-span-1 text-muted-foreground text-sm font-medium">
@@ -255,23 +245,15 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
                 <p className="text-muted-foreground text-xs">Last: {formatPrice(item.last_sale_price)}</p>
               </div>
 
-              {/* 24h Change */}
-              <div className="hidden lg:block col-span-1 text-right">
-                <span className={cn(
-                  "inline-flex items-center gap-1 px-2 py-1 rounded text-sm font-medium",
-                  (item.change_24h ?? 0) >= 0 ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss"
-                )}>
-                  {(item.change_24h ?? 0) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {(item.change_24h ?? 0) >= 0 ? '+' : ''}{(item.change_24h ?? 0).toFixed(1)}%
-                </span>
-              </div>
+              {/* 24h Change - removed, now showing 7d as primary */}
 
               {/* 7d Change */}
               <div className="hidden lg:block col-span-1 text-right">
                 <span className={cn(
-                  "text-sm font-medium",
-                  (item.change_7d ?? 0) >= 0 ? "text-gain" : "text-loss"
+                  "inline-flex items-center gap-1 px-2 py-1 rounded text-sm font-medium",
+                  (item.change_7d ?? 0) >= 0 ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss"
                 )}>
+                  {(item.change_7d ?? 0) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   {(item.change_7d ?? 0) >= 0 ? '+' : ''}{(item.change_7d ?? 0).toFixed(1)}%
                 </span>
               </div>
@@ -286,12 +268,7 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
                 </span>
               </div>
 
-              {/* Liquidity */}
-              <div className="hidden lg:flex col-span-1 justify-center">
-                <span className={cn("px-2 py-1 rounded text-xs font-medium capitalize", getLiquidityColor(item.liquidity))}>
-                  {item.liquidity}
-                </span>
-              </div>
+              {/* Liquidity - removed */}
 
               {/* Views */}
               <div className="hidden lg:block col-span-1 text-center">
@@ -329,10 +306,10 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
                 </div>
                 <span className={cn(
                   "inline-flex items-center gap-1 px-2 py-1 rounded text-sm font-medium",
-                  (item.change_24h ?? 0) >= 0 ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss"
+                  (item.change_7d ?? 0) >= 0 ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss"
                 )}>
-                  {(item.change_24h ?? 0) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {(item.change_24h ?? 0) >= 0 ? '+' : ''}{(item.change_24h ?? 0).toFixed(1)}%
+                  {(item.change_7d ?? 0) >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {(item.change_7d ?? 0) >= 0 ? '+' : ''}{(item.change_7d ?? 0).toFixed(1)}%
                 </span>
               </div>
             </div>

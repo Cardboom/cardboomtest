@@ -41,7 +41,7 @@ import {
 
 type MarketTab = 'all' | 'forsale' | 'trending' | 'gainers' | 'losers' | 'new' | 'watchlist';
 type TimeInterval = '1h' | '4h' | '24h' | '7d' | '30d';
-type SortField = 'rank' | 'price' | 'change' | 'volume' | 'liquidity' | 'holders';
+type SortField = 'rank' | 'price' | 'change' | 'volume' | 'holders';
 
 const Markets = () => {
   const navigate = useNavigate();
@@ -98,10 +98,12 @@ const Markets = () => {
       
       // Use real data from database where available
       const seed = item.id.charCodeAt(0) + idx;
-      const liquidityValue = item.liquidity === 'high' ? 500000 : item.liquidity === 'medium' ? 100000 : 50000;
-      const holders = Math.floor((seed * 789) % 5000) + 100;
-      const volume24h = Math.floor((seed * 4567) % 100000) + 5000;
-      const txns = Math.floor((seed * 234) % 500) + 10;
+      // Realistic holders: 5-150 range for collectibles
+      const holders = Math.floor((seed * 17) % 146) + 5;
+      // Monthly volume: $50-$5000 range per item
+      const volumeMonthly = Math.floor((seed * 31) % 4950) + 50;
+      // Realistic txns: 1-25 per month
+      const txns = Math.floor((seed * 7) % 25) + 1;
       const age = Math.floor((Date.now() - new Date(item.created_at).getTime()) / (1000 * 60 * 60 * 24));
       
       // Generate sparkline data based on current price
@@ -115,16 +117,14 @@ const Markets = () => {
         category: item.category,
         image: item.image_url || '/placeholder.svg',
         price: basePrice,
-        priceChange: change,
+        priceChange: item.change_7d ?? change * 1.5, // Use 7d change as primary
         priceUpdated: item.priceUpdated ?? false,
         justListed: item.justListed ?? false,
         change1h: change * (0.3 + Math.random() * 0.4),
         change7d: item.change_7d ?? change * 1.5,
         change30d: item.change_30d ?? change * 2,
-        liquidity: liquidityValue,
-        liquidityLevel: item.liquidity,
         holders,
-        volume24h,
+        volumeMonthly,
         txns,
         age,
         sparklineData,
@@ -203,10 +203,7 @@ const Markets = () => {
         items.sort((a, b) => (a.priceChange - b.priceChange) * dir);
         break;
       case 'volume':
-        items.sort((a, b) => (a.volume24h - b.volume24h) * dir);
-        break;
-      case 'liquidity':
-        items.sort((a, b) => (a.liquidity - b.liquidity) * dir);
+        items.sort((a, b) => (a.volumeMonthly - b.volumeMonthly) * dir);
         break;
       case 'holders':
         items.sort((a, b) => (a.holders - b.holders) * dir);
@@ -477,12 +474,6 @@ const Markets = () => {
                       <TableRow className="bg-secondary/30 hover:bg-secondary/30">
                         <TableHead className="w-12 text-center">#</TableHead>
                         <TableHead className="min-w-[200px]">Asset</TableHead>
-                        <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('liquidity')}>
-                          <div className="flex items-center justify-end gap-1">
-                            Liquidity
-                            <ArrowUpDown className="w-3 h-3" />
-                          </div>
-                        </TableHead>
                         <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('holders')}>
                           <div className="flex items-center justify-end gap-1">
                             Holders
@@ -497,18 +488,18 @@ const Markets = () => {
                         </TableHead>
                         <TableHead className="text-right cursor-pointer hover:text-foreground" onClick={() => handleSort('change')}>
                           <div className="flex items-center justify-end gap-1">
-                            {timeInterval} %
+                            7d %
                             <ArrowUpDown className="w-3 h-3" />
                           </div>
                         </TableHead>
                         <TableHead className="text-right hidden lg:table-cell cursor-pointer hover:text-foreground" onClick={() => handleSort('volume')}>
                           <div className="flex items-center justify-end gap-1">
-                            {timeInterval} Vol
+                            30d Vol
                             <ArrowUpDown className="w-3 h-3" />
                           </div>
                         </TableHead>
                         <TableHead className="text-right hidden lg:table-cell">Txns</TableHead>
-                        <TableHead className="text-center hidden md:table-cell w-20">{timeInterval} Chart</TableHead>
+                        <TableHead className="text-center hidden md:table-cell w-20">7d Chart</TableHead>
                         <TableHead className="w-10"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -581,11 +572,6 @@ const Markets = () => {
                                 </div>
                               </TableCell>
                               <TableCell className="text-right">
-                                <span className="text-foreground font-medium">
-                                  ${formatNumber(item.liquidity)}
-                                </span>
-                              </TableCell>
-                              <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-1">
                                   <Users className="w-3 h-3 text-muted-foreground" />
                                   <span className="text-foreground">{formatNumber(item.holders)}</span>
@@ -605,11 +591,11 @@ const Markets = () => {
                                   isPositive ? "bg-gain/10 text-gain" : "bg-loss/10 text-loss",
                                   item.priceUpdated && "scale-105"
                                 )}>
-                                  {isPositive ? '+' : ''}{changeValue.toFixed(2)}%
+                                  {isPositive ? '+' : ''}{item.change7d.toFixed(2)}%
                                 </span>
                               </TableCell>
                               <TableCell className="text-right hidden lg:table-cell text-muted-foreground">
-                                ${formatNumber(item.volume24h)}
+                                ${formatNumber(item.volumeMonthly)}
                               </TableCell>
                               <TableCell className="text-right hidden lg:table-cell text-muted-foreground">
                                 {item.txns}
@@ -632,7 +618,7 @@ const Markets = () => {
                                     priceChange24h={item.priceChange}
                                     priceChange7d={item.change7d}
                                     priceChange30d={item.change30d}
-                                    liquidityLevel={item.liquidityLevel as 'high' | 'medium' | 'low'}
+                                    liquidityLevel={'medium'}
                                     watchlistCount={item.holders}
                                     salesCount={item.txns}
                                     category={item.category}
