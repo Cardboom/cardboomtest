@@ -107,6 +107,68 @@ export type Database = {
           },
         ]
       }
+      admin_balance_adjustments: {
+        Row: {
+          admin_id: string
+          amount: number
+          created_at: string
+          id: string
+          new_balance: number
+          previous_balance: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          admin_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          new_balance: number
+          previous_balance: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          new_balance?: number
+          previous_balance?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_balance_adjustments_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_balance_adjustments_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_balance_adjustments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_balance_adjustments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_notifications: {
         Row: {
           body: string
@@ -4803,6 +4865,7 @@ export type Database = {
           first_deposit_completed: boolean | null
           first_vault_card_sent: boolean | null
           first_vault_card_sent_at: string | null
+          full_name: string | null
           guru_expertise: string[] | null
           id: string
           id_document_url: string | null
@@ -4812,7 +4875,11 @@ export type Database = {
           is_fan_account: boolean | null
           is_id_verified: boolean | null
           last_auto_action_at: string | null
+          last_ip_address: string | null
+          last_location: string | null
+          last_login_at: string | null
           level: number | null
+          location: string | null
           national_id: string | null
           paused_at: string | null
           paused_until: string | null
@@ -4862,6 +4929,7 @@ export type Database = {
           first_deposit_completed?: boolean | null
           first_vault_card_sent?: boolean | null
           first_vault_card_sent_at?: string | null
+          full_name?: string | null
           guru_expertise?: string[] | null
           id: string
           id_document_url?: string | null
@@ -4871,7 +4939,11 @@ export type Database = {
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
           last_auto_action_at?: string | null
+          last_ip_address?: string | null
+          last_location?: string | null
+          last_login_at?: string | null
           level?: number | null
+          location?: string | null
           national_id?: string | null
           paused_at?: string | null
           paused_until?: string | null
@@ -4921,6 +4993,7 @@ export type Database = {
           first_deposit_completed?: boolean | null
           first_vault_card_sent?: boolean | null
           first_vault_card_sent_at?: string | null
+          full_name?: string | null
           guru_expertise?: string[] | null
           id?: string
           id_document_url?: string | null
@@ -4930,7 +5003,11 @@ export type Database = {
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
           last_auto_action_at?: string | null
+          last_ip_address?: string | null
+          last_location?: string | null
+          last_login_at?: string | null
           level?: number | null
+          location?: string | null
           national_id?: string | null
           paused_at?: string | null
           paused_until?: string | null
@@ -6403,6 +6480,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_login_history: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          location: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          location?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_login_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_login_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_market_signals: {
         Row: {
           created_at: string
@@ -7451,6 +7576,8 @@ export type Database = {
         | "fee"
         | "subscription"
         | "withdrawal"
+        | "admin_credit"
+        | "admin_debit"
       verification_status: "pending" | "approved" | "rejected"
       waitlist_interest: "buyer" | "seller" | "both"
       wire_transfer_status: "pending" | "matched" | "confirmed" | "rejected"
@@ -7711,6 +7838,8 @@ export const Constants = {
         "fee",
         "subscription",
         "withdrawal",
+        "admin_credit",
+        "admin_debit",
       ],
       verification_status: ["pending", "approved", "rejected"],
       waitlist_interest: ["buyer", "seller", "both"],

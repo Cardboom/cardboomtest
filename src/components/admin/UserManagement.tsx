@@ -24,7 +24,13 @@ import {
   AlertTriangle,
   Crown,
   Gift,
-  Calendar
+  Calendar,
+  MapPin,
+  Globe,
+  CreditCard,
+  Plus,
+  Minus,
+  IdCard
 } from 'lucide-react';
 import {
   Select,
@@ -63,6 +69,23 @@ interface UserProfile {
   banned_reason: string | null;
   paused_at: string | null;
   paused_until: string | null;
+  full_name: string | null;
+  national_id: string | null;
+  location: string | null;
+  last_ip_address: string | null;
+  last_location: string | null;
+  last_login_at: string | null;
+  country_code: string | null;
+}
+
+interface LoginHistory {
+  id: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  location: string | null;
+  city: string | null;
+  country: string | null;
+  created_at: string;
 }
 
 interface WalletData {
@@ -116,6 +139,7 @@ export const UserManagement = () => {
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [userComments, setUserComments] = useState<Comment[]>([]);
   const [userTransfers, setUserTransfers] = useState<WireTransfer[]>([]);
+  const [userLoginHistory, setUserLoginHistory] = useState<LoginHistory[]>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
   
   // Ban/Pause dialogs
@@ -130,6 +154,12 @@ export const UserManagement = () => {
   const [proDialogOpen, setProDialogOpen] = useState(false);
   const [proDuration, setProDuration] = useState('30');
   const [selectedUserSubscription, setSelectedUserSubscription] = useState<UserSubscription | null>(null);
+
+  // Balance adjustment
+  const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
+  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceType, setBalanceType] = useState<'add' | 'remove'>('add');
+  const [balanceReason, setBalanceReason] = useState('');
 
   const fetchUsers = async () => {
     setIsLoading(true);
@@ -211,6 +241,15 @@ export const UserManagement = () => {
         .order('created_at', { ascending: false })
         .limit(20);
       setUserTransfers(transfersData || []);
+
+      // Fetch login history
+      const { data: loginData } = await supabase
+        .from('user_login_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      setUserLoginHistory(loginData || []);
     } catch (error) {
       console.error('Error fetching user details:', error);
     } finally {
@@ -456,6 +495,104 @@ export const UserManagement = () => {
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast.error('Failed to delete comment');
+    }
+  };
+
+  const handleAdjustBalance = async () => {
+    if (!selectedUser || !balanceAmount || !balanceReason) {
+      toast.error('Please enter amount and reason');
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      const wallet = wallets[selectedUser.id];
+      if (!wallet) {
+        toast.error('User has no wallet');
+        return;
+      }
+
+      const amount = parseFloat(balanceAmount);
+      if (isNaN(amount) || amount <= 0) {
+        toast.error('Invalid amount');
+        return;
+      }
+
+      const adjustmentAmount = balanceType === 'add' ? amount : -amount;
+      const newBalance = wallet.balance + adjustmentAmount;
+
+      if (newBalance < 0) {
+        toast.error('Insufficient balance to remove');
+        return;
+      }
+
+      // Update wallet balance
+      const { error: walletError } = await supabase
+        .from('wallets')
+        .update({ balance: newBalance, updated_at: new Date().toISOString() })
+        .eq('id', wallet.id);
+
+      if (walletError) throw walletError;
+
+      // Log the adjustment
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
+      if (adminUser) {
+        await supabase
+          .from('admin_balance_adjustments')
+          .insert({
+            admin_id: adminUser.id,
+            user_id: selectedUser.id,
+            amount: adjustmentAmount,
+            previous_balance: wallet.balance,
+            new_balance: newBalance,
+            reason: balanceReason,
+          });
+
+        // Log in audit
+        await supabase
+          .from('admin_audit_log')
+          .insert({
+            admin_id: adminUser.id,
+            action: 'balance_adjustment',
+            target_type: 'user',
+            target_id: selectedUser.id,
+            details: {
+              amount: adjustmentAmount,
+              previous_balance: wallet.balance,
+              new_balance: newBalance,
+              reason: balanceReason,
+            },
+          });
+      }
+
+      // Create transaction record
+      await supabase
+        .from('transactions')
+        .insert({
+          wallet_id: wallet.id,
+          type: (balanceType === 'add' ? 'topup' : 'withdrawal') as 'topup' | 'withdrawal',
+          amount: adjustmentAmount,
+          description: `Admin adjustment: ${balanceReason}`,
+        });
+
+      toast.success(`Balance ${balanceType === 'add' ? 'added' : 'removed'}: ₺${amount.toLocaleString()}`);
+      setBalanceDialogOpen(false);
+      setBalanceAmount('');
+      setBalanceReason('');
+
+      // Update local state
+      setWallets(prev => ({
+        ...prev,
+        [selectedUser.id]: { ...prev[selectedUser.id], balance: newBalance }
+      }));
+      
+      // Refresh transactions
+      await fetchUserDetails(selectedUser);
+    } catch (error) {
+      console.error('Error adjusting balance:', error);
+      toast.error('Failed to adjust balance');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -730,11 +867,60 @@ export const UserManagement = () => {
 
           {selectedUser && (
             <div className="flex-1 overflow-hidden">
-              {/* User Info Cards */}
+              {/* Extended User Info - Full Details Section */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><User className="w-3 h-3" /> Full Name</p>
+                  <p className="font-medium">{selectedUser.full_name || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><IdCard className="w-3 h-3" /> National ID</p>
+                  <p className="font-medium font-mono">{selectedUser.national_id || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin className="w-3 h-3" /> Location</p>
+                  <p className="font-medium">{selectedUser.location || selectedUser.last_location || 'Unknown'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><Globe className="w-3 h-3" /> Country</p>
+                  <p className="font-medium">{selectedUser.country_code || 'Unknown'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><Globe className="w-3 h-3" /> Last IP</p>
+                  <p className="font-medium font-mono text-sm">{selectedUser.last_ip_address || 'Unknown'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="w-3 h-3" /> Email</p>
+                  <p className="font-medium text-sm truncate">{selectedUser.email || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><Phone className="w-3 h-3" /> Phone</p>
+                  <p className="font-medium">{selectedUser.phone || 'Not provided'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="w-3 h-3" /> Last Login</p>
+                  <p className="font-medium text-sm">
+                    {selectedUser.last_login_at 
+                      ? format(new Date(selectedUser.last_login_at), 'dd MMM yyyy HH:mm') 
+                      : 'Never'}
+                  </p>
+                </div>
+              </div>
+
+              {/* User Stats Cards */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Balance</p>
                   <p className="text-lg font-bold">₺{(wallets[selectedUser.id]?.balance || 0).toLocaleString()}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBalanceDialogOpen(true)}
+                    className="text-xs mt-1 h-6 px-2 text-primary"
+                  >
+                    <CreditCard className="w-3 h-3 mr-1" />
+                    Adjust
+                  </Button>
                 </div>
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Status</p>
@@ -876,6 +1062,10 @@ export const UserManagement = () => {
                     <MessageSquare className="w-4 h-4" />
                     Comments
                   </TabsTrigger>
+                  <TabsTrigger value="logins" className="gap-1">
+                    <Globe className="w-4 h-4" />
+                    Login History
+                  </TabsTrigger>
                 </TabsList>
 
                 <ScrollArea className="h-[200px]">
@@ -960,6 +1150,39 @@ export const UserManagement = () => {
                             >
                               <XCircle className="w-4 h-4" />
                             </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="logins" className="mt-0">
+                    {loadingDetails ? (
+                      <div className="flex items-center justify-center py-8">
+                        <RefreshCw className="w-6 h-6 animate-spin text-primary" />
+                      </div>
+                    ) : userLoginHistory.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">No login history</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {userLoginHistory.map(login => (
+                          <div key={login.id} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                            <div>
+                              <p className="text-sm font-mono">{login.ip_address || 'Unknown IP'}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {login.city && login.country 
+                                  ? `${login.city}, ${login.country}` 
+                                  : login.location || 'Unknown location'}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground truncate max-w-[150px]" title={login.user_agent || ''}>
+                                {login.user_agent?.substring(0, 30) || 'Unknown device'}...
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {format(new Date(login.created_at), 'dd MMM HH:mm')}
+                              </p>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -1119,6 +1342,101 @@ export const UserManagement = () => {
             >
               {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Crown className="w-4 h-4 mr-2" />}
               Grant Pro
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Balance Adjustment Dialog */}
+      <Dialog open={balanceDialogOpen} onOpenChange={setBalanceDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-primary">
+              <CreditCard className="w-5 h-5" />
+              Adjust Balance
+            </DialogTitle>
+            <DialogDescription>
+              Add or remove balance from {selectedUser?.display_name}'s wallet.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">Current Balance</p>
+              <p className="text-2xl font-bold">₺{(wallets[selectedUser?.id || '']?.balance || 0).toLocaleString()}</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Adjustment Type</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={balanceType === 'add' ? 'default' : 'outline'}
+                  onClick={() => setBalanceType('add')}
+                  className="flex-1 gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Balance
+                </Button>
+                <Button
+                  type="button"
+                  variant={balanceType === 'remove' ? 'destructive' : 'outline'}
+                  onClick={() => setBalanceType('remove')}
+                  className="flex-1 gap-2"
+                >
+                  <Minus className="w-4 h-4" />
+                  Remove Balance
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="balance-amount">Amount (₺)</Label>
+              <Input
+                id="balance-amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Enter amount..."
+                value={balanceAmount}
+                onChange={(e) => setBalanceAmount(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="balance-reason">Reason (required)</Label>
+              <Textarea
+                id="balance-reason"
+                placeholder="Enter reason for this adjustment..."
+                value={balanceReason}
+                onChange={(e) => setBalanceReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            {balanceAmount && !isNaN(parseFloat(balanceAmount)) && (
+              <div className={`p-3 rounded-lg border ${balanceType === 'add' ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                <p className="text-sm">
+                  New balance will be:{' '}
+                  <span className="font-bold">
+                    ₺{((wallets[selectedUser?.id || '']?.balance || 0) + (balanceType === 'add' ? parseFloat(balanceAmount) : -parseFloat(balanceAmount))).toLocaleString()}
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBalanceDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAdjustBalance}
+              disabled={isProcessing || !balanceAmount || !balanceReason}
+              className={balanceType === 'add' ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-red-500 hover:bg-red-600'}
+            >
+              {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+              {balanceType === 'add' ? 'Add' : 'Remove'} ₺{balanceAmount || '0'}
             </Button>
           </DialogFooter>
         </DialogContent>
