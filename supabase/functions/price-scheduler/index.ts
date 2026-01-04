@@ -19,7 +19,7 @@ const corsHeaders = {
  */
 
 interface SchedulerConfig {
-  mode: 'high_priority' | 'medium_priority' | 'low_priority' | 'full_sync' | 'auto'
+  mode: 'high_priority' | 'medium_priority' | 'low_priority' | 'full_sync' | 'auto' | 'max_throughput'
   batchSize?: number
   delayMs?: number
 }
@@ -44,27 +44,17 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey)
     
-    const { mode = 'auto', batchSize = 50, delayMs = 150 }: SchedulerConfig = await req.json().catch(() => ({}))
+    // MAX THROUGHPUT: 200 items per batch, 50ms delay (aggressive but API-safe)
+    const { mode = 'max_throughput', batchSize = 200, delayMs = 50 }: SchedulerConfig = await req.json().catch(() => ({}))
     
-    // Auto-detect mode based on current time
+    // MAX THROUGHPUT MODE: Always sync as many items as possible
     let effectiveMode = mode
-    if (mode === 'auto') {
-      const now = new Date()
-      const minute = now.getMinutes()
-      const hour = now.getHours()
-      
-      if (hour === 3 && minute < 15) {
-        effectiveMode = 'full_sync' // Full sync at 3 AM
-      } else if (minute % 5 === 0) {
-        effectiveMode = 'high_priority'
-      } else if (minute % 15 === 0) {
-        effectiveMode = 'medium_priority'
-      } else {
-        effectiveMode = 'low_priority'
-      }
+    if (mode === 'auto' || mode === 'max_throughput') {
+      // Always run at max throughput - sync ALL items continuously
+      effectiveMode = 'max_throughput'
     }
     
-    console.log(`[price-scheduler] Mode: ${effectiveMode}, Batch: ${batchSize}`)
+    console.log(`[price-scheduler] 🚀 MAX THROUGHPUT Mode: ${effectiveMode}, Batch: ${batchSize}, Delay: ${delayMs}ms`)
     
     const results = {
       mode: effectiveMode,
@@ -79,11 +69,20 @@ Deno.serve(async (req) => {
       errors: [] as string[],
     }
     
-    // Get items to sync based on mode
+    // Get items to sync - MAX THROUGHPUT: get ALL items, prioritize stale ones
     let items: any[] = []
     
-    if (effectiveMode === 'high_priority') {
-      // Top viewed, trending, recently active
+    if (effectiveMode === 'max_throughput') {
+      // Get oldest updated items first - continuous rotation through entire catalog
+      const { data } = await supabase
+        .from('market_items')
+        .select('id, name, category, external_id, cardmarket_id, current_price, data_source, updated_at')
+        .gt('current_price', 0)
+        .order('updated_at', { ascending: true, nullsFirst: true })
+        .limit(batchSize)
+      items = data || []
+      
+    } else if (effectiveMode === 'high_priority') {
       const { data } = await supabase
         .from('market_items')
         .select('id, name, category, external_id, cardmarket_id, current_price, data_source')
@@ -93,7 +92,6 @@ Deno.serve(async (req) => {
       items = data || []
       
     } else if (effectiveMode === 'medium_priority') {
-      // Items with active listings or bids
       const { data: listingItems } = await supabase
         .from('listings')
         .select('market_item_id')
@@ -112,7 +110,6 @@ Deno.serve(async (req) => {
       }
       
     } else if (effectiveMode === 'low_priority') {
-      // Items not updated in last 6 hours
       const sixHoursAgo = new Date()
       sixHoursAgo.setHours(sixHoursAgo.getHours() - 6)
       
@@ -125,12 +122,11 @@ Deno.serve(async (req) => {
       items = data || []
       
     } else if (effectiveMode === 'full_sync') {
-      // All items, paginated
       const { data } = await supabase
         .from('market_items')
         .select('id, name, category, external_id, cardmarket_id, current_price, data_source')
         .order('category')
-        .limit(batchSize * 2) // Larger batch for full sync
+        .limit(batchSize * 2)
       items = data || []
     }
     
