@@ -248,19 +248,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                           </Link>
                         </NavigationMenuLink>
                       </li>
-                      <li>
-                        <NavigationMenuLink asChild>
-                          <Link to="/fractional" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
-                            <div className="w-8 h-8 rounded-md bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                              <PieChart className="w-3.5 h-3.5 text-accent" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-xs">{t.nav.fractional}</div>
-                              <div className="text-[10px] text-muted-foreground">{t.nav.fractionalDesc}</div>
-                            </div>
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
+                      {/* Fractional feature temporarily disabled */}
                     </ul>
                   </NavigationMenuContent>
                 </NavigationMenuItem>
@@ -588,10 +576,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <ArrowLeftRight className="w-5 h-5 text-purple-500" />
                   <span>{t.nav.tradesOffers}</span>
                 </Link>
-                <Link to="/fractional" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  <PieChart className="w-5 h-5 text-cyan-500" />
-                  <span>{t.nav.fractional}</span>
-                </Link>
+                {/* Fractional feature temporarily disabled */}
                 
                 {/* Services */}
                 <div className="py-2 px-3 mt-2">

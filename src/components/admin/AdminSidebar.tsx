@@ -94,7 +94,7 @@ const navGroups: NavGroup[] = [
       { id: "featured", label: "Featured", icon: Star },
       { id: "prices", label: "Prices", icon: Tag },
       { id: "controls", label: "Market Controls", icon: Settings },
-      { id: "fractional", label: "Fractional", icon: BarChart3 },
+      // { id: "fractional", label: "Fractional", icon: BarChart3 }, // Temporarily disabled
     ],
   },
   {

@@ -342,12 +342,7 @@ const Index = () => {
                   </h2>
                   <p className="text-muted-foreground text-sm sm:text-base mt-1">{t.smartHub.subtitle}</p>
                 </div>
-                <Link to="/fractional">
-                  <Button variant="outline" className="gap-2 text-sm h-9 sm:h-10">
-                    <PieChart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    {t.smartHub.fractionalMarket}
-                  </Button>
-                </Link>
+                {/* Fractional market button temporarily disabled */}
               </div>
 
               <Tabs defaultValue="popular" className="space-y-4 sm:space-y-6">

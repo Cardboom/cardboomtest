@@ -329,18 +329,7 @@ const Portfolio = () => {
               {pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(1)}%
             </p>
           </div>
-          <Link to="/fractional" className="glass rounded-xl p-4 hover:border-primary/50 transition-colors border border-transparent">
-            <p className="text-muted-foreground text-sm mb-1 flex items-center gap-1">
-              <PieChart className="w-3 h-3" />
-              Fractional
-            </p>
-            <p className="font-display text-2xl font-bold text-primary">{formatPrice(fractionalCurrentValue)}</p>
-            {fractionalPnL !== 0 && (
-              <p className={cn("text-xs", fractionalPnL >= 0 ? "text-gain" : "text-loss")}>
-                {fractionalPnL >= 0 ? '+' : ''}{formatPrice(fractionalPnL)}
-              </p>
-            )}
-          </Link>
+          {/* Fractional section temporarily disabled */}
         </div>
 
         {/* Search */}
