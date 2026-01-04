@@ -45,12 +45,23 @@ export const CardScanner = ({ onSelectPrice, onCardScanned }: CardScannerProps) 
 
     try {
       // Search in market_items table for matching cards
+      // Use broader search - split keywords for better matching
+      const searchTerms = cardName.trim().toLowerCase().split(/\s+/);
+      
       let query = supabase
         .from('market_items')
         .select('*')
-        .ilike('name', `%${cardName.trim()}%`)
-        .gt('current_price', 0)
-        .limit(10);
+        .limit(20);
+
+      // Use OR-style matching - match if any term is found
+      if (searchTerms.length === 1) {
+        query = query.ilike('name', `%${searchTerms[0]}%`);
+      } else {
+        // For multi-word searches, require all terms
+        searchTerms.forEach(term => {
+          query = query.ilike('name', `%${term}%`);
+        });
+      }
 
       if (setName.trim()) {
         query = query.ilike('set_name', `%${setName.trim()}%`);
