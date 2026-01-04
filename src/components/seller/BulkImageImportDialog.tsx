@@ -5,16 +5,17 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Camera, Upload, Loader2, CheckCircle2, XCircle, AlertCircle, Sparkles, Trash2, Edit2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Camera, Upload, Loader2, CheckCircle2, XCircle, Sparkles, Trash2, Edit2, Layers } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface DetectedCard {
   id: string;
-  file: File;
+  file?: File;
   previewUrl: string;
   status: 'pending' | 'analyzing' | 'detected' | 'error' | 'imported';
   title: string;
@@ -25,6 +26,15 @@ interface DetectedCard {
   error?: string;
   matchedItemId?: string;
   uploadedImageUrl?: string;
+  sourceImageId?: string; // Links to parent batch image
+}
+
+interface BatchImage {
+  id: string;
+  file: File;
+  previewUrl: string;
+  status: 'pending' | 'analyzing' | 'done' | 'error';
+  detectedCount: number;
 }
 
 interface BulkImageImportDialogProps {
@@ -47,52 +57,79 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
   const { formatPrice } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [cards, setCards] = useState<DetectedCard[]>([]);
+  const [batchImages, setBatchImages] = useState<BatchImage[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
+  const [batchMode, setBatchMode] = useState(false); // Toggle: multiple cards per image
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFilesSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const newCards: DetectedCard[] = [];
-    
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (!file.type.startsWith('image/')) continue;
+    if (batchMode) {
+      // Batch mode: each image may contain multiple cards
+      const newBatchImages: BatchImage[] = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
 
-      const previewUrl = URL.createObjectURL(file);
-      newCards.push({
-        id: crypto.randomUUID(),
-        file,
-        previewUrl,
-        status: 'pending',
-        title: '',
-        category: 'pokemon',
-        condition: 'Near Mint',
-        suggestedPrice: 0,
-        confidence: 0,
-      });
+        const previewUrl = URL.createObjectURL(file);
+        newBatchImages.push({
+          id: crypto.randomUUID(),
+          file,
+          previewUrl,
+          status: 'pending',
+          detectedCount: 0,
+        });
+      }
+
+      setBatchImages(prev => [...prev, ...newBatchImages]);
+      
+      if (newBatchImages.length > 0) {
+        analyzeBatchImages(newBatchImages);
+      }
+    } else {
+      // Single card mode: one card per image
+      const newCards: DetectedCard[] = [];
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+
+        const previewUrl = URL.createObjectURL(file);
+        newCards.push({
+          id: crypto.randomUUID(),
+          file,
+          previewUrl,
+          status: 'pending',
+          title: '',
+          category: 'pokemon',
+          condition: 'Near Mint',
+          suggestedPrice: 0,
+          confidence: 0,
+        });
+      }
+
+      setCards(prev => [...prev, ...newCards]);
+      
+      if (newCards.length > 0) {
+        analyzeCards(newCards);
+      }
     }
+  }, [batchMode]);
 
-    setCards(prev => [...prev, ...newCards]);
-    
-    // Auto-analyze new cards
-    if (newCards.length > 0) {
-      analyzeCards(newCards);
-    }
-  }, []);
-
-  const analyzeCards = async (cardsToAnalyze: DetectedCard[]) => {
+  // Analyze batch images (multiple cards per image)
+  const analyzeBatchImages = async (imagesToAnalyze: BatchImage[]) => {
     setIsAnalyzing(true);
 
-    for (const card of cardsToAnalyze) {
+    for (const image of imagesToAnalyze) {
       try {
-        // Update status to analyzing
-        setCards(prev => prev.map(c => 
-          c.id === card.id ? { ...c, status: 'analyzing' } : c
+        setBatchImages(prev => prev.map(img => 
+          img.id === image.id ? { ...img, status: 'analyzing' } : img
         ));
 
         // Convert file to base64
@@ -103,17 +140,83 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
             resolve(result.split(',')[1]);
           };
           reader.onerror = reject;
-          reader.readAsDataURL(card.file);
+          reader.readAsDataURL(image.file);
         });
 
-        // Call analyze-card edge function
+        // Call analyze-card with batchMode=true
+        const { data, error } = await supabase.functions.invoke('analyze-card', {
+          body: { imageBase64: base64, batchMode: true }
+        });
+
+        if (error) throw error;
+
+        const detectedCards = data.cards || [];
+        
+        // Create card entries for each detected card
+        const newCards: DetectedCard[] = detectedCards.map((cardData: any) => ({
+          id: crypto.randomUUID(),
+          file: image.file,
+          previewUrl: image.previewUrl,
+          status: 'detected' as const,
+          title: cardData.cardName || 'Unknown Card',
+          category: cardData.category || 'pokemon',
+          condition: cardData.estimatedCondition || 'Near Mint',
+          suggestedPrice: cardData.pricing?.medianSold || cardData.pricing?.lowestActive || 0,
+          confidence: cardData.confidence || 0,
+          matchedItemId: cardData.matchedMarketItem?.id,
+          sourceImageId: image.id,
+        }));
+
+        setCards(prev => [...prev, ...newCards]);
+        
+        setBatchImages(prev => prev.map(img => 
+          img.id === image.id ? { ...img, status: 'done', detectedCount: detectedCards.length } : img
+        ));
+
+        if (detectedCards.length > 0) {
+          toast.success(`Detected ${detectedCards.length} card(s) in image`);
+        } else {
+          toast.info('No cards detected in image');
+        }
+
+      } catch (err) {
+        console.error('Batch analysis error:', err);
+        setBatchImages(prev => prev.map(img => 
+          img.id === image.id ? { ...img, status: 'error' } : img
+        ));
+        toast.error('Failed to analyze image');
+      }
+    }
+
+    setIsAnalyzing(false);
+  };
+
+  // Analyze single card images
+  const analyzeCards = async (cardsToAnalyze: DetectedCard[]) => {
+    setIsAnalyzing(true);
+
+    for (const card of cardsToAnalyze) {
+      try {
+        setCards(prev => prev.map(c => 
+          c.id === card.id ? { ...c, status: 'analyzing' } : c
+        ));
+
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(card.file!);
+        });
+
         const { data, error } = await supabase.functions.invoke('analyze-card', {
           body: { imageBase64: base64 }
         });
 
         if (error) throw error;
 
-        // Update card with detection results
         setCards(prev => prev.map(c => {
           if (c.id !== card.id) return c;
           
@@ -265,7 +368,13 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
         URL.revokeObjectURL(card.previewUrl);
       }
     });
+    batchImages.forEach(img => {
+      if (img.previewUrl) {
+        URL.revokeObjectURL(img.previewUrl);
+      }
+    });
     setCards([]);
+    setBatchImages([]);
     setImportProgress(0);
     setEditingCardId(null);
     if (fileInputRef.current) {
@@ -301,6 +410,27 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col gap-4">
+          {/* Batch Mode Toggle */}
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-primary" />
+              <div>
+                <Label htmlFor="batch-mode" className="text-sm font-medium cursor-pointer">
+                  Multiple cards per image
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Enable if one photo contains several cards
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="batch-mode"
+              checked={batchMode}
+              onCheckedChange={setBatchMode}
+              disabled={cards.length > 0 || batchImages.length > 0}
+            />
+          </div>
+
           {/* Upload Area */}
           <div 
             className="border-2 border-dashed border-border/50 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
@@ -317,7 +447,10 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
             />
             <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Click or drag images here to scan cards
+              {batchMode 
+                ? 'Upload images with multiple cards - AI will detect each card'
+                : 'Click or drag images here to scan cards'
+              }
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Supports JPG, PNG, WEBP • Multiple images allowed
