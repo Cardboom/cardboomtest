@@ -67,7 +67,11 @@ export default function GradingOrderDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet><title>Grading Order {order.id.slice(0, 8)} - CardBoom</title></Helmet>
+      <Helmet>
+        <title>Grading Order #{order.id.slice(0, 8)} | Card Grading Result | CardBoom</title>
+        <meta name="description" content={`View grading result for your ${category?.name || 'TCG'} card. See detailed subgrades for corners, edges, surface, and centering.`} />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <CartDrawer items={cartItems} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))} />
       

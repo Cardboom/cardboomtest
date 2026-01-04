@@ -518,6 +518,9 @@ export const ja: Translations = {
     post: '投稿',
   },
   grading: {
+    seoTitle: 'カードグレーディング | TCGカード鑑定 | CardBoom Grading Index',
+    seoDescription: '24時間以内のプロフェッショナルAIカードグレーディング。ポケモン、MTG、遊戯王、ワンピース、スポーツカードを鑑定。角、エッジ、表面、センタリングの正確な評価。',
+    seoKeywords: 'カードグレーディング, TCGカード鑑定, AIカード評価, ポケモンカード鑑定, MTGグレーディング, 遊戯王グレーディング, トレカ鑑定, PSA代替',
     pageTitle: 'AIカードグレーディング',
     pageDescription: 'トレーディングカードのプロフェッショナルAIグレーディングを取得。高速、正確、手頃な価格。',
     badge: 'AI搭載グレーディング',

@@ -493,6 +493,9 @@ export const de: Translations = {
     post: 'Posten',
   },
   grading: {
+    seoTitle: 'Kartengrading | TCG Kartenbewertung | CardBoom Grading Index',
+    seoDescription: 'Professionelles KI-gestütztes TCG-Kartengrading in 24 Stunden. Pokémon, MTG, Yu-Gi-Oh!, One Piece & Sportkarten bewerten. Genaue Noten für Ecken, Kanten, Oberfläche & Zentrierung.',
+    seoKeywords: 'Kartengrading, TCG Kartenbewertung, KI Kartengrading, Pokemon Kartenbewertung, MTG Grading, Yu-Gi-Oh Grading, Sammelkartenbewertung, professionelles Kartengrading',
     pageTitle: 'AI Kartenbewertung',
     pageDescription: 'Professionelle AI-Bewertung für Ihre Trading Cards.',
     badge: 'KI-gestützte Bewertung',

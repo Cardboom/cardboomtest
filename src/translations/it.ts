@@ -493,6 +493,9 @@ export const it: Translations = {
     post: 'Pubblica',
   },
   grading: {
+    seoTitle: 'Valutazione Carte | Servizio Grading TCG | CardBoom Grading Index',
+    seoDescription: 'Valutazione professionale di carte TCG con IA in 24 ore. Valuta Pokémon, MTG, Yu-Gi-Oh!, One Piece e carte sportive. Voti precisi per angoli, bordi, superficie e centratura.',
+    seoKeywords: 'valutazione carte, grading carte TCG, valutazione IA carte, valutazione carte Pokemon, grading MTG, grading Yu-Gi-Oh, valutazione carte collezionabili, servizio valutazione carte',
     pageTitle: 'Valutazione Carte AI',
     pageDescription: 'Ottieni una valutazione AI professionale per le tue carte collezionabili.',
     badge: 'Valutazione AI',

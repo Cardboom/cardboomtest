@@ -493,6 +493,9 @@ export const tr: Translations = {
     post: 'Paylaş',
   },
   grading: {
+    seoTitle: 'Kart Derecelendirme | TCG Kart Notlama | CardBoom Grading Index',
+    seoDescription: 'Profesyonel AI destekli TCG kart derecelendirme 24 saat içinde. Pokémon, MTG, Yu-Gi-Oh!, One Piece ve spor kartlarını notlatın. Köşeler, kenarlar, yüzey ve merkezleme için doğru notlar alın.',
+    seoKeywords: 'kart derecelendirme, kart notlama, AI kart değerlendirme, Pokemon kart notlama, MTG notlama, Yu-Gi-Oh notlama, koleksiyon kartı notlama, profesyonel kart derecelendirme',
     pageTitle: 'AI Kart Derecelendirme',
     pageDescription: 'Trading kartlarınız için profesyonel AI derecelendirme alın.',
     badge: 'AI Destekli Derecelendirme',

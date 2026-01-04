@@ -518,6 +518,9 @@ export const ko: Translations = {
     post: '게시',
   },
   grading: {
+    seoTitle: '카드 그레이딩 | TCG 카드 감정 | CardBoom Grading Index',
+    seoDescription: '24시간 이내 전문 AI 카드 그레이딩. 포켓몬, MTG, 유희왕, 원피스, 스포츠 카드 감정. 코너, 엣지, 표면, 센터링 정확한 등급.',
+    seoKeywords: '카드 그레이딩, TCG 카드 감정, AI 카드 평가, 포켓몬 카드 감정, MTG 그레이딩, 유희왕 그레이딩, 트레이딩 카드 감정',
     pageTitle: 'AI 카드 그레이딩',
     pageDescription: '트레이딩 카드에 대한 전문 AI 그레이딩을 받으세요. 빠르고, 정확하며, 저렴합니다.',
     badge: 'AI 기반 그레이딩',

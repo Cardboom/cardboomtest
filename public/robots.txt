@@ -61,6 +61,10 @@ Allow: /deals
 Allow: /gaming
 Allow: /leaderboard
 Allow: /hall-of-fame
+
+# Grading pages - High priority for SEO
+Allow: /grading
+Allow: /grading/*
 Allow: /api
 Allow: /help
 Allow: /about

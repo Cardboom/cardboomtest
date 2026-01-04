@@ -72,7 +72,11 @@ export default function GradingOrders() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet><title>My Grading Orders - CardBoom</title></Helmet>
+      <Helmet>
+        <title>My Card Grading Orders | Track AI Grading Status | CardBoom</title>
+        <meta name="description" content="Track and manage your AI card grading orders. View grading results, subgrades, and order status for your Pokémon, MTG, Yu-Gi-Oh!, and sports cards." />
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <CartDrawer items={cartItems} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))} />
       

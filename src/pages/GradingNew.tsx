@@ -171,7 +171,18 @@ export default function GradingNew() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet><title>Submit Card for Grading - CardBoom</title></Helmet>
+      <Helmet>
+        <title>Submit Card for AI Grading | Upload & Get Graded | CardBoom</title>
+        <meta name="description" content="Upload your trading card photos and get professional AI grading in 24 hours. Grade Pokémon, MTG, Yu-Gi-Oh!, sports cards with detailed subgrades for corners, edges, surface & centering." />
+        <meta name="keywords" content="submit card grading, upload card for grading, AI card grading, grade my card, card grading submission, TCG grading service" />
+        <link rel="canonical" href="https://cardboom.com/grading/new" />
+        <meta name="robots" content="index, follow" />
+        
+        <meta property="og:title" content="Submit Card for AI Grading | CardBoom" />
+        <meta property="og:description" content="Upload your trading card photos and get professional AI grading in 24 hours." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://cardboom.com/grading/new" />
+      </Helmet>
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <CartDrawer items={cartItems} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))} />
       
