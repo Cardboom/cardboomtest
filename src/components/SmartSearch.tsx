@@ -61,16 +61,15 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
+        // Maximize search results - include items even without images
         const { data, error } = await supabase
           .from('market_items')
           .select('id, name, category, current_price, change_24h, image_url, is_trending')
           .ilike('name', `%${query}%`)
-          .not('image_url', 'is', null)
-          .neq('image_url', '')
           .gt('current_price', 0)
           .order('is_trending', { ascending: false })
           .order('current_price', { ascending: false })
-          .limit(8);
+          .limit(12);
 
         if (!error && data) {
           setResults(data);

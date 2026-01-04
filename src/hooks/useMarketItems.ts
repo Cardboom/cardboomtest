@@ -140,6 +140,7 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
         setState(prev => ({ ...prev, isLoading: true }));
       }
 
+      // Maximize price display - require only current_price > 0
       let query = supabase
         .from('market_items')
         .select('*')
@@ -161,8 +162,7 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
         query = query.not('image_url', 'is', null).neq('image_url', '');
       }
       
-      // Only show items with verified data sources (not mock)
-      query = query.not('data_source', 'is', null);
+      // Note: Removed data_source filter to maximize price coverage
 
       const { data, error: queryError } = await query;
 

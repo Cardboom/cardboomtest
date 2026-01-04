@@ -235,9 +235,11 @@ export async function getAllMarketItems(
   const cacheKey = `all-${category || 'all'}-${trending ? 'trending' : 'all'}-${limit}`;
   
   try {
+    // Maximize price coverage - fetch all items with price > 0
     let query = supabase
       .from('market_items')
       .select('*')
+      .gt('current_price', 0)
       .order('is_trending', { ascending: false })
       .order('current_price', { ascending: false })
       .limit(limit);
