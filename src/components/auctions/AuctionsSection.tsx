@@ -1,9 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Gavel, Plus, ArrowRight } from 'lucide-react';
+import { Gavel, ArrowRight } from 'lucide-react';
 import { useAuctions } from '@/hooks/useAuctions';
 import { AuctionCard } from './AuctionCard';
+import { CreateAuctionDialog } from './CreateAuctionDialog';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -50,10 +51,7 @@ export const AuctionsSection = ({
           <p className="text-sm text-muted-foreground mb-4">
             Be the first to create an auction listing
           </p>
-          <Button onClick={() => navigate('/sell')} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Create Auction
-          </Button>
+          <CreateAuctionDialog />
         </CardContent>
       </Card>
     );

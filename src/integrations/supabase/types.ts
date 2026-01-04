@@ -309,6 +309,9 @@ export type Database = {
           listing_id: string | null
           reserve_price: number | null
           seller_id: string
+          source_card_instance_id: string | null
+          source_type: string
+          source_vault_item_id: string | null
           starting_price: number
           starts_at: string
           status: string
@@ -333,6 +336,9 @@ export type Database = {
           listing_id?: string | null
           reserve_price?: number | null
           seller_id: string
+          source_card_instance_id?: string | null
+          source_type?: string
+          source_vault_item_id?: string | null
           starting_price: number
           starts_at?: string
           status?: string
@@ -357,6 +363,9 @@ export type Database = {
           listing_id?: string | null
           reserve_price?: number | null
           seller_id?: string
+          source_card_instance_id?: string | null
+          source_type?: string
+          source_vault_item_id?: string | null
           starting_price?: number
           starts_at?: string
           status?: string
@@ -370,6 +379,20 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auctions_source_card_instance_id_fkey"
+            columns: ["source_card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auctions_source_vault_item_id_fkey"
+            columns: ["source_vault_item_id"]
+            isOneToOne: false
+            referencedRelation: "vault_items"
             referencedColumns: ["id"]
           },
         ]
@@ -7149,6 +7172,7 @@ export type Database = {
         Args: { p_seller_id: string }
         Returns: number
       }
+      can_create_auction: { Args: { user_id: string }; Returns: boolean }
       check_idempotency: {
         Args: { p_key: string; p_request_hash: string; p_user_id: string }
         Returns: Json

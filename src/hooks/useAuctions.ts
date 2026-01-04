@@ -156,9 +156,17 @@ export const useAuctions = (category?: string) => {
       buy_now_price?: number;
       bid_increment?: number;
       duration_hours: number;
+      source_type?: 'direct' | 'vault_verified' | 'card_instance';
+      source_vault_item_id?: string;
+      source_card_instance_id?: string;
     }) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Please sign in to create an auction');
+
+      // Validate duration (max 14 days = 336 hours)
+      if (auctionData.duration_hours > 336) {
+        throw new Error('Auction duration cannot exceed 14 days');
+      }
 
       const endsAt = new Date();
       endsAt.setHours(endsAt.getHours() + auctionData.duration_hours);
@@ -178,11 +186,20 @@ export const useAuctions = (category?: string) => {
           bid_increment: auctionData.bid_increment || 1,
           ends_at: endsAt.toISOString(),
           status: 'active',
+          source_type: auctionData.source_type || 'direct',
+          source_vault_item_id: auctionData.source_vault_item_id,
+          source_card_instance_id: auctionData.source_card_instance_id,
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // Handle RLS policy rejection (ineligible user)
+        if (error.code === '42501' || error.message.includes('policy')) {
+          throw new Error('You must be a Verified Seller or Enterprise subscriber to create auctions');
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {
