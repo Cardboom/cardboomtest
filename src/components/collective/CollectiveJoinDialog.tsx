@@ -6,14 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { PieChart, Users, TrendingUp, Shield, Clock } from "lucide-react";
+import { Users, Vote, Shield, Clock, Sparkles, Star, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
-interface FractionalBuyDialogProps {
-  fractionalListing: {
+interface CollectiveJoinDialogProps {
+  collectiveListing: {
     id: string;
     share_price: number;
     available_shares: number;
@@ -32,36 +32,34 @@ interface FractionalBuyDialogProps {
   };
 }
 
-export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogProps) {
+export function CollectiveJoinDialog({ collectiveListing }: CollectiveJoinDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sharesToBuy, setSharesToBuy] = useState(fractionalListing.min_shares);
+  const [unitsToJoin, setUnitsToJoin] = useState(collectiveListing.min_shares);
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
 
-  const itemName = fractionalListing.listing?.title || fractionalListing.market_item?.name || "Unknown Item";
-  const imageUrl = fractionalListing.listing?.image_url || fractionalListing.market_item?.image_url;
-  const ownershipPercent = (sharesToBuy / fractionalListing.total_shares) * 100;
-  const totalCost = sharesToBuy * fractionalListing.share_price;
-  const soldPercent = ((fractionalListing.total_shares - fractionalListing.available_shares) / fractionalListing.total_shares) * 100;
+  const itemName = collectiveListing.listing?.title || collectiveListing.market_item?.name || "Unknown Item";
+  const imageUrl = collectiveListing.listing?.image_url || collectiveListing.market_item?.image_url;
+  const participationPercent = (unitsToJoin / collectiveListing.total_shares) * 100;
+  const totalCost = unitsToJoin * collectiveListing.share_price;
+  const claimedPercent = ((collectiveListing.total_shares - collectiveListing.available_shares) / collectiveListing.total_shares) * 100;
 
-  const handleBuy = async () => {
+  const handleJoin = async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        toast.error("Please sign in to buy shares");
+        toast.error("Please sign in to join this Collective");
         navigate("/auth");
         return;
       }
 
-      // Check if enough shares available
-      if (sharesToBuy > fractionalListing.available_shares) {
-        toast.error("Not enough shares available");
+      if (unitsToJoin > collectiveListing.available_shares) {
+        toast.error("Not enough units available");
         return;
       }
 
-      // Get user's wallet and check balance
       const { data: wallet, error: walletError } = await supabase
         .from("wallets")
         .select("id, balance")
@@ -81,7 +79,6 @@ export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogPr
         return;
       }
 
-      // Deduct from wallet
       const newBalance = Number(wallet.balance) - totalCost;
       const { error: walletUpdateError } = await supabase
         .from("wallets")
@@ -90,42 +87,39 @@ export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogPr
 
       if (walletUpdateError) throw walletUpdateError;
 
-      // Create transaction record
       await supabase.from("transactions").insert({
         wallet_id: wallet.id,
         type: "purchase",
         amount: -totalCost,
-        description: `Fractional shares: ${sharesToBuy} shares of ${itemName}`,
+        description: `Collective participation: ${unitsToJoin} units of ${itemName}`,
       });
 
-      // Create ownership record
       const { error: ownershipError } = await supabase
         .from("fractional_ownership")
         .insert({
-          fractional_listing_id: fractionalListing.id,
+          fractional_listing_id: collectiveListing.id,
           user_id: user.id,
-          shares_owned: sharesToBuy,
-          purchase_price_per_share: fractionalListing.share_price,
+          shares_owned: unitsToJoin,
+          purchase_price_per_share: collectiveListing.share_price,
           total_invested: totalCost,
         });
 
       if (ownershipError) throw ownershipError;
 
-      // Update available shares
       const { error: updateError } = await supabase
         .from("fractional_listings")
         .update({
-          available_shares: fractionalListing.available_shares - sharesToBuy,
+          available_shares: collectiveListing.available_shares - unitsToJoin,
         })
-        .eq("id", fractionalListing.id);
+        .eq("id", collectiveListing.id);
 
       if (updateError) throw updateError;
 
-      toast.success(`Successfully purchased ${sharesToBuy} shares (${ownershipPercent.toFixed(1)}% ownership)!`);
+      toast.success(`Welcome to the Collective! You now have ${unitsToJoin} participation units.`);
       setOpen(false);
     } catch (error: any) {
-      console.error("Error buying shares:", error);
-      toast.error(error.message || "Failed to buy shares");
+      console.error("Error joining collective:", error);
+      toast.error(error.message || "Failed to join Collective");
     } finally {
       setLoading(false);
     }
@@ -134,19 +128,19 @@ export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogPr
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="gap-2">
-          <PieChart className="h-4 w-4" />
-          Buy Shares
+        <Button variant="secondary" className="gap-2 w-full">
+          <Sparkles className="h-4 w-4" />
+          Join Collective
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <PieChart className="h-5 w-5 text-primary" />
-            Fractional Ownership
+            <Sparkles className="h-5 w-5 text-primary" />
+            CardBoom COLLECTIVE™
           </DialogTitle>
           <DialogDescription>
-            Buy a fraction of this collectible. Own {ownershipPercent.toFixed(1)}% of {itemName}
+            Join this Collective and gain participation rights for {itemName}
           </DialogDescription>
         </DialogHeader>
 
@@ -159,57 +153,57 @@ export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogPr
             <div className="flex-1">
               <p className="font-medium">{itemName}</p>
               <p className="text-sm text-muted-foreground">
-                {formatPrice(fractionalListing.share_price)} per share
+                {formatPrice(collectiveListing.share_price)} per unit
               </p>
             </div>
           </div>
 
-          {/* Ownership Progress */}
+          {/* Participation Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Sold</span>
-              <span className="font-medium">{soldPercent.toFixed(0)}%</span>
+              <span className="text-muted-foreground">Community Progress</span>
+              <span className="font-medium">{claimedPercent.toFixed(0)}%</span>
             </div>
-            <Progress value={soldPercent} className="h-2" />
+            <Progress value={claimedPercent} className="h-2" />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{fractionalListing.total_shares - fractionalListing.available_shares} shares sold</span>
-              <span>{fractionalListing.available_shares} available</span>
+              <span>{collectiveListing.total_shares - collectiveListing.available_shares} units claimed</span>
+              <span>{collectiveListing.available_shares} available</span>
             </div>
           </div>
 
-          {/* Share Selector */}
+          {/* Unit Selector */}
           <div className="space-y-4">
-            <Label>Number of Shares</Label>
+            <Label>Collective Units</Label>
             <Slider
-              value={[sharesToBuy]}
-              onValueChange={([value]) => setSharesToBuy(value)}
-              min={fractionalListing.min_shares}
-              max={Math.min(fractionalListing.available_shares, 100)}
+              value={[unitsToJoin]}
+              onValueChange={([value]) => setUnitsToJoin(value)}
+              min={collectiveListing.min_shares}
+              max={Math.min(collectiveListing.available_shares, 100)}
               step={1}
               className="py-4"
             />
             <div className="flex items-center gap-2">
               <Input
                 type="number"
-                value={sharesToBuy}
-                onChange={(e) => setSharesToBuy(Math.min(Math.max(parseInt(e.target.value) || fractionalListing.min_shares, fractionalListing.min_shares), fractionalListing.available_shares))}
-                min={fractionalListing.min_shares}
-                max={fractionalListing.available_shares}
+                value={unitsToJoin}
+                onChange={(e) => setUnitsToJoin(Math.min(Math.max(parseInt(e.target.value) || collectiveListing.min_shares, collectiveListing.min_shares), collectiveListing.available_shares))}
+                min={collectiveListing.min_shares}
+                max={collectiveListing.available_shares}
                 className="w-24"
               />
-              <span className="text-sm text-muted-foreground">shares = {ownershipPercent.toFixed(1)}% ownership</span>
+              <span className="text-sm text-muted-foreground">{participationPercent.toFixed(1)}% participation</span>
             </div>
           </div>
 
           {/* Cost Breakdown */}
           <div className="rounded-lg border p-4 space-y-3">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Share Price</span>
-              <span>{formatPrice(fractionalListing.share_price)}</span>
+              <span className="text-muted-foreground">Unit Price</span>
+              <span>{formatPrice(collectiveListing.share_price)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Quantity</span>
-              <span>{sharesToBuy} shares</span>
+              <span>{unitsToJoin} units</span>
             </div>
             <div className="border-t pt-3 flex justify-between font-semibold">
               <span>Total</span>
@@ -217,53 +211,57 @@ export function FractionalBuyDialog({ fractionalListing }: FractionalBuyDialogPr
             </div>
           </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>Co-owned with others</span>
+          {/* Participation Rights */}
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+            <p className="font-medium text-sm mb-3">Your Participation Rights:</p>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Vote className="h-4 w-4 text-primary" />
+                <span>Community voting</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Star className="h-4 w-4 text-primary" />
+                <span>XP & badge eligibility</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Users className="h-4 w-4 text-primary" />
+                <span>Community access</span>
+              </div>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Trophy className="h-4 w-4 text-primary" />
+                <span>Gamified rewards</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <TrendingUp className="h-4 w-4" />
-              <span>Trade your shares</span>
-            </div>
-            {fractionalListing.daily_verification_required && (
-              <>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Shield className="h-4 w-4" />
-                  <span>Daily verification</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>Verified ownership</span>
-                </div>
-              </>
-            )}
           </div>
 
           {/* Verification Status */}
-          {fractionalListing.daily_verification_required && (
-            <div className="flex items-center justify-between p-3 rounded-lg bg-primary/10">
+          {collectiveListing.daily_verification_required && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-primary" />
                 <span className="text-sm">Daily Verified</span>
               </div>
-              <Badge variant="secondary" className="bg-primary/20 text-primary">
-                {fractionalListing.last_verified_at 
-                  ? `Last verified ${new Date(fractionalListing.last_verified_at).toLocaleDateString()}`
+              <Badge variant="secondary">
+                {collectiveListing.last_verified_at 
+                  ? `Last verified ${new Date(collectiveListing.last_verified_at).toLocaleDateString()}`
                   : "Pending first verification"
                 }
               </Badge>
             </div>
           )}
+
+          {/* Disclaimer */}
+          <p className="text-[10px] text-muted-foreground text-center">
+            Collective Units are non-financial digital participation rights. They do not represent ownership, equity, or entitlement to financial returns.
+          </p>
         </div>
 
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
             Cancel
           </Button>
-          <Button onClick={handleBuy} disabled={loading} className="flex-1">
-            {loading ? "Processing..." : `Buy ${sharesToBuy} Shares`}
+          <Button onClick={handleJoin} disabled={loading} className="flex-1">
+            {loading ? "Joining..." : `Join with ${unitsToJoin} Units`}
           </Button>
         </div>
       </DialogContent>

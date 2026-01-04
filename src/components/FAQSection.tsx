@@ -16,8 +16,8 @@ const faqItems = [
     answer: "CardBoom employs multiple layers of authentication: 1) We accept PSA, BGS, and CGC graded cards which come pre-authenticated. 2) Our Verified Seller program requires identity verification and performance history. 3) Every transaction includes buyer protection - if a card is proven counterfeit, you receive a full refund. 4) Our AI-powered card scanner helps detect common fakes before listing. 5) High-value items can be stored in our secure Vault facility with professional authentication."
   },
   {
-    question: "What are Fractional Shares and how can I invest in expensive cards?",
-    answer: "Fractional Ownership lets you buy shares of high-value 'grail' cards you couldn't afford alone. For example, a $50,000 PSA 10 Charizard can be divided into 1,000 shares at $50 each. You own a percentage of the card, earn proportional returns when it sells, and can trade your shares on our secondary market. It's like stock trading, but for collectibles. Daily verification ensures the physical card remains secure in our Vault."
+    question: "What is CardBoom COLLECTIVE™ and how does it work?",
+    answer: "CardBoom COLLECTIVE™ lets you join communities around premium collectibles. When you participate, you gain voting rights on community decisions, XP and badge eligibility, exclusive community access, and gamified rewards. COLLECTIVE units are non-financial participation rights - they do not represent ownership, equity, or entitlement to financial returns."
   },
   {
     question: "How does the CardBoom Leaderboard work?",

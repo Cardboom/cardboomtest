@@ -25,8 +25,7 @@ import { ShareButton } from '@/components/ShareButton';
 import { useGenerateItemImage } from '@/hooks/useGenerateItemImage';
 import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
 import { ItemBids } from '@/components/item/ItemBids';
-import { FractionalOwnershipCard } from '@/components/fractional/FractionalOwnershipCard';
-import { CreateFractionalDialog } from '@/components/fractional/CreateFractionalDialog';
+import { CollectiveCard, CreateCollectiveDialog } from '@/components/collective';
 import { CardSocialProof } from '@/components/CardSocialProof';
 import { generateCardUrl } from '@/lib/seoSlug';
 
@@ -490,11 +489,11 @@ const ItemDetail = () => {
           </div>
         </div>
 
-        {/* Fractional Ownership & Bids Section */}
+        {/* Collective & Bids Section */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
           <ItemBids itemId={item.id} itemName={item.name} />
           <div className="space-y-4">
-            <FractionalOwnershipCard marketItemId={item.id} />
+            <CollectiveCard marketItemId={item.id} />
           </div>
         </div>
 

@@ -2,25 +2,25 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { PieChart, Users, Shield, TrendingUp, Clock } from "lucide-react";
+import { Users, Shield, Vote, Clock, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { FractionalBuyDialog } from "./FractionalBuyDialog";
-import { FractionalVerificationDialog } from "./FractionalVerificationDialog";
+import { CollectiveJoinDialog } from "./CollectiveJoinDialog";
+import { CollectiveVerificationDialog } from "./CollectiveVerificationDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 
-interface FractionalOwnershipCardProps {
+interface CollectiveCardProps {
   listingId?: string;
   marketItemId?: string;
   isOwner?: boolean;
 }
 
-export function FractionalOwnershipCard({ listingId, marketItemId, isOwner }: FractionalOwnershipCardProps) {
+export function CollectiveCard({ listingId, marketItemId, isOwner }: CollectiveCardProps) {
   const { formatPrice } = useCurrency();
 
-  const { data: fractionalListing, isLoading, refetch } = useQuery({
-    queryKey: ["fractional-listing", listingId, marketItemId],
+  const { data: collectiveListing, isLoading, refetch } = useQuery({
+    queryKey: ["collective-listing", listingId, marketItemId],
     queryFn: async () => {
       let query = supabase
         .from("fractional_listings")
@@ -44,34 +44,34 @@ export function FractionalOwnershipCard({ listingId, marketItemId, isOwner }: Fr
     enabled: !!(listingId || marketItemId),
   });
 
-  const { data: owners } = useQuery({
-    queryKey: ["fractional-owners", fractionalListing?.id],
+  const { data: participants } = useQuery({
+    queryKey: ["collective-participants", collectiveListing?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("fractional_ownership")
         .select("user_id, shares_owned")
-        .eq("fractional_listing_id", fractionalListing!.id);
+        .eq("fractional_listing_id", collectiveListing!.id);
 
       if (error) throw error;
       return data;
     },
-    enabled: !!fractionalListing?.id,
+    enabled: !!collectiveListing?.id,
   });
 
   const { data: verifications } = useQuery({
-    queryKey: ["fractional-verifications", fractionalListing?.id],
+    queryKey: ["collective-verifications", collectiveListing?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("fractional_verifications")
         .select("*")
-        .eq("fractional_listing_id", fractionalListing!.id)
+        .eq("fractional_listing_id", collectiveListing!.id)
         .order("verified_at", { ascending: false })
         .limit(5);
 
       if (error) throw error;
       return data;
     },
-    enabled: !!fractionalListing?.id,
+    enabled: !!collectiveListing?.id,
   });
 
   if (isLoading) {
@@ -88,28 +88,27 @@ export function FractionalOwnershipCard({ listingId, marketItemId, isOwner }: Fr
     );
   }
 
-  if (!fractionalListing) {
+  if (!collectiveListing) {
     return null;
   }
 
-  const soldShares = fractionalListing.total_shares - fractionalListing.available_shares;
-  const soldPercent = (soldShares / fractionalListing.total_shares) * 100;
-  const totalValue = fractionalListing.share_price * fractionalListing.total_shares;
-  const ownerCount = owners?.length || 0;
+  const claimedUnits = collectiveListing.total_shares - collectiveListing.available_shares;
+  const claimedPercent = (claimedUnits / collectiveListing.total_shares) * 100;
+  const participantCount = participants?.length || 0;
 
-  const isVerificationOverdue = fractionalListing.daily_verification_required && 
-    fractionalListing.last_verified_at &&
-    new Date().getTime() - new Date(fractionalListing.last_verified_at).getTime() > 24 * 60 * 60 * 1000;
+  const isVerificationOverdue = collectiveListing.daily_verification_required && 
+    collectiveListing.last_verified_at &&
+    new Date().getTime() - new Date(collectiveListing.last_verified_at).getTime() > 24 * 60 * 60 * 1000;
 
   return (
     <Card className="border-primary/20">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <PieChart className="h-5 w-5 text-primary" />
-            Fractional Ownership
+            <Sparkles className="h-5 w-5 text-primary" />
+            CardBoom COLLECTIVE™
           </div>
-          {fractionalListing.daily_verification_required && (
+          {collectiveListing.daily_verification_required && (
             <Badge variant={isVerificationOverdue ? "destructive" : "secondary"} className="gap-1">
               <Shield className="h-3 w-3" />
               {isVerificationOverdue ? "Verification Overdue" : "Verified"}
@@ -121,56 +120,52 @@ export function FractionalOwnershipCard({ listingId, marketItemId, isOwner }: Fr
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold">{formatPrice(fractionalListing.share_price)}</p>
-            <p className="text-xs text-muted-foreground">Per Share</p>
+            <p className="text-2xl font-bold">{formatPrice(collectiveListing.share_price)}</p>
+            <p className="text-xs text-muted-foreground">Per Unit</p>
           </div>
           <div>
-            <p className="text-2xl font-bold">{fractionalListing.available_shares}</p>
+            <p className="text-2xl font-bold">{collectiveListing.available_shares}</p>
             <p className="text-xs text-muted-foreground">Available</p>
           </div>
           <div>
-            <p className="text-2xl font-bold">{ownerCount}</p>
-            <p className="text-xs text-muted-foreground">Owners</p>
+            <p className="text-2xl font-bold">{participantCount}</p>
+            <p className="text-xs text-muted-foreground">Participants</p>
           </div>
         </div>
 
         {/* Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Funding Progress</span>
-            <span className="font-medium">{soldPercent.toFixed(0)}% Sold</span>
+            <span className="text-muted-foreground">Participation Progress</span>
+            <span className="font-medium">{claimedPercent.toFixed(0)}% Claimed</span>
           </div>
-          <Progress value={soldPercent} className="h-3" />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>{formatPrice(soldShares * fractionalListing.share_price)} raised</span>
-            <span>{formatPrice(totalValue)} goal</span>
-          </div>
+          <Progress value={claimedPercent} className="h-3" />
         </div>
 
-        {/* Min Investment */}
+        {/* Rights Info */}
         <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
           <div>
-            <p className="text-sm font-medium">Minimum Investment</p>
+            <p className="text-sm font-medium">Minimum Participation</p>
             <p className="text-xs text-muted-foreground">
-              {fractionalListing.min_shares} shares ({((fractionalListing.min_shares / fractionalListing.total_shares) * 100).toFixed(1)}%)
+              {collectiveListing.min_shares} units ({((collectiveListing.min_shares / collectiveListing.total_shares) * 100).toFixed(1)}%)
             </p>
           </div>
           <p className="text-lg font-bold text-primary">
-            {formatPrice(fractionalListing.min_shares * fractionalListing.share_price)}
+            {formatPrice(collectiveListing.min_shares * collectiveListing.share_price)}
           </p>
         </div>
 
-        {/* Features */}
+        {/* Features - Participation Rights */}
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="gap-1">
             <Users className="h-3 w-3" />
-            {ownerCount} Co-owners
+            {participantCount} Members
           </Badge>
           <Badge variant="outline" className="gap-1">
-            <TrendingUp className="h-3 w-3" />
-            Tradeable Shares
+            <Vote className="h-3 w-3" />
+            Voting Rights
           </Badge>
-          {fractionalListing.daily_verification_required && (
+          {collectiveListing.daily_verification_required && (
             <Badge variant="outline" className="gap-1">
               <Shield className="h-3 w-3" />
               Daily Verified
@@ -201,14 +196,14 @@ export function FractionalOwnershipCard({ listingId, marketItemId, isOwner }: Fr
         {/* Actions */}
         <div className="flex gap-2 pt-2">
           {isOwner ? (
-            <FractionalVerificationDialog
-              fractionalListingId={fractionalListing.id}
-              itemName={fractionalListing.listing?.title || fractionalListing.market_item?.name || "Item"}
-              lastVerifiedAt={fractionalListing.last_verified_at || undefined}
+            <CollectiveVerificationDialog
+              collectiveListingId={collectiveListing.id}
+              itemName={collectiveListing.listing?.title || collectiveListing.market_item?.name || "Item"}
+              lastVerifiedAt={collectiveListing.last_verified_at || undefined}
               onVerified={() => refetch()}
             />
           ) : (
-            <FractionalBuyDialog fractionalListing={fractionalListing} />
+            <CollectiveJoinDialog collectiveListing={collectiveListing} />
           )}
         </div>
       </CardContent>
