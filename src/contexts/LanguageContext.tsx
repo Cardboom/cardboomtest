@@ -43,6 +43,8 @@ const countryToLocale: Record<string, Locale> = {
   SY: "ar",
   YE: "ar",
   BH: "ar",
+  JP: "ja",
+  KR: "ko",
   // Default to English for all others
 };
 
@@ -54,6 +56,8 @@ const ISO_639_1_TO_LOCALE: Record<string, Locale> = {
   "it": "it", // Italian
   "ar": "ar", // Arabic
   "en": "en", // English
+  "ja": "ja", // Japanese
+  "ko": "ko", // Korean
 };
 
 // BCP 47 / IETF language tag parser (ISO 639-1 + optional ISO 3166-1 country code)
