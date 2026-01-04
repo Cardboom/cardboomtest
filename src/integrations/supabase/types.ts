@@ -3831,7 +3831,10 @@ export type Database = {
           price_24h_ago: number | null
           price_30d_ago: number | null
           price_7d_ago: number | null
+          psa10_price: number | null
+          psa9_price: number | null
           rarity: string | null
+          raw_price: number | null
           sale_probability: number | null
           sales_count_30d: number | null
           series: string | null
@@ -3866,7 +3869,10 @@ export type Database = {
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
+          psa10_price?: number | null
+          psa9_price?: number | null
           rarity?: string | null
+          raw_price?: number | null
           sale_probability?: number | null
           sales_count_30d?: number | null
           series?: string | null
@@ -3901,7 +3907,10 @@ export type Database = {
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
+          psa10_price?: number | null
+          psa9_price?: number | null
           rarity?: string | null
+          raw_price?: number | null
           sale_probability?: number | null
           sales_count_30d?: number | null
           series?: string | null

@@ -28,6 +28,8 @@ interface PriceMarketPanelProps {
   priceChange24h?: number;
   priceChange7d?: number;
   priceChange30d?: number;
+  psa10Price?: number | null;
+  rawPrice?: number | null;
 }
 
 export const PriceMarketPanel = ({
@@ -47,8 +49,13 @@ export const PriceMarketPanel = ({
   priceChange24h = 0,
   priceChange7d = 0,
   priceChange30d = 0,
+  psa10Price,
+  rawPrice,
 }: PriceMarketPanelProps) => {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('30d');
+  
+  // Categories that show graded prices
+  const showGradedPrices = ['pokemon', 'one-piece', 'yugioh', 'mtg', 'sports', 'nba', 'nfl', 'mlb'].includes(category?.toLowerCase() || '');
 
   const formatPrice = (price: number) => {
     if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
@@ -91,6 +98,30 @@ export const PriceMarketPanel = ({
       </CardHeader>
       
       <CardContent className="space-y-6">
+        {/* PSA 10 & Ungraded Price Display - For graded categories */}
+        {showGradedPrices && (psa10Price || rawPrice) && (
+          <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20">
+            {psa10Price && psa10Price > 0 && (
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Badge className="bg-amber-500 text-white text-xs font-bold">PSA 10</Badge>
+                </div>
+                <p className="font-display text-xl font-bold text-amber-400">{formatPrice(psa10Price)}</p>
+                <p className="text-xs text-muted-foreground">Gem Mint</p>
+              </div>
+            )}
+            {rawPrice && rawPrice > 0 && (
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-1 mb-1">
+                  <Badge variant="outline" className="text-xs">Ungraded</Badge>
+                </div>
+                <p className="font-display text-lg font-semibold text-foreground">{formatPrice(rawPrice)}</p>
+                <p className="text-xs text-muted-foreground">Raw Card</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Live Price & Stats Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="glass rounded-lg p-3 text-center">

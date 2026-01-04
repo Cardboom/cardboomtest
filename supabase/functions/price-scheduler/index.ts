@@ -6,16 +6,10 @@ const corsHeaders = {
 }
 
 /**
- * 24/7 Price Scheduler
+ * 24/7 Price Scheduler - MAX THROUGHPUT MODE
  * 
  * This function orchestrates continuous price syncing across all data sources.
- * Call this via cron job every 5-15 minutes for maximum price freshness.
- * 
- * Sync Strategy:
- * - High priority (every 5 min): Top viewed items, trending items
- * - Medium priority (every 15 min): Items with active listings/bids
- * - Low priority (every hour): All other catalog items
- * - Full sync (daily): Complete catalog refresh
+ * Fetches BOTH graded (PSA 10) and ungraded prices for Pokemon & One Piece.
  */
 
 interface SchedulerConfig {
@@ -24,9 +18,22 @@ interface SchedulerConfig {
   delayMs?: number
 }
 
+interface GradedPrices {
+  raw: number | null
+  psa7: number | null
+  psa8: number | null
+  psa9: number | null
+  psa10: number | null
+  bgs9_5: number | null
+  bgs10: number | null
+  cgc10: number | null
+}
+
 // TCG categories for Cardmarket
 const TCG_CATEGORIES = ['pokemon', 'yugioh', 'mtg', 'one-piece', 'lorcana', 'digimon', 'lol-riftbound', 'dragon-ball', 'star-wars']
 const CARDMARKET_CATEGORIES = ['pokemon', 'lorcana', 'mtg', 'yugioh']
+// Categories that should fetch PSA 10 graded prices
+const GRADED_PRICE_CATEGORIES = ['pokemon', 'one-piece', 'yugioh', 'mtg', 'sports', 'nba', 'nfl', 'mlb']
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -176,10 +183,13 @@ Deno.serve(async (req) => {
           }
         }
         
-        // Strategy 2: PriceCharting for non-TCG or fallback
+        // Strategy 2: PriceCharting for non-TCG or fallback (WITH GRADED PRICES)
+        let gradedPrices: GradedPrices | null = null
+        const shouldFetchGraded = GRADED_PRICE_CATEGORIES.includes(category)
+        
         if (!newPrice && priceChartingKey) {
           try {
-            const pcId = item.external_id?.replace('pc:', '') || ''
+            const pcId = item.external_id?.replace('pc:', '').replace('pricecharting_', '') || ''
             let pcUrl = ''
             
             if (/^\d+$/.test(pcId)) {
@@ -192,18 +202,34 @@ Deno.serve(async (req) => {
             
             if (response.ok) {
               const data = await response.json()
+              const product = /^\d+$/.test(pcId) ? data : data.products?.[0]
               
-              if (/^\d+$/.test(pcId)) {
-                // Single product response
-                newPrice = (data['loose-price'] || data['graded-price'] || data['cib-price']) / 100
-              } else if (data.products?.[0]) {
-                // Search response
-                newPrice = (data.products[0]['loose-price'] || data.products[0]['graded-price']) / 100
-              }
-              
-              if (newPrice && newPrice > 0) {
-                source = 'pricecharting'
-                results.sources.pricecharting++
+              if (product) {
+                // Get ungraded (loose) price
+                newPrice = (product['loose-price'] || product['graded-price'] || product['cib-price']) / 100
+                
+                // Extract ALL graded prices for Pokemon, One Piece, etc.
+                if (shouldFetchGraded) {
+                  gradedPrices = {
+                    raw: product['loose-price'] ? product['loose-price'] / 100 : null,
+                    psa7: product['psa-7'] ? product['psa-7'] / 100 : null,
+                    psa8: product['psa-8'] ? product['psa-8'] / 100 : null,
+                    psa9: product['psa-9'] ? product['psa-9'] / 100 : null,
+                    psa10: product['psa-10'] ? product['psa-10'] / 100 : null,
+                    bgs9_5: product['bgs-9-5'] ? product['bgs-9-5'] / 100 : null,
+                    bgs10: product['bgs-10'] ? product['bgs-10'] / 100 : null,
+                    cgc10: product['cgc-10'] ? product['cgc-10'] / 100 : null,
+                  }
+                  
+                  if (gradedPrices.psa10) {
+                    console.log(`[price-scheduler] 🏆 PSA 10 price for ${item.name}: $${gradedPrices.psa10}`)
+                  }
+                }
+                
+                if (newPrice && newPrice > 0) {
+                  source = 'pricecharting'
+                  results.sources.pricecharting++
+                }
               }
             }
           } catch (e) {
@@ -256,15 +282,24 @@ Deno.serve(async (req) => {
               ? ((newPrice - item.current_price) / item.current_price) * 100
               : null
             
+            const updateData: any = {
+              price_24h_ago: item.current_price,
+              current_price: newPrice,
+              change_24h: change24h,
+              data_source: source,
+              updated_at: new Date().toISOString(),
+            }
+            
+            // Add graded prices to market_items if available
+            if (gradedPrices) {
+              updateData.psa10_price = gradedPrices.psa10
+              updateData.psa9_price = gradedPrices.psa9
+              updateData.raw_price = gradedPrices.raw
+            }
+            
             const { error: updateError } = await supabase
               .from('market_items')
-              .update({
-                price_24h_ago: item.current_price,
-                current_price: newPrice,
-                change_24h: change24h,
-                data_source: source,
-                updated_at: new Date().toISOString(),
-              })
+              .update(updateData)
               .eq('id', item.id)
             
             if (updateError) {
@@ -279,6 +314,33 @@ Deno.serve(async (req) => {
                   source,
                 })
               } catch {} // Ignore history errors
+              
+              // Update market_item_grades table with all graded prices
+              if (gradedPrices && shouldFetchGraded) {
+                const grades = [
+                  { grade: 'raw', price: gradedPrices.raw },
+                  { grade: 'psa7', price: gradedPrices.psa7 },
+                  { grade: 'psa8', price: gradedPrices.psa8 },
+                  { grade: 'psa9', price: gradedPrices.psa9 },
+                  { grade: 'psa10', price: gradedPrices.psa10 },
+                  { grade: 'bgs9_5', price: gradedPrices.bgs9_5 },
+                  { grade: 'bgs10', price: gradedPrices.bgs10 },
+                  { grade: 'cgc10', price: gradedPrices.cgc10 },
+                ].filter(g => g.price && g.price > 0)
+                
+                for (const gradeData of grades) {
+                  try {
+                    await supabase
+                      .from('market_item_grades')
+                      .upsert({
+                        market_item_id: item.id,
+                        grade: gradeData.grade,
+                        current_price: gradeData.price,
+                        updated_at: new Date().toISOString(),
+                      }, { onConflict: 'market_item_id,grade' })
+                  } catch {} // Ignore grade insert errors
+                }
+              }
               
               results.updated++
             }
