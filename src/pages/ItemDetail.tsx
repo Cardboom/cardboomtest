@@ -489,12 +489,9 @@ const ItemDetail = () => {
           </div>
         </div>
 
-        {/* Collective & Bids Section */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
+        {/* Bids Section */}
+        <div className="mb-8">
           <ItemBids itemId={item.id} itemName={item.name} />
-          <div className="space-y-4">
-            <CollectiveCard marketItemId={item.id} />
-          </div>
         </div>
 
         {/* Social Proof Section */}

@@ -57,7 +57,7 @@ Allow: /markets
 Allow: /explorer
 Allow: /blog
 Allow: /deals
-Allow: /fractional
+# Allow: /fractional # Temporarily disabled
 Allow: /gaming
 Allow: /leaderboard
 Allow: /hall-of-fame

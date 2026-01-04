@@ -119,9 +119,7 @@ const AppContent = () => {
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/collective" element={<CollectiveMarket />} />
-          {/* Legacy redirect from old fractional path */}
-          <Route path="/fractional" element={<CollectiveMarket />} />
+          {/* Collective/Fractional feature temporarily disabled */}
           <Route path="/gaming" element={<Gaming />} />
           <Route path="/seller/:sellerId" element={<SellerProfile />} />
           <Route path="/hall-of-fame" element={<HallOfFame />} />

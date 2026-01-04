@@ -49,13 +49,7 @@
     <priority>0.8</priority>
   </url>
   
-  <!-- Fractional Market -->
-  <url>
-    <loc>https://cardboom.com/fractional</loc>
-    <lastmod>2025-12-16</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
+  <!-- Fractional Market - Temporarily disabled -->
   
   <!-- Gaming -->
   <url>
