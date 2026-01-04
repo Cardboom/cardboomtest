@@ -23,6 +23,7 @@ import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
 import { useCardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { BulkImportDialog } from '@/components/seller/BulkImportDialog';
+import { BulkImageImportDialog } from '@/components/seller/BulkImageImportDialog';
 import { SmartPriceSuggestion } from '@/components/listing/SmartPriceSuggestion';
 import { ListingSuccessModal } from '@/components/listing/ListingSuccessModal';
 import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard';
@@ -937,7 +938,10 @@ const SellPage = () => {
               {/* Bulk Import Header */}
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">Your Listings</h3>
-                <BulkImportDialog onImportComplete={fetchListings} />
+                <div className="flex gap-2">
+                  <BulkImageImportDialog onImportComplete={fetchListings} />
+                  <BulkImportDialog onImportComplete={fetchListings} />
+                </div>
               </div>
 
               {listings.length === 0 ? (
@@ -954,6 +958,7 @@ const SellPage = () => {
                       <Plus className="h-4 w-4 mr-2" />
                       Create Listing
                     </Button>
+                    <BulkImageImportDialog onImportComplete={fetchListings} />
                     <BulkImportDialog onImportComplete={fetchListings} />
                   </div>
                 </Card>
