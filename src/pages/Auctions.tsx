@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
@@ -12,10 +11,10 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Gavel, Search, Plus, Clock, TrendingUp } from 'lucide-react';
+import { Gavel, Search, Clock } from 'lucide-react';
 import { useAuctions } from '@/hooks/useAuctions';
 import { AuctionCard } from '@/components/auctions/AuctionCard';
-import { useNavigate } from 'react-router-dom';
+import { CreateAuctionDialog } from '@/components/auctions/CreateAuctionDialog';
 
 const CATEGORIES = [
   { value: 'all', label: 'All Categories' },
@@ -28,7 +27,6 @@ const CATEGORIES = [
 ];
 
 const Auctions = () => {
-  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('ending_soon');
@@ -87,10 +85,7 @@ const Auctions = () => {
               )}
             </p>
           </div>
-          <Button onClick={() => navigate('/sell')} className="gap-2">
-            <Plus className="w-4 h-4" />
-            Create Auction
-          </Button>
+          <CreateAuctionDialog />
         </div>
 
         {/* Filters */}
@@ -147,10 +142,7 @@ const Auctions = () => {
                 ? 'Try adjusting your search or filters'
                 : 'Be the first to create an auction!'}
             </p>
-            <Button onClick={() => navigate('/sell')} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Create Auction
-            </Button>
+            <CreateAuctionDialog />
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
