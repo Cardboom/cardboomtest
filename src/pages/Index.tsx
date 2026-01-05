@@ -27,8 +27,9 @@ import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowRight, Brain, Trophy, Bell, Users, PieChart, Sparkles } from 'lucide-react';
+import { ArrowRight, Brain, Trophy, Bell, Users, PieChart, Sparkles, Clock } from 'lucide-react';
 import { PopularCardsPanel } from '@/components/PopularCardsPanel';
+import { WhatsNewPanel } from '@/components/WhatsNewPanel';
 import { GradingCTA } from '@/components/GradingCTA';
 import { FeatureShowcase } from '@/components/FeatureShowcase';
 import { useNavigate, Link } from 'react-router-dom';
@@ -351,6 +352,10 @@ const Index = () => {
                     <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
                     Popular Cards
                   </TabsTrigger>
+                  <TabsTrigger value="whatsnew" className="gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                    What's New
+                  </TabsTrigger>
                   <TabsTrigger value="insights" className="gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
                     <Brain className="w-3 h-3 sm:w-4 sm:h-4" />
                     {t.smartHub.aiInsights}
@@ -371,6 +376,10 @@ const Index = () => {
 
                 <TabsContent value="popular">
                   <PopularCardsPanel />
+                </TabsContent>
+
+                <TabsContent value="whatsnew">
+                  <WhatsNewPanel />
                 </TabsContent>
 
                 <TabsContent value="insights">

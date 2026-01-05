@@ -282,8 +282,8 @@ export const useMarketItems = (options: UseMarketItemsOptions = {}) => {
 };
 
 // Hook for listings (user-created listings) with seller info
-export const useListings = (options: { sellerId?: string; status?: 'active' | 'sold' | 'cancelled' | 'reserved' } = {}) => {
-  const { sellerId, status = 'active' } = options;
+export const useListings = (options: { sellerId?: string; status?: 'active' | 'sold' | 'cancelled' | 'reserved'; limit?: number } = {}) => {
+  const { sellerId, status = 'active', limit } = options;
   const [listings, setListings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -303,6 +303,10 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
 
       if (sellerId) {
         query = query.eq('seller_id', sellerId);
+      }
+      
+      if (limit) {
+        query = query.limit(limit);
       }
 
       const { data, error } = await query;
