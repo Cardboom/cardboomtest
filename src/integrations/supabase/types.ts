@@ -3245,6 +3245,11 @@ export type Database = {
           surface_grade: number | null
           updated_at: string
           user_id: string
+          ximilar_centering_grade: number | null
+          ximilar_corners_grade: number | null
+          ximilar_edges_grade: number | null
+          ximilar_final_grade: number | null
+          ximilar_surface_grade: number | null
         }
         Insert: {
           ai_confidence?: number | null
@@ -3284,6 +3289,11 @@ export type Database = {
           surface_grade?: number | null
           updated_at?: string
           user_id: string
+          ximilar_centering_grade?: number | null
+          ximilar_corners_grade?: number | null
+          ximilar_edges_grade?: number | null
+          ximilar_final_grade?: number | null
+          ximilar_surface_grade?: number | null
         }
         Update: {
           ai_confidence?: number | null
@@ -3323,6 +3333,11 @@ export type Database = {
           surface_grade?: number | null
           updated_at?: string
           user_id?: string
+          ximilar_centering_grade?: number | null
+          ximilar_corners_grade?: number | null
+          ximilar_edges_grade?: number | null
+          ximilar_final_grade?: number | null
+          ximilar_surface_grade?: number | null
         }
         Relationships: [
           {
