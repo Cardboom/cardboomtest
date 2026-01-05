@@ -3222,6 +3222,7 @@ export type Database = {
           created_at: string
           cvi_key: string | null
           edges_grade: number | null
+          exact_url: string | null
           external_request_id: string | null
           final_grade: number | null
           front_image_url: string | null
@@ -3233,6 +3234,7 @@ export type Database = {
           listing_created_id: string | null
           market_item_id: string | null
           overlay_coordinates: Json | null
+          overlay_url: string | null
           paid_at: string | null
           price_cents: number | null
           price_usd: number
@@ -3266,6 +3268,7 @@ export type Database = {
           created_at?: string
           cvi_key?: string | null
           edges_grade?: number | null
+          exact_url?: string | null
           external_request_id?: string | null
           final_grade?: number | null
           front_image_url?: string | null
@@ -3277,6 +3280,7 @@ export type Database = {
           listing_created_id?: string | null
           market_item_id?: string | null
           overlay_coordinates?: Json | null
+          overlay_url?: string | null
           paid_at?: string | null
           price_cents?: number | null
           price_usd?: number
@@ -3310,6 +3314,7 @@ export type Database = {
           created_at?: string
           cvi_key?: string | null
           edges_grade?: number | null
+          exact_url?: string | null
           external_request_id?: string | null
           final_grade?: number | null
           front_image_url?: string | null
@@ -3321,6 +3326,7 @@ export type Database = {
           listing_created_id?: string | null
           market_item_id?: string | null
           overlay_coordinates?: Json | null
+          overlay_url?: string | null
           paid_at?: string | null
           price_cents?: number | null
           price_usd?: number

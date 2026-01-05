@@ -282,6 +282,27 @@ export function useGradingAdmin() {
     }
   };
 
+  const regradeOrders = async (orderIds: string[]) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('grading-regrade', {
+        body: { orderIds }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      toast({ 
+        title: 'Regrade complete', 
+        description: `${data.successCount}/${data.totalCount} orders regraded successfully` 
+      });
+      await fetchAllOrders();
+      return data;
+    } catch (err: any) {
+      toast({ title: 'Failed to regrade', description: err.message, variant: 'destructive' });
+      return null;
+    }
+  };
+
   useEffect(() => {
     fetchAllOrders();
   }, [fetchAllOrders]);
@@ -291,6 +312,7 @@ export function useGradingAdmin() {
     isLoading,
     fetchAllOrders,
     updateStatus,
-    refundOrder
+    refundOrder,
+    regradeOrders
   };
 }
