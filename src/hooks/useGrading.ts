@@ -47,7 +47,7 @@ export interface GradingOrder {
   ai_confidence: number | null;
 }
 
-export const GRADING_PRICE_USD = 20;
+export const GRADING_PRICE_USD = 10;
 
 export const GRADING_CATEGORIES = [
   { id: 'pokemon', name: 'Pokémon', icon: '⚡' },

@@ -62,18 +62,19 @@ export const GradingCreditsBanner: React.FC<{ userId?: string; subscriptionTier?
   userId, 
   subscriptionTier 
 }) => {
-  if (!subscriptionTier || !['pro', 'verified_seller'].includes(subscriptionTier)) {
+  if (!subscriptionTier || !['pro', 'verified_seller', 'enterprise'].includes(subscriptionTier)) {
     return null;
   }
 
-  const interval = subscriptionTier === 'verified_seller' ? 'month' : '2 months';
+  const creditsPerMonth = subscriptionTier === 'enterprise' ? 2 : 1;
+  const tierLabel = subscriptionTier === 'enterprise' ? 'Enterprise' : subscriptionTier === 'verified_seller' ? 'Verified Seller' : 'Pro';
 
   return (
     <div className="flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30">
       <Crown className="w-5 h-5 text-purple-500" />
       <span className="text-sm">
-        <strong className="text-purple-500">{subscriptionTier === 'verified_seller' ? 'Verified Seller' : 'Pro'}</strong>
-        {' '}perk: 1 free grading every {interval}!
+        <strong className="text-purple-500">{tierLabel}</strong>
+        {' '}perk: {creditsPerMonth} free grading{creditsPerMonth > 1 ? 's' : ''} every month!
       </span>
     </div>
   );

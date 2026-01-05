@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   Plus, TrendingUp, TrendingDown, Search, Trash2, 
   Edit, ExternalLink, Package, DollarSign, PieChart, Clock, Upload, Share2,
-  Wallet
+  Wallet, CheckSquare, Square
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -98,10 +98,45 @@ const Portfolio = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(INITIAL_PORTFOLIO);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const handleRemoveItem = (id: string) => {
     setPortfolioItems(items => items.filter(item => item.id !== id));
+    setSelectedItems(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     toast.success('Item removed from portfolio');
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedItems.size === 0) return;
+    setPortfolioItems(items => items.filter(item => !selectedItems.has(item.id)));
+    toast.success(`${selectedItems.size} item${selectedItems.size > 1 ? 's' : ''} removed from portfolio`);
+    setSelectedItems(new Set());
+    setIsSelectionMode(false);
+  };
+
+  const toggleItemSelection = (id: string) => {
+    setSelectedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === filteredPortfolio.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(filteredPortfolio.map(item => item.id)));
+    }
   };
 
   useEffect(() => {
@@ -332,9 +367,9 @@ const Portfolio = () => {
           {/* Fractional section temporarily disabled */}
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <div className="relative max-w-md">
+        {/* Search and Bulk Actions */}
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search your portfolio..."
@@ -343,17 +378,55 @@ const Portfolio = () => {
               className="pl-10"
             />
           </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isSelectionMode ? "secondary" : "outline"}
+              size="sm"
+              onClick={() => {
+                setIsSelectionMode(!isSelectionMode);
+                if (isSelectionMode) setSelectedItems(new Set());
+              }}
+              className="gap-2"
+            >
+              <CheckSquare className="w-4 h-4" />
+              {isSelectionMode ? 'Cancel' : 'Select'}
+            </Button>
+            
+            {isSelectionMode && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleSelectAll}
+                >
+                  {selectedItems.size === filteredPortfolio.length ? 'Deselect All' : 'Select All'}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={selectedItems.size === 0}
+                  className="gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete ({selectedItems.size})
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Portfolio Items */}
         <div className="glass rounded-xl overflow-hidden">
           <div className="hidden lg:grid grid-cols-12 gap-4 p-4 bg-secondary/50 text-muted-foreground text-sm font-medium border-b border-border/50">
-            <div className="col-span-4">Item</div>
+            {isSelectionMode && <div className="col-span-1"></div>}
+            <div className={cn("col-span-4", isSelectionMode && "col-span-3")}>Item</div>
             <div className="col-span-1 text-center">Qty</div>
             <div className="col-span-2 text-right">Cost Basis</div>
             <div className="col-span-2 text-right">Current Value</div>
             <div className="col-span-2 text-right">P/L</div>
-            <div className="col-span-1"></div>
+            {!isSelectionMode && <div className="col-span-1"></div>}
           </div>
 
           <div className="divide-y divide-border/30">
@@ -367,9 +440,29 @@ const Portfolio = () => {
                 const pnlPct = ((item.currentPrice - item.purchasePrice) / item.purchasePrice) * 100;
 
                 return (
-                  <div key={item.id} className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-secondary/30 transition-colors">
+                  <div key={item.id} className={cn(
+                    "grid grid-cols-12 gap-4 p-4 items-center transition-colors",
+                    isSelectionMode && selectedItems.has(item.id) ? "bg-primary/10" : "hover:bg-secondary/30"
+                  )}>
+                    {/* Selection Checkbox */}
+                    {isSelectionMode && (
+                      <div 
+                        className="col-span-1 flex items-center justify-center cursor-pointer"
+                        onClick={() => toggleItemSelection(item.id)}
+                      >
+                        {selectedItems.has(item.id) ? (
+                          <CheckSquare className="w-5 h-5 text-primary" />
+                        ) : (
+                          <Square className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </div>
+                    )}
+                    
                     {/* Item Info */}
-                    <div className="col-span-12 lg:col-span-4 flex items-center gap-3">
+                    <div className={cn(
+                      "col-span-12 lg:col-span-4 flex items-center gap-3",
+                      isSelectionMode && "lg:col-span-3"
+                    )}>
                       <div className="w-14 h-14 rounded-lg bg-secondary overflow-hidden shrink-0">
                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       </div>
@@ -421,39 +514,55 @@ const Portfolio = () => {
                       </p>
                     </div>
 
-                    {/* Actions */}
-                    <div className="hidden lg:flex col-span-1 justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <ExternalLink className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleRemoveItem(item.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    {/* Mobile Stats */}
-                    <div className="col-span-12 lg:hidden flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-xs">Qty: {item.quantity}</span>
-                        <span className="text-border">|</span>
-                        <span className="text-muted-foreground text-xs">Cost: {formatPrice(item.purchasePrice * item.quantity)}</span>
+                    {/* Actions - hide in selection mode */}
+                    {!isSelectionMode && (
+                      <div className="hidden lg:flex col-span-1 justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <ExternalLink className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Edit className="w-4 h-4" />
+                        </Button>
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10 ml-1"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => handleRemoveItem(item.id)}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
+                    )}
+
+                    {/* Mobile Stats */}
+                    <div className="col-span-12 lg:hidden flex items-center justify-between mt-2">
+                      {isSelectionMode ? (
+                        <div 
+                          className="flex items-center gap-2 cursor-pointer"
+                          onClick={() => toggleItemSelection(item.id)}
+                        >
+                          {selectedItems.has(item.id) ? (
+                            <CheckSquare className="w-5 h-5 text-primary" />
+                          ) : (
+                            <Square className="w-5 h-5 text-muted-foreground" />
+                          )}
+                          <span className="text-sm">{selectedItems.has(item.id) ? 'Selected' : 'Tap to select'}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground text-xs">Qty: {item.quantity}</span>
+                          <span className="text-border">|</span>
+                          <span className="text-muted-foreground text-xs">Cost: {formatPrice(item.purchasePrice * item.quantity)}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10 ml-1"
+                            onClick={() => handleRemoveItem(item.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
                       <div className="text-right">
                         <p className="text-foreground font-semibold">{formatPrice(item.currentPrice * item.quantity)}</p>
                         <p className={cn("text-xs", pnl >= 0 ? "text-gain" : "text-loss")}>

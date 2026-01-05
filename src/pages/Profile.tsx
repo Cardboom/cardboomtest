@@ -437,8 +437,8 @@ const Profile = () => {
                               </div>
                             )}
                             
-                            {/* Card Image */}
-                            <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden bg-muted mb-3">
+                            {/* Card Image with CBI Graded overlay */}
+                            <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden bg-muted mb-3 relative">
                               {card.image_url ? (
                                 <img 
                                   src={card.image_url} 
@@ -448,6 +448,15 @@ const Profile = () => {
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center">
                                   <Award className="w-8 h-8 text-muted-foreground/30" />
+                                </div>
+                              )}
+                              {/* CBI Graded overlay badge */}
+                              {card.grading_company === 'CardBoom' && (
+                                <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/60 to-transparent p-2">
+                                  <div className="flex items-center gap-1.5">
+                                    <Award className="w-3.5 h-3.5 text-primary" />
+                                    <span className="text-[10px] font-bold text-white/90 tracking-wider uppercase">CBI Graded</span>
+                                  </div>
                                 </div>
                               )}
                             </div>

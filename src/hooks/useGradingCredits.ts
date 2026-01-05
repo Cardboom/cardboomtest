@@ -168,20 +168,22 @@ export const useGradingCredits = (userId?: string) => {
       : null;
 
     let shouldGrant = false;
-    let monthsRequired = 0;
+    let creditsToGrant = 0;
 
-    if (subscriptionTier === 'verified_seller') {
-      monthsRequired = 1;
-    } else if (subscriptionTier === 'pro') {
-      monthsRequired = 2;
+    // Pro gets 1 credit per month, Enterprise gets 2 credits per month
+    if (subscriptionTier === 'enterprise') {
+      creditsToGrant = 2;
+    } else if (subscriptionTier === 'pro' || subscriptionTier === 'verified_seller') {
+      creditsToGrant = 1;
     }
 
-    if (monthsRequired > 0) {
+    if (creditsToGrant > 0) {
       if (!lastCredit) {
         shouldGrant = true;
       } else {
+        // Check if a month has passed since last credit
         const monthsDiff = (now.getTime() - lastCredit.getTime()) / (1000 * 60 * 60 * 24 * 30);
-        shouldGrant = monthsDiff >= monthsRequired;
+        shouldGrant = monthsDiff >= 1;
       }
     }
 
@@ -190,14 +192,14 @@ export const useGradingCredits = (userId?: string) => {
         if (!credits) {
           await supabase.from('grading_credits').insert({
             user_id: userId,
-            credits_remaining: 1,
+            credits_remaining: creditsToGrant,
             last_monthly_credit_at: now.toISOString(),
           });
         } else {
           await supabase
             .from('grading_credits')
             .update({
-              credits_remaining: credits.credits_remaining + 1,
+              credits_remaining: credits.credits_remaining + creditsToGrant,
               last_monthly_credit_at: now.toISOString(),
             })
             .eq('user_id', userId);
@@ -205,11 +207,12 @@ export const useGradingCredits = (userId?: string) => {
 
         await supabase.from('grading_credit_history').insert({
           user_id: userId,
-          credits_change: 1,
-          reason: `Monthly ${subscriptionTier} credit`,
+          credits_change: creditsToGrant,
+          reason: `Monthly ${subscriptionTier} credit (${creditsToGrant}x)`,
         });
 
-        toast.success('🎉 You received your monthly free grading credit!');
+        const tierLabel = subscriptionTier === 'enterprise' ? 'Enterprise' : 'Pro';
+        toast.success(`🎉 You received ${creditsToGrant} free grading credit${creditsToGrant > 1 ? 's' : ''} for ${tierLabel}!`);
         fetchCredits();
         return true;
       } catch (error) {
