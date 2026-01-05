@@ -323,11 +323,11 @@ serve(async (req) => {
     "surface": {"score": 8.0, "notes": "Brief notes"},
     "eye_appeal": {"score": 8.5, "notes": "Brief notes"}
   },
-  "cardboom_index": 82,
+  "cardboom_index": 8.2,
   "estimated_psa_range": "PSA 8-9",
   "confidence_level": "Medium",
   "risk_flags": [],
-  "grading_disclaimer": "AI-assisted visual pre-grade, not an official certification."
+  "grading_disclaimer": "This is the CardBoom Grading Index. We do our best to grade with our fine-tuned AI system powered by Brainbaby."
 }`;
 
       console.log('Calling OpenAI GPT-4o Vision for CBGI grading...');
