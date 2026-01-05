@@ -335,18 +335,17 @@ serve(async (req) => {
         
         console.log('Extracted grades - Final:', ximilarFinalGrade, 'Corners:', ximilarCorners, 'Edges:', ximilarEdges, 'Surface:', ximilarSurface, 'Centering:', ximilarCentering);
         
-        // Apply 5% conservative adjustment for CardBoom disciplined grading
-        const applyConservativeAdjustment = (grade: number | null): number | null => {
+        // Use raw grades directly (no adjustment)
+        const roundGrade = (grade: number | null): number | null => {
           if (grade === null) return null;
-          const adjusted = Math.max(1.0, grade * 0.95);
-          return Math.round(adjusted * 10) / 10;
+          return Math.round(grade * 10) / 10;
         };
         
-        const cardboomFinalGrade = applyConservativeAdjustment(ximilarFinalGrade);
-        const cardboomCorners = applyConservativeAdjustment(ximilarCorners);
-        const cardboomEdges = applyConservativeAdjustment(ximilarEdges);
-        const cardboomSurface = applyConservativeAdjustment(ximilarSurface);
-        const cardboomCentering = applyConservativeAdjustment(ximilarCentering);
+        const cardboomFinalGrade = roundGrade(ximilarFinalGrade);
+        const cardboomCorners = roundGrade(ximilarCorners);
+        const cardboomEdges = roundGrade(ximilarEdges);
+        const cardboomSurface = roundGrade(ximilarSurface);
+        const cardboomCentering = roundGrade(ximilarCentering);
         
         // Map grade to label using CardBoom adjusted grade
         const getGradeLabel = (grade: number | null): string => {

@@ -131,9 +131,12 @@ const ListingDetail = () => {
       if (error) throw error;
       setListing(data);
       
-      // If listing has a market_item_id, check for CardBoom grading
+      // Check for CardBoom grading - multiple strategies
+      let gradingData = null;
+      
+      // Strategy 1: Match by market_item_id
       if (data?.market_item_id) {
-        const { data: gradingData } = await supabase
+        const { data: marketGrading } = await supabase
           .from('grading_orders')
           .select('final_grade, grade_label')
           .eq('market_item_id', data.market_item_id)
@@ -141,10 +144,37 @@ const ListingDetail = () => {
           .order('completed_at', { ascending: false })
           .limit(1)
           .maybeSingle();
-        
-        if (gradingData) {
-          setGradingInfo(gradingData);
-        }
+        gradingData = marketGrading;
+      }
+      
+      // Strategy 2: Check if this listing was created from a grading order
+      if (!gradingData && data?.id) {
+        const { data: linkedGrading } = await supabase
+          .from('grading_orders')
+          .select('final_grade, grade_label')
+          .eq('listing_created_id', data.id)
+          .eq('status', 'completed')
+          .limit(1)
+          .maybeSingle();
+        gradingData = linkedGrading;
+      }
+      
+      // Strategy 3: Match seller's grading orders by image URL
+      if (!gradingData && data?.seller_id && data?.image_url) {
+        const { data: imageGrading } = await supabase
+          .from('grading_orders')
+          .select('final_grade, grade_label')
+          .eq('user_id', data.seller_id)
+          .eq('front_image_url', data.image_url)
+          .eq('status', 'completed')
+          .order('completed_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        gradingData = imageGrading;
+      }
+      
+      if (gradingData) {
+        setGradingInfo(gradingData);
       }
     } catch (error) {
       console.error('Error fetching listing:', error);
