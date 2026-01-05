@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { RoundedBox, OrbitControls } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
@@ -9,48 +9,60 @@ interface CardOverlayPreviewProps {
   order: GradingOrder;
 }
 
-// Hook to load texture with CORS support
-function useCardTexture(url: string): THREE.Texture | null {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+// Card mesh component with texture loading inside Three context
+function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [frontTexture, setFrontTexture] = useState<THREE.Texture | null>(null);
+  const [backTexture, setBackTexture] = useState<THREE.Texture | null>(null);
+  const { gl } = useThree();
 
   useEffect(() => {
-    if (!url || url === '/placeholder.svg') {
-      setTexture(null);
-      return;
-    }
+    if (!frontUrl) return;
 
     const loader = new THREE.TextureLoader();
-    loader.crossOrigin = 'anonymous';
+    loader.setCrossOrigin('anonymous');
     
     loader.load(
-      url,
-      (loadedTexture) => {
-        loadedTexture.colorSpace = THREE.SRGBColorSpace;
-        loadedTexture.needsUpdate = true;
-        setTexture(loadedTexture);
+      frontUrl,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.flipY = true;
+        texture.needsUpdate = true;
+        gl.initTexture(texture);
+        setFrontTexture(texture);
       },
       undefined,
-      (error) => {
-        console.error('Failed to load texture:', url, error);
-        setTexture(null);
-      }
+      (err) => console.error('Front texture error:', err)
     );
 
     return () => {
-      if (texture) {
-        texture.dispose();
-      }
+      frontTexture?.dispose();
     };
-  }, [url]);
+  }, [frontUrl, gl]);
 
-  return texture;
-}
+  useEffect(() => {
+    if (!backUrl) return;
 
-// Card mesh component
-function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const frontTexture = useCardTexture(frontUrl);
-  const backTexture = useCardTexture(backUrl);
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin('anonymous');
+    
+    loader.load(
+      backUrl,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.flipY = true;
+        texture.needsUpdate = true;
+        gl.initTexture(texture);
+        setBackTexture(texture);
+      },
+      undefined,
+      (err) => console.error('Back texture error:', err)
+    );
+
+    return () => {
+      backTexture?.dispose();
+    };
+  }, [backUrl, gl]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
@@ -71,14 +83,14 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
         <meshStandardMaterial 
           attach="material-4" 
           map={frontTexture}
-          color={frontTexture ? undefined : "#2a2a4e"}
+          color={frontTexture ? "#ffffff" : "#2a2a4e"}
           roughness={0.3}
           metalness={0.1}
         />
         <meshStandardMaterial 
           attach="material-5" 
           map={backTexture}
-          color={backTexture ? undefined : "#2a2a4e"}
+          color={backTexture ? "#ffffff" : "#2a2a4e"}
           roughness={0.3}
           metalness={0.1}
         />
@@ -127,10 +139,10 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
           gl={{ antialias: true, alpha: true }}
           dpr={[1, 2]}
         >
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[5, 5, 5]} intensity={1} />
-          <directionalLight position={[-5, 5, -5]} intensity={0.5} />
-          <spotLight position={[0, 10, 0]} intensity={0.3} angle={0.3} penumbra={1} />
+          <ambientLight intensity={0.8} />
+          <directionalLight position={[5, 5, 5]} intensity={1.2} />
+          <directionalLight position={[-5, 5, -5]} intensity={0.6} />
+          <spotLight position={[0, 10, 0]} intensity={0.4} angle={0.3} penumbra={1} />
           
           <Suspense fallback={<CardFallback />}>
             <CardMesh frontUrl={frontUrl} backUrl={backUrl} />
