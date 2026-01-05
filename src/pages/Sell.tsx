@@ -250,24 +250,47 @@ const SellPage = () => {
       // Upload image if selected
       const imageUrl = await uploadImage(session.user.id);
 
-      const { data: listingData, error } = await supabase
-        .from('listings')
-        .insert({
-          seller_id: session.user.id,
-          title: formData.title,
-          description: formData.description,
-          category: formData.category,
-          condition: formData.condition,
-          price: price,
-          allows_vault: formData.allowsVault,
-          allows_trade: formData.allowsTrade,
-          allows_shipping: formData.allowsShipping,
-          image_url: imageUrl,
-        })
-        .select()
-        .single();
+      // Prepare card data for indexing - use reviewed data if available
+      const cardData = reviewedCardData ? {
+        cardName: reviewedCardData.cardName,
+        cardNameEnglish: reviewedCardData.cardNameEnglish,
+        category: reviewedCardData.category || formData.category,
+        setName: reviewedCardData.setName || formData.setName,
+        setCode: reviewedCardData.setCode || formData.setCode,
+        cardNumber: reviewedCardData.cardNumber || formData.cardNumber,
+        rarity: reviewedCardData.rarity || formData.rarity,
+        language: reviewedCardData.language || formData.language,
+        confidence: reviewedCardData.confidence || 0,
+        cviKey: reviewedCardData.cviKey,
+      } : {
+        cardName: formData.title,
+        cardNameEnglish: formData.title,
+        category: formData.category,
+        setName: formData.setName,
+        setCode: formData.setCode,
+        cardNumber: formData.cardNumber,
+        rarity: formData.rarity,
+        language: formData.language,
+        confidence: 0,
+        cviKey: formData.setCode && formData.cardNumber 
+          ? `${formData.category}|${formData.setCode}|${formData.cardNumber}|${formData.language}`
+          : null,
+      };
 
-      if (error) throw error;
+      // Use the card indexer to create listing linked to market_items
+      const { listing: listingData, marketItem } = await createListing({
+        userId: session.user.id,
+        cardData,
+        imageUrl: imageUrl || undefined,
+        price,
+        condition: formData.condition,
+        description: formData.description,
+        allowsVault: formData.allowsVault,
+        allowsTrade: formData.allowsTrade,
+        allowsShipping: formData.allowsShipping,
+      });
+
+      if (!listingData) throw new Error('Failed to create listing');
 
       // Create fractional listing if enabled
       if (formData.enableFractional && listingData) {

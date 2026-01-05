@@ -82,15 +82,24 @@ export function WhatsNewPanel() {
                 </div>
               )}
               
-              {/* CardBoom Graded Badge */}
-              {listing.grading_company === 'CardBoom' && (
-                <div className="absolute top-2 right-2">
+              {/* Grade Badge - Show grading info or Ungraded */}
+              <div className="absolute top-2 right-2">
+                {listing.grading_company === 'CardBoom' ? (
                   <Badge className="bg-primary text-primary-foreground gap-1">
                     <Award className="w-3 h-3" />
                     CB {listing.grade || 'Graded'}
                   </Badge>
-                </div>
-              )}
+                ) : listing.grading_company ? (
+                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm gap-1">
+                    <Award className="w-3 h-3" />
+                    {listing.grading_company} {listing.grade}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="bg-background/80 backdrop-blur-sm text-xs">
+                    Ungraded
+                  </Badge>
+                )}
+              </div>
               
               {/* Time Badge */}
               <div className="absolute bottom-2 left-2">
