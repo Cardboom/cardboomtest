@@ -1,9 +1,96 @@
-import { useState } from 'react';
+import { useState, useRef, Suspense } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { RoundedBox, useTexture, Environment } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
+import * as THREE from 'three';
 
 interface CardOverlayPreviewProps {
   order: GradingOrder;
+}
+
+function Card3D({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: string; showFront: boolean }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+  
+  const frontTexture = useTexture(frontUrl || '/placeholder.svg');
+  const backTexture = useTexture(backUrl || frontUrl || '/placeholder.svg');
+  
+  // Set texture properties
+  [frontTexture, backTexture].forEach(tex => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+  });
+
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    
+    // Target rotation based on which side to show
+    const targetY = showFront ? 0 : Math.PI;
+    
+    // Smooth rotation transition
+    meshRef.current.rotation.y = THREE.MathUtils.lerp(
+      meshRef.current.rotation.y,
+      targetY,
+      0.05
+    );
+    
+    // Gentle floating animation
+    meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
+    
+    // Subtle tilt on hover
+    const tiltX = hovered ? Math.sin(state.clock.elapsedTime * 2) * 0.03 : 0;
+    meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, tiltX, 0.1);
+  });
+
+  // Card dimensions (standard trading card ratio 2.5:3.5)
+  const width = 2.5;
+  const height = 3.5;
+  const depth = 0.02;
+
+  return (
+    <mesh
+      ref={meshRef}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
+      <RoundedBox args={[width, height, depth]} radius={0.08} smoothness={4}>
+        <meshStandardMaterial attach="material-0" color="#1a1a2e" />
+        <meshStandardMaterial attach="material-1" color="#1a1a2e" />
+        <meshStandardMaterial attach="material-2" color="#1a1a2e" />
+        <meshStandardMaterial attach="material-3" color="#1a1a2e" />
+        <meshStandardMaterial 
+          attach="material-4" 
+          map={frontTexture}
+          roughness={0.3}
+          metalness={0.1}
+        />
+        <meshStandardMaterial 
+          attach="material-5" 
+          map={backTexture}
+          roughness={0.3}
+          metalness={0.1}
+        />
+      </RoundedBox>
+    </mesh>
+  );
+}
+
+function CardScene({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: string; showFront: boolean }) {
+  return (
+    <>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[5, 5, 5]} intensity={1} />
+      <directionalLight position={[-5, 5, -5]} intensity={0.5} />
+      <spotLight position={[0, 10, 0]} intensity={0.3} angle={0.3} penumbra={1} />
+      
+      <Suspense fallback={null}>
+        <Card3D frontUrl={frontUrl} backUrl={backUrl} showFront={showFront} />
+        <Environment preset="city" />
+      </Suspense>
+    </>
+  );
 }
 
 export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
@@ -18,60 +105,37 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
     return 'from-gray-400 to-slate-500';
   };
 
+  const frontUrl = order.front_image_url || '/placeholder.svg';
+  const backUrl = order.back_image_url || frontUrl;
+
   return (
     <div className="flex flex-col items-center">
-      {/* Phone-style frame */}
-      <div className="relative w-[280px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[2.5rem] p-3 shadow-2xl">
-        {/* Phone notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-black rounded-b-2xl" />
+      {/* 3D Card Container */}
+      <div className="relative w-[300px] h-[420px] rounded-2xl overflow-hidden bg-gradient-to-b from-gray-900 to-black shadow-2xl">
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 45 }}
+          gl={{ antialias: true, alpha: true }}
+          dpr={[1, 2]}
+        >
+          <CardScene frontUrl={frontUrl} backUrl={backUrl} showFront={showFront} />
+        </Canvas>
         
-        {/* Screen */}
-        <div className="relative bg-black rounded-[2rem] overflow-hidden aspect-[9/16]">
-          {/* Card image */}
-          <div className="absolute inset-4 flex items-center justify-center">
-            <div className="relative w-full max-w-[200px] aspect-[2.5/3.5]">
-              <img
-                src={showFront ? order.front_image_url || '' : order.back_image_url || ''}
-                alt={showFront ? 'Card front' : 'Card back'}
-                className="w-full h-full object-contain rounded-lg shadow-lg"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/placeholder.svg';
-                }}
-              />
-              
-              {/* Overlay indicators - only show if we have coordinates */}
-              {order.overlay_coordinates && order.completed_at && showFront && (
-                <>
-                  {/* Corner indicators */}
-                  <div className="absolute top-1 left-1 w-6 h-6 border-t-2 border-l-2 border-emerald-400 rounded-tl" />
-                  <div className="absolute top-1 right-1 w-6 h-6 border-t-2 border-r-2 border-emerald-400 rounded-tr" />
-                  <div className="absolute bottom-1 left-1 w-6 h-6 border-b-2 border-l-2 border-emerald-400 rounded-bl" />
-                  <div className="absolute bottom-1 right-1 w-6 h-6 border-b-2 border-r-2 border-emerald-400 rounded-br" />
-                  
-                  {/* Centering guides */}
-                  <div className="absolute left-0 top-1/2 w-2 h-8 -translate-y-1/2 bg-blue-400/50 rounded-r" />
-                  <div className="absolute right-0 top-1/2 w-2 h-8 -translate-y-1/2 bg-blue-400/50 rounded-l" />
-                  <div className="absolute top-0 left-1/2 h-2 w-8 -translate-x-1/2 bg-blue-400/50 rounded-b" />
-                  <div className="absolute bottom-0 left-1/2 h-2 w-8 -translate-x-1/2 bg-blue-400/50 rounded-t" />
-                </>
-              )}
+        {/* Grade overlay */}
+        {order.final_grade && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+            <div className={cn(
+              'px-6 py-2 rounded-full bg-gradient-to-r shadow-lg backdrop-blur-sm',
+              getGradeBadgeColor(order.final_grade)
+            )}>
+              <span className="text-white font-bold text-lg drop-shadow">
+                CBGI: {order.final_grade.toFixed(1)}
+              </span>
             </div>
           </div>
-          
-          {/* Final grade badge */}
-          {order.final_grade && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-              <div className={cn(
-                'px-6 py-2 rounded-full bg-gradient-to-r shadow-lg',
-                getGradeBadgeColor(order.final_grade)
-              )}>
-                <span className="text-white font-bold text-lg drop-shadow">
-                  Final: {order.final_grade.toFixed(1)}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
+        
+        {/* Shine effect overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
       </div>
 
       {/* Toggle buttons */}
@@ -79,9 +143,9 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
         <button
           onClick={() => setShowFront(true)}
           className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+            'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300',
             showFront 
-              ? 'bg-primary text-primary-foreground' 
+              ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
               : 'bg-muted text-muted-foreground hover:bg-muted/80'
           )}
         >
@@ -90,15 +154,17 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
         <button
           onClick={() => setShowFront(false)}
           className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+            'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300',
             !showFront 
-              ? 'bg-primary text-primary-foreground' 
+              ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
               : 'bg-muted text-muted-foreground hover:bg-muted/80'
           )}
         >
           Back
         </button>
       </div>
+      
+      <p className="text-xs text-muted-foreground mt-2">Click buttons to flip card</p>
     </div>
   );
 }
