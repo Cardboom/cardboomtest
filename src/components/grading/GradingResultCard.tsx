@@ -41,14 +41,14 @@ export function GradingResultCard({ order }: GradingResultCardProps) {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Award className="w-5 h-5 text-primary" />
-              <span className="text-sm text-muted-foreground uppercase tracking-wide">CardBoom Grade</span>
+              <span className="text-sm text-muted-foreground uppercase tracking-wide">CardBoom Index</span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
                     <Info className="w-3.5 h-3.5 text-muted-foreground" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs">
-                    <p className="text-xs">CardBoom applies a 5% conservative adjustment to ensure disciplined, heavy grading. This means our grades are more stringent than raw AI scores.</p>
+                    <p className="text-xs">CardBoom Index applies a 5% conservative adjustment to ensure disciplined, heavy grading. Our index scores are more stringent than raw AI scores.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -115,10 +115,10 @@ export function GradingResultCard({ order }: GradingResultCardProps) {
         <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
           <div className="flex items-center gap-2 text-xs text-primary">
             <Shield className="w-3.5 h-3.5" />
-            <span className="font-medium">CardBoom Disciplined Grading</span>
+            <span className="font-medium">CardBoom Disciplined Index</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Grades are 5% below raw AI scores to maintain strict, conservative standards.
+            Index scores are 5% below raw AI scores to maintain strict, conservative standards.
           </p>
         </div>
 

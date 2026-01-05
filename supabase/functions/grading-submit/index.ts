@@ -178,27 +178,29 @@ serve(async (req) => {
       console.log('Front image:', existingOrder.front_image_url);
       console.log('Back image:', existingOrder.back_image_url);
       
-      // Build records array - Ximilar expects _url field, not _url_front/_url_back
-      // Can send both front and back as separate records (max 2)
+      // Build records array - Ximilar expects _url field
+      // Send front and back as separate records with Side specified
       const records: any[] = [];
       
       if (existingOrder.front_image_url) {
         records.push({
           _url: existingOrder.front_image_url,
-          Side: 'front'
+          Side: 'Front'
         });
       }
       
       if (existingOrder.back_image_url) {
         records.push({
           _url: existingOrder.back_image_url,
-          Side: 'back'
+          Side: 'Back'
         });
       }
       
       if (records.length === 0) {
         throw new Error('No images available for grading');
       }
+
+      console.log('Sending records to Ximilar:', JSON.stringify(records));
 
       const ximilarResponse = await fetch(XIMILAR_API_URL, {
         method: 'POST',
@@ -210,23 +212,54 @@ serve(async (req) => {
       });
 
       const ximilarData = await ximilarResponse.json();
+      console.log('Ximilar full response:', JSON.stringify(ximilarData));
       console.log('Ximilar response status:', ximilarData.status);
       console.log('Ximilar records count:', ximilarData.records?.length);
       
       if (ximilarData.records && ximilarData.records.length > 0) {
-        // Get the first record (front side) - Ximilar returns grades in the "grades" field
-        const record = ximilarData.records[0];
-        console.log('Record grades:', JSON.stringify(record.grades));
-        console.log('Record _status:', JSON.stringify(record._status));
+        // Get the first successful record (typically front side)
+        // Find a record with valid grades
+        let gradeRecord = ximilarData.records.find((r: any) => r.grades && r._status?.code === 200);
         
-        // Check if grading was successful
-        if (record._status?.code !== 200) {
-          console.error('Ximilar grading failed:', record._status?.text);
-          throw new Error(record._status?.text || 'Grading failed');
+        // If no record with grades found, use first record
+        if (!gradeRecord) {
+          gradeRecord = ximilarData.records[0];
+        }
+        
+        console.log('Using record for grades:', JSON.stringify(gradeRecord?.grades));
+        console.log('Record _status:', JSON.stringify(gradeRecord?._status));
+        
+        // Check if record has an error status
+        if (gradeRecord._status?.code !== 200) {
+          console.error('Ximilar grading failed for record:', gradeRecord._status?.text);
+          // Don't throw - mark as in_review so admin can handle
+          await supabase
+            .from('grading_orders')
+            .update({
+              status: 'in_review',
+              submitted_at: new Date().toISOString(),
+              grading_notes: `Ximilar error: ${gradeRecord._status?.text || 'Unknown error'}`,
+              external_request_id: ximilarData.status?.request_id || null
+            })
+            .eq('id', orderId);
+            
+          console.log(`Order ${orderId} marked for manual review due to Ximilar error`);
+          
+          // Fetch and return updated order
+          const { data: updatedOrder } = await supabase
+            .from('grading_orders')
+            .select('*')
+            .eq('id', orderId)
+            .single();
+
+          return new Response(
+            JSON.stringify({ success: true, order: updatedOrder, status: 'in_review' }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
         }
         
         // Extract grades from the correct location per Ximilar API docs
-        const grades = record.grades || {};
+        const grades = gradeRecord.grades || {};
         
         // Ximilar returns grades in the "grades" object
         const ximilarFinalGrade = grades.final || null;
@@ -267,8 +300,8 @@ serve(async (req) => {
         };
 
         // Get overlay visualization URLs
-        const overlayUrl = record._full_url_card || null;
-        const exactUrl = record._exact_url_card || null;
+        const overlayUrl = gradeRecord._full_url_card || null;
+        const exactUrl = gradeRecord._exact_url_card || null;
 
         // Update order with results
         const { error: updateGradeError } = await supabase
@@ -293,7 +326,7 @@ serve(async (req) => {
             // Visualization URLs
             overlay_url: overlayUrl,
             exact_url: exactUrl,
-            overlay_coordinates: record._objects || null,
+            overlay_coordinates: gradeRecord._objects || null,
             confidence: null,
             external_request_id: ximilarData.status?.request_id || null
           })
@@ -303,7 +336,7 @@ serve(async (req) => {
           console.error('Failed to update grading order with results:', updateGradeError);
         }
 
-        console.log(`Order ${orderId} completed - Ximilar Final: ${ximilarFinalGrade}, CardBoom Final: ${cardboomFinalGrade}`);
+        console.log(`Order ${orderId} completed - Ximilar Final: ${ximilarFinalGrade}, CardBoom Index: ${cardboomFinalGrade}`);
       } else {
         // Mark as in_review if API didn't return results
         await supabase
@@ -311,7 +344,8 @@ serve(async (req) => {
           .update({
             status: 'in_review',
             submitted_at: new Date().toISOString(),
-            external_request_id: ximilarData.status?.request_id || null
+            external_request_id: ximilarData.status?.request_id || null,
+            grading_notes: 'No grading results returned from Ximilar API'
           })
           .eq('id', orderId);
 
@@ -319,12 +353,13 @@ serve(async (req) => {
       }
     } catch (apiError) {
       console.error('Ximilar API error:', apiError);
-      // Mark as in_review - will be processed by polling
+      // Mark as in_review - will be processed by polling or manually
       await supabase
         .from('grading_orders')
         .update({
           status: 'in_review',
-          submitted_at: new Date().toISOString()
+          submitted_at: new Date().toISOString(),
+          grading_notes: `API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`
         })
         .eq('id', orderId);
     }
