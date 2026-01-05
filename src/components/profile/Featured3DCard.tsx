@@ -1,6 +1,6 @@
-import { Suspense, useRef } from 'react';
+import { Suspense, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useTexture, RoundedBox, Environment, Float, MeshReflectorMaterial } from '@react-three/drei';
+import { RoundedBox, Environment, Float, MeshReflectorMaterial } from '@react-three/drei';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,18 +20,50 @@ interface Featured3DCardProps {
   onSelectCard?: () => void;
 }
 
+// CORS-safe texture loader using Image element
+function useImageTexture(url: string): THREE.Texture | null {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    if (!url || url === '/placeholder.svg') {
+      setTexture(null);
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const tex = new THREE.Texture(img);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.needsUpdate = true;
+      setTexture(tex);
+    };
+    
+    img.onerror = () => {
+      console.error('Featured3DCard texture load error:', url);
+      setTexture(null);
+    };
+    
+    img.src = url;
+
+    return () => {
+      texture?.dispose();
+    };
+  }, [url]);
+
+  return texture;
+}
+
 function CardMesh({ imageUrl }: { imageUrl: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const texture = useTexture(imageUrl || '/placeholder.svg');
-  
-  // Configure texture
-  texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
+  const texture = useImageTexture(imageUrl);
   
   useFrame((state) => {
     if (meshRef.current) {
-      // Gentle hover animation
       meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.15;
       meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.05;
     }
@@ -43,12 +75,12 @@ function CardMesh({ imageUrl }: { imageUrl: string }) {
         <RoundedBox args={[2.5, 3.5, 0.05]} radius={0.08} smoothness={4}>
           <meshStandardMaterial
             map={texture}
+            color={texture ? "#ffffff" : "#2a2a4e"}
             metalness={0.1}
             roughness={0.3}
             envMapIntensity={0.5}
           />
         </RoundedBox>
-        {/* Card edge / thickness */}
         <mesh position={[0, 0, -0.03]}>
           <RoundedBox args={[2.52, 3.52, 0.04]} radius={0.08} smoothness={4}>
             <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
