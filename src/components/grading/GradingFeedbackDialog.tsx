@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { MessageSquarePlus, Loader2 } from 'lucide-react';
+import { MessageSquarePlus, Loader2, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAdminRole } from '@/hooks/useAdminRole';
 
 interface GradingFeedbackDialogProps {
   orderId: string;
@@ -17,11 +18,17 @@ const PSA_GRADES = ['10', '9', '8', '7', '6', '5', '4', '3', '2', '1', 'Auth'];
 const GRADING_COMPANIES = ['PSA', 'BGS', 'CGC', 'SGC'];
 
 export function GradingFeedbackDialog({ orderId, cbgiScore }: GradingFeedbackDialogProps) {
+  const { isAdmin, isLoading: adminLoading } = useAdminRole();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [actualGrade, setActualGrade] = useState('');
   const [company, setCompany] = useState('PSA');
   const [notes, setNotes] = useState('');
+
+  // Only admins can provide feedback
+  if (adminLoading || !isAdmin) {
+    return null;
+  }
 
   const handleSubmit = async () => {
     if (!actualGrade) {
@@ -44,7 +51,7 @@ export function GradingFeedbackDialog({ orderId, cbgiScore }: GradingFeedbackDia
 
       if (error) throw error;
 
-      toast.success('Thank you! Your feedback helps improve our AI grading.');
+      toast.success('Feedback submitted! This will help calibrate CBGI.');
       setOpen(false);
       setActualGrade('');
       setNotes('');
@@ -60,16 +67,19 @@ export function GradingFeedbackDialog({ orderId, cbgiScore }: GradingFeedbackDia
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <MessageSquarePlus className="h-4 w-4" />
-          Report Actual Grade
+          <ShieldCheck className="h-4 w-4" />
+          Admin: Report Actual Grade
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Help Improve CBGI Accuracy</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            CBGI Calibration Feedback
+          </DialogTitle>
         </DialogHeader>
         <p className="text-sm text-muted-foreground">
-          If you've had this card professionally graded, share the actual result to help us improve.
+          Enter the actual professional grade to help train the CBGI model.
         </p>
         
         <div className="space-y-4 mt-4">
@@ -104,9 +114,9 @@ export function GradingFeedbackDialog({ orderId, cbgiScore }: GradingFeedbackDia
           </div>
 
           <div className="space-y-2">
-            <Label>Additional Notes (optional)</Label>
+            <Label>Observations (optional)</Label>
             <Textarea 
-              placeholder="Any observations about the card condition..."
+              placeholder="Notable condition issues, discrepancies, etc..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -119,7 +129,7 @@ export function GradingFeedbackDialog({ orderId, cbgiScore }: GradingFeedbackDia
 
           <Button onClick={handleSubmit} disabled={loading} className="w-full">
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Submit Feedback
+            Submit Calibration Data
           </Button>
         </div>
       </DialogContent>

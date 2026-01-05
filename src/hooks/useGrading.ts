@@ -66,6 +66,7 @@ export const GRADING_PRICE_USD = 10;
 export const GRADING_CATEGORIES = [
   { id: 'pokemon', name: 'Pokémon', icon: '⚡' },
   { id: 'sports', name: 'Sports Cards', icon: '🏀' },
+  { id: 'fifa-panini', name: 'FIFA Panini', icon: '⚽' },
   { id: 'yugioh', name: 'Yu-Gi-Oh!', icon: '🎴' },
   { id: 'magic', name: 'Magic: The Gathering', icon: '🧙' },
   { id: 'one-piece', name: 'One Piece', icon: '🏴‍☠️' },
