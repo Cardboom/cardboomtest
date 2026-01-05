@@ -164,12 +164,9 @@ export function CardScannerUpload({
   return (
     <Card className={cn("border-primary/10 overflow-hidden", className)}>
       <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/50">
-        <CardTitle className="flex items-center gap-2 text-lg">
+      <CardTitle className="flex items-center gap-2 text-lg">
           <Sparkles className="h-5 w-5 text-primary" />
           {mode === 'sell' ? 'AI Card Scanner' : 'AI Card Recognition'}
-          <Badge variant="secondary" className="ml-2 text-xs">
-            Powered by Ximilar
-          </Badge>
         </CardTitle>
         <p className="text-sm text-muted-foreground">
           {mode === 'sell' 
