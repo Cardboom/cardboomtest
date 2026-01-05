@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TrendingUp, Package, Star, Clock, ShoppingBag, MessageSquare, Heart, Eye, ArrowUpRight, ArrowDownRight, Trophy, Store, Wallet } from 'lucide-react';
+import { TrendingUp, Package, Star, Clock, ShoppingBag, MessageSquare, Heart, Eye, ArrowUpRight, ArrowDownRight, Trophy, Store, Wallet, Award } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AchievementsShowcase } from '@/components/achievements/AchievementsShowcase';
@@ -172,6 +172,23 @@ const Profile = () => {
           pnlPercent,
         }
       };
+    },
+    enabled: !!profile?.id,
+  });
+
+  // Fetch user's card instances (graded cards and inventory)
+  const { data: cardInstances } = useQuery({
+    queryKey: ['user-card-instances', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) return [];
+      const { data, error } = await supabase
+        .from('card_instances')
+        .select('*')
+        .eq('owner_user_id', profile.id)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!profile?.id,
   });
@@ -392,56 +409,128 @@ const Profile = () => {
 
           <TabsContent value="collection">
             {isOwnProfile ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Wallet className="h-5 w-5" />
-                    My Collection
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {portfolioItems && portfolioItems.length > 0 ? (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {portfolioItems.map((item: any) => (
-                        <div 
-                          key={item.id} 
-                          className="p-4 rounded-lg bg-muted/50 hover:bg-muted/70 cursor-pointer transition-colors"
-                          onClick={() => item.market_item_id && navigate(`/item/${item.market_item_id}`)}
-                        >
-                          {(item.image_url || item.market_item?.image_url) && (
-                            <img 
-                              src={item.image_url || item.market_item?.image_url} 
-                              alt={item.custom_name || item.market_item?.name} 
-                              className="w-full h-32 object-cover rounded-lg mb-3" 
-                            />
-                          )}
-                          <h4 className="font-medium text-sm truncate">
-                            {item.custom_name || item.market_item?.name || 'Unknown Item'}
-                          </h4>
-                          <div className="flex items-center justify-between mt-2">
-                            {item.purchase_price && (
-                              <span className="text-muted-foreground text-sm">
-                                Paid: {formatPrice(item.purchase_price)}
+              <div className="space-y-6">
+                {/* Graded Cards Section */}
+                {cardInstances && cardInstances.length > 0 && (
+                  <Card className="border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="h-5 w-5 text-primary" />
+                        Graded Cards
+                        <Badge variant="secondary" className="ml-2">{cardInstances.length}</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {cardInstances.map((card: any) => (
+                          <div 
+                            key={card.id} 
+                            className="group relative p-3 rounded-xl bg-gradient-to-b from-muted/50 to-muted/30 border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all cursor-pointer"
+                            onClick={() => card.source_grading_order_id && navigate(`/grading/orders/${card.source_grading_order_id}`)}
+                          >
+                            {/* Grade Badge */}
+                            {card.grade && (
+                              <div className="absolute -top-2 -right-2 z-10">
+                                <div className="bg-gradient-to-r from-primary to-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                                  {card.grade}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {/* Card Image */}
+                            <div className="aspect-[2.5/3.5] rounded-lg overflow-hidden bg-muted mb-3">
+                              {card.image_url ? (
+                                <img 
+                                  src={card.image_url} 
+                                  alt={card.title} 
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Award className="w-8 h-8 text-muted-foreground/30" />
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Card Info */}
+                            <h4 className="font-medium text-sm truncate">{card.title}</h4>
+                            <div className="flex items-center justify-between mt-2">
+                              <Badge variant="outline" className="text-xs">
+                                {card.grading_company || 'CardBoom'}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                {card.condition}
                               </span>
-                            )}
-                            {item.grade && (
-                              <Badge variant="outline">{item.grade}</Badge>
-                            )}
+                            </div>
                           </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Portfolio Items Section */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Wallet className="h-5 w-5" />
+                      Portfolio Items
+                      {portfolioItems && portfolioItems.length > 0 && (
+                        <Badge variant="secondary" className="ml-2">{portfolioItems.length}</Badge>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {portfolioItems && portfolioItems.length > 0 ? (
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {portfolioItems.map((item: any) => (
+                          <div 
+                            key={item.id} 
+                            className="p-4 rounded-lg bg-muted/50 hover:bg-muted/70 cursor-pointer transition-colors"
+                            onClick={() => item.market_item_id && navigate(`/item/${item.market_item_id}`)}
+                          >
+                            {(item.image_url || item.market_item?.image_url) && (
+                              <img 
+                                src={item.image_url || item.market_item?.image_url} 
+                                alt={item.custom_name || item.market_item?.name} 
+                                className="w-full h-32 object-cover rounded-lg mb-3" 
+                              />
+                            )}
+                            <h4 className="font-medium text-sm truncate">
+                              {item.custom_name || item.market_item?.name || 'Unknown Item'}
+                            </h4>
+                            <div className="flex items-center justify-between mt-2">
+                              {item.purchase_price && (
+                                <span className="text-muted-foreground text-sm">
+                                  Paid: {formatPrice(item.purchase_price)}
+                                </span>
+                              )}
+                              {item.grade && (
+                                <Badge variant="outline">{item.grade}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (!cardInstances || cardInstances.length === 0) ? (
+                      <div className="text-center py-8">
+                        <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
+                        <p className="text-muted-foreground">No items in collection</p>
+                        <div className="flex justify-center gap-3 mt-4">
+                          <Button variant="outline" onClick={() => navigate('/markets')}>
+                            Browse Markets
+                          </Button>
+                          <Button variant="outline" onClick={() => navigate('/grading/new')}>
+                            Grade a Card
+                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-                      <p className="text-muted-foreground">No items in collection</p>
-                      <Button variant="outline" className="mt-4" onClick={() => navigate('/markets')}>
-                        Browse Markets
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      </div>
+                    ) : (
+                      <p className="text-center text-muted-foreground py-4">No portfolio items yet</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             ) : (
               <Card>
                 <CardContent className="py-8 text-center">

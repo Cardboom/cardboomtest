@@ -334,6 +334,32 @@ serve(async (req) => {
 
         if (updateGradeError) {
           console.error('Failed to update grading order with results:', updateGradeError);
+        } else {
+          // Create a card_instance to add to user's collection
+          const { error: instanceError } = await supabase
+            .from('card_instances')
+            .insert({
+              owner_user_id: user.id,
+              title: existingOrder.card_name || 'Graded Card',
+              category: existingOrder.category || 'other',
+              condition: getGradeLabel(cardboomFinalGrade),
+              grade: cardboomFinalGrade?.toFixed(1) || null,
+              grading_company: 'CardBoom',
+              image_url: existingOrder.front_image_url,
+              current_value: 0,
+              acquisition_price: GRADING_PRICE_USD,
+              acquisition_date: new Date().toISOString(),
+              location: 'owner',
+              status: 'available',
+              source_grading_order_id: orderId,
+              market_item_id: existingOrder.market_item_id || null,
+            });
+          
+          if (instanceError) {
+            console.error('Failed to create card_instance:', instanceError);
+          } else {
+            console.log(`Card instance created for user ${user.id} from grading order ${orderId}`);
+          }
         }
 
         console.log(`Order ${orderId} completed - Ximilar Final: ${ximilarFinalGrade}, CardBoom Index: ${cardboomFinalGrade}`);
