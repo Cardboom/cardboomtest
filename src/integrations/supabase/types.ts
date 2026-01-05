@@ -3208,15 +3208,19 @@ export type Database = {
       }
       grading_orders: {
         Row: {
+          ai_confidence: number | null
           auto_list_enabled: boolean | null
           auto_list_price: number | null
           back_image_url: string | null
+          card_name: string | null
+          card_number: string | null
           category: string
           centering_grade: number | null
           completed_at: string | null
           confidence: number | null
           corners_grade: number | null
           created_at: string
+          cvi_key: string | null
           edges_grade: number | null
           external_request_id: string | null
           final_grade: number | null
@@ -3225,11 +3229,16 @@ export type Database = {
           grading_notes: string | null
           id: string
           idempotency_key: string
+          language: string | null
           listing_created_id: string | null
+          market_item_id: string | null
           overlay_coordinates: Json | null
           paid_at: string | null
           price_cents: number | null
           price_usd: number
+          rarity: string | null
+          set_code: string | null
+          set_name: string | null
           status: Database["public"]["Enums"]["grading_order_status"]
           submitted_at: string | null
           suggested_price: number | null
@@ -3238,15 +3247,19 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_confidence?: number | null
           auto_list_enabled?: boolean | null
           auto_list_price?: number | null
           back_image_url?: string | null
+          card_name?: string | null
+          card_number?: string | null
           category: string
           centering_grade?: number | null
           completed_at?: string | null
           confidence?: number | null
           corners_grade?: number | null
           created_at?: string
+          cvi_key?: string | null
           edges_grade?: number | null
           external_request_id?: string | null
           final_grade?: number | null
@@ -3255,11 +3268,16 @@ export type Database = {
           grading_notes?: string | null
           id?: string
           idempotency_key: string
+          language?: string | null
           listing_created_id?: string | null
+          market_item_id?: string | null
           overlay_coordinates?: Json | null
           paid_at?: string | null
           price_cents?: number | null
           price_usd?: number
+          rarity?: string | null
+          set_code?: string | null
+          set_name?: string | null
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
           suggested_price?: number | null
@@ -3268,15 +3286,19 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_confidence?: number | null
           auto_list_enabled?: boolean | null
           auto_list_price?: number | null
           back_image_url?: string | null
+          card_name?: string | null
+          card_number?: string | null
           category?: string
           centering_grade?: number | null
           completed_at?: string | null
           confidence?: number | null
           corners_grade?: number | null
           created_at?: string
+          cvi_key?: string | null
           edges_grade?: number | null
           external_request_id?: string | null
           final_grade?: number | null
@@ -3285,11 +3307,16 @@ export type Database = {
           grading_notes?: string | null
           id?: string
           idempotency_key?: string
+          language?: string | null
           listing_created_id?: string | null
+          market_item_id?: string | null
           overlay_coordinates?: Json | null
           paid_at?: string | null
           price_cents?: number | null
           price_usd?: number
+          rarity?: string | null
+          set_code?: string | null
+          set_name?: string | null
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
           suggested_price?: number | null
@@ -3297,7 +3324,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "grading_orders_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       idempotency_keys: {
         Row: {
@@ -3638,14 +3673,17 @@ export type Database = {
         Row: {
           ai_analysis: Json | null
           ai_checked_at: string | null
+          ai_confidence: number | null
           ai_flags: string[] | null
           ai_quality_score: number | null
           allows_shipping: boolean
           allows_trade: boolean
           allows_vault: boolean
+          card_number: string | null
           category: string
           condition: string
           created_at: string
+          cvi_key: string | null
           description: string | null
           external_id: string | null
           external_price: number | null
@@ -3653,9 +3691,14 @@ export type Database = {
           id: string
           image_url: string | null
           is_auction: boolean
+          language: string | null
+          market_item_id: string | null
           price: number
           price_cents: number | null
+          rarity: string | null
           seller_id: string
+          set_code: string | null
+          set_name: string | null
           source: string
           status: Database["public"]["Enums"]["listing_status"]
           title: string
@@ -3664,14 +3707,17 @@ export type Database = {
         Insert: {
           ai_analysis?: Json | null
           ai_checked_at?: string | null
+          ai_confidence?: number | null
           ai_flags?: string[] | null
           ai_quality_score?: number | null
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
+          card_number?: string | null
           category: string
           condition?: string
           created_at?: string
+          cvi_key?: string | null
           description?: string | null
           external_id?: string | null
           external_price?: number | null
@@ -3679,9 +3725,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_auction?: boolean
+          language?: string | null
+          market_item_id?: string | null
           price: number
           price_cents?: number | null
+          rarity?: string | null
           seller_id: string
+          set_code?: string | null
+          set_name?: string | null
           source?: string
           status?: Database["public"]["Enums"]["listing_status"]
           title: string
@@ -3690,14 +3741,17 @@ export type Database = {
         Update: {
           ai_analysis?: Json | null
           ai_checked_at?: string | null
+          ai_confidence?: number | null
           ai_flags?: string[] | null
           ai_quality_score?: number | null
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
+          card_number?: string | null
           category?: string
           condition?: string
           created_at?: string
+          cvi_key?: string | null
           description?: string | null
           external_id?: string | null
           external_price?: number | null
@@ -3705,15 +3759,28 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_auction?: boolean
+          language?: string | null
+          market_item_id?: string | null
           price?: number
           price_cents?: number | null
+          rarity?: string | null
           seller_id?: string
+          set_code?: string | null
+          set_name?: string | null
           source?: string
           status?: Database["public"]["Enums"]["listing_status"]
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "listings_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       market_controls: {
         Row: {
@@ -3809,8 +3876,12 @@ export type Database = {
       }
       market_items: {
         Row: {
+          ai_confidence: number | null
+          ai_indexed_at: string | null
           avg_days_to_sell: number | null
           base_price: number
+          card_number: string | null
+          card_type: string | null
           category: string
           change_24h: number | null
           change_30d: number | null
@@ -3819,11 +3890,13 @@ export type Database = {
           created_at: string
           current_price: number
           current_price_cents: number | null
+          cvi_key: string | null
           data_source: string | null
           external_id: string | null
           id: string
           image_url: string | null
           is_trending: boolean | null
+          language: string | null
           last_sale_at: string | null
           last_sale_price: number | null
           liquidity: Database["public"]["Enums"]["liquidity_level"] | null
@@ -3838,6 +3911,7 @@ export type Database = {
           sale_probability: number | null
           sales_count_30d: number | null
           series: string | null
+          set_code: string | null
           set_name: string | null
           subcategory: string | null
           updated_at: string
@@ -3847,8 +3921,12 @@ export type Database = {
           watchlist_count: number | null
         }
         Insert: {
+          ai_confidence?: number | null
+          ai_indexed_at?: string | null
           avg_days_to_sell?: number | null
           base_price?: number
+          card_number?: string | null
+          card_type?: string | null
           category: string
           change_24h?: number | null
           change_30d?: number | null
@@ -3857,11 +3935,13 @@ export type Database = {
           created_at?: string
           current_price?: number
           current_price_cents?: number | null
+          cvi_key?: string | null
           data_source?: string | null
           external_id?: string | null
           id?: string
           image_url?: string | null
           is_trending?: boolean | null
+          language?: string | null
           last_sale_at?: string | null
           last_sale_price?: number | null
           liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
@@ -3876,6 +3956,7 @@ export type Database = {
           sale_probability?: number | null
           sales_count_30d?: number | null
           series?: string | null
+          set_code?: string | null
           set_name?: string | null
           subcategory?: string | null
           updated_at?: string
@@ -3885,8 +3966,12 @@ export type Database = {
           watchlist_count?: number | null
         }
         Update: {
+          ai_confidence?: number | null
+          ai_indexed_at?: string | null
           avg_days_to_sell?: number | null
           base_price?: number
+          card_number?: string | null
+          card_type?: string | null
           category?: string
           change_24h?: number | null
           change_30d?: number | null
@@ -3895,11 +3980,13 @@ export type Database = {
           created_at?: string
           current_price?: number
           current_price_cents?: number | null
+          cvi_key?: string | null
           data_source?: string | null
           external_id?: string | null
           id?: string
           image_url?: string | null
           is_trending?: boolean | null
+          language?: string | null
           last_sale_at?: string | null
           last_sale_price?: number | null
           liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
@@ -3914,6 +4001,7 @@ export type Database = {
           sale_probability?: number | null
           sales_count_30d?: number | null
           series?: string | null
+          set_code?: string | null
           set_name?: string | null
           subcategory?: string | null
           updated_at?: string

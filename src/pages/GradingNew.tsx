@@ -41,6 +41,7 @@ import { GradeAndFlipToggle } from '@/components/grading/GradeAndFlipToggle';
 import { useGradingCredits } from '@/hooks/useGradingCredits';
 import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { CardAnalysis } from '@/hooks/useCardAnalysis';
+import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
 
 type Step = 'category' | 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
@@ -82,6 +83,8 @@ export default function GradingNew() {
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [cardAnalysis, setCardAnalysis] = useState<CardAnalysis | null>(null);
   const [useAIScanner, setUseAIScanner] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewedCardData, setReviewedCardData] = useState<ReviewedCardData | null>(null);
 
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
@@ -271,12 +274,17 @@ export default function GradingNew() {
                             }
                           }
                           
-                          toast({
-                            title: scanAnalysis.detected ? 'Card Recognized!' : 'Image Uploaded',
-                            description: scanAnalysis.detected 
-                              ? `Detected: ${scanAnalysis.cardName || 'Card'}`
-                              : 'Now upload the back of the card',
-                          });
+                          // Show review modal if needs confirmation
+                          if (scanAnalysis.needsReview) {
+                            setShowReviewModal(true);
+                          } else {
+                            toast({
+                              title: scanAnalysis.detected ? 'Card Recognized!' : 'Image Uploaded',
+                              description: scanAnalysis.detected 
+                                ? `Detected: ${scanAnalysis.cardNameEnglish || scanAnalysis.cardName || 'Card'}`
+                                : 'Now upload the back of the card',
+                            });
+                          }
                         }}
                         onSkip={() => setUseAIScanner(false)}
                         className="border-0 shadow-none p-0"
@@ -626,6 +634,48 @@ export default function GradingNew() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Card Review Modal */}
+      <CardReviewModal
+        open={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        analysis={cardAnalysis}
+        imagePreview={frontPreview}
+        onConfirm={(reviewedData) => {
+          setReviewedCardData(reviewedData);
+          
+          // Update category if changed
+          const matchedCategory = GRADING_CATEGORIES.find(
+            c => c.id.toLowerCase() === reviewedData.category?.toLowerCase()
+          );
+          if (matchedCategory) {
+            setCategory(matchedCategory.id);
+          }
+          
+          // Update the cardAnalysis with reviewed data
+          if (cardAnalysis) {
+            setCardAnalysis({
+              ...cardAnalysis,
+              cardName: reviewedData.cardName,
+              cardNameEnglish: reviewedData.cardNameEnglish,
+              setName: reviewedData.setName,
+              setCode: reviewedData.setCode,
+              cardNumber: reviewedData.cardNumber,
+              rarity: reviewedData.rarity,
+              category: reviewedData.category,
+              language: reviewedData.language,
+              cviKey: reviewedData.cviKey,
+              needsReview: false,
+            });
+          }
+          
+          setShowReviewModal(false);
+          toast({
+            title: 'Card Details Confirmed',
+            description: 'Now upload the back of the card',
+          });
+        }}
+      />
     </div>
   );
 }
