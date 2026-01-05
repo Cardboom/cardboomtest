@@ -5,17 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-interface PortfolioItem {
+interface CollectionItem {
   id: string;
-  custom_name: string | null;
+  name: string;
   image_url: string | null;
   grade: string | null;
   purchase_price: number | null;
-  market_item?: {
-    name: string;
-    current_price: number;
-    image_url: string | null;
-  };
+  source: 'portfolio' | 'listing';
 }
 
 interface ProfileShowcaseProps {
@@ -31,25 +27,26 @@ export const ProfileShowcase = ({
   isOwnProfile,
   onUpdateShowcase
 }: ProfileShowcaseProps) => {
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
-  const [showcasedItems, setShowcasedItems] = useState<PortfolioItem[]>([]);
+  const [allItems, setAllItems] = useState<CollectionItem[]>([]);
+  const [showcasedItems, setShowcasedItems] = useState<CollectionItem[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPortfolioItems();
+    fetchAllItems();
   }, [userId]);
 
   useEffect(() => {
-    if (portfolioItems.length > 0) {
-      const items = portfolioItems.filter(p => showcaseItems.includes(p.id));
+    if (allItems.length > 0) {
+      const items = allItems.filter(p => showcaseItems.includes(p.id));
       setShowcasedItems(items);
     }
-  }, [portfolioItems, showcaseItems]);
+  }, [allItems, showcaseItems]);
 
-  const fetchPortfolioItems = async () => {
+  const fetchAllItems = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch portfolio items
+      const { data: portfolioData } = await supabase
         .from('portfolio_items')
         .select(`
           id,
@@ -61,10 +58,36 @@ export const ProfileShowcase = ({
         `)
         .eq('user_id', userId);
 
-      if (error) throw error;
-      setPortfolioItems(data || []);
+      // Fetch user's listings
+      const { data: listingsData } = await supabase
+        .from('listings')
+        .select('id, title, image_url, category, price')
+        .eq('seller_id', userId)
+        .in('status', ['active', 'reserved'])
+        .order('created_at', { ascending: false });
+
+      // Combine both sources
+      const portfolioItems: CollectionItem[] = (portfolioData || []).map(item => ({
+        id: item.id,
+        name: item.custom_name || item.market_item?.name || 'Unknown Item',
+        image_url: item.image_url || item.market_item?.image_url,
+        grade: item.grade,
+        purchase_price: item.purchase_price,
+        source: 'portfolio' as const
+      }));
+
+      const listingItems: CollectionItem[] = (listingsData || []).map(item => ({
+        id: `listing_${item.id}`,
+        name: item.title,
+        image_url: item.image_url,
+        grade: null,
+        purchase_price: item.price,
+        source: 'listing' as const
+      }));
+
+      setAllItems([...portfolioItems, ...listingItems]);
     } catch (error) {
-      console.error('Error fetching portfolio:', error);
+      console.error('Error fetching items:', error);
     } finally {
       setLoading(false);
     }
@@ -81,13 +104,8 @@ export const ProfileShowcase = ({
     await onUpdateShowcase(newItems);
   };
 
-  const getItemName = (item: PortfolioItem) => {
-    return item.custom_name || item.market_item?.name || 'Unknown Item';
-  };
-
-  const getItemImage = (item: PortfolioItem) => {
-    return item.image_url || item.market_item?.image_url || '/placeholder.svg';
-  };
+  const getItemName = (item: CollectionItem) => item.name;
+  const getItemImage = (item: CollectionItem) => item.image_url || '/placeholder.svg';
 
   if (loading) {
     return (
@@ -133,7 +151,7 @@ export const ProfileShowcase = ({
                   Select up to 6 items from your portfolio to display on your profile.
                 </p>
                 <div className="grid grid-cols-3 gap-4">
-                  {portfolioItems.map((item) => {
+                  {allItems.map((item) => {
                     const isShowcased = showcaseItems.includes(item.id);
                     return (
                       <div
@@ -154,6 +172,9 @@ export const ProfileShowcase = ({
                           {item.grade && (
                             <span className="text-xs text-amber-400">{item.grade.toUpperCase()}</span>
                           )}
+                          {item.source === 'listing' && (
+                            <span className="text-xs text-primary ml-1">• For Sale</span>
+                          )}
                         </div>
                         {isShowcased && (
                           <div className="absolute top-2 right-2 bg-primary rounded-full p-1">
@@ -164,9 +185,9 @@ export const ProfileShowcase = ({
                     );
                   })}
                 </div>
-                {portfolioItems.length === 0 && (
+                {allItems.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
-                    No items in your portfolio yet. Add some to showcase them here!
+                    No items in your collection yet. Add some to showcase them here!
                   </p>
                 )}
               </DialogContent>

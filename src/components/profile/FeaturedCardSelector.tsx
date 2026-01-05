@@ -12,18 +12,13 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 
-interface PortfolioItem {
+interface CollectionItem {
   id: string;
-  custom_name: string | null;
+  name: string;
   grade: string | null;
   image_url: string | null;
-  market_items: {
-    id: string;
-    name: string;
-    image_url: string | null;
-    current_price: number;
-    category: string;
-  } | null;
+  category: string;
+  source: 'portfolio' | 'listing';
 }
 
 interface FeaturedCardSelectorProps {
@@ -41,7 +36,7 @@ export const FeaturedCardSelector = ({
   userId,
   onSelect,
 }: FeaturedCardSelectorProps) => {
-  const [items, setItems] = useState<PortfolioItem[]>([]);
+  const [items, setItems] = useState<CollectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
@@ -49,15 +44,16 @@ export const FeaturedCardSelector = ({
 
   useEffect(() => {
     if (open) {
-      fetchPortfolioItems();
+      fetchAllItems();
       setSelectedId(currentFeaturedId);
     }
   }, [open, userId, currentFeaturedId]);
 
-  const fetchPortfolioItems = async () => {
+  const fetchAllItems = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch portfolio items
+      const { data: portfolioData } = await supabase
         .from('portfolio_items')
         .select(`
           id,
@@ -69,10 +65,36 @@ export const FeaturedCardSelector = ({
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setItems(data || []);
+      // Fetch user's listings
+      const { data: listingsData } = await supabase
+        .from('listings')
+        .select('id, title, image_url, category')
+        .eq('seller_id', userId)
+        .in('status', ['active', 'reserved'])
+        .order('created_at', { ascending: false });
+
+      // Combine both sources
+      const portfolioItems: CollectionItem[] = (portfolioData || []).map(item => ({
+        id: item.id,
+        name: item.custom_name || item.market_items?.name || 'Unknown',
+        grade: item.grade,
+        image_url: item.image_url || item.market_items?.image_url,
+        category: item.market_items?.category || 'tcg',
+        source: 'portfolio' as const
+      }));
+
+      const listingItems: CollectionItem[] = (listingsData || []).map(item => ({
+        id: `listing_${item.id}`,
+        name: item.title,
+        grade: null,
+        image_url: item.image_url,
+        category: item.category || 'tcg',
+        source: 'listing' as const
+      }));
+
+      setItems([...portfolioItems, ...listingItems]);
     } catch (error) {
-      console.error('Error fetching portfolio items:', error);
+      console.error('Error fetching collection items:', error);
     } finally {
       setLoading(false);
     }
@@ -98,8 +120,7 @@ export const FeaturedCardSelector = ({
   };
 
   const filteredItems = items.filter((item) => {
-    const name = item.custom_name || item.market_items?.name || '';
-    return name.toLowerCase().includes(search.toLowerCase());
+    return item.name.toLowerCase().includes(search.toLowerCase());
   });
 
   return (
@@ -143,8 +164,7 @@ export const FeaturedCardSelector = ({
             <ScrollArea className="h-[400px] pr-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {filteredItems.map((item) => {
-                  const imageUrl = item.image_url || item.market_items?.image_url || '/placeholder.svg';
-                  const name = item.custom_name || item.market_items?.name || 'Unknown';
+                  const imageUrl = item.image_url || '/placeholder.svg';
                   const isSelected = selectedId === item.id;
 
                   return (
@@ -159,7 +179,7 @@ export const FeaturedCardSelector = ({
                     >
                       <img
                         src={imageUrl}
-                        alt={name}
+                        alt={item.name}
                         className="w-full h-full object-cover"
                       />
                       
@@ -168,10 +188,15 @@ export const FeaturedCardSelector = ({
                       
                       {/* Card info */}
                       <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <p className="text-white text-xs font-medium truncate">{name}</p>
+                        <p className="text-white text-xs font-medium truncate">{item.name}</p>
                         {item.grade && (
                           <Badge variant="secondary" className="text-[10px] mt-1 bg-gold/20 text-gold">
                             {item.grade}
+                          </Badge>
+                        )}
+                        {item.source === 'listing' && (
+                          <Badge variant="outline" className="text-[10px] mt-1 ml-1 border-primary/50 text-primary">
+                            For Sale
                           </Badge>
                         )}
                       </div>
