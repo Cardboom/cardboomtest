@@ -175,45 +175,73 @@ serve(async (req) => {
     // Submit to Ximilar API
     try {
       console.log('Submitting to Ximilar API...');
+      console.log('Front image:', existingOrder.front_image_url);
+      console.log('Back image:', existingOrder.back_image_url);
       
+      // Build records array - Ximilar expects _url field, not _url_front/_url_back
+      // Can send both front and back as separate records (max 2)
+      const records: any[] = [];
+      
+      if (existingOrder.front_image_url) {
+        records.push({
+          _url: existingOrder.front_image_url,
+          Side: 'front'
+        });
+      }
+      
+      if (existingOrder.back_image_url) {
+        records.push({
+          _url: existingOrder.back_image_url,
+          Side: 'back'
+        });
+      }
+      
+      if (records.length === 0) {
+        throw new Error('No images available for grading');
+      }
+
       const ximilarResponse = await fetch(XIMILAR_API_URL, {
         method: 'POST',
         headers: {
           'Authorization': `Token ${ximilarToken}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          records: [
-            {
-              _url_front: existingOrder.front_image_url,
-              _url_back: existingOrder.back_image_url
-            }
-          ]
-        })
+        body: JSON.stringify({ records })
       });
 
       const ximilarData = await ximilarResponse.json();
-      console.log('Ximilar response:', JSON.stringify(ximilarData).substring(0, 500));
-
-      if (ximilarData.records && ximilarData.records[0]) {
+      console.log('Ximilar response status:', ximilarData.status);
+      console.log('Ximilar records count:', ximilarData.records?.length);
+      
+      if (ximilarData.records && ximilarData.records.length > 0) {
+        // Get the first record (front side) - Ximilar returns grades in the "grades" field
         const record = ximilarData.records[0];
-        const gradeData = record._grade || {};
+        console.log('Record grades:', JSON.stringify(record.grades));
+        console.log('Record _status:', JSON.stringify(record._status));
         
-        // Extract original Ximilar grades
-        const ximilarFinalGrade = gradeData.final_grade || null;
-        const subgrades = gradeData.subgrades || {};
-        const ximilarCorners = subgrades.corners || null;
-        const ximilarEdges = subgrades.edges || null;
-        const ximilarSurface = subgrades.surface || null;
-        const ximilarCentering = subgrades.centering || null;
+        // Check if grading was successful
+        if (record._status?.code !== 200) {
+          console.error('Ximilar grading failed:', record._status?.text);
+          throw new Error(record._status?.text || 'Grading failed');
+        }
+        
+        // Extract grades from the correct location per Ximilar API docs
+        const grades = record.grades || {};
+        
+        // Ximilar returns grades in the "grades" object
+        const ximilarFinalGrade = grades.final || null;
+        const ximilarCorners = grades.corners || null;
+        const ximilarEdges = grades.edges || null;
+        const ximilarSurface = grades.surface || null;
+        const ximilarCentering = grades.centering || null;
+        const condition = grades.condition || null;
+        
+        console.log('Extracted grades - Final:', ximilarFinalGrade, 'Corners:', ximilarCorners, 'Edges:', ximilarEdges, 'Surface:', ximilarSurface, 'Centering:', ximilarCentering);
         
         // Apply 5% conservative adjustment for CardBoom disciplined grading
-        // This ensures CardBoom grades are always heavy/conservative
         const applyConservativeAdjustment = (grade: number | null): number | null => {
           if (grade === null) return null;
-          // Reduce grade by 5%, minimum 1.0
           const adjusted = Math.max(1.0, grade * 0.95);
-          // Round to 1 decimal place
           return Math.round(adjusted * 10) / 10;
         };
         
@@ -225,7 +253,7 @@ serve(async (req) => {
         
         // Map grade to label using CardBoom adjusted grade
         const getGradeLabel = (grade: number | null): string => {
-          if (!grade) return 'Unknown';
+          if (!grade) return condition || 'Unknown';
           if (grade >= 9.5) return 'Gem Mint';
           if (grade >= 9) return 'Mint';
           if (grade >= 8) return 'Near Mint-Mint';
@@ -238,41 +266,52 @@ serve(async (req) => {
           return 'Poor';
         };
 
-        // Update order with results - store both original Ximilar and CardBoom adjusted grades
-        await supabase
+        // Get overlay visualization URLs
+        const overlayUrl = record._full_url_card || null;
+        const exactUrl = record._exact_url_card || null;
+
+        // Update order with results
+        const { error: updateGradeError } = await supabase
           .from('grading_orders')
           .update({
             status: 'completed',
             submitted_at: new Date().toISOString(),
             completed_at: new Date().toISOString(),
-            // CardBoom adjusted grades (5% below Ximilar - disciplined indexing)
+            // CardBoom adjusted grades
             final_grade: cardboomFinalGrade,
             grade_label: getGradeLabel(cardboomFinalGrade),
             corners_grade: cardboomCorners,
             edges_grade: cardboomEdges,
             surface_grade: cardboomSurface,
             centering_grade: cardboomCentering,
-            // Original Ximilar grades for reference
+            // Original Ximilar grades
             ximilar_final_grade: ximilarFinalGrade,
             ximilar_corners_grade: ximilarCorners,
             ximilar_edges_grade: ximilarEdges,
             ximilar_surface_grade: ximilarSurface,
             ximilar_centering_grade: ximilarCentering,
+            // Visualization URLs
+            overlay_url: overlayUrl,
+            exact_url: exactUrl,
             overlay_coordinates: record._objects || null,
-            confidence: gradeData.confidence || null,
-            external_request_id: ximilarData.task_id || null
+            confidence: null,
+            external_request_id: ximilarData.status?.request_id || null
           })
           .eq('id', orderId);
 
-        console.log(`Order ${orderId} completed - Ximilar: ${ximilarFinalGrade}, CardBoom: ${cardboomFinalGrade}`);
+        if (updateGradeError) {
+          console.error('Failed to update grading order with results:', updateGradeError);
+        }
+
+        console.log(`Order ${orderId} completed - Ximilar Final: ${ximilarFinalGrade}, CardBoom Final: ${cardboomFinalGrade}`);
       } else {
-        // Mark as in_review if API didn't return immediate results
+        // Mark as in_review if API didn't return results
         await supabase
           .from('grading_orders')
           .update({
             status: 'in_review',
             submitted_at: new Date().toISOString(),
-            external_request_id: ximilarData.task_id || null
+            external_request_id: ximilarData.status?.request_id || null
           })
           .eq('id', orderId);
 
