@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,35 +54,35 @@ const RARITIES = [
 
 export function CardReviewModal({ open, onClose, onConfirm, analysis, imagePreview }: CardReviewModalProps) {
   const [formData, setFormData] = useState<ReviewedCardData>({
-    cardName: analysis?.cardName || '',
-    cardNameEnglish: (analysis as any)?.cardNameEnglish || analysis?.cardName || '',
-    setName: analysis?.setName || '',
-    setCode: (analysis as any)?.setCode || '',
-    cardNumber: analysis?.cardNumber || '',
-    rarity: (analysis as any)?.rarity || '',
-    category: analysis?.category || 'tcg',
-    language: (analysis as any)?.language || 'English',
-    cviKey: (analysis as any)?.cviKey || null,
-    confidence: analysis?.confidence || 0,
+    cardName: '',
+    cardNameEnglish: '',
+    setName: '',
+    setCode: '',
+    cardNumber: '',
+    rarity: '',
+    category: 'tcg',
+    language: 'English',
+    cviKey: null,
+    confidence: 0,
   });
 
-  // Update form when analysis changes
-  useState(() => {
-    if (analysis) {
+  // Update form data when analysis changes or modal opens
+  useEffect(() => {
+    if (analysis && open) {
       setFormData({
         cardName: analysis.cardName || '',
-        cardNameEnglish: (analysis as any)?.cardNameEnglish || analysis?.cardName || '',
+        cardNameEnglish: analysis.cardNameEnglish || analysis.cardName || '',
         setName: analysis.setName || '',
-        setCode: (analysis as any)?.setCode || '',
+        setCode: analysis.setCode || '',
         cardNumber: analysis.cardNumber || '',
-        rarity: (analysis as any)?.rarity || '',
+        rarity: analysis.rarity || '',
         category: analysis.category || 'tcg',
-        language: (analysis as any)?.language || 'English',
-        cviKey: (analysis as any)?.cviKey || null,
+        language: analysis.language || 'English',
+        cviKey: analysis.cviKey || null,
         confidence: analysis.confidence || 0,
       });
     }
-  });
+  }, [analysis, open]);
 
   const handleChange = (field: keyof ReviewedCardData, value: string) => {
     setFormData(prev => {
