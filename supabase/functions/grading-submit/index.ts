@@ -163,16 +163,22 @@ serve(async (req) => {
       const gemRate = isPro ? 0.0025 : 0.002;
       const gemsEarned = Math.floor(GRADING_PRICE_USD * gemRate * 100); // Convert to gems (1 gem = $0.01)
       
+      console.log(`Gem calculation: $${GRADING_PRICE_USD} * ${gemRate} * 100 = ${gemsEarned} gems`);
+      
       if (gemsEarned > 0) {
-        // Get or create cardboom_points record
-        const { data: existingPoints } = await supabase
+        // Get or create cardboom_points record - use maybeSingle to avoid error if no record
+        const { data: existingPoints, error: pointsError } = await supabase
           .from('cardboom_points')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
+        
+        if (pointsError) {
+          console.error('Error fetching cardboom_points:', pointsError);
+        }
         
         if (existingPoints) {
-          await supabase
+          const { error: updateError } = await supabase
             .from('cardboom_points')
             .update({
               balance: existingPoints.balance + gemsEarned,
@@ -180,18 +186,30 @@ serve(async (req) => {
               updated_at: new Date().toISOString()
             })
             .eq('user_id', user.id);
+          
+          if (updateError) {
+            console.error('Error updating cardboom_points:', updateError);
+          } else {
+            console.log(`Updated gems for user ${user.id}: +${gemsEarned}`);
+          }
         } else {
-          await supabase
+          const { error: insertError } = await supabase
             .from('cardboom_points')
             .insert({
               user_id: user.id,
               balance: gemsEarned,
               total_earned: gemsEarned,
             });
+          
+          if (insertError) {
+            console.error('Error inserting cardboom_points:', insertError);
+          } else {
+            console.log(`Created gems record for user ${user.id}: ${gemsEarned}`);
+          }
         }
         
         // Log the gems transaction
-        await supabase.from('cardboom_points_history').insert({
+        const { error: historyError } = await supabase.from('cardboom_points_history').insert({
           user_id: user.id,
           amount: gemsEarned,
           transaction_type: 'earn',
@@ -199,6 +217,10 @@ serve(async (req) => {
           description: `Earned ${gemsEarned} gems from grading order`,
           reference_id: orderId
         });
+        
+        if (historyError) {
+          console.error('Error logging gems history:', historyError);
+        }
         
         console.log(`Awarded ${gemsEarned} gems to user ${user.id} for grading payment`);
       }
