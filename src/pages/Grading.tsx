@@ -243,66 +243,67 @@ export default function Grading() {
         onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))}
       />
       
-      <main className="pt-4 md:pt-6">
+      <main className="pt-2 md:pt-6">
         {/* Hero Section */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.08),transparent_60%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(var(--accent)/0.05),transparent_40%)]" />
           
-          <div className="container mx-auto px-4 py-10 md:py-16 lg:py-20 relative">
+          <div className="container mx-auto px-4 py-6 md:py-16 lg:py-20 relative">
             <div className="max-w-5xl mx-auto">
-              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
                 {/* Left Content */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6 }}
+                  className="text-center lg:text-left"
                 >
-                  <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-primary/10 rounded-full text-sm font-semibold text-primary border border-primary/20">
-                    <Sparkles className="w-4 h-4" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-4 md:mb-6 bg-primary/10 rounded-full text-xs md:text-sm font-semibold text-primary border border-primary/20">
+                    <Sparkles className="w-3 h-3 md:w-4 md:h-4" />
                     CardBoom Grading Index
                   </div>
                   
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-6 leading-[1.1]">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 md:mb-6 leading-[1.1]">
                     Know Your Card's
                     <span className="block text-primary">True Value</span>
                   </h1>
                   
-                  <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
+                  <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 md:mb-8 leading-relaxed max-w-lg mx-auto lg:mx-0">
                     Professional AI-powered grading in under 24 hours. Get detailed subgrades for corners, edges, surface, and centering — all for just ${GRADING_PRICE_USD}.
                   </p>
 
-                  <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                  <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mb-6 md:mb-8 justify-center lg:justify-start">
                     <Button 
                       size="lg" 
-                      className="h-14 px-8 text-lg font-bold rounded-xl gap-2 shadow-lg shadow-primary/25"
+                      className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg font-bold rounded-xl gap-2 shadow-lg shadow-primary/25"
                       onClick={() => navigate('/grading/new')}
                     >
                       Grade Your Card
-                      <ArrowRight className="w-5 h-5" />
+                      <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                     </Button>
                     
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="h-14 px-8 text-lg font-semibold rounded-xl"
+                      className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg font-semibold rounded-xl"
                       onClick={() => navigate('/grading/orders')}
                     >
                       View My Orders
                     </Button>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 md:gap-6 text-xs md:text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
                       <span>No subscription</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
                       <span>Pay per card</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-5 h-5 text-emerald-500" />
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
                       <span>Results in 24h</span>
                     </div>
                   </div>
@@ -313,32 +314,32 @@ export default function Grading() {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
-                  className="relative"
+                  className="relative hidden md:block"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 rounded-3xl blur-3xl" />
                   
-                  <div className="relative bg-card rounded-3xl p-8 border border-border shadow-2xl">
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-primary text-primary-foreground text-sm font-bold rounded-full shadow-lg">
+                  <div className="relative bg-card rounded-2xl md:rounded-3xl p-6 md:p-8 border border-border shadow-2xl">
+                    <div className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 px-3 md:px-4 py-1 md:py-1.5 bg-primary text-primary-foreground text-xs md:text-sm font-bold rounded-full shadow-lg">
                       Sample Result
                     </div>
                     
                     {/* Grade Circle */}
-                    <div className="text-center py-8">
+                    <div className="text-center py-6 md:py-8">
                       <motion.div 
-                        className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-2xl shadow-emerald-500/30"
+                        className="inline-flex items-center justify-center w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-2xl shadow-emerald-500/30"
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ type: "spring", stiffness: 200, delay: 0.4 }}
                       >
                         <div className="text-center">
-                          <div className="text-5xl font-black">9.5</div>
-                          <div className="text-xs uppercase tracking-widest opacity-90 font-semibold">Gem Mint</div>
+                          <div className="text-4xl md:text-5xl font-black">9.5</div>
+                          <div className="text-[10px] md:text-xs uppercase tracking-widest opacity-90 font-semibold">Gem Mint</div>
                         </div>
                       </motion.div>
                     </div>
 
                     {/* Subgrades */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-2 md:gap-4">
                       {[
                         { label: 'Corners', value: 9.5, color: 'bg-emerald-500' },
                         { label: 'Edges', value: 10, color: 'bg-emerald-500' },
@@ -350,19 +351,43 @@ export default function Grading() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: 0.6 + i * 0.1 }}
-                          className="flex items-center justify-between p-4 bg-muted/50 rounded-xl border border-border/50"
+                          className="flex items-center justify-between p-2.5 md:p-4 bg-muted/50 rounded-lg md:rounded-xl border border-border/50"
                         >
-                          <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
-                          <span className={`px-3 py-1 rounded-lg text-sm font-bold text-white ${item.color}`}>
+                          <span className="text-xs md:text-sm font-medium text-muted-foreground">{item.label}</span>
+                          <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-md md:rounded-lg text-xs md:text-sm font-bold text-white ${item.color}`}>
                             {item.value}
                           </span>
                         </motion.div>
                       ))}
                     </div>
 
-                    <div className="mt-6 pt-6 border-t border-border/50 text-center">
-                      <p className="text-sm text-muted-foreground">Estimated Market Value</p>
-                      <p className="text-2xl font-bold text-foreground">$245 - $320</p>
+                    <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-border/50 text-center">
+                      <p className="text-xs md:text-sm text-muted-foreground">Estimated Market Value</p>
+                      <p className="text-xl md:text-2xl font-bold text-foreground">$245 - $320</p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Mobile Sample Card - Compact */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  className="md:hidden bg-card rounded-2xl p-4 border border-border shadow-lg"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-lg shrink-0">
+                      <div className="text-center">
+                        <div className="text-2xl font-black">9.5</div>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs text-muted-foreground">Sample Grade Result</p>
+                      <p className="font-bold">Gem Mint Condition</p>
+                      <div className="flex gap-2 mt-1 text-xs">
+                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-600 rounded">Corners 9.5</span>
+                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-600 rounded">Edges 10</span>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -372,9 +397,9 @@ export default function Grading() {
         </section>
 
         {/* Stats Bar */}
-        <section className="py-8 border-y border-border/50 bg-muted/30">
+        <section className="py-4 md:py-8 border-y border-border/50 bg-muted/30">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
               {stats.map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -382,14 +407,14 @@ export default function Grading() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="flex items-center gap-4"
+                  className="flex items-center gap-2 md:gap-4"
                 >
-                  <div className="p-3 rounded-xl bg-primary/10">
-                    <stat.icon className="w-5 h-5 text-primary" />
+                  <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-primary/10">
+                    <stat.icon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   </div>
                   <div>
-                    <div className="text-2xl font-black text-foreground">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                    <div className="text-lg md:text-2xl font-black text-foreground">{stat.value}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">{stat.label}</div>
                   </div>
                 </motion.div>
               ))}
@@ -398,22 +423,22 @@ export default function Grading() {
         </section>
 
         {/* How It Works */}
-        <section className="py-20 md:py-28">
+        <section className="py-12 md:py-20 lg:py-28">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-16"
+              className="text-center mb-8 md:mb-16"
             >
-              <h2 className="text-3xl md:text-4xl font-black mb-4">How It Works</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Get your card graded in three simple steps. No appointments, no shipping, no waiting weeks.
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-black mb-2 md:mb-4">How It Works</h2>
+              <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto">
+                Get your card graded in three simple steps.
               </p>
             </motion.div>
             
             <div className="max-w-4xl mx-auto">
-              <div className="grid md:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-3 gap-4 md:gap-6">
                 {steps.map((step, i) => (
                   <motion.div 
                     key={step.title}
@@ -423,18 +448,18 @@ export default function Grading() {
                     transition={{ duration: 0.4, delay: i * 0.15 }}
                     className="relative group"
                   >
-                    <div className={`relative p-8 rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/30`}>
+                    <div className={`relative p-5 md:p-8 rounded-xl md:rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-primary/30`}>
                       <div className={`absolute inset-0 bg-gradient-to-br ${step.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
                       
                       <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-4">
-                          <span className="text-4xl font-black text-muted-foreground/30">{i + 1}</span>
-                          <div className={`p-3 rounded-xl ${step.iconBg}`}>
-                            <step.icon className={`w-6 h-6 ${step.iconColor}`} />
+                        <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                          <span className="text-2xl md:text-4xl font-black text-muted-foreground/30">{i + 1}</span>
+                          <div className={`p-2 md:p-3 rounded-lg md:rounded-xl ${step.iconBg}`}>
+                            <step.icon className={`w-5 h-5 md:w-6 md:h-6 ${step.iconColor}`} />
                           </div>
                         </div>
-                        <h3 className="text-xl font-bold mb-2">{step.title}</h3>
-                        <p className="text-muted-foreground">{step.description}</p>
+                        <h3 className="text-base md:text-xl font-bold mb-1 md:mb-2">{step.title}</h3>
+                        <p className="text-sm md:text-base text-muted-foreground">{step.description}</p>
                       </div>
                     </div>
                     
@@ -449,19 +474,19 @@ export default function Grading() {
         </section>
 
         {/* Supported Categories */}
-        <section className="py-16 bg-muted/30 border-y border-border/50">
+        <section className="py-10 md:py-16 bg-muted/30 border-y border-border/50">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-8 md:mb-12"
             >
-              <h2 className="text-2xl md:text-3xl font-black mb-3">Supported Card Types</h2>
-              <p className="text-muted-foreground">We grade all major trading card games and sports cards</p>
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-black mb-2 md:mb-3">Supported Card Types</h2>
+              <p className="text-sm md:text-base text-muted-foreground">All major TCGs and sports cards</p>
             </motion.div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-3xl mx-auto">
               {categories.map((cat, i) => (
                 <motion.div
                   key={cat.name}
@@ -469,11 +494,11 @@ export default function Grading() {
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.3, delay: i * 0.1 }}
-                  className="p-6 rounded-2xl bg-card border border-border text-center hover:border-primary/50 transition-colors cursor-pointer group"
+                  className="p-4 md:p-6 rounded-xl md:rounded-2xl bg-card border border-border text-center hover:border-primary/50 transition-colors cursor-pointer group"
                 >
-                  <div className="text-4xl mb-3">{cat.image}</div>
-                  <div className="font-bold text-sm mb-1">{cat.name}</div>
-                  <div className="text-xs text-muted-foreground">{cat.count}</div>
+                  <div className="text-2xl md:text-4xl mb-2 md:mb-3">{cat.image}</div>
+                  <div className="font-bold text-xs md:text-sm mb-0.5 md:mb-1">{cat.name}</div>
+                  <div className="text-[10px] md:text-xs text-muted-foreground">{cat.count}</div>
                 </motion.div>
               ))}
             </div>
@@ -481,21 +506,21 @@ export default function Grading() {
         </section>
 
         {/* Features Grid */}
-        <section className="py-20 md:py-28">
+        <section className="py-12 md:py-20 lg:py-28">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-16"
+              className="text-center mb-8 md:mb-16"
             >
-              <h2 className="text-3xl md:text-4xl font-black mb-4">Why Choose CardBoom Grading</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Industry-leading accuracy powered by advanced AI technology
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-black mb-2 md:mb-4">Why Choose CardBoom</h2>
+              <p className="text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto">
+                Industry-leading AI accuracy
               </p>
             </motion.div>
             
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 max-w-5xl mx-auto">
               {features.map((feature, i) => (
                 <motion.div
                   key={feature.label}
@@ -503,13 +528,13 @@ export default function Grading() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-all hover:shadow-lg group"
+                  className="p-4 md:p-6 rounded-xl md:rounded-2xl bg-card border border-border hover:border-primary/30 transition-all hover:shadow-lg group"
                 >
-                  <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4 group-hover:bg-primary/20 transition-colors">
-                    <feature.icon className="w-6 h-6 text-primary" />
+                  <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-primary/10 w-fit mb-2 md:mb-4 group-hover:bg-primary/20 transition-colors">
+                    <feature.icon className="w-4 h-4 md:w-6 md:h-6 text-primary" />
                   </div>
-                  <h3 className="font-bold text-lg mb-2">{feature.label}</h3>
-                  <p className="text-muted-foreground text-sm">{feature.description}</p>
+                  <h3 className="font-bold text-sm md:text-lg mb-1 md:mb-2">{feature.label}</h3>
+                  <p className="text-muted-foreground text-xs md:text-sm">{feature.description}</p>
                 </motion.div>
               ))}
             </div>
@@ -517,19 +542,19 @@ export default function Grading() {
         </section>
 
         {/* Testimonials */}
-        <section className="py-16 bg-muted/30 border-y border-border/50">
+        <section className="py-10 md:py-16 bg-muted/30 border-y border-border/50">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-8 md:mb-12"
             >
-              <h2 className="text-2xl md:text-3xl font-black mb-3">What Collectors Say</h2>
-              <p className="text-muted-foreground">Join thousands of satisfied users</p>
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-black mb-2 md:mb-3">What Collectors Say</h2>
+              <p className="text-sm md:text-base text-muted-foreground">Join thousands of satisfied users</p>
             </motion.div>
             
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
               {testimonials.map((testimonial, i) => (
                 <motion.div
                   key={testimonial.name}
@@ -537,22 +562,22 @@ export default function Grading() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className="p-6 rounded-2xl bg-card border border-border"
+                  className="p-4 md:p-6 rounded-xl md:rounded-2xl bg-card border border-border"
                 >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                  <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-sm md:text-base">
                       {testimonial.avatar}
                     </div>
                     <div>
-                      <div className="font-semibold">{testimonial.name}</div>
+                      <div className="font-semibold text-sm md:text-base">{testimonial.name}</div>
                       <div className="flex text-yellow-500">
                         {[...Array(testimonial.rating)].map((_, j) => (
-                          <Star key={j} className="w-3 h-3 fill-current" />
+                          <Star key={j} className="w-2.5 h-2.5 md:w-3 md:h-3 fill-current" />
                         ))}
                       </div>
                     </div>
                   </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">"{testimonial.text}"</p>
+                  <p className="text-muted-foreground text-xs md:text-sm leading-relaxed">"{testimonial.text}"</p>
                 </motion.div>
               ))}
             </div>
@@ -560,7 +585,7 @@ export default function Grading() {
         </section>
 
         {/* Pricing CTA */}
-        <section className="py-20 md:py-28">
+        <section className="py-12 md:py-20 lg:py-28">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -568,44 +593,44 @@ export default function Grading() {
               viewport={{ once: true }}
               className="max-w-3xl mx-auto"
             >
-              <div className="relative rounded-3xl overflow-hidden">
+              <div className="relative rounded-2xl md:rounded-3xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/80" />
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
                 
-                <div className="relative p-10 md:p-16 text-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-white/10 rounded-full text-sm font-semibold text-primary-foreground">
-                    <Zap className="w-4 h-4" />
+                <div className="relative p-6 md:p-10 lg:p-16 text-center">
+                  <div className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 mb-4 md:mb-6 bg-white/10 rounded-full text-xs md:text-sm font-semibold text-primary-foreground">
+                    <Zap className="w-3 h-3 md:w-4 md:h-4" />
                     Simple Pricing
                   </div>
                   
-                  <h2 className="text-3xl md:text-5xl font-black text-primary-foreground mb-4">
+                  <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-primary-foreground mb-2 md:mb-4">
                     ${GRADING_PRICE_USD} per card
                   </h2>
-                  <p className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
-                    No subscription. No hidden fees. Just fast, accurate AI grading.
+                  <p className="text-sm md:text-lg text-primary-foreground/80 mb-6 md:mb-8 max-w-md mx-auto">
+                    No subscription. No hidden fees. Fast, accurate AI grading.
                   </p>
                   
                   <Button 
                     size="lg" 
                     variant="secondary"
-                    className="h-14 px-10 text-lg font-bold rounded-xl gap-2"
+                    className="h-12 md:h-14 px-6 md:px-10 text-base md:text-lg font-bold rounded-xl gap-2"
                     onClick={() => navigate('/grading/new')}
                   >
                     Start Grading Now
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                   
-                  <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-primary-foreground/70">
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
+                  <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-6 md:mt-8 text-xs md:text-sm text-primary-foreground/70">
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <Lock className="w-3 h-3 md:w-4 md:h-4" />
                       <span>Secure Payment</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <Clock className="w-3 h-3 md:w-4 md:h-4" />
                       <span>24h Guarantee</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4" />
+                    <div className="flex items-center gap-1.5 md:gap-2">
+                      <Shield className="w-3 h-3 md:w-4 md:h-4" />
                       <span>Money Back</span>
                     </div>
                   </div>
@@ -616,11 +641,11 @@ export default function Grading() {
         </section>
 
         {/* FAQ Teaser */}
-        <section className="py-16 border-t border-border/50">
+        <section className="py-10 md:py-16 border-t border-border/50">
           <div className="container mx-auto px-4 text-center">
-            <h3 className="text-xl font-bold mb-2">Have Questions?</h3>
-            <p className="text-muted-foreground mb-4">Check out our FAQ or contact support</p>
-            <Button variant="outline" onClick={() => navigate('/help')}>
+            <h3 className="text-lg md:text-xl font-bold mb-1 md:mb-2">Have Questions?</h3>
+            <p className="text-sm md:text-base text-muted-foreground mb-3 md:mb-4">Check out our FAQ or contact support</p>
+            <Button variant="outline" size="sm" onClick={() => navigate('/help')}>
               View Help Center
             </Button>
           </div>
