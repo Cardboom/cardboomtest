@@ -47,7 +47,8 @@ interface BatchAnalysisResult {
 async function analyzeCardRegion(
   supabase: any,
   ocrText: string[],
-  ximilarToken: string
+  ximilarToken: string,
+  hasImageContent: boolean = true // Flag indicating if an image with content was provided
 ): Promise<Omit<SingleCardResult, 'boundingBox'>> {
   // Extract card info from OCR text
   let extractedCardName = '';
@@ -78,6 +79,10 @@ async function analyzeCardRegion(
       extractedCardName = potentialNames[0];
     }
   }
+
+  // Determine if a card-like object was detected
+  // If we have ANY OCR text, we likely have a card (even if we can't identify it)
+  const hasCardLikeContent = ocrText.length > 0 || hasImageContent;
 
   // Search for matching market items
   let matchedItem = null;
@@ -153,14 +158,35 @@ async function analyzeCardRegion(
     else if (textLower.includes('nfl') || textLower.includes('football')) category = 'football';
   }
 
+  // Card is "detected" if we have OCR text OR image content that looks like a card
+  // This enables the three-tier detection model:
+  // - detected=true + high confidence + match = "detected_confirmed"
+  // - detected=true + low confidence or no match = "detected_needs_confirmation"
+  // - detected=false = "not_detected" (only for blank/invalid images)
+  const detected = hasCardLikeContent;
+  
+  // Confidence scoring:
+  // - 0.85+ if we have a market item match
+  // - 0.6 if we extracted a card name
+  // - 0.4 if we have OCR text but no name (still a card, just can't identify)
+  // - 0.2 if no OCR but image provided (possible card, needs confirmation)
+  let confidence = 0.2;
+  if (matchedItem) {
+    confidence = 0.85;
+  } else if (extractedCardName) {
+    confidence = 0.6;
+  } else if (ocrText.length > 0) {
+    confidence = 0.4;
+  }
+
   return {
-    detected: extractedCardName.length > 0 || (matchedItem !== null),
+    detected,
     cardName: matchedItem?.name || extractedCardName || null,
     setName: matchedItem?.set_name || extractedSetName || null,
     cardNumber: extractedCardNumber || null,
     estimatedCondition,
     category,
-    confidence: matchedItem ? 0.85 : (extractedCardName ? 0.6 : 0.3),
+    confidence,
     ocrText,
     pricing,
     matchedMarketItem: matchedItem ? {
@@ -365,12 +391,14 @@ serve(async (req) => {
       console.error('OCR failed:', ocrError);
     }
 
-    const result = await analyzeCardRegion(supabase, ocrText, ximilarToken);
+    // Pass true for hasImageContent since we received an image
+    const result = await analyzeCardRegion(supabase, ocrText, ximilarToken, true);
 
     console.log('Single card analysis complete:', { 
       detected: result.detected, 
       cardName: result.cardName,
-      confidence: result.confidence
+      confidence: result.confidence,
+      ocrTextCount: ocrText.length
     });
 
     return new Response(
