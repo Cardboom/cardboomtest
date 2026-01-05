@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { RoundedBox } from '@react-three/drei';
+import { useRef, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { RoundedBox, OrbitControls } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
 import * as THREE from 'three';
@@ -9,66 +9,61 @@ interface CardOverlayPreviewProps {
   order: GradingOrder;
 }
 
-function Card3D({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: string; showFront: boolean }) {
+function Card3D({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const [textures, setTextures] = useState<{ front: THREE.Texture | null; back: THREE.Texture | null }>({ front: null, back: null });
+  const frontTextureRef = useRef<THREE.Texture | null>(null);
+  const backTextureRef = useRef<THREE.Texture | null>(null);
 
-  // Load textures manually to handle CORS
   useEffect(() => {
     const loader = new THREE.TextureLoader();
     loader.crossOrigin = 'anonymous';
     
-    loader.load(
-      frontUrl,
-      (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        setTextures(prev => ({ ...prev, front: texture }));
-      },
-      undefined,
-      () => {
-        // On error, try placeholder
-        loader.load('/placeholder.svg', (texture) => {
-          setTextures(prev => ({ ...prev, front: texture }));
-        });
+    // Load front texture
+    const frontImg = new Image();
+    frontImg.crossOrigin = 'anonymous';
+    frontImg.onload = () => {
+      const texture = new THREE.Texture(frontImg);
+      texture.needsUpdate = true;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      frontTextureRef.current = texture;
+      if (meshRef.current) {
+        const materials = meshRef.current.material as THREE.MeshStandardMaterial[];
+        if (materials[4]) {
+          materials[4].map = texture;
+          materials[4].needsUpdate = true;
+        }
       }
-    );
+    };
+    frontImg.src = frontUrl;
 
-    loader.load(
-      backUrl,
-      (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        setTextures(prev => ({ ...prev, back: texture }));
-      },
-      undefined,
-      () => {
-        loader.load('/placeholder.svg', (texture) => {
-          setTextures(prev => ({ ...prev, back: texture }));
-        });
+    // Load back texture
+    const backImg = new Image();
+    backImg.crossOrigin = 'anonymous';
+    backImg.onload = () => {
+      const texture = new THREE.Texture(backImg);
+      texture.needsUpdate = true;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      backTextureRef.current = texture;
+      if (meshRef.current) {
+        const materials = meshRef.current.material as THREE.MeshStandardMaterial[];
+        if (materials[5]) {
+          materials[5].map = texture;
+          materials[5].needsUpdate = true;
+        }
       }
-    );
+    };
+    backImg.src = backUrl;
+
+    return () => {
+      frontTextureRef.current?.dispose();
+      backTextureRef.current?.dispose();
+    };
   }, [frontUrl, backUrl]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
-    
-    // Target rotation based on which side to show
-    const targetY = showFront ? 0 : Math.PI;
-    
-    // Smooth rotation transition
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(
-      meshRef.current.rotation.y,
-      targetY,
-      0.05
-    );
-    
     // Gentle floating animation
     meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
-    
-    // Subtle continuous rotation when idle
-    if (Math.abs(meshRef.current.rotation.y - targetY) < 0.01) {
-      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
-      meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.3) * 0.02;
-    }
   });
 
   // Card dimensions (standard trading card ratio 2.5:3.5)
@@ -85,15 +80,13 @@ function Card3D({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: s
         <meshStandardMaterial attach="material-3" color="#1a1a2e" />
         <meshStandardMaterial 
           attach="material-4" 
-          map={textures.front}
-          color={textures.front ? undefined : "#333"}
+          color="#333"
           roughness={0.3}
           metalness={0.1}
         />
         <meshStandardMaterial 
           attach="material-5" 
-          map={textures.back}
-          color={textures.back ? undefined : "#222"}
+          color="#222"
           roughness={0.3}
           metalness={0.1}
         />
@@ -103,8 +96,6 @@ function Card3D({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: s
 }
 
 export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
-  const [showFront, setShowFront] = useState(true);
-  
   const getGradeBadgeColor = (grade: number | null) => {
     if (!grade) return 'from-gray-500 to-gray-600';
     if (grade >= 9.5) return 'from-amber-400 to-yellow-500';
@@ -131,7 +122,14 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
           <directionalLight position={[-5, 5, -5]} intensity={0.5} />
           <spotLight position={[0, 10, 0]} intensity={0.3} angle={0.3} penumbra={1} />
           
-          <Card3D frontUrl={frontUrl} backUrl={backUrl} showFront={showFront} />
+          <Card3D frontUrl={frontUrl} backUrl={backUrl} />
+          
+          <OrbitControls 
+            enableZoom={false}
+            enablePan={false}
+            minPolarAngle={Math.PI / 3}
+            maxPolarAngle={Math.PI / 1.5}
+          />
         </Canvas>
         
         {/* Grade overlay */}
@@ -151,34 +149,8 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
         {/* Shine effect overlay */}
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
       </div>
-
-      {/* Toggle buttons */}
-      <div className="flex gap-2 mt-4">
-        <button
-          onClick={() => setShowFront(true)}
-          className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300',
-            showFront 
-              ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
-          )}
-        >
-          Front
-        </button>
-        <button
-          onClick={() => setShowFront(false)}
-          className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300',
-            !showFront 
-              ? 'bg-primary text-primary-foreground shadow-lg scale-105' 
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
-          )}
-        >
-          Back
-        </button>
-      </div>
       
-      <p className="text-xs text-muted-foreground mt-2">Click buttons to flip card</p>
+      <p className="text-xs text-muted-foreground mt-3">Drag to rotate card</p>
     </div>
   );
 }
