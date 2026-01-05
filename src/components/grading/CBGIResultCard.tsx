@@ -5,7 +5,7 @@ import { GradingOrder } from '@/hooks/useGrading';
 import { Award, Target, Layers, CornerDownRight, Maximize2, Sparkles, AlertTriangle, Info, Shield, TrendingUp } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
-
+import { GradingFeedbackDialog } from './GradingFeedbackDialog';
 interface CBGIResultCardProps {
   order: GradingOrder;
 }
@@ -224,6 +224,18 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
             </motion.div>
           ))}
         </div>
+
+        {/* Feedback Button - help train the model */}
+        {cbgiScore && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.35 }}
+            className="mt-4"
+          >
+            <GradingFeedbackDialog orderId={order.id} cbgiScore={cbgiScore} />
+          </motion.div>
+        )}
 
         {/* Disclaimer */}
         <motion.div 

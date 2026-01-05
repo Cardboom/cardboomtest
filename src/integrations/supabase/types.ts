@@ -3206,6 +3206,47 @@ export type Database = {
         }
         Relationships: []
       }
+      grading_feedback: {
+        Row: {
+          actual_grade: string
+          cbgi_score: number | null
+          created_at: string
+          feedback_notes: string | null
+          grading_company: string | null
+          grading_order_id: string | null
+          id: string
+          submitted_by: string | null
+        }
+        Insert: {
+          actual_grade: string
+          cbgi_score?: number | null
+          created_at?: string
+          feedback_notes?: string | null
+          grading_company?: string | null
+          grading_order_id?: string | null
+          id?: string
+          submitted_by?: string | null
+        }
+        Update: {
+          actual_grade?: string
+          cbgi_score?: number | null
+          created_at?: string
+          feedback_notes?: string | null
+          grading_company?: string | null
+          grading_order_id?: string | null
+          id?: string
+          submitted_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grading_feedback_grading_order_id_fkey"
+            columns: ["grading_order_id"]
+            isOneToOne: false
+            referencedRelation: "grading_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       grading_orders: {
         Row: {
           ai_confidence: number | null
