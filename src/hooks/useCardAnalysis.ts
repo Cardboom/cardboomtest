@@ -94,16 +94,25 @@ export const useCardAnalysis = () => {
       }
 
       // Determine detection status based on confidence and match
+      // New logic: if we got any response back, we detected something (image was valid)
       const hasIndexMatch = !!data.matchedMarketItem;
       const highConfidence = data.confidence >= 0.75;
-      const cardLikeObjectDetected = data.detected || data.ocrText?.length > 0 || data.cardName;
+      const hasOcrText = data.ocrText && data.ocrText.length > 0;
+      const hasCardName = !!data.cardName;
+      
+      // An image was uploaded and processed - check what we found
+      // detected=true from backend means the image contained card-like content
+      const cardWasDetected = data.detected === true;
       
       let detectionStatus: CardDetectionStatus;
       if (highConfidence && hasIndexMatch) {
+        // High confidence with index match = confirmed
         detectionStatus = 'detected_confirmed';
-      } else if (cardLikeObjectDetected) {
+      } else if (cardWasDetected || hasOcrText || hasCardName) {
+        // Card detected but needs confirmation (low confidence OR no index match)
         detectionStatus = 'detected_needs_confirmation';
       } else {
+        // No card-like content detected at all
         detectionStatus = 'not_detected';
       }
 
@@ -119,8 +128,8 @@ export const useCardAnalysis = () => {
         ...data,
         detectionStatus,
         needsConfirmation,
-        // Keep detected true if we found a card-like object
-        detected: cardLikeObjectDetected,
+        // Card is detected if we got any card-like content
+        detected: cardWasDetected || hasOcrText || hasCardName,
       };
 
       setAnalysis(enrichedAnalysis);
