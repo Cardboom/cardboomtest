@@ -7,8 +7,41 @@ const corsHeaders = {
 };
 
 const GRADING_PRICE_USD = 10;
-const XIMILAR_API_URL = "https://api.ximilar.com/card-grader/v2/grade";
 const GEM_RATE = 0.002; // 0.2% in gems (or 0.25% for Pro)
+
+// CBGI Grading system prompt
+const CBGI_SYSTEM_PROMPT = `You are CardBoom Grading Index (CBGI), an expert card grading AI. Analyze the provided card images and return a comprehensive grading assessment.
+
+GRADING RUBRIC:
+- Centering (20% weight): Front/back centering balance, measure left-right and top-bottom ratios
+- Corners (20% weight): Sharpness, wear, whitening, bends
+- Edges (20% weight): Smoothness, chips, wear, whitening
+- Surface (30% weight): Scratches, print lines, holo scratches, fingerprints, creases
+- Eye Appeal (10% weight): Overall visual impression, color vibrancy, presentation
+
+SCORING RULES:
+- Score each category from 1.0 to 10.0 in 0.5 increments
+- Be CONSERVATIVE: if surface cannot be verified due to glare/low-res/sleeve, cap surface at 8.5
+- Final CardBoom Index = weighted average converted to 0-100 scale
+
+PSA RANGE MAPPING (approximate):
+- 95-100: PSA 10 potential
+- 85-94: PSA 9 range
+- 75-84: PSA 8 range
+- 65-74: PSA 7 range
+- 55-64: PSA 6 range
+- Below 55: PSA 5 or lower
+
+RISK FLAGS (include if applicable):
+- GLARE: Reflective glare obscuring surface analysis
+- LOW_RES: Image resolution insufficient for detailed analysis
+- SLEEVE: Card in sleeve/toploader distorting edge/corner visibility
+- PRINT_LINES_RISK: Potential factory print lines detected
+- CENTERING_SEVERE: Centering significantly off
+- SURFACE_WEAR: Visible surface wear detected
+- CORNER_DAMAGE: Notable corner damage present
+
+OUTPUT STRICT JSON ONLY - no markdown, no explanation:`;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,12 +51,12 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const ximilarToken = Deno.env.get('XIMILAR_API_TOKEN');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!ximilarToken) {
-      console.error('XIMILAR_API_TOKEN not configured');
+    if (!lovableApiKey) {
+      console.error('LOVABLE_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'Grading service not configured' }),
+        JSON.stringify({ error: 'AI grading service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -252,86 +285,90 @@ serve(async (req) => {
       );
     }
 
-    // Submit to Ximilar API
+    // Submit to CBGI (ChatGPT Vision-based grading)
     try {
-      console.log('Submitting to Ximilar API...');
+      console.log('Submitting to CBGI AI grading...');
       console.log('Front image:', existingOrder.front_image_url);
       console.log('Back image:', existingOrder.back_image_url);
       
-      // Build records array - Ximilar expects _url field
-      // Send front and back as separate records with Side specified
-      const records: any[] = [];
+      // Build image content for ChatGPT Vision
+      const imageContent: any[] = [];
       
       if (existingOrder.front_image_url) {
-        records.push({
-          _url: existingOrder.front_image_url,
-          Side: 'Front'
+        imageContent.push({
+          type: 'image_url',
+          image_url: { url: existingOrder.front_image_url, detail: 'high' }
         });
       }
       
       if (existingOrder.back_image_url) {
-        records.push({
-          _url: existingOrder.back_image_url,
-          Side: 'Back'
+        imageContent.push({
+          type: 'image_url',
+          image_url: { url: existingOrder.back_image_url, detail: 'high' }
         });
       }
       
-      if (records.length === 0) {
+      if (imageContent.length === 0) {
         throw new Error('No images available for grading');
       }
 
-      console.log('Sending records to Ximilar:', JSON.stringify(records));
+      const userPrompt = `Analyze this trading card and provide a grading assessment. Return ONLY valid JSON matching this exact structure:
+{
+  "card_name": "Card Name Here",
+  "set": "Set Name Here",
+  "analysis": {
+    "centering": {"score": 8.5, "notes": "Brief notes"},
+    "corners": {"score": 8.0, "notes": "Brief notes"},
+    "edges": {"score": 8.5, "notes": "Brief notes"},
+    "surface": {"score": 8.0, "notes": "Brief notes"},
+    "eye_appeal": {"score": 8.5, "notes": "Brief notes"}
+  },
+  "cardboom_index": 82,
+  "estimated_psa_range": "PSA 8-9",
+  "confidence_level": "Medium",
+  "risk_flags": [],
+  "grading_disclaimer": "AI-assisted visual pre-grade, not an official certification."
+}`;
 
-      const ximilarResponse = await fetch(XIMILAR_API_URL, {
+      console.log('Calling Lovable AI Gateway with ChatGPT Vision...');
+
+      const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${ximilarToken}`,
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${lovableApiKey}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ records })
+        body: JSON.stringify({
+          model: 'openai/gpt-5',
+          messages: [
+            { role: 'system', content: CBGI_SYSTEM_PROMPT },
+            { 
+              role: 'user', 
+              content: [
+                { type: 'text', text: userPrompt },
+                ...imageContent
+              ]
+            }
+          ],
+          max_completion_tokens: 1500,
+        }),
       });
 
-      const ximilarData = await ximilarResponse.json();
-      console.log('Ximilar full response:', JSON.stringify(ximilarData));
-      console.log('Ximilar response status:', ximilarData.status);
-      console.log('Ximilar records count:', ximilarData.records?.length);
-      
-      if (ximilarData.records && ximilarData.records.length > 0) {
-        // Find a record with valid grades (status 200 and grades object)
-        let gradeRecord = ximilarData.records.find((r: any) => r.grades && r._status?.code === 200);
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error('AI Gateway error:', aiResponse.status, errorText);
         
-        // Check how many records succeeded vs failed
-        const successfulRecords = ximilarData.records.filter((r: any) => r._status?.code === 200 && r.grades);
-        const failedRecords = ximilarData.records.filter((r: any) => r._status?.code !== 200);
-        
-        console.log(`Successful records: ${successfulRecords.length}, Failed records: ${failedRecords.length}`);
-        
-        // If we have at least one successful record with grades, use it
-        if (gradeRecord) {
-          console.log('Using successful record for grades:', JSON.stringify(gradeRecord?.grades));
-          console.log('Record _status:', JSON.stringify(gradeRecord?._status));
-          
-          // Log any failed records for reference but don't fail the grading
-          if (failedRecords.length > 0) {
-            console.log('Some records failed (non-blocking):', failedRecords.map((r: any) => r._status?.text).join(', '));
-          }
-        } else {
-          // All records failed - mark as in_review
-          const firstRecord = ximilarData.records[0];
-          console.error('All Ximilar records failed:', firstRecord._status?.text);
-          
+        if (aiResponse.status === 429) {
+          // Rate limited - mark for manual review
           await supabase
             .from('grading_orders')
             .update({
               status: 'in_review',
               submitted_at: new Date().toISOString(),
-              grading_notes: `Ximilar error: ${firstRecord._status?.text || 'Unknown error'}`,
-              external_request_id: ximilarData.status?.request_id || null
+              error_message: 'Rate limited. Will retry shortly.',
             })
             .eq('id', orderId);
-            
-          console.log(`Order ${orderId} marked for manual review due to Ximilar error`);
-          
+
           const { data: updatedOrder } = await supabase
             .from('grading_orders')
             .select('*')
@@ -344,135 +381,153 @@ serve(async (req) => {
           );
         }
         
-        // Extract grades from the correct location per Ximilar API docs
-        const grades = gradeRecord.grades || {};
-        
-        // Ximilar returns grades in the "grades" object
-        const ximilarFinalGrade = grades.final || null;
-        const ximilarCorners = grades.corners || null;
-        const ximilarEdges = grades.edges || null;
-        const ximilarSurface = grades.surface || null;
-        const ximilarCentering = grades.centering || null;
-        const condition = grades.condition || null;
-        
-        console.log('Extracted grades - Final:', ximilarFinalGrade, 'Corners:', ximilarCorners, 'Edges:', ximilarEdges, 'Surface:', ximilarSurface, 'Centering:', ximilarCentering);
-        
-        // Use raw grades directly (no adjustment)
-        const roundGrade = (grade: number | null): number | null => {
-          if (grade === null) return null;
-          return Math.round(grade * 10) / 10;
-        };
-        
-        const cardboomFinalGrade = roundGrade(ximilarFinalGrade);
-        const cardboomCorners = roundGrade(ximilarCorners);
-        const cardboomEdges = roundGrade(ximilarEdges);
-        const cardboomSurface = roundGrade(ximilarSurface);
-        const cardboomCentering = roundGrade(ximilarCentering);
-        
-        // Map grade to label using CardBoom adjusted grade
-        const getGradeLabel = (grade: number | null): string => {
-          if (!grade) return condition || 'Unknown';
-          if (grade >= 9.5) return 'Gem Mint';
-          if (grade >= 9) return 'Mint';
-          if (grade >= 8) return 'Near Mint-Mint';
-          if (grade >= 7) return 'Near Mint';
-          if (grade >= 6) return 'Excellent-Near Mint';
-          if (grade >= 5) return 'Excellent';
-          if (grade >= 4) return 'Very Good-Excellent';
-          if (grade >= 3) return 'Very Good';
-          if (grade >= 2) return 'Good';
-          return 'Poor';
-        };
+        throw new Error(`AI grading failed: ${aiResponse.status}`);
+      }
 
-        // Get overlay visualization URLs
-        const overlayUrl = gradeRecord._full_url_card || null;
-        const exactUrl = gradeRecord._exact_url_card || null;
+      const aiData = await aiResponse.json();
+      const content = aiData.choices?.[0]?.message?.content;
 
-        // Update order with results - clear grading_notes on success
-        const { error: updateGradeError } = await supabase
-          .from('grading_orders')
-          .update({
-            status: 'completed',
-            submitted_at: new Date().toISOString(),
-            completed_at: new Date().toISOString(),
-            // CardBoom adjusted grades
-            final_grade: cardboomFinalGrade,
-            grade_label: getGradeLabel(cardboomFinalGrade),
-            corners_grade: cardboomCorners,
-            edges_grade: cardboomEdges,
-            surface_grade: cardboomSurface,
-            centering_grade: cardboomCentering,
-            // Original Ximilar grades
-            ximilar_final_grade: ximilarFinalGrade,
-            ximilar_corners_grade: ximilarCorners,
-            ximilar_edges_grade: ximilarEdges,
-            ximilar_surface_grade: ximilarSurface,
-            ximilar_centering_grade: ximilarCentering,
-            // Visualization URLs
-            overlay_url: overlayUrl,
-            exact_url: exactUrl,
-            overlay_coordinates: gradeRecord._objects || null,
-            confidence: null,
-            external_request_id: ximilarData.status?.request_id || null,
-            // Clear any previous error notes on successful grading
-            grading_notes: null
-          })
-          .eq('id', orderId);
+      if (!content) {
+        console.error('No content in AI response');
+        throw new Error('AI returned empty response');
+      }
 
-        if (updateGradeError) {
-          console.error('Failed to update grading order with results:', updateGradeError);
-        } else {
-          // Create a card_instance to add to user's collection
-          const { error: instanceError } = await supabase
-            .from('card_instances')
-            .insert({
-              owner_user_id: user.id,
-              title: existingOrder.card_name || 'Graded Card',
-              category: existingOrder.category || 'other',
-              condition: getGradeLabel(cardboomFinalGrade),
-              grade: cardboomFinalGrade?.toFixed(1) || null,
-              grading_company: 'CardBoom',
-              image_url: existingOrder.front_image_url,
-              current_value: 0,
-              acquisition_price: GRADING_PRICE_USD,
-              acquisition_date: new Date().toISOString(),
-              location: 'owner',
-              status: 'available',
-              source_grading_order_id: orderId,
-              market_item_id: existingOrder.market_item_id || null,
-            });
-          
-          if (instanceError) {
-            console.error('Failed to create card_instance:', instanceError);
-          } else {
-            console.log(`Card instance created for user ${user.id} from grading order ${orderId}`);
-          }
+      // Parse JSON from response (handle potential markdown wrapping)
+      let cbgiResult: any;
+      try {
+        let jsonStr = content.trim();
+        // Remove markdown code blocks if present
+        if (jsonStr.startsWith('```json')) {
+          jsonStr = jsonStr.slice(7);
+        } else if (jsonStr.startsWith('```')) {
+          jsonStr = jsonStr.slice(3);
         }
-
-        console.log(`Order ${orderId} completed - Ximilar Final: ${ximilarFinalGrade}, CardBoom Index: ${cardboomFinalGrade}`);
-      } else {
-        // Mark as in_review if API didn't return results
+        if (jsonStr.endsWith('```')) {
+          jsonStr = jsonStr.slice(0, -3);
+        }
+        cbgiResult = JSON.parse(jsonStr.trim());
+      } catch (parseError) {
+        console.error('Failed to parse AI response:', content);
         await supabase
           .from('grading_orders')
           .update({
             status: 'in_review',
             submitted_at: new Date().toISOString(),
-            external_request_id: ximilarData.status?.request_id || null,
-            grading_notes: 'No grading results returned from Ximilar API'
+            error_message: 'Failed to parse AI grading response',
+            grading_notes: content.substring(0, 500),
           })
           .eq('id', orderId);
 
-        console.log(`Order ${orderId} submitted, awaiting results`);
+        const { data: updatedOrder } = await supabase
+          .from('grading_orders')
+          .select('*')
+          .eq('id', orderId)
+          .single();
+
+        return new Response(
+          JSON.stringify({ success: true, order: updatedOrder, status: 'in_review' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
+
+      console.log('CBGI Result:', JSON.stringify(cbgiResult));
+
+      // Extract subgrades
+      const analysis = cbgiResult.analysis || {};
+      const centeringGrade = analysis.centering?.score || null;
+      const cornersGrade = analysis.corners?.score || null;
+      const edgesGrade = analysis.edges?.score || null;
+      const surfaceGrade = analysis.surface?.score || null;
+      const eyeAppealGrade = analysis.eye_appeal?.score || null;
+
+      // Map CBGI score to label
+      const getGradeLabelFromScore = (score: number): string => {
+        if (score >= 95) return 'Gem Mint';
+        if (score >= 90) return 'Mint';
+        if (score >= 85) return 'Near Mint-Mint';
+        if (score >= 80) return 'Near Mint';
+        if (score >= 70) return 'Excellent-Near Mint';
+        if (score >= 60) return 'Excellent';
+        if (score >= 50) return 'Very Good-Excellent';
+        if (score >= 40) return 'Very Good';
+        if (score >= 30) return 'Good';
+        return 'Poor';
+      };
+
+      // CBGI score is 0-100, convert to 1-10 for backwards compatibility
+      const cbgiScore = cbgiResult.cardboom_index || 0;
+      const finalGrade = Math.round((cbgiScore / 10) * 10) / 10;
+
+      // Update order with CBGI results
+      const { error: updateGradeError } = await supabase
+        .from('grading_orders')
+        .update({
+          status: 'completed',
+          submitted_at: new Date().toISOString(),
+          completed_at: new Date().toISOString(),
+          // CBGI specific fields
+          cbgi_json: cbgiResult,
+          cbgi_score_0_100: cbgiScore,
+          estimated_psa_range: cbgiResult.estimated_psa_range,
+          cbgi_confidence: cbgiResult.confidence_level?.toLowerCase() || 'medium',
+          cbgi_risk_flags: cbgiResult.risk_flags || [],
+          // Standard grade fields (backwards compatibility)
+          final_grade: finalGrade,
+          grade_label: getGradeLabelFromScore(cbgiScore),
+          centering_grade: centeringGrade,
+          corners_grade: cornersGrade,
+          edges_grade: edgesGrade,
+          surface_grade: surfaceGrade,
+          eye_appeal_grade: eyeAppealGrade,
+          // Card identification
+          card_name: cbgiResult.card_name || existingOrder.card_name,
+          set_name: cbgiResult.set || existingOrder.set_name,
+          // Clear error
+          error_message: null,
+          grading_notes: cbgiResult.grading_disclaimer,
+        })
+        .eq('id', orderId);
+
+      if (updateGradeError) {
+        console.error('Failed to update grading order with results:', updateGradeError);
+      } else {
+        // Create a card_instance to add to user's collection
+        const { error: instanceError } = await supabase
+          .from('card_instances')
+          .insert({
+            owner_user_id: user.id,
+            title: cbgiResult.card_name || existingOrder.card_name || 'Graded Card',
+            category: existingOrder.category || 'other',
+            condition: getGradeLabelFromScore(cbgiScore),
+            grade: finalGrade.toFixed(1),
+            grading_company: 'CardBoom',
+            image_url: existingOrder.front_image_url,
+            current_value: 0,
+            acquisition_price: GRADING_PRICE_USD,
+            acquisition_date: new Date().toISOString(),
+            location: 'owner',
+            status: 'available',
+            source_grading_order_id: orderId,
+            market_item_id: existingOrder.market_item_id || null,
+          });
+        
+        if (instanceError) {
+          console.error('Failed to create card_instance:', instanceError);
+        } else {
+          console.log(`Card instance created for user ${user.id} from grading order ${orderId}`);
+        }
+      }
+
+      console.log(`Order ${orderId} completed - CBGI Score: ${cbgiScore}/100, Final Grade: ${finalGrade}`);
     } catch (apiError) {
-      console.error('Ximilar API error:', apiError);
+      console.error('CBGI API error:', apiError);
       // Mark as in_review - will be processed by polling or manually
       await supabase
         .from('grading_orders')
         .update({
           status: 'in_review',
           submitted_at: new Date().toISOString(),
-          grading_notes: `API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`
+          error_message: `API Error: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`
         })
         .eq('id', orderId);
     }

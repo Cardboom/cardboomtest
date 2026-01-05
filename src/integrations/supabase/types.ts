@@ -3215,21 +3215,30 @@ export type Database = {
           card_name: string | null
           card_number: string | null
           category: string
+          cbgi_confidence: string | null
+          cbgi_json: Json | null
+          cbgi_risk_flags: string[] | null
+          cbgi_score_0_100: number | null
           centering_grade: number | null
           completed_at: string | null
+          comps_json: Json | null
           confidence: number | null
           corners_grade: number | null
           created_at: string
           cvi_key: string | null
           edges_grade: number | null
+          error_message: string | null
+          estimated_psa_range: string | null
           exact_url: string | null
           external_request_id: string | null
+          eye_appeal_grade: number | null
           final_grade: number | null
           front_image_url: string | null
           grade_label: string | null
           grading_notes: string | null
           id: string
           idempotency_key: string
+          identified_confidence: number | null
           language: string | null
           listing_created_id: string | null
           market_item_id: string | null
@@ -3237,7 +3246,13 @@ export type Database = {
           overlay_url: string | null
           paid_at: string | null
           price_cents: number | null
+          price_currency: string | null
+          price_high: number | null
+          price_low: number | null
+          price_mid: number | null
+          price_source: string | null
           price_usd: number
+          pricing_confidence: number | null
           rarity: string | null
           set_code: string | null
           set_name: string | null
@@ -3245,8 +3260,10 @@ export type Database = {
           submitted_at: string | null
           suggested_price: number | null
           surface_grade: number | null
+          tcg: string | null
           updated_at: string
           user_id: string
+          variant: string | null
           ximilar_centering_grade: number | null
           ximilar_corners_grade: number | null
           ximilar_edges_grade: number | null
@@ -3261,21 +3278,30 @@ export type Database = {
           card_name?: string | null
           card_number?: string | null
           category: string
+          cbgi_confidence?: string | null
+          cbgi_json?: Json | null
+          cbgi_risk_flags?: string[] | null
+          cbgi_score_0_100?: number | null
           centering_grade?: number | null
           completed_at?: string | null
+          comps_json?: Json | null
           confidence?: number | null
           corners_grade?: number | null
           created_at?: string
           cvi_key?: string | null
           edges_grade?: number | null
+          error_message?: string | null
+          estimated_psa_range?: string | null
           exact_url?: string | null
           external_request_id?: string | null
+          eye_appeal_grade?: number | null
           final_grade?: number | null
           front_image_url?: string | null
           grade_label?: string | null
           grading_notes?: string | null
           id?: string
           idempotency_key: string
+          identified_confidence?: number | null
           language?: string | null
           listing_created_id?: string | null
           market_item_id?: string | null
@@ -3283,7 +3309,13 @@ export type Database = {
           overlay_url?: string | null
           paid_at?: string | null
           price_cents?: number | null
+          price_currency?: string | null
+          price_high?: number | null
+          price_low?: number | null
+          price_mid?: number | null
+          price_source?: string | null
           price_usd?: number
+          pricing_confidence?: number | null
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
@@ -3291,8 +3323,10 @@ export type Database = {
           submitted_at?: string | null
           suggested_price?: number | null
           surface_grade?: number | null
+          tcg?: string | null
           updated_at?: string
           user_id: string
+          variant?: string | null
           ximilar_centering_grade?: number | null
           ximilar_corners_grade?: number | null
           ximilar_edges_grade?: number | null
@@ -3307,21 +3341,30 @@ export type Database = {
           card_name?: string | null
           card_number?: string | null
           category?: string
+          cbgi_confidence?: string | null
+          cbgi_json?: Json | null
+          cbgi_risk_flags?: string[] | null
+          cbgi_score_0_100?: number | null
           centering_grade?: number | null
           completed_at?: string | null
+          comps_json?: Json | null
           confidence?: number | null
           corners_grade?: number | null
           created_at?: string
           cvi_key?: string | null
           edges_grade?: number | null
+          error_message?: string | null
+          estimated_psa_range?: string | null
           exact_url?: string | null
           external_request_id?: string | null
+          eye_appeal_grade?: number | null
           final_grade?: number | null
           front_image_url?: string | null
           grade_label?: string | null
           grading_notes?: string | null
           id?: string
           idempotency_key?: string
+          identified_confidence?: number | null
           language?: string | null
           listing_created_id?: string | null
           market_item_id?: string | null
@@ -3329,7 +3372,13 @@ export type Database = {
           overlay_url?: string | null
           paid_at?: string | null
           price_cents?: number | null
+          price_currency?: string | null
+          price_high?: number | null
+          price_low?: number | null
+          price_mid?: number | null
+          price_source?: string | null
           price_usd?: number
+          pricing_confidence?: number | null
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
@@ -3337,8 +3386,10 @@ export type Database = {
           submitted_at?: string | null
           suggested_price?: number | null
           surface_grade?: number | null
+          tcg?: string | null
           updated_at?: string
           user_id?: string
+          variant?: string | null
           ximilar_centering_grade?: number | null
           ximilar_corners_grade?: number | null
           ximilar_edges_grade?: number | null

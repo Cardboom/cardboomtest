@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useGrading, GradingOrder, GRADING_CATEGORIES } from '@/hooks/useGrading';
-import { GradingResultCard } from '@/components/grading/GradingResultCard';
+import { CBGIResultCard } from '@/components/grading/CBGIResultCard';
 import { OrderStatusTimeline } from '@/components/grading/OrderStatusTimeline';
 import { CardOverlayPreview } from '@/components/grading/CardOverlayPreview';
 import { Header } from '@/components/Header';
@@ -112,7 +112,7 @@ export default function GradingOrderDetail() {
 
         <div className="grid lg:grid-cols-2 gap-6">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
-            {isCompleted ? <GradingResultCard order={order} /> : (
+            {isCompleted ? <CBGIResultCard order={order} /> : (
               <>
                 {/* Countdown Timer for Pending Orders */}
                 {isPending && order.paid_at && (

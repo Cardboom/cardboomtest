@@ -14,14 +14,21 @@ export interface GradingOrder {
   back_image_url: string | null;
   price_usd: number;
   external_request_id: string | null;
-  // CardBoom adjusted grades (5% below Ximilar for disciplined indexing)
+  // CardBoom Grading Index (CBGI) fields
+  cbgi_json: any | null;
+  cbgi_score_0_100: number | null;
+  estimated_psa_range: string | null;
+  cbgi_confidence: 'low' | 'medium' | 'high' | null;
+  cbgi_risk_flags: string[] | null;
+  eye_appeal_grade: number | null;
+  // Standard grades (for backwards compatibility)
   final_grade: number | null;
   grade_label: string | null;
   corners_grade: number | null;
   edges_grade: number | null;
   surface_grade: number | null;
   centering_grade: number | null;
-  // Original Ximilar grades for reference
+  // Original Ximilar grades for reference (legacy)
   ximilar_final_grade: number | null;
   ximilar_corners_grade: number | null;
   ximilar_edges_grade: number | null;
@@ -45,6 +52,13 @@ export interface GradingOrder {
   cvi_key: string | null;
   market_item_id: string | null;
   ai_confidence: number | null;
+  // Pricing fields
+  price_low: number | null;
+  price_mid: number | null;
+  price_high: number | null;
+  price_source: string | null;
+  comps_json: any | null;
+  error_message: string | null;
 }
 
 export const GRADING_PRICE_USD = 10;
