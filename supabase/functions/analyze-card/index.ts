@@ -39,12 +39,14 @@ interface SingleCardResult {
 interface GPTCardAnalysis {
   detected: boolean;
   cardName: string | null;
+  cardNameEnglish: string | null;
   setName: string | null;
   cardNumber: string | null;
   category: string | null;
   estimatedCondition: string | null;
   confidence: number;
   notes: string | null;
+  originalLanguage: string | null;
 }
 
 async function analyzeWithGPT(imageBase64: string, openaiKey: string): Promise<GPTCardAnalysis> {
@@ -52,9 +54,12 @@ async function analyzeWithGPT(imageBase64: string, openaiKey: string): Promise<G
 
 STRICT RULES:
 1. If you see a trading card (Pokemon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Lorcana, sports cards, etc.), set detected=true
-2. Extract the card name, set name, card number, and category
-3. Estimate the condition based on visible wear (Mint, Near Mint, Excellent, Good, Poor)
-4. Confidence should be 0.9+ if you can clearly read the card name, 0.7-0.9 if partially visible, 0.5-0.7 if guessing
+2. Extract the card name as shown on the card (cardName) AND the official English name (cardNameEnglish)
+3. If the card is in a non-English language (Japanese, Korean, Chinese, German, French, etc.), you MUST provide the English translation/equivalent name
+4. Extract the set name, card number, and category
+5. Estimate the condition based on visible wear (Mint, Near Mint, Excellent, Good, Poor)
+6. Confidence should be 0.9+ if you can clearly read the card name, 0.7-0.9 if partially visible, 0.5-0.7 if guessing
+7. Identify the original language of the card text
 
 CATEGORY VALUES (use exactly):
 - "pokemon" for Pokemon cards
@@ -72,13 +77,15 @@ CATEGORY VALUES (use exactly):
 Return ONLY valid JSON with this exact structure:
 {
   "detected": boolean,
-  "cardName": string or null,
+  "cardName": string or null (exact name as shown on card),
+  "cardNameEnglish": string or null (English version of the name),
   "setName": string or null,
   "cardNumber": string or null,
   "category": string or null,
   "estimatedCondition": string or null,
   "confidence": number (0-1),
-  "notes": string or null
+  "notes": string or null,
+  "originalLanguage": string or null (e.g. "Japanese", "English", "Korean", "German")
 }`;
 
   try {
@@ -132,24 +139,28 @@ Return ONLY valid JSON with this exact structure:
     return {
       detected: parsed.detected ?? false,
       cardName: parsed.cardName || null,
+      cardNameEnglish: parsed.cardNameEnglish || parsed.cardName || null,
       setName: parsed.setName || null,
       cardNumber: parsed.cardNumber || null,
       category: parsed.category || null,
       estimatedCondition: parsed.estimatedCondition || 'Near Mint',
       confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
       notes: parsed.notes || null,
+      originalLanguage: parsed.originalLanguage || 'English',
     };
   } catch (error) {
     console.error('GPT analysis error:', error);
     return {
       detected: false,
       cardName: null,
+      cardNameEnglish: null,
       setName: null,
       cardNumber: null,
       category: null,
       estimatedCondition: null,
       confidence: 0,
       notes: null,
+      originalLanguage: null,
     };
   }
 }
@@ -161,12 +172,17 @@ async function enrichWithMarketData(
   let matchedItem = null;
   let pricing = null;
 
-  if (gptAnalysis.cardName) {
-    const searchName = gptAnalysis.cardName
+  // Prefer English name for searching, fallback to original name
+  const nameToSearch = gptAnalysis.cardNameEnglish || gptAnalysis.cardName;
+  
+  if (nameToSearch) {
+    const searchName = nameToSearch
       .replace(/[^\w\s]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
       .toLowerCase();
+
+    console.log('Searching for card:', searchName, 'Original:', gptAnalysis.cardName, 'English:', gptAnalysis.cardNameEnglish);
 
     // Search for matching market items
     let query = supabase

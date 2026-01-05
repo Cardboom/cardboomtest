@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, User } from 'lucide-react';
+import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, User, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -24,6 +24,9 @@ interface Listing {
   image_url: string | null;
   seller_name?: string;
   seller_country_code?: string;
+  // Grading fields
+  grading_company?: string | null;
+  grade?: string | null;
 }
 
 const getCountryFlag = (countryCode: string): string => {
@@ -155,8 +158,9 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         <div className="col-span-4">Item</div>
         <div className="col-span-1">Category</div>
         <div className="col-span-1">Condition</div>
+        <div className="col-span-1">Grade</div>
         <div className="col-span-2 text-right">Price</div>
-        <div className="col-span-2 text-center">Options</div>
+        <div className="col-span-1">Options</div>
         <div className="col-span-1"></div>
       </div>
 
@@ -214,13 +218,29 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
               <span className="text-sm text-muted-foreground">{listing.condition}</span>
             </div>
 
+            {/* Grade */}
+            <div className="hidden lg:block col-span-1">
+              {listing.grading_company === 'CardBoom' ? (
+                <Badge className="bg-primary text-primary-foreground gap-1">
+                  <Award className="h-3 w-3" />
+                  CB {listing.grade || '10'}
+                </Badge>
+              ) : listing.grading_company ? (
+                <Badge variant="outline" className="text-xs">
+                  {listing.grading_company} {listing.grade}
+                </Badge>
+              ) : (
+                <span className="text-xs text-muted-foreground">Ungraded</span>
+              )}
+            </div>
+
             {/* Price */}
             <div className="hidden lg:block col-span-2 text-right">
               <p className="text-foreground font-bold text-lg">{formatPrice(listing.price)}</p>
             </div>
 
             {/* Delivery Options */}
-            <div className="hidden lg:flex col-span-2 justify-center gap-1">
+            <div className="hidden lg:flex col-span-1 justify-center gap-1">
               {listing.allows_vault && (
                 <Badge variant="outline" className="text-xs px-1.5">
                   <Vault className="h-3 w-3" />
