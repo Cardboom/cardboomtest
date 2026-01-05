@@ -7,8 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Ximilar TCG Identification API - correct endpoint per docs
-const XIMILAR_TCG_ENDPOINT = 'https://api.ximilar.com/collectibles/tcg/v2/identify';
+// Ximilar TCG Identification API - correct endpoint
+const XIMILAR_TCG_ENDPOINT = 'https://api.ximilar.com/collectibles/v2/tcg_id';
 
 interface XimilarTCGResult {
   records: Array<{
