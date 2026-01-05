@@ -235,10 +235,19 @@ export default function GradingNew() {
                       return (
                         <div key={side}>
                           <label className="block text-xs font-medium mb-2 text-muted-foreground uppercase tracking-wide">{side}</label>
-                          <input ref={inputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handleImageChange(side as 'front' | 'back', e.target.files?.[0] || null)} />
+                          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageChange(side as 'front' | 'back', e.target.files?.[0] || null)} />
                           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => inputRef.current?.click()}
                             className={cn('w-full aspect-[3/4] rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden', preview ? 'border-primary p-0' : 'border-border hover:border-primary/50')}>
-                            {preview ? <img src={preview} alt={`${side} preview`} className="w-full h-full object-cover" /> : <>{side === 'front' ? <Camera className="w-8 h-8 text-muted-foreground mb-2" /> : <Upload className="w-8 h-8 text-muted-foreground mb-2" />}<span className="text-xs text-muted-foreground">Tap to upload</span></>}
+                            {preview ? <img src={preview} alt={`${side} preview`} className="w-full h-full object-cover" /> : (
+                              <>
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Camera className="w-6 h-6 text-muted-foreground" />
+                                  <span className="text-muted-foreground">/</span>
+                                  <Upload className="w-6 h-6 text-muted-foreground" />
+                                </div>
+                                <span className="text-xs text-muted-foreground text-center">Take photo or<br/>choose from gallery</span>
+                              </>
+                            )}
                           </motion.button>
                         </div>
                       );

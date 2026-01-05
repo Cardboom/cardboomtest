@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, Shield, Upload, X, Clock, CheckCircle } from 'lucide-react';
+import { Camera, Shield, Upload, X, Clock, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -160,12 +160,15 @@ export function CollectiveVerificationDialog({
               </div>
             ) : (
               <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <Camera className="h-12 w-12 text-muted-foreground mb-2" />
-                <span className="text-sm text-muted-foreground">Click to upload photo</span>
+                <div className="flex items-center gap-3 mb-2">
+                  <Camera className="h-10 w-10 text-muted-foreground" />
+                  <span className="text-muted-foreground text-xl">/</span>
+                  <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <span className="text-sm text-muted-foreground text-center">Take photo or choose from gallery</span>
                 <input
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
