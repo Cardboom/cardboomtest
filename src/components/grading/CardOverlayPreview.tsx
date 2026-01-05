@@ -1,6 +1,6 @@
-import { useState, useRef, Suspense } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { RoundedBox, useTexture, Environment } from '@react-three/drei';
+import { useState, useRef, useEffect } from 'react';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { RoundedBox } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
 import * as THREE from 'three';
@@ -11,17 +11,42 @@ interface CardOverlayPreviewProps {
 
 function Card3D({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: string; showFront: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-  
-  const frontTexture = useTexture(frontUrl || '/placeholder.svg');
-  const backTexture = useTexture(backUrl || frontUrl || '/placeholder.svg');
-  
-  // Set texture properties
-  [frontTexture, backTexture].forEach(tex => {
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.minFilter = THREE.LinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-  });
+  const [textures, setTextures] = useState<{ front: THREE.Texture | null; back: THREE.Texture | null }>({ front: null, back: null });
+
+  // Load textures manually to handle CORS
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
+    
+    loader.load(
+      frontUrl,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        setTextures(prev => ({ ...prev, front: texture }));
+      },
+      undefined,
+      () => {
+        // On error, try placeholder
+        loader.load('/placeholder.svg', (texture) => {
+          setTextures(prev => ({ ...prev, front: texture }));
+        });
+      }
+    );
+
+    loader.load(
+      backUrl,
+      (texture) => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        setTextures(prev => ({ ...prev, back: texture }));
+      },
+      undefined,
+      () => {
+        loader.load('/placeholder.svg', (texture) => {
+          setTextures(prev => ({ ...prev, back: texture }));
+        });
+      }
+    );
+  }, [frontUrl, backUrl]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
@@ -39,22 +64,20 @@ function Card3D({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: s
     // Gentle floating animation
     meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
     
-    // Subtle tilt on hover
-    const tiltX = hovered ? Math.sin(state.clock.elapsedTime * 2) * 0.03 : 0;
-    meshRef.current.rotation.x = THREE.MathUtils.lerp(meshRef.current.rotation.x, tiltX, 0.1);
+    // Subtle continuous rotation when idle
+    if (Math.abs(meshRef.current.rotation.y - targetY) < 0.01) {
+      meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.05;
+      meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.3) * 0.02;
+    }
   });
 
   // Card dimensions (standard trading card ratio 2.5:3.5)
   const width = 2.5;
   const height = 3.5;
-  const depth = 0.02;
+  const depth = 0.03;
 
   return (
-    <mesh
-      ref={meshRef}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-    >
+    <mesh ref={meshRef}>
       <RoundedBox args={[width, height, depth]} radius={0.08} smoothness={4}>
         <meshStandardMaterial attach="material-0" color="#1a1a2e" />
         <meshStandardMaterial attach="material-1" color="#1a1a2e" />
@@ -62,34 +85,20 @@ function Card3D({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: s
         <meshStandardMaterial attach="material-3" color="#1a1a2e" />
         <meshStandardMaterial 
           attach="material-4" 
-          map={frontTexture}
+          map={textures.front}
+          color={textures.front ? undefined : "#333"}
           roughness={0.3}
           metalness={0.1}
         />
         <meshStandardMaterial 
           attach="material-5" 
-          map={backTexture}
+          map={textures.back}
+          color={textures.back ? undefined : "#222"}
           roughness={0.3}
           metalness={0.1}
         />
       </RoundedBox>
     </mesh>
-  );
-}
-
-function CardScene({ frontUrl, backUrl, showFront }: { frontUrl: string; backUrl: string; showFront: boolean }) {
-  return (
-    <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
-      <directionalLight position={[-5, 5, -5]} intensity={0.5} />
-      <spotLight position={[0, 10, 0]} intensity={0.3} angle={0.3} penumbra={1} />
-      
-      <Suspense fallback={null}>
-        <Card3D frontUrl={frontUrl} backUrl={backUrl} showFront={showFront} />
-        <Environment preset="city" />
-      </Suspense>
-    </>
   );
 }
 
@@ -117,7 +126,12 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
           gl={{ antialias: true, alpha: true }}
           dpr={[1, 2]}
         >
-          <CardScene frontUrl={frontUrl} backUrl={backUrl} showFront={showFront} />
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[5, 5, 5]} intensity={1} />
+          <directionalLight position={[-5, 5, -5]} intensity={0.5} />
+          <spotLight position={[0, 10, 0]} intensity={0.3} angle={0.3} penumbra={1} />
+          
+          <Card3D frontUrl={frontUrl} backUrl={backUrl} showFront={showFront} />
         </Canvas>
         
         {/* Grade overlay */}
