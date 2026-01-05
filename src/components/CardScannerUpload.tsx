@@ -125,9 +125,9 @@ export function CardScannerUpload({
     setIsCheckingQuality(false);
 
     if (quality.passed) {
-      // Proceed to analysis
+      // Proceed to analysis - pass the File (not blob URL) for base64 conversion
       setScanStep('analyzing');
-      const result = await analyzeImage(previewUrl);
+      const result = await analyzeImage(file);
       
       if (result) {
         setScanStep('results');
@@ -147,9 +147,9 @@ export function CardScannerUpload({
   };
 
   const handleProceedAnyway = async () => {
-    if (!imagePreview) return;
+    if (!imageFile) return;
     setScanStep('analyzing');
-    const result = await analyzeImage(imagePreview);
+    const result = await analyzeImage(imageFile);
     if (result) {
       setScanStep('results');
     }
