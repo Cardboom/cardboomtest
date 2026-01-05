@@ -31,13 +31,16 @@ import {
   Percent,
   Plus,
   Minus,
-  Lightbulb
+  Lightbulb,
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { GradingCreditsDisplay, GradingCreditsBanner } from '@/components/grading/GradingCreditsDisplay';
 import { GradeAndFlipToggle } from '@/components/grading/GradeAndFlipToggle';
 import { useGradingCredits } from '@/hooks/useGradingCredits';
+import { CardScannerUpload } from '@/components/CardScannerUpload';
+import { CardAnalysis } from '@/hooks/useCardAnalysis';
 
 type Step = 'category' | 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
@@ -77,6 +80,8 @@ export default function GradingNew() {
   const [autoListEnabled, setAutoListEnabled] = useState(false);
   const [autoListPrice, setAutoListPrice] = useState<number | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [cardAnalysis, setCardAnalysis] = useState<CardAnalysis | null>(null);
+  const [useAIScanner, setUseAIScanner] = useState(true);
 
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
@@ -226,33 +231,123 @@ export default function GradingNew() {
           {step === 'photos' && (
             <motion.div key="photos" variants={containerVariants} initial="hidden" animate="visible" exit="exit">
               <Card className="border-border/50">
-                <CardHeader className="pb-4"><CardTitle className="text-xl">Upload Photos</CardTitle><p className="text-sm text-muted-foreground">Clear photos of front and back</p></CardHeader>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl">Upload Photos</CardTitle>
+                  <p className="text-sm text-muted-foreground">Clear photos of front and back</p>
+                </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    {['front', 'back'].map((side) => {
-                      const preview = side === 'front' ? frontPreview : backPreview;
-                      const inputRef = side === 'front' ? frontInputRef : backInputRef;
-                      return (
-                        <div key={side}>
-                          <label className="block text-xs font-medium mb-2 text-muted-foreground uppercase tracking-wide">{side}</label>
-                          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageChange(side as 'front' | 'back', e.target.files?.[0] || null)} />
-                          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => inputRef.current?.click()}
-                            className={cn('w-full aspect-[3/4] rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden', preview ? 'border-primary p-0' : 'border-border hover:border-primary/50')}>
-                            {preview ? <img src={preview} alt={`${side} preview`} className="w-full h-full object-cover" /> : (
-                              <>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Camera className="w-6 h-6 text-muted-foreground" />
-                                  <span className="text-muted-foreground">/</span>
-                                  <Upload className="w-6 h-6 text-muted-foreground" />
+                  {/* AI Scanner Toggle */}
+                  {!frontPreview && !backPreview && (
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">AI Card Recognition</span>
+                      </div>
+                      <Switch 
+                        checked={useAIScanner} 
+                        onCheckedChange={setUseAIScanner}
+                      />
+                    </div>
+                  )}
+
+                  {/* AI Scanner for Front Image */}
+                  {useAIScanner && !frontPreview && (
+                    <div className="mb-4">
+                      <Label className="block text-xs font-medium mb-2 text-muted-foreground uppercase tracking-wide">Front (AI Scan)</Label>
+                      <CardScannerUpload
+                        mode="grading"
+                        onScanComplete={(scanAnalysis, file, previewUrl) => {
+                          setCardAnalysis(scanAnalysis);
+                          setFrontImage(file);
+                          setFrontPreview(previewUrl);
+                          
+                          // Auto-detect category if found
+                          if (scanAnalysis.category && !category) {
+                            const matchedCategory = GRADING_CATEGORIES.find(
+                              c => c.id.toLowerCase() === scanAnalysis.category?.toLowerCase()
+                            );
+                            if (matchedCategory) {
+                              setCategory(matchedCategory.id);
+                            }
+                          }
+                          
+                          toast({
+                            title: scanAnalysis.detected ? 'Card Recognized!' : 'Image Uploaded',
+                            description: scanAnalysis.detected 
+                              ? `Detected: ${scanAnalysis.cardName || 'Card'}`
+                              : 'Now upload the back of the card',
+                          });
+                        }}
+                        onSkip={() => setUseAIScanner(false)}
+                        className="border-0 shadow-none p-0"
+                      />
+                    </div>
+                  )}
+
+                  {/* Show detected card info */}
+                  {cardAnalysis?.detected && frontPreview && (
+                    <div className="p-3 rounded-lg bg-gain/10 border border-gain/30 flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-gain flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-gain truncate">{cardAnalysis.cardName || 'Card Detected'}</p>
+                        {cardAnalysis.setName && (
+                          <p className="text-xs text-muted-foreground truncate">{cardAnalysis.setName}</p>
+                        )}
+                      </div>
+                      <Badge variant="secondary" className="flex-shrink-0">
+                        {Math.round((cardAnalysis.confidence || 0) * 100)}%
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Manual Upload Grid (or back image after front is scanned) */}
+                  {(!useAIScanner || frontPreview) && (
+                    <div className="grid grid-cols-2 gap-4">
+                      {['front', 'back'].map((side) => {
+                        const preview = side === 'front' ? frontPreview : backPreview;
+                        const inputRef = side === 'front' ? frontInputRef : backInputRef;
+                        
+                        // Skip front if already uploaded via AI scanner
+                        if (side === 'front' && frontPreview && useAIScanner) {
+                          return (
+                            <div key={side}>
+                              <label className="block text-xs font-medium mb-2 text-muted-foreground uppercase tracking-wide">{side}</label>
+                              <div className="w-full aspect-[3/4] rounded-xl border-2 border-gain overflow-hidden relative">
+                                <img src={preview} alt={`${side} preview`} className="w-full h-full object-cover" />
+                                <div className="absolute top-2 right-2">
+                                  <Badge className="bg-gain text-gain-foreground gap-1">
+                                    <CheckCircle2 className="w-3 h-3" />
+                                    AI Scanned
+                                  </Badge>
                                 </div>
-                                <span className="text-xs text-muted-foreground text-center">Take photo or<br/>choose from gallery</span>
-                              </>
-                            )}
-                          </motion.button>
-                        </div>
-                      );
-                    })}
-                  </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div key={side}>
+                            <label className="block text-xs font-medium mb-2 text-muted-foreground uppercase tracking-wide">{side}</label>
+                            <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleImageChange(side as 'front' | 'back', e.target.files?.[0] || null)} />
+                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => inputRef.current?.click()}
+                              className={cn('w-full aspect-[3/4] rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center overflow-hidden', preview ? 'border-primary p-0' : 'border-border hover:border-primary/50')}>
+                              {preview ? <img src={preview} alt={`${side} preview`} className="w-full h-full object-cover" /> : (
+                                <>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Camera className="w-6 h-6 text-muted-foreground" />
+                                    <span className="text-muted-foreground">/</span>
+                                    <Upload className="w-6 h-6 text-muted-foreground" />
+                                  </div>
+                                  <span className="text-xs text-muted-foreground text-center">Take photo or<br/>choose from gallery</span>
+                                </>
+                              )}
+                            </motion.button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  
                   <Button className="w-full gap-2 h-11 rounded-full" disabled={!frontImage || !backImage} onClick={handleNext}>Continue <ArrowRight className="w-4 h-4" /></Button>
                 </CardContent>
               </Card>

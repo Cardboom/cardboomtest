@@ -17,10 +17,11 @@ import { Slider } from '@/components/ui/slider';
 import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info, Zap, DollarSign, Sparkles, Camera } from 'lucide-react';
 import { CardScanner } from '@/components/CardScanner';
 import { CardPricingIntelligence } from '@/components/CardPricingIntelligence';
+import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { toast } from 'sonner';
 import { CreateCollectiveDialog } from '@/components/collective';
 import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
-import { useCardAnalysis } from '@/hooks/useCardAnalysis';
+import { useCardAnalysis, CardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { BulkImportDialog } from '@/components/seller/BulkImportDialog';
 import { BulkImageImportDialog } from '@/components/seller/BulkImageImportDialog';
@@ -79,6 +80,8 @@ const SellPage = () => {
   const [selectedVaultItem, setSelectedVaultItem] = useState<any>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [showAIScanner, setShowAIScanner] = useState(true);
+  const [scannedAnalysis, setScannedAnalysis] = useState<CardAnalysis | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -173,6 +176,8 @@ const SellPage = () => {
     setImageFile(null);
     setImagePreview(null);
     clearAnalysis();
+    setScannedAnalysis(null);
+    setShowAIScanner(true);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -564,6 +569,34 @@ const SellPage = () => {
                 }}
               />
             </TabsContent>
+
+            {/* AI Scanner Upload Section */}
+            {activeTab === 'create' && showAIScanner && !imagePreview && (
+              <div className="mb-6">
+                <CardScannerUpload
+                  mode="sell"
+                  onScanComplete={(scanAnalysis, file, previewUrl) => {
+                    setScannedAnalysis(scanAnalysis);
+                    setImageFile(file);
+                    setImagePreview(previewUrl);
+                    setShowAIScanner(false);
+                    
+                    // Auto-fill form fields
+                    if (scanAnalysis.detected) {
+                      setFormData(prev => ({
+                        ...prev,
+                        title: scanAnalysis.cardName || prev.title,
+                        category: scanAnalysis.category || prev.category,
+                        condition: scanAnalysis.estimatedCondition || prev.condition,
+                        price: scanAnalysis.pricing?.medianSold?.toFixed(2) || prev.price,
+                      }));
+                      toast.success('Card detected! Form auto-filled with suggested details.');
+                    }
+                  }}
+                  onSkip={() => setShowAIScanner(false)}
+                />
+              </div>
+            )}
 
             <TabsContent value="create">
               <Card className="border-primary/10">
