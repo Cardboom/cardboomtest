@@ -24,11 +24,19 @@ export interface CardAnalysis {
   detected: boolean;
   detectionStatus: CardDetectionStatus;
   cardName: string | null;
+  cardNameEnglish: string | null;
   setName: string | null;
+  setCode: string | null;
   cardNumber: string | null;
+  rarity: string | null;
+  cardType: string | null;
   estimatedCondition: string | null;
   category: string | null;
+  language: string | null;
+  cviKey: string | null;
   confidence: number;
+  needsReview: boolean;
+  notes: string | null;
   ocrText: string[];
   pricing: PricingData | null;
   matchedMarketItem: {
@@ -36,6 +44,10 @@ export interface CardAnalysis {
     name: string;
     category: string;
     image_url: string | null;
+    set_name?: string | null;
+    set_code?: string | null;
+    card_number?: string | null;
+    rarity?: string | null;
   } | null;
   // Fields that need confirmation (confidence < 0.75)
   needsConfirmation: {
@@ -43,6 +55,7 @@ export interface CardAnalysis {
     setName: boolean;
     category: boolean;
     cardNumber: boolean;
+    setCode: boolean;
   };
 }
 
@@ -94,49 +107,64 @@ export const useCardAnalysis = () => {
       }
 
       // Determine detection status based on confidence and match
-      // New logic: if we got any response back, we detected something (image was valid)
       const hasIndexMatch = !!data.matchedMarketItem;
       const highConfidence = data.confidence >= 0.75;
       const hasOcrText = data.ocrText && data.ocrText.length > 0;
-      const hasCardName = !!data.cardName;
+      const hasCardName = !!data.cardName || !!data.cardNameEnglish;
+      const needsReview = data.needsReview === true;
       
-      // An image was uploaded and processed - check what we found
-      // detected=true from backend means the image contained card-like content
-      const cardWasDetected = data.detected === true;
+      // Card was detected if we got card data back
+      const cardWasDetected = data.detected === true || hasCardName;
       
       let detectionStatus: CardDetectionStatus;
-      if (highConfidence && hasIndexMatch) {
+      if (highConfidence && hasIndexMatch && !needsReview) {
         // High confidence with index match = confirmed
         detectionStatus = 'detected_confirmed';
       } else if (cardWasDetected || hasOcrText || hasCardName) {
-        // Card detected but needs confirmation (low confidence OR no index match)
+        // Card detected but needs confirmation (low confidence OR no index match OR needs_review flag)
         detectionStatus = 'detected_needs_confirmation';
       } else {
         // No card-like content detected at all
         detectionStatus = 'not_detected';
       }
 
-      // Determine which fields need confirmation (confidence < 0.5 for that field)
+      // Determine which fields need confirmation
       const needsConfirmation = {
         cardName: !data.cardName || data.confidence < 0.5,
         setName: !data.setName || data.confidence < 0.6,
         category: !data.category || data.confidence < 0.5,
         cardNumber: !data.cardNumber || data.confidence < 0.5,
+        setCode: !data.setCode || data.confidence < 0.6,
       };
 
       const enrichedAnalysis: CardAnalysis = {
-        ...data,
+        detected: cardWasDetected,
         detectionStatus,
+        cardName: data.cardName || null,
+        cardNameEnglish: data.cardNameEnglish || data.cardName || null,
+        setName: data.setName || null,
+        setCode: data.setCode || null,
+        cardNumber: data.cardNumber || null,
+        rarity: data.rarity || null,
+        cardType: data.cardType || null,
+        estimatedCondition: data.estimatedCondition || 'Near Mint',
+        category: data.category || null,
+        language: data.language || 'English',
+        cviKey: data.cviKey || null,
+        confidence: data.confidence || 0,
+        needsReview: needsReview || detectionStatus === 'detected_needs_confirmation',
+        notes: data.notes || null,
+        ocrText: data.ocrText || [],
+        pricing: data.pricing || null,
+        matchedMarketItem: data.matchedMarketItem || null,
         needsConfirmation,
-        // Card is detected if we got any card-like content
-        detected: cardWasDetected || hasOcrText || hasCardName,
       };
 
       setAnalysis(enrichedAnalysis);
 
       // Show appropriate toast based on detection status
       if (detectionStatus === 'detected_confirmed') {
-        toast.success(`Card identified: ${data.cardName}`);
+        toast.success(`Card identified: ${data.cardNameEnglish || data.cardName}`);
       } else if (detectionStatus === 'detected_needs_confirmation') {
         toast.info('Card detected — please confirm the details');
       } else {

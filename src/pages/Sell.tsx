@@ -28,6 +28,8 @@ import { BulkImageImportDialog } from '@/components/seller/BulkImageImportDialog
 import { SmartPriceSuggestion } from '@/components/listing/SmartPriceSuggestion';
 import { ListingSuccessModal } from '@/components/listing/ListingSuccessModal';
 import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard';
+import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
+import { useCardIndexer } from '@/hooks/useCardIndexer';
 interface Listing {
   id: string;
   title: string;
@@ -82,12 +84,20 @@ const SellPage = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [showAIScanner, setShowAIScanner] = useState(true);
   const [scannedAnalysis, setScannedAnalysis] = useState<CardAnalysis | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewedCardData, setReviewedCardData] = useState<ReviewedCardData | null>(null);
+  const { createListing } = useCardIndexer();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'nba',
     condition: 'Near Mint',
     price: '',
+    setName: '',
+    setCode: '',
+    cardNumber: '',
+    rarity: '',
+    language: 'English',
     allowsVault: true,
     allowsTrade: true,
     allowsShipping: true,
@@ -307,6 +317,11 @@ const SellPage = () => {
         category: 'nba',
         condition: 'Near Mint',
         price: '',
+        setName: '',
+        setCode: '',
+        cardNumber: '',
+        rarity: '',
+        language: 'English',
         allowsVault: true,
         allowsTrade: true,
         allowsShipping: true,
@@ -469,6 +484,11 @@ const SellPage = () => {
         category: 'nba',
         condition: 'Near Mint',
         price: '',
+        setName: '',
+        setCode: '',
+        cardNumber: '',
+        rarity: '',
+        language: 'English',
         allowsVault: true,
         allowsTrade: true,
         allowsShipping: true,
@@ -585,12 +605,23 @@ const SellPage = () => {
                     if (scanAnalysis.detected) {
                       setFormData(prev => ({
                         ...prev,
-                        title: scanAnalysis.cardName || prev.title,
+                        title: scanAnalysis.cardNameEnglish || scanAnalysis.cardName || prev.title,
                         category: scanAnalysis.category || prev.category,
                         condition: scanAnalysis.estimatedCondition || prev.condition,
                         price: scanAnalysis.pricing?.medianSold?.toFixed(2) || prev.price,
+                        setName: scanAnalysis.setName || prev.setName,
+                        setCode: scanAnalysis.setCode || prev.setCode,
+                        cardNumber: scanAnalysis.cardNumber || prev.cardNumber,
+                        rarity: scanAnalysis.rarity || prev.rarity,
+                        language: scanAnalysis.language || prev.language,
                       }));
-                      toast.success('Card detected! Form auto-filled with suggested details.');
+                      
+                      // Show review modal if confirmation needed
+                      if (scanAnalysis.needsReview) {
+                        setShowReviewModal(true);
+                      } else {
+                        toast.success('Card identified with high confidence! Form auto-filled.');
+                      }
                     }
                   }}
                   onSkip={() => setShowAIScanner(false)}
@@ -610,6 +641,22 @@ const SellPage = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
+                  {/* AI Identified Badge */}
+                  {scannedAnalysis?.detected && (
+                    <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium">AI Identified</span>
+                        {scannedAnalysis.cardNameEnglish && (
+                          <span className="text-sm text-muted-foreground">• {scannedAnalysis.cardNameEnglish}</span>
+                        )}
+                      </div>
+                      <Badge variant={scannedAnalysis.confidence >= 0.75 ? "default" : "secondary"}>
+                        {Math.round(scannedAnalysis.confidence * 100)}% confidence
+                      </Badge>
+                    </div>
+                  )}
+                  
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="sm:col-span-2">
@@ -1195,6 +1242,29 @@ const SellPage = () => {
           setShowSuccessModal(true);
           setSelectedVaultItem(null);
           fetchListings();
+        }}
+      />
+
+      {/* Card Review Modal */}
+      <CardReviewModal
+        open={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        analysis={scannedAnalysis}
+        imagePreview={imagePreview}
+        onConfirm={(reviewedData) => {
+          setReviewedCardData(reviewedData);
+          setFormData(prev => ({
+            ...prev,
+            title: reviewedData.cardNameEnglish || reviewedData.cardName,
+            category: reviewedData.category,
+            setName: reviewedData.setName,
+            setCode: reviewedData.setCode,
+            cardNumber: reviewedData.cardNumber,
+            rarity: reviewedData.rarity,
+            language: reviewedData.language,
+          }));
+          setShowReviewModal(false);
+          toast.success('Card details confirmed! Complete your listing.');
         }}
       />
 

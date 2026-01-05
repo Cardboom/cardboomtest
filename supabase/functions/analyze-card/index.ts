@@ -7,14 +7,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// CardBoom Indexer JSON Schema
+interface CardBoomIndexResult {
+  game: 'Pokemon' | 'One Piece' | 'MTG' | 'Yu-Gi-Oh' | 'Sports' | 'Lorcana' | 'Other';
+  language: 'Japanese' | 'English' | 'Korean' | 'Chinese' | 'German' | 'French' | 'Other';
+  card_name: { original: string | null; english: string | null };
+  set: { name: string | null; code: string | null; release_year: number | null };
+  card_number: string | null;
+  rarity: string | null;
+  card_type: string | null;
+  attributes: {
+    hp_or_power: string | null;
+    element_or_color: string | null;
+    cost: string | null;
+  };
+  cvi_key: string | null;
+  confidence_score: number;
+  needs_review: boolean;
+  notes: string;
+}
+
 interface SingleCardResult {
   detected: boolean;
   cardName: string | null;
+  cardNameEnglish: string | null;
   setName: string | null;
+  setCode: string | null;
   cardNumber: string | null;
+  rarity: string | null;
+  cardType: string | null;
   estimatedCondition: string | null;
   category: string | null;
+  language: string | null;
+  cviKey: string | null;
   confidence: number;
+  needsReview: boolean;
+  notes: string | null;
   ocrText: string[];
   pricing: {
     lowestActive: number | null;
@@ -32,62 +60,76 @@ interface SingleCardResult {
     name: string;
     category: string;
     image_url: string | null;
+    set_name: string | null;
+    set_code: string | null;
+    card_number: string | null;
+    rarity: string | null;
   } | null;
-  boundingBox?: { x: number; y: number; width: number; height: number };
 }
 
-interface GPTCardAnalysis {
-  detected: boolean;
-  cardName: string | null;
-  cardNameEnglish: string | null;
-  setName: string | null;
-  cardNumber: string | null;
-  category: string | null;
-  estimatedCondition: string | null;
-  confidence: number;
-  notes: string | null;
-  originalLanguage: string | null;
-}
+const CARDBOOM_INDEXER_PROMPT = `You are CardBoom AI Card Indexer.
 
-async function analyzeWithGPT(imageBase64: string, openaiKey: string): Promise<GPTCardAnalysis> {
-  const systemPrompt = `You are CardBoom's AI Card Recognition system. Analyze the uploaded image and extract trading card information.
+You are given an image of a trading card (Pokémon, One Piece, MTG, Yu-Gi-Oh, sports, Lorcana, or other TCG).
 
-STRICT RULES:
-1. If you see a trading card (Pokemon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Lorcana, sports cards, etc.), set detected=true
-2. Extract the card name as shown on the card (cardName) AND the official English name (cardNameEnglish)
-3. If the card is in a non-English language (Japanese, Korean, Chinese, German, French, etc.), you MUST provide the English translation/equivalent name
-4. Extract the set name, card number, and category
-5. Estimate the condition based on visible wear (Mint, Near Mint, Excellent, Good, Poor)
-6. Confidence should be 0.9+ if you can clearly read the card name, 0.7-0.9 if partially visible, 0.5-0.7 if guessing
-7. Identify the original language of the card text
+Your task:
+1) Identify the card with maximum certainty
+2) Extract ALL relevant metadata needed for a CardBoom card page + listing + grading
+3) Return normalized data that can be saved to database and displayed in UI
 
-CATEGORY VALUES (use exactly):
-- "pokemon" for Pokemon cards
-- "mtg" for Magic: The Gathering
-- "yugioh" for Yu-Gi-Oh! cards
-- "onepiece" for One Piece TCG
-- "lorcana" for Disney Lorcana
-- "nba" for basketball cards
-- "football" for NFL/football cards
-- "baseball" for baseball cards
-- "soccer" for soccer/football cards
-- "figures" for collectible figures
-- "gaming" for gaming items
+RULES:
+- NEVER return only a character name
+- ALWAYS attempt to infer set using artwork, language, numbering, symbols, rarity marks, and layout
+- If a field cannot be confirmed, return null and state why in notes
+- Do NOT hallucinate set names, set codes, or card numbers
+- Output MUST be valid JSON ONLY
 
-Return ONLY valid JSON with this exact structure:
+RETURN THIS JSON SCHEMA:
 {
-  "detected": boolean,
-  "cardName": string or null (exact name as shown on card),
-  "cardNameEnglish": string or null (English version of the name),
-  "setName": string or null,
-  "cardNumber": string or null,
-  "category": string or null,
-  "estimatedCondition": string or null,
-  "confidence": number (0-1),
-  "notes": string or null,
-  "originalLanguage": string or null (e.g. "Japanese", "English", "Korean", "German")
-}`;
+  "game": "Pokemon | One Piece | MTG | Yu-Gi-Oh | Sports | Lorcana | Other",
+  "language": "Japanese | English | Korean | Chinese | German | French | Other",
+  "card_name": { "original": "string", "english": "string | null" },
+  "set": { "name": "string | null", "code": "string | null", "release_year": "number | null" },
+  "card_number": "string | null",
+  "rarity": "string | null",
+  "card_type": "string | null",
+  "attributes": {
+    "hp_or_power": "string | null",
+    "element_or_color": "string | null",
+    "cost": "string | null"
+  },
+  "cvi_key": "string | null",
+  "confidence_score": 0.00,
+  "needs_review": true,
+  "notes": "string"
+}
 
+DERIVED FIELD RULES:
+- cvi_key must be \`\${game}|\${set.code}|\${card_number}|\${language}\` IF set.code and card_number are known; else null.
+- needs_review must be true if (set.code is null OR card_number is null OR confidence_score < 0.75)
+
+CATEGORY MAPPING:
+- "Pokemon" -> "pokemon"
+- "One Piece" -> "onepiece"  
+- "MTG" -> "mtg"
+- "Yu-Gi-Oh" -> "yugioh"
+- "Sports" -> "nba" (default sports, can be "football", "baseball", "soccer" based on content)
+- "Lorcana" -> "lorcana"
+- "Other" -> "tcg"`;
+
+function mapGameToCategory(game: string): string {
+  const mapping: Record<string, string> = {
+    'Pokemon': 'pokemon',
+    'One Piece': 'onepiece',
+    'MTG': 'mtg',
+    'Yu-Gi-Oh': 'yugioh',
+    'Sports': 'nba',
+    'Lorcana': 'lorcana',
+    'Other': 'tcg'
+  };
+  return mapping[game] || 'tcg';
+}
+
+async function analyzeWithGPT(imageBase64: string, openaiKey: string): Promise<CardBoomIndexResult> {
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -98,11 +140,11 @@ Return ONLY valid JSON with this exact structure:
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: CARDBOOM_INDEXER_PROMPT },
           {
             role: 'user',
             content: [
-              { type: 'text', text: 'Analyze this trading card image and extract all visible information.' },
+              { type: 'text', text: 'Analyze this trading card image and extract all visible information. Return only valid JSON.' },
               {
                 type: 'image_url',
                 image_url: {
@@ -113,7 +155,7 @@ Return ONLY valid JSON with this exact structure:
             ]
           }
         ],
-        max_tokens: 500,
+        max_tokens: 800,
         temperature: 0.1,
       }),
     });
@@ -136,44 +178,71 @@ Return ONLY valid JSON with this exact structure:
     }
     
     const parsed = JSON.parse(jsonStr);
+    
+    // Build cvi_key if we have enough data
+    let cviKey: string | null = null;
+    if (parsed.set?.code && parsed.card_number) {
+      cviKey = `${parsed.game}|${parsed.set.code}|${parsed.card_number}|${parsed.language}`;
+    }
+    
+    // Determine if review is needed
+    const needsReview = !parsed.set?.code || !parsed.card_number || (parsed.confidence_score || 0) < 0.75;
+    
     return {
-      detected: parsed.detected ?? false,
-      cardName: parsed.cardName || null,
-      cardNameEnglish: parsed.cardNameEnglish || parsed.cardName || null,
-      setName: parsed.setName || null,
-      cardNumber: parsed.cardNumber || null,
-      category: parsed.category || null,
-      estimatedCondition: parsed.estimatedCondition || 'Near Mint',
-      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
-      notes: parsed.notes || null,
-      originalLanguage: parsed.originalLanguage || 'English',
+      game: parsed.game || 'Other',
+      language: parsed.language || 'English',
+      card_name: {
+        original: parsed.card_name?.original || null,
+        english: parsed.card_name?.english || parsed.card_name?.original || null,
+      },
+      set: {
+        name: parsed.set?.name || null,
+        code: parsed.set?.code || null,
+        release_year: parsed.set?.release_year || null,
+      },
+      card_number: parsed.card_number || null,
+      rarity: parsed.rarity || null,
+      card_type: parsed.card_type || null,
+      attributes: parsed.attributes || {
+        hp_or_power: null,
+        element_or_color: null,
+        cost: null,
+      },
+      cvi_key: cviKey || parsed.cvi_key || null,
+      confidence_score: typeof parsed.confidence_score === 'number' ? parsed.confidence_score : 0.5,
+      needs_review: needsReview,
+      notes: parsed.notes || '',
     };
   } catch (error) {
     console.error('GPT analysis error:', error);
     return {
-      detected: false,
-      cardName: null,
-      cardNameEnglish: null,
-      setName: null,
-      cardNumber: null,
-      category: null,
-      estimatedCondition: null,
-      confidence: 0,
-      notes: null,
-      originalLanguage: null,
+      game: 'Other',
+      language: 'English',
+      card_name: { original: null, english: null },
+      set: { name: null, code: null, release_year: null },
+      card_number: null,
+      rarity: null,
+      card_type: null,
+      attributes: { hp_or_power: null, element_or_color: null, cost: null },
+      cvi_key: null,
+      confidence_score: 0,
+      needs_review: true,
+      notes: 'Failed to analyze image',
     };
   }
 }
 
 async function enrichWithMarketData(
   supabase: any,
-  gptAnalysis: GPTCardAnalysis
+  indexResult: CardBoomIndexResult
 ): Promise<SingleCardResult> {
   let matchedItem = null;
   let pricing = null;
 
-  // Prefer English name for searching, fallback to original name
-  const nameToSearch = gptAnalysis.cardNameEnglish || gptAnalysis.cardName;
+  const category = mapGameToCategory(indexResult.game);
+  
+  // Prefer English name for searching
+  const nameToSearch = indexResult.card_name.english || indexResult.card_name.original;
   
   if (nameToSearch) {
     const searchName = nameToSearch
@@ -182,78 +251,107 @@ async function enrichWithMarketData(
       .trim()
       .toLowerCase();
 
-    console.log('Searching for card:', searchName, 'Original:', gptAnalysis.cardName, 'English:', gptAnalysis.cardNameEnglish);
+    console.log('Searching for card:', searchName, 'Category:', category);
 
-    // Search for matching market items
-    let query = supabase
-      .from('market_items')
-      .select('*')
-      .ilike('name', `%${searchName}%`);
-    
-    // Filter by category if detected
-    if (gptAnalysis.category) {
-      query = query.eq('category', gptAnalysis.category);
-    }
-
-    const { data: matches } = await query
-      .order('current_price', { ascending: false })
-      .limit(10);
-
-    if (matches && matches.length > 0) {
-      matchedItem = matches[0];
-
-      const prices = matches.map((item: any) => item.current_price).filter((p: number) => p > 0);
-      const sortedPrices = [...prices].sort((a, b) => a - b);
+    // First try to find by cvi_key if available
+    if (indexResult.cvi_key) {
+      const { data: cviMatch } = await supabase
+        .from('market_items')
+        .select('*')
+        .eq('cvi_key', indexResult.cvi_key)
+        .single();
       
-      if (sortedPrices.length > 0) {
-        const lowestActive = sortedPrices[0];
-        const medianSold = sortedPrices[Math.floor(sortedPrices.length / 2)];
-        const trend7d = matchedItem.change_7d || 0;
-        const quickSellPrice = Math.round(medianSold * 0.85 * 100) / 100;
-        const maxProfitPrice = Math.round(medianSold * 1.10 * 100) / 100;
+      if (cviMatch) {
+        matchedItem = cviMatch;
+      }
+    }
+    
+    // Fallback: search by name and category
+    if (!matchedItem) {
+      let query = supabase
+        .from('market_items')
+        .select('*')
+        .ilike('name', `%${searchName}%`);
+      
+      if (category) {
+        query = query.eq('category', category);
+      }
 
-        let priceConfidence: 'high' | 'medium' | 'low' = 'low';
-        if (matches.length >= 5) priceConfidence = 'high';
-        else if (matches.length >= 3) priceConfidence = 'medium';
+      const { data: matches } = await query
+        .order('current_price', { ascending: false })
+        .limit(10);
+
+      if (matches && matches.length > 0) {
+        matchedItem = matches[0];
+
+        const prices = matches.map((item: any) => item.current_price).filter((p: number) => p > 0);
+        const sortedPrices = [...prices].sort((a, b) => a - b);
         
-        const trendDirection: 'up' | 'down' | 'stable' = trend7d > 2 ? 'up' : trend7d < -2 ? 'down' : 'stable';
+        if (sortedPrices.length > 0) {
+          const lowestActive = sortedPrices[0];
+          const medianSold = sortedPrices[Math.floor(sortedPrices.length / 2)];
+          const trend7d = matchedItem.change_7d || 0;
+          const quickSellPrice = Math.round(medianSold * 0.85 * 100) / 100;
+          const maxProfitPrice = Math.round(medianSold * 1.10 * 100) / 100;
 
-        pricing = {
-          lowestActive,
-          medianSold,
-          trend7d,
-          trendDirection,
-          quickSellPrice,
-          maxProfitPrice,
-          priceConfidence,
-          salesCount: matches.length,
-          listingsCount: matches.length,
-        };
+          let priceConfidence: 'high' | 'medium' | 'low' = 'low';
+          if (matches.length >= 5) priceConfidence = 'high';
+          else if (matches.length >= 3) priceConfidence = 'medium';
+          
+          const trendDirection: 'up' | 'down' | 'stable' = trend7d > 2 ? 'up' : trend7d < -2 ? 'down' : 'stable';
+
+          pricing = {
+            lowestActive,
+            medianSold,
+            trend7d,
+            trendDirection,
+            quickSellPrice,
+            maxProfitPrice,
+            priceConfidence,
+            salesCount: matches.length,
+            listingsCount: matches.length,
+          };
+        }
       }
     }
   }
 
   // Boost confidence if we found a market match
-  let finalConfidence = gptAnalysis.confidence;
+  let finalConfidence = indexResult.confidence_score;
   if (matchedItem && finalConfidence < 0.85) {
     finalConfidence = Math.min(0.9, finalConfidence + 0.15);
   }
 
+  // Re-evaluate needs_review with boosted confidence
+  const needsReview = !indexResult.set.code || !indexResult.card_number || finalConfidence < 0.75;
+
   return {
-    detected: gptAnalysis.detected,
-    cardName: matchedItem?.name || gptAnalysis.cardName,
-    setName: matchedItem?.set_name || gptAnalysis.setName,
-    cardNumber: gptAnalysis.cardNumber,
-    estimatedCondition: gptAnalysis.estimatedCondition || 'Near Mint',
-    category: matchedItem?.category || gptAnalysis.category,
+    detected: !!(indexResult.card_name.original || indexResult.card_name.english),
+    cardName: indexResult.card_name.original,
+    cardNameEnglish: indexResult.card_name.english,
+    setName: matchedItem?.set_name || indexResult.set.name,
+    setCode: matchedItem?.set_code || indexResult.set.code,
+    cardNumber: matchedItem?.card_number || indexResult.card_number,
+    rarity: matchedItem?.rarity || indexResult.rarity,
+    cardType: indexResult.card_type,
+    estimatedCondition: 'Near Mint', // Default, will be refined by grading
+    category: matchedItem?.category || category,
+    language: indexResult.language,
+    cviKey: indexResult.cvi_key,
     confidence: finalConfidence,
-    ocrText: [], // GPT doesn't return raw OCR
+    needsReview,
+    notes: indexResult.notes,
+    ocrText: [],
     pricing,
     matchedMarketItem: matchedItem ? {
       id: matchedItem.id,
       name: matchedItem.name,
       category: matchedItem.category,
       image_url: matchedItem.image_url,
+      set_name: matchedItem.set_name,
+      set_code: matchedItem.set_code,
+      card_number: matchedItem.card_number,
+      rarity: matchedItem.rarity,
     } : null,
   };
 }
@@ -303,20 +401,25 @@ serve(async (req) => {
       }
     }
 
-    console.log('Analyzing card with GPT Vision...');
+    console.log('Analyzing card with CardBoom AI Indexer...');
     
-    // Analyze with GPT Vision
-    const gptAnalysis = await analyzeWithGPT(base64Image, openaiKey);
-    console.log('GPT analysis result:', gptAnalysis);
+    // Analyze with GPT Vision using CardBoom Indexer prompt
+    const indexResult = await analyzeWithGPT(base64Image, openaiKey);
+    console.log('Index result:', indexResult);
 
     // Enrich with market data
-    const result = await enrichWithMarketData(supabase, gptAnalysis);
+    const result = await enrichWithMarketData(supabase, indexResult);
 
     console.log('Final analysis result:', { 
       detected: result.detected, 
       cardName: result.cardName,
+      cardNameEnglish: result.cardNameEnglish,
       category: result.category,
+      setCode: result.setCode,
+      cardNumber: result.cardNumber,
+      cviKey: result.cviKey,
       confidence: result.confidence,
+      needsReview: result.needsReview,
       hasMatch: !!result.matchedMarketItem
     });
 
