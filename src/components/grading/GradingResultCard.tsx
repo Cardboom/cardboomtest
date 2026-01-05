@@ -20,10 +20,10 @@ export function GradingResultCard({ order }: GradingResultCardProps) {
   };
 
   const subgrades = [
-    { name: 'Corners', value: order.corners_grade, ximilar: order.ximilar_corners_grade, icon: CornerDownRight },
-    { name: 'Edges', value: order.edges_grade, ximilar: order.ximilar_edges_grade, icon: Layers },
-    { name: 'Surface', value: order.surface_grade, ximilar: order.ximilar_surface_grade, icon: Target },
-    { name: 'Centering', value: order.centering_grade, ximilar: order.ximilar_centering_grade, icon: Maximize2 },
+    { name: 'Corners', value: order.corners_grade, icon: CornerDownRight },
+    { name: 'Edges', value: order.edges_grade, icon: Layers },
+    { name: 'Surface', value: order.surface_grade, icon: Target },
+    { name: 'Centering', value: order.centering_grade, icon: Maximize2 },
   ];
 
   return (
@@ -54,18 +54,11 @@ export function GradingResultCard({ order }: GradingResultCardProps) {
               </TooltipProvider>
             </div>
             <h3 className="text-2xl font-bold">{order.grade_label || 'Pending'}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              {order.ximilar_final_grade && (
-                <span className="text-xs text-muted-foreground">
-                  Raw: {order.ximilar_final_grade.toFixed(1)}
-                </span>
-              )}
-              {order.confidence && (
-                <span className="text-xs text-muted-foreground">
-                  • Confidence: {(order.confidence * 100).toFixed(0)}%
-                </span>
-              )}
-            </div>
+            {order.confidence && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Confidence: {(order.confidence * 100).toFixed(0)}%
+              </p>
+            )}
           </div>
         </div>
 
@@ -93,16 +86,9 @@ export function GradingResultCard({ order }: GradingResultCardProps) {
                   <subgrade.icon className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm font-medium">{subgrade.name}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  {subgrade.ximilar && subgrade.ximilar !== subgrade.value && (
-                    <span className="text-xs text-muted-foreground line-through">
-                      {subgrade.ximilar.toFixed(1)}
-                    </span>
-                  )}
-                  <Badge variant="secondary" className="font-mono">
-                    {subgrade.value?.toFixed(1) || '—'}
-                  </Badge>
-                </div>
+                <Badge variant="secondary" className="font-mono">
+                  {subgrade.value?.toFixed(1) || '—'}
+                </Badge>
               </div>
               <Progress 
                 value={subgrade.value ? (subgrade.value / 10) * 100 : 0} 
