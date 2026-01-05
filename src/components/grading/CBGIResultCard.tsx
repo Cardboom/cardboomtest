@@ -27,7 +27,8 @@ const CONFIDENCE_COLORS = {
 };
 
 export function CBGIResultCard({ order }: CBGIResultCardProps) {
-  const cbgiScore = order.cbgi_score_0_100 ?? (order.final_grade ? Math.round(order.final_grade * 10) : null);
+  // Score is now 0-10 scale stored in final_grade or cbgi_score_0_100
+  const cbgiScore = order.final_grade ?? order.cbgi_score_0_100 ?? null;
   const cbgiJson = order.cbgi_json as any;
   const confidence = order.cbgi_confidence || 'medium';
   const riskFlags = order.cbgi_risk_flags || [];
@@ -35,10 +36,10 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
 
   const getScoreColor = (score: number | null) => {
     if (!score) return 'from-muted to-muted';
-    if (score >= 95) return 'from-amber-400 to-yellow-500';
-    if (score >= 85) return 'from-emerald-400 to-green-500';
-    if (score >= 75) return 'from-blue-400 to-cyan-500';
-    if (score >= 65) return 'from-purple-400 to-violet-500';
+    if (score >= 9.5) return 'from-amber-400 to-yellow-500';
+    if (score >= 8.5) return 'from-emerald-400 to-green-500';
+    if (score >= 7.5) return 'from-blue-400 to-cyan-500';
+    if (score >= 6.5) return 'from-purple-400 to-violet-500';
     return 'from-gray-400 to-slate-500';
   };
 
@@ -92,8 +93,8 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
           className="flex items-center gap-4 mb-6"
         >
           <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${getScoreColor(cbgiScore)} flex items-center justify-center shadow-lg relative`}>
-            <span className="text-4xl font-bold text-white drop-shadow">
-              {cbgiScore ?? '—'}
+            <span className="text-3xl font-bold text-white drop-shadow">
+              {cbgiScore !== null ? cbgiScore.toFixed(1) : '—'}
             </span>
             <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1.5 shadow-md">
               <Shield className="w-4 h-4 text-primary" />

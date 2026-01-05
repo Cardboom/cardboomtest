@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { RoundedBox, OrbitControls } from '@react-three/drei';
+import { useRef, useState, useEffect, Suspense } from 'react';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { RoundedBox, OrbitControls, useTexture } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
 import * as THREE from 'three';
@@ -9,56 +9,22 @@ interface CardOverlayPreviewProps {
   order: GradingOrder;
 }
 
-function Card3D({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
+// Separate component that uses useTexture hook (must be inside Canvas)
+function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const frontTextureRef = useRef<THREE.Texture | null>(null);
-  const backTextureRef = useRef<THREE.Texture | null>(null);
-
+  
+  // Use drei's useTexture for reliable loading
+  const frontTexture = useTexture(frontUrl);
+  const backTexture = useTexture(backUrl);
+  
   useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    loader.crossOrigin = 'anonymous';
-    
-    // Load front texture
-    const frontImg = new Image();
-    frontImg.crossOrigin = 'anonymous';
-    frontImg.onload = () => {
-      const texture = new THREE.Texture(frontImg);
-      texture.needsUpdate = true;
-      texture.colorSpace = THREE.SRGBColorSpace;
-      frontTextureRef.current = texture;
-      if (meshRef.current) {
-        const materials = meshRef.current.material as THREE.MeshStandardMaterial[];
-        if (materials[4]) {
-          materials[4].map = texture;
-          materials[4].needsUpdate = true;
-        }
-      }
-    };
-    frontImg.src = frontUrl;
-
-    // Load back texture
-    const backImg = new Image();
-    backImg.crossOrigin = 'anonymous';
-    backImg.onload = () => {
-      const texture = new THREE.Texture(backImg);
-      texture.needsUpdate = true;
-      texture.colorSpace = THREE.SRGBColorSpace;
-      backTextureRef.current = texture;
-      if (meshRef.current) {
-        const materials = meshRef.current.material as THREE.MeshStandardMaterial[];
-        if (materials[5]) {
-          materials[5].map = texture;
-          materials[5].needsUpdate = true;
-        }
-      }
-    };
-    backImg.src = backUrl;
-
-    return () => {
-      frontTextureRef.current?.dispose();
-      backTextureRef.current?.dispose();
-    };
-  }, [frontUrl, backUrl]);
+    if (frontTexture) {
+      frontTexture.colorSpace = THREE.SRGBColorSpace;
+    }
+    if (backTexture) {
+      backTexture.colorSpace = THREE.SRGBColorSpace;
+    }
+  }, [frontTexture, backTexture]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
@@ -80,16 +46,35 @@ function Card3D({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
         <meshStandardMaterial attach="material-3" color="#1a1a2e" />
         <meshStandardMaterial 
           attach="material-4" 
-          color="#333"
+          map={frontTexture}
           roughness={0.3}
           metalness={0.1}
         />
         <meshStandardMaterial 
           attach="material-5" 
-          color="#222"
+          map={backTexture}
           roughness={0.3}
           metalness={0.1}
         />
+      </RoundedBox>
+    </mesh>
+  );
+}
+
+// Fallback component while loading
+function CardFallback() {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useFrame((state) => {
+    if (!meshRef.current) return;
+    meshRef.current.rotation.y = state.clock.elapsedTime * 0.5;
+    meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
+  });
+
+  return (
+    <mesh ref={meshRef}>
+      <RoundedBox args={[2.5, 3.5, 0.03]} radius={0.08} smoothness={4}>
+        <meshStandardMaterial color="#333" />
       </RoundedBox>
     </mesh>
   );
@@ -122,7 +107,9 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
           <directionalLight position={[-5, 5, -5]} intensity={0.5} />
           <spotLight position={[0, 10, 0]} intensity={0.3} angle={0.3} penumbra={1} />
           
-          <Card3D frontUrl={frontUrl} backUrl={backUrl} />
+          <Suspense fallback={<CardFallback />}>
+            <CardMesh frontUrl={frontUrl} backUrl={backUrl} />
+          </Suspense>
           
           <OrbitControls 
             enableZoom={false}

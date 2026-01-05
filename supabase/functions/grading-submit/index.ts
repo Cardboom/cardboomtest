@@ -22,15 +22,15 @@ GRADING RUBRIC:
 SCORING RULES:
 - Score each category from 1.0 to 10.0 in 0.5 increments
 - Be CONSERVATIVE: if surface cannot be verified due to glare/low-res/sleeve, cap surface at 8.5
-- Final CardBoom Index = weighted average converted to 0-100 scale
+- Final CardBoom Index = weighted average on 0-10 scale with one decimal (e.g., 8.1, 9.5)
 
 PSA RANGE MAPPING (approximate):
-- 95-100: PSA 10 potential
-- 85-94: PSA 9 range
-- 75-84: PSA 8 range
-- 65-74: PSA 7 range
-- 55-64: PSA 6 range
-- Below 55: PSA 5 or lower
+- 9.5-10.0: PSA 10 potential
+- 8.5-9.4: PSA 9 range
+- 7.5-8.4: PSA 8 range
+- 6.5-7.4: PSA 7 range
+- 5.5-6.4: PSA 6 range
+- Below 5.5: PSA 5 or lower
 
 RISK FLAGS (include if applicable):
 - GLARE: Reflective glare obscuring surface analysis
@@ -440,23 +440,23 @@ serve(async (req) => {
       const surfaceGrade = analysis.surface?.score || null;
       const eyeAppealGrade = analysis.eye_appeal?.score || null;
 
-      // Map CBGI score to label
+      // Map CBGI score (0-10) to label
       const getGradeLabelFromScore = (score: number): string => {
-        if (score >= 95) return 'Gem Mint';
-        if (score >= 90) return 'Mint';
-        if (score >= 85) return 'Near Mint-Mint';
-        if (score >= 80) return 'Near Mint';
-        if (score >= 70) return 'Excellent-Near Mint';
-        if (score >= 60) return 'Excellent';
-        if (score >= 50) return 'Very Good-Excellent';
-        if (score >= 40) return 'Very Good';
-        if (score >= 30) return 'Good';
+        if (score >= 9.5) return 'Gem Mint';
+        if (score >= 9.0) return 'Mint';
+        if (score >= 8.5) return 'Near Mint-Mint';
+        if (score >= 8.0) return 'Near Mint';
+        if (score >= 7.0) return 'Excellent-Near Mint';
+        if (score >= 6.0) return 'Excellent';
+        if (score >= 5.0) return 'Very Good-Excellent';
+        if (score >= 4.0) return 'Very Good';
+        if (score >= 3.0) return 'Good';
         return 'Poor';
       };
 
-      // CBGI score is 0-100, convert to 1-10 for backwards compatibility
+      // CBGI score is now 0-10 scale directly
       const cbgiScore = cbgiResult.cardboom_index || 0;
-      const finalGrade = Math.round((cbgiScore / 10) * 10) / 10;
+      const finalGrade = Math.round(cbgiScore * 10) / 10;
 
       // Update order with CBGI results
       const { error: updateGradeError } = await supabase
@@ -467,13 +467,13 @@ serve(async (req) => {
           completed_at: new Date().toISOString(),
           // CBGI specific fields
           cbgi_json: cbgiResult,
-          cbgi_score_0_100: cbgiScore,
+          cbgi_score_0_100: finalGrade, // Now stores 0-10 score
           estimated_psa_range: cbgiResult.estimated_psa_range,
           cbgi_confidence: cbgiResult.confidence_level?.toLowerCase() || 'medium',
           cbgi_risk_flags: cbgiResult.risk_flags || [],
-          // Standard grade fields (backwards compatibility)
+          // Standard grade fields
           final_grade: finalGrade,
-          grade_label: getGradeLabelFromScore(cbgiScore),
+          grade_label: getGradeLabelFromScore(finalGrade),
           centering_grade: centeringGrade,
           corners_grade: cornersGrade,
           edges_grade: edgesGrade,
