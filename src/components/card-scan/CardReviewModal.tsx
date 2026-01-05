@@ -124,18 +124,24 @@ export function CardReviewModal({ open, onClose, onConfirm, analysis, imagePrevi
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {isLowConfidence ? (
-              <AlertTriangle className="h-5 w-5 text-warning" />
-            ) : (
-              <Sparkles className="h-5 w-5 text-primary" />
-            )}
-            Confirm Card Details
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              {isLowConfidence ? (
+                <AlertTriangle className="h-5 w-5 text-warning" />
+              ) : (
+                <Sparkles className="h-5 w-5 text-primary" />
+              )}
+              Confirm Card Details
+            </DialogTitle>
+            <Badge variant="outline" className="gap-1.5 text-xs font-normal">
+              <Sparkles className="h-3 w-3" />
+              Powered by Brainbaby AI
+            </Badge>
+          </div>
           <DialogDescription>
             {isLowConfidence 
               ? 'Some fields could not be confirmed. Please review and correct the card details before saving.'
-              : 'Please verify the detected card information is correct.'}
+              : 'AI has identified your card. Please verify and make any corrections below.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -263,12 +269,17 @@ export function CardReviewModal({ open, onClose, onConfirm, analysis, imagePrevi
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleConfirm} className="gap-2">
-            <CheckCircle2 className="h-4 w-4" />
-            Confirm & Continue
-          </Button>
+        <DialogFooter className="flex-col gap-3 sm:flex-row sm:gap-0">
+          <p className="text-xs text-muted-foreground mr-auto hidden sm:block">
+            You can edit these details in the listing form after confirmation
+          </p>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">Cancel</Button>
+            <Button onClick={handleConfirm} className="gap-2 flex-1 sm:flex-none">
+              <CheckCircle2 className="h-4 w-4" />
+              Confirm & Fill Form
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
