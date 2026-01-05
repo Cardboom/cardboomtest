@@ -308,6 +308,80 @@ serve(async (req) => {
     // Ensure score is properly rounded to 1 decimal
     const finalGrade = Math.round(cbgiScore * 10) / 10;
 
+    // Fetch estimated values using GPT for price estimation
+    let estimatedValueRaw: number | null = null;
+    let estimatedValueGraded: number | null = null;
+    let valueIncreasePercent: number | null = null;
+
+    try {
+      const cardName = cbgiResult.card_name || order.card_name || '';
+      const setName = cbgiResult.set || order.set_name || '';
+      const psaRange = cbgiResult.estimated_psa_range || '';
+      
+      if (cardName) {
+        console.log('Fetching price estimates for:', cardName, setName);
+        
+        const pricePrompt = `You are a TCG card pricing expert. Estimate the current USD market value for this card.
+
+Card: ${cardName}
+Set: ${setName}
+Category: ${order.category}
+Estimated Grade: CBGI ${finalGrade}/10 (approximately ${psaRange})
+
+Provide realistic USD estimates based on current market data:
+1. Raw/Ungraded value: typical price for this card in near-mint raw condition
+2. Graded value: expected value if graded at the estimated PSA level (${psaRange})
+
+Return ONLY valid JSON:
+{
+  "raw_value_usd": 25.00,
+  "graded_value_usd": 75.00,
+  "price_notes": "Brief explanation of pricing"
+}`;
+
+        const priceResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openaiApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [
+              { role: 'system', content: 'You are a TCG card pricing expert with knowledge of Pokemon, Magic, Yu-Gi-Oh, One Piece, and sports cards markets. Provide realistic USD estimates.' },
+              { role: 'user', content: pricePrompt }
+            ],
+            max_tokens: 500,
+          }),
+        });
+
+        if (priceResponse.ok) {
+          const priceData = await priceResponse.json();
+          const priceContent = priceData.choices?.[0]?.message?.content;
+          
+          if (priceContent) {
+            let priceJson = priceContent.trim();
+            if (priceJson.startsWith('```json')) priceJson = priceJson.slice(7);
+            else if (priceJson.startsWith('```')) priceJson = priceJson.slice(3);
+            if (priceJson.endsWith('```')) priceJson = priceJson.slice(0, -3);
+            
+            const priceResult = JSON.parse(priceJson.trim());
+            estimatedValueRaw = priceResult.raw_value_usd || null;
+            estimatedValueGraded = priceResult.graded_value_usd || null;
+            
+            if (estimatedValueRaw && estimatedValueGraded && estimatedValueRaw > 0) {
+              valueIncreasePercent = Math.round(((estimatedValueGraded - estimatedValueRaw) / estimatedValueRaw) * 100);
+            }
+            
+            console.log('Price estimates:', { estimatedValueRaw, estimatedValueGraded, valueIncreasePercent });
+          }
+        }
+      }
+    } catch (priceError) {
+      console.error('Price estimation failed (non-blocking):', priceError);
+      // Continue without prices - not a critical failure
+    }
+
     // Update order with CBGI results
     const { error: updateError } = await supabase
       .from('grading_orders')
@@ -331,6 +405,10 @@ serve(async (req) => {
         // Card identification
         card_name: cbgiResult.card_name || order.card_name,
         set_name: cbgiResult.set || order.set_name,
+        // Estimated values
+        estimated_value_raw: estimatedValueRaw,
+        estimated_value_graded: estimatedValueGraded,
+        value_increase_percent: valueIncreasePercent,
         // Clear error
         error_message: null,
         grading_notes: cbgiResult.grading_disclaimer,
@@ -356,7 +434,7 @@ serve(async (req) => {
         grade: finalGrade.toFixed(1),
         grading_company: 'CardBoom',
         image_url: order.front_image_url,
-        current_value: 0,
+        current_value: estimatedValueGraded || 0,
         acquisition_price: order.price_usd,
         acquisition_date: new Date().toISOString(),
         location: 'owner',

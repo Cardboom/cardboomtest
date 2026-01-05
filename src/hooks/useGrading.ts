@@ -59,6 +59,10 @@ export interface GradingOrder {
   price_source: string | null;
   comps_json: any | null;
   error_message: string | null;
+  // Estimated value fields
+  estimated_value_raw: number | null;
+  estimated_value_graded: number | null;
+  value_increase_percent: number | null;
 }
 
 export const GRADING_PRICE_USD = 10;
