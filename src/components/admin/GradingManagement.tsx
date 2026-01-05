@@ -165,7 +165,8 @@ export function GradingManagement() {
                   <TableHead>User</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Grade</TableHead>
+                  <TableHead>CBGI Score</TableHead>
+                  <TableHead>PSA Est.</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -232,10 +233,23 @@ export function GradingManagement() {
                         </Select>
                       </TableCell>
                       <TableCell>
-                        {order.final_grade ? (
+                        {(order as any).cbgi_score_0_100 ? (
                           <span className="font-bold text-primary">
-                            {order.final_grade.toFixed(1)}
+                            {(order as any).cbgi_score_0_100}/100
                           </span>
+                        ) : order.final_grade ? (
+                          <span className="text-muted-foreground">
+                            {order.final_grade.toFixed(1)} (legacy)
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {(order as any).estimated_psa_range ? (
+                          <Badge variant="outline" className="text-xs">
+                            {(order as any).estimated_psa_range}
+                          </Badge>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
