@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface CollectionItem {
   id: string;
+  rawId: string; // The actual UUID without prefix
   name: string;
   grade: string | null;
   image_url: string | null;
@@ -76,6 +77,7 @@ export const FeaturedCardSelector = ({
       // Combine both sources
       const portfolioItems: CollectionItem[] = (portfolioData || []).map(item => ({
         id: item.id,
+        rawId: item.id,
         name: item.custom_name || item.market_items?.name || 'Unknown',
         grade: item.grade,
         image_url: item.image_url || item.market_items?.image_url,
@@ -85,6 +87,7 @@ export const FeaturedCardSelector = ({
 
       const listingItems: CollectionItem[] = (listingsData || []).map(item => ({
         id: `listing_${item.id}`,
+        rawId: item.id, // Store the actual UUID
         name: item.title,
         grade: null,
         image_url: item.image_url,
@@ -102,7 +105,10 @@ export const FeaturedCardSelector = ({
 
   const handleSave = async () => {
     setSaving(true);
-    const success = await onSelect(selectedId);
+    // Find the selected item and use rawId for saving
+    const selectedItem = items.find(item => item.id === selectedId);
+    const idToSave = selectedItem?.rawId || selectedId;
+    const success = await onSelect(idToSave);
     setSaving(false);
     if (success) {
       onOpenChange(false);
