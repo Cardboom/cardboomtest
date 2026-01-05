@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ChevronLeft, Vault, Truck, ArrowLeftRight, MessageCircle, 
-  ShoppingCart, TrendingUp, TrendingDown, Send, Trash2, User
+  ShoppingCart, TrendingUp, TrendingDown, Send, Trash2, User,
+  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,20 @@ interface Listing {
   created_at: string;
   seller_id: string;
   image_url: string | null;
+  // Card metadata
+  set_name?: string | null;
+  set_code?: string | null;
+  card_number?: string | null;
+  rarity?: string | null;
+  language?: string | null;
+  cvi_key?: string | null;
+  ai_confidence?: number | null;
+  market_item_id?: string | null;
+}
+
+interface GradingInfo {
+  final_grade: number | null;
+  grade_label: string | null;
 }
 
 interface Comment {
@@ -45,10 +60,43 @@ interface VoteCounts {
   userVote: 'up' | 'down' | null;
 }
 
+const getLanguageFlag = (lang?: string | null) => {
+  const flags: Record<string, string> = {
+    japanese: '🇯🇵',
+    english: '🇺🇸',
+    korean: '🇰🇷',
+    chinese: '🇨🇳',
+    german: '🇩🇪',
+    french: '🇫🇷',
+    italian: '🇮🇹',
+    spanish: '🇪🇸',
+    portuguese: '🇵🇹',
+  };
+  return flags[(lang || 'english').toLowerCase()] || '🌐';
+};
+
+const getCategoryLabel = (cat: string) => {
+  const labels: Record<string, string> = {
+    pokemon: 'Pokémon',
+    onepiece: 'One Piece',
+    yugioh: 'Yu-Gi-Oh!',
+    mtg: 'Magic: The Gathering',
+    lorcana: 'Disney Lorcana',
+    nba: 'NBA',
+    football: 'Football',
+    tcg: 'TCG',
+    figures: 'Figures',
+    gaming: 'Gaming',
+    coaching: 'Coaching',
+  };
+  return labels[cat] || cat.charAt(0).toUpperCase() + cat.slice(1);
+};
+
 const ListingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState<Listing | null>(null);
+  const [gradingInfo, setGradingInfo] = useState<GradingInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -82,6 +130,22 @@ const ListingDetail = () => {
 
       if (error) throw error;
       setListing(data);
+      
+      // If listing has a market_item_id, check for CardBoom grading
+      if (data?.market_item_id) {
+        const { data: gradingData } = await supabase
+          .from('grading_orders')
+          .select('final_grade, grade_label')
+          .eq('market_item_id', data.market_item_id)
+          .eq('status', 'completed')
+          .order('completed_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (gradingData) {
+          setGradingInfo(gradingData);
+        }
+      }
     } catch (error) {
       console.error('Error fetching listing:', error);
       toast.error('Failed to load listing');
@@ -284,7 +348,16 @@ const ListingDetail = () => {
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Image */}
           <div className="lg:col-span-1">
-            <div className="glass rounded-2xl p-4 aspect-square">
+            <div className="glass rounded-2xl p-4 aspect-square relative">
+              {/* CBI Graded Badge Overlay */}
+              {gradingInfo?.final_grade && (
+                <div className="absolute top-6 left-6 z-10">
+                  <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
+                    <Award className="w-4 h-4" />
+                    <span className="font-bold text-sm">CBI {gradingInfo.final_grade.toFixed(1)}</span>
+                  </div>
+                </div>
+              )}
               {listing.image_url ? (
                 <img 
                   src={listing.image_url} 
@@ -300,30 +373,139 @@ const ListingDetail = () => {
           </div>
 
           {/* Details */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-5">
+            {/* Hero Section - Card Identity */}
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge variant="secondary">{getCategoryLabel(listing.category)}</Badge>
-                <Badge variant="outline">{listing.condition}</Badge>
-                <Badge className={listing.status === 'active' ? 'bg-gain text-gain-foreground' : 'bg-secondary'}>
-                  {listing.status}
+              {/* Category & Status Badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <Badge variant="secondary" className="text-xs">{getCategoryLabel(listing.category)}</Badge>
+                {listing.rarity && (
+                  <Badge variant="outline" className="text-xs capitalize">{listing.rarity}</Badge>
+                )}
+                <Badge variant="outline" className="text-xs">{listing.condition}</Badge>
+                <Badge className={cn(
+                  "text-xs",
+                  listing.status === 'active' ? 'bg-gain text-gain-foreground' : 'bg-secondary'
+                )}>
+                  {listing.status === 'active' ? 'Available' : listing.status}
                 </Badge>
               </div>
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+              
+              {/* Card Name */}
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight mb-2">
                 {listing.title}
               </h1>
-              {listing.description && (
-                <p className="text-muted-foreground">{listing.description}</p>
+              
+              {/* Set & Card Details Line */}
+              {(listing.set_name || listing.set_code || listing.card_number) && (
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  {listing.set_name && <span className="font-medium">{listing.set_name}</span>}
+                  {listing.set_code && <span> • {listing.set_code}</span>}
+                  {listing.card_number && <span> • #{listing.card_number}</span>}
+                  {listing.language && (
+                    <span className="ml-2">{getLanguageFlag(listing.language)}</span>
+                  )}
+                </p>
+              )}
+            </div>
+
+            {/* Trust & Verification Strip */}
+            <div className="flex flex-wrap gap-2">
+              {/* AI Identified Badge */}
+              {listing.ai_confidence && listing.ai_confidence > 0 && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+                  <Bot className="w-3.5 h-3.5" />
+                  AI Identified • {Math.round(listing.ai_confidence * 100)}%
+                </div>
+              )}
+              
+              {/* Grading Status */}
+              {gradingInfo?.final_grade ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30 text-xs font-medium text-accent-foreground">
+                  <Award className="w-3.5 h-3.5" />
+                  CardBoom Index: {gradingInfo.final_grade.toFixed(1)}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-medium text-muted-foreground">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Ungraded
+                </div>
+              )}
+              
+              {/* CVI Key */}
+              {listing.cvi_key && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border text-xs font-medium text-foreground">
+                  <Shield className="w-3.5 h-3.5" />
+                  CVI: {listing.cvi_key.split('|').slice(0, 3).join('-')}
+                </div>
               )}
             </div>
 
             {/* Price */}
-            <div className="glass rounded-xl p-6">
-              <p className="text-muted-foreground text-sm mb-1">Price</p>
-              <p className="font-display text-4xl font-bold text-foreground">
+            <div className="glass rounded-xl p-5">
+              <p className="text-muted-foreground text-xs mb-1">Price</p>
+              <p className="font-display text-3xl sm:text-4xl font-bold text-foreground">
                 {formatPrice(listing.price)}
               </p>
             </div>
+
+            {/* Card Details Grid */}
+            {(listing.set_name || listing.card_number || listing.rarity || listing.language) && (
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 pt-4 px-4">
+                  <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
+                    <FileText className="w-4 h-4" />
+                    Card Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-0">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {listing.set_name && (
+                      <div className="flex items-center gap-2">
+                        <Layers className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Set:</span>
+                        <span className="font-medium text-foreground">{listing.set_name}</span>
+                      </div>
+                    )}
+                    {listing.set_code && (
+                      <div className="flex items-center gap-2">
+                        <Hash className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Code:</span>
+                        <span className="font-medium text-foreground">{listing.set_code}</span>
+                      </div>
+                    )}
+                    {listing.card_number && (
+                      <div className="flex items-center gap-2">
+                        <Hash className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Number:</span>
+                        <span className="font-medium text-foreground">#{listing.card_number}</span>
+                      </div>
+                    )}
+                    {listing.rarity && (
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Rarity:</span>
+                        <span className="font-medium text-foreground capitalize">{listing.rarity}</span>
+                      </div>
+                    )}
+                    {listing.language && (
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">Language:</span>
+                        <span className="font-medium text-foreground capitalize">
+                          {getLanguageFlag(listing.language)} {listing.language}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Description */}
+            {listing.description && (
+              <p className="text-muted-foreground text-sm">{listing.description}</p>
+            )}
 
             {/* Delivery Options */}
             <div className="flex flex-wrap gap-2">
