@@ -199,11 +199,31 @@ serve(async (req) => {
         const record = ximilarData.records[0];
         const gradeData = record._grade || {};
         
-        // Extract grades
-        const finalGrade = gradeData.final_grade || null;
+        // Extract original Ximilar grades
+        const ximilarFinalGrade = gradeData.final_grade || null;
         const subgrades = gradeData.subgrades || {};
+        const ximilarCorners = subgrades.corners || null;
+        const ximilarEdges = subgrades.edges || null;
+        const ximilarSurface = subgrades.surface || null;
+        const ximilarCentering = subgrades.centering || null;
         
-        // Map grade to label
+        // Apply 5% conservative adjustment for CardBoom disciplined grading
+        // This ensures CardBoom grades are always heavy/conservative
+        const applyConservativeAdjustment = (grade: number | null): number | null => {
+          if (grade === null) return null;
+          // Reduce grade by 5%, minimum 1.0
+          const adjusted = Math.max(1.0, grade * 0.95);
+          // Round to 1 decimal place
+          return Math.round(adjusted * 10) / 10;
+        };
+        
+        const cardboomFinalGrade = applyConservativeAdjustment(ximilarFinalGrade);
+        const cardboomCorners = applyConservativeAdjustment(ximilarCorners);
+        const cardboomEdges = applyConservativeAdjustment(ximilarEdges);
+        const cardboomSurface = applyConservativeAdjustment(ximilarSurface);
+        const cardboomCentering = applyConservativeAdjustment(ximilarCentering);
+        
+        // Map grade to label using CardBoom adjusted grade
         const getGradeLabel = (grade: number | null): string => {
           if (!grade) return 'Unknown';
           if (grade >= 9.5) return 'Gem Mint';
@@ -218,26 +238,33 @@ serve(async (req) => {
           return 'Poor';
         };
 
-        // Update order with results
+        // Update order with results - store both original Ximilar and CardBoom adjusted grades
         await supabase
           .from('grading_orders')
           .update({
             status: 'completed',
             submitted_at: new Date().toISOString(),
             completed_at: new Date().toISOString(),
-            final_grade: finalGrade,
-            grade_label: getGradeLabel(finalGrade),
-            corners_grade: subgrades.corners || null,
-            edges_grade: subgrades.edges || null,
-            surface_grade: subgrades.surface || null,
-            centering_grade: subgrades.centering || null,
+            // CardBoom adjusted grades (5% below Ximilar - disciplined indexing)
+            final_grade: cardboomFinalGrade,
+            grade_label: getGradeLabel(cardboomFinalGrade),
+            corners_grade: cardboomCorners,
+            edges_grade: cardboomEdges,
+            surface_grade: cardboomSurface,
+            centering_grade: cardboomCentering,
+            // Original Ximilar grades for reference
+            ximilar_final_grade: ximilarFinalGrade,
+            ximilar_corners_grade: ximilarCorners,
+            ximilar_edges_grade: ximilarEdges,
+            ximilar_surface_grade: ximilarSurface,
+            ximilar_centering_grade: ximilarCentering,
             overlay_coordinates: record._objects || null,
             confidence: gradeData.confidence || null,
             external_request_id: ximilarData.task_id || null
           })
           .eq('id', orderId);
 
-        console.log(`Order ${orderId} completed with grade ${finalGrade}`);
+        console.log(`Order ${orderId} completed - Ximilar: ${ximilarFinalGrade}, CardBoom: ${cardboomFinalGrade}`);
       } else {
         // Mark as in_review if API didn't return immediate results
         await supabase
