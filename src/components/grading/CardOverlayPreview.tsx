@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, Suspense } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { RoundedBox, OrbitControls, useTexture } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { RoundedBox, OrbitControls } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
 import * as THREE from 'three';
@@ -9,30 +9,54 @@ interface CardOverlayPreviewProps {
   order: GradingOrder;
 }
 
-// Separate component that uses useTexture hook (must be inside Canvas)
+// Hook to load texture with CORS support
+function useCardTexture(url: string): THREE.Texture | null {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    if (!url || url === '/placeholder.svg') {
+      setTexture(null);
+      return;
+    }
+
+    const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
+    
+    loader.load(
+      url,
+      (loadedTexture) => {
+        loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture.needsUpdate = true;
+        setTexture(loadedTexture);
+      },
+      undefined,
+      (error) => {
+        console.error('Failed to load texture:', url, error);
+        setTexture(null);
+      }
+    );
+
+    return () => {
+      if (texture) {
+        texture.dispose();
+      }
+    };
+  }, [url]);
+
+  return texture;
+}
+
+// Card mesh component
 function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  
-  // Use drei's useTexture for reliable loading
-  const frontTexture = useTexture(frontUrl);
-  const backTexture = useTexture(backUrl);
-  
-  useEffect(() => {
-    if (frontTexture) {
-      frontTexture.colorSpace = THREE.SRGBColorSpace;
-    }
-    if (backTexture) {
-      backTexture.colorSpace = THREE.SRGBColorSpace;
-    }
-  }, [frontTexture, backTexture]);
+  const frontTexture = useCardTexture(frontUrl);
+  const backTexture = useCardTexture(backUrl);
 
   useFrame((state) => {
     if (!meshRef.current) return;
-    // Gentle floating animation
     meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
   });
 
-  // Card dimensions (standard trading card ratio 2.5:3.5)
   const width = 2.5;
   const height = 3.5;
   const depth = 0.03;
@@ -47,12 +71,14 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
         <meshStandardMaterial 
           attach="material-4" 
           map={frontTexture}
+          color={frontTexture ? undefined : "#2a2a4e"}
           roughness={0.3}
           metalness={0.1}
         />
         <meshStandardMaterial 
           attach="material-5" 
           map={backTexture}
+          color={backTexture ? undefined : "#2a2a4e"}
           roughness={0.3}
           metalness={0.1}
         />
@@ -90,12 +116,11 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
     return 'from-gray-400 to-slate-500';
   };
 
-  const frontUrl = order.front_image_url || '/placeholder.svg';
-  const backUrl = order.back_image_url || frontUrl;
+  const frontUrl = order.front_image_url || '';
+  const backUrl = order.back_image_url || order.front_image_url || '';
 
   return (
     <div className="flex flex-col items-center">
-      {/* 3D Card Container */}
       <div className="relative w-[300px] h-[420px] rounded-2xl overflow-hidden bg-gradient-to-b from-gray-900 to-black shadow-2xl">
         <Canvas
           camera={{ position: [0, 0, 5], fov: 45 }}
@@ -119,7 +144,6 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
           />
         </Canvas>
         
-        {/* Grade overlay */}
         {order.final_grade && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
             <div className={cn(
@@ -133,7 +157,6 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
           </div>
         )}
         
-        {/* Shine effect overlay */}
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/5 to-transparent" />
       </div>
       

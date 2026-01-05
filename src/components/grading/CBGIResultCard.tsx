@@ -250,8 +250,7 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
             <span className="font-medium">CardBoom Grading Index (CBGI)</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {cbgiJson?.grading_disclaimer || order.grading_notes || 
-              'AI-assisted visual pre-grade, not an official certification. For informational purposes only.'}
+            This is the CardBoom Grading Index. We do our best to grade with our fine-tuned AI system powered by Brainbaby.
           </p>
         </motion.div>
       </CardContent>
