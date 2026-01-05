@@ -6,8 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GRADING_PRICE_USD = 20;
+const GRADING_PRICE_USD = 10;
 const XIMILAR_API_URL = "https://api.ximilar.com/card-grader/v2/grade";
+const GEM_RATE = 0.002; // 0.2% in gems (or 0.25% for Pro)
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -147,6 +148,63 @@ serve(async (req) => {
     if (txError) {
       console.error('Transaction log error:', txError);
       // Continue anyway, payment was successful
+    }
+
+    // Award Cardboom Gems (0.2% of transaction, or 0.25% for Pro)
+    try {
+      // Check user subscription for Pro rate
+      const { data: subscription } = await supabase
+        .from('user_subscriptions')
+        .select('tier')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      const isPro = subscription?.tier === 'pro' || subscription?.tier === 'enterprise';
+      const gemRate = isPro ? 0.0025 : 0.002;
+      const gemsEarned = Math.floor(GRADING_PRICE_USD * gemRate * 100); // Convert to gems (1 gem = $0.01)
+      
+      if (gemsEarned > 0) {
+        // Get or create cardboom_points record
+        const { data: existingPoints } = await supabase
+          .from('cardboom_points')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (existingPoints) {
+          await supabase
+            .from('cardboom_points')
+            .update({
+              balance: existingPoints.balance + gemsEarned,
+              total_earned: existingPoints.total_earned + gemsEarned,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
+        } else {
+          await supabase
+            .from('cardboom_points')
+            .insert({
+              user_id: user.id,
+              balance: gemsEarned,
+              total_earned: gemsEarned,
+            });
+        }
+        
+        // Log the gems transaction
+        await supabase.from('cardboom_points_history').insert({
+          user_id: user.id,
+          amount: gemsEarned,
+          transaction_type: 'earn',
+          source: 'grading_payment',
+          description: `Earned ${gemsEarned} gems from grading order`,
+          reference_id: orderId
+        });
+        
+        console.log(`Awarded ${gemsEarned} gems to user ${user.id} for grading payment`);
+      }
+    } catch (gemsError) {
+      console.error('Error awarding gems:', gemsError);
+      // Non-critical, continue
     }
 
     // Update order to paid

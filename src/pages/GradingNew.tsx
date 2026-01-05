@@ -47,8 +47,8 @@ import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardRe
 type Step = 'category' | 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
 
-const BASE_GRADING_PRICE = 20;
-const PROTECTION_SLIP_PRICE = 10;
+const BASE_GRADING_PRICE = 10;
+const PROTECTION_SLIP_PRICE = 5;
 const BULK_DISCOUNT_THRESHOLD = 10;
 const BULK_DISCOUNT_PERCENT = 25;
 
