@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useCardAnalysis, CardAnalysis } from '@/hooks/useCardAnalysis';
+import { useCardAnalysis, CardAnalysis, CardDetectionStatus } from '@/hooks/useCardAnalysis';
 import { 
   Camera, 
   Upload, 
@@ -17,7 +17,9 @@ import {
   Target,
   Eye,
   Lightbulb,
-  ChevronRight
+  ChevronRight,
+  HelpCircle,
+  Edit3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -408,11 +410,12 @@ export function CardScannerUpload({
                   )}
                 </div>
                 <div className="flex-1 space-y-2">
-                  {analysis.detected ? (
+                  {/* DETECTED_CONFIRMED: High confidence match */}
+                  {analysis.detectionStatus === 'detected_confirmed' && (
                     <>
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-5 h-5 text-gain" />
-                        <span className="text-sm font-medium text-gain">Card Detected!</span>
+                        <span className="text-sm font-medium text-gain">Card identified</span>
                         <Badge variant="outline" className="ml-auto">
                           {Math.round(analysis.confidence * 100)}% match
                         </Badge>
@@ -435,26 +438,108 @@ export function CardScannerUpload({
                         )}
                       </div>
                     </>
-                  ) : (
-                    <div className="flex flex-col items-start gap-2">
+                  )}
+
+                  {/* DETECTED_NEEDS_CONFIRMATION: Card found but needs user input */}
+                  {analysis.detectionStatus === 'detected_needs_confirmation' && (
+                    <>
                       <div className="flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5 text-amber-500" />
-                        <span className="text-sm font-medium text-amber-500">Card Not Recognized</span>
+                        <HelpCircle className="w-5 h-5 text-amber-500" />
+                        <span className="text-sm font-medium text-amber-500">Card detected — details need confirmation</span>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        We couldn&apos;t identify this card automatically. You can still proceed and enter details manually.
+                        We found a card, but couldn&apos;t confidently match it to the CardBoom Index.
+                      </p>
+                      
+                      {/* Show extracted fields with confirmation badges */}
+                      <div className="space-y-2 mt-3">
+                        {analysis.cardName && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{analysis.cardName}</span>
+                            {analysis.needsConfirmation.cardName && (
+                              <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
+                                <Edit3 className="w-3 h-3 mr-1" />
+                                Needs confirmation
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                        {analysis.setName && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            {analysis.setName}
+                            {analysis.needsConfirmation.setName && (
+                              <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
+                                <Edit3 className="w-3 h-3 mr-1" />
+                                Needs confirmation
+                              </Badge>
+                            )}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          {analysis.category && (
+                            <Badge variant="secondary" className={cn(
+                              analysis.needsConfirmation.category && "border-amber-500/50"
+                            )}>
+                              {analysis.category.toUpperCase()}
+                              {analysis.needsConfirmation.category && " ?"}
+                            </Badge>
+                          )}
+                          {analysis.estimatedCondition && (
+                            <Badge variant="outline">{analysis.estimatedCondition}</Badge>
+                          )}
+                          {analysis.cardNumber && (
+                            <Badge variant="outline" className={cn(
+                              analysis.needsConfirmation.cardNumber && "border-amber-500/50"
+                            )}>
+                              #{analysis.cardNumber}
+                              {analysis.needsConfirmation.cardNumber && " ?"}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* OCR extracted text hints */}
+                      {analysis.ocrText.length > 0 && (
+                        <div className="mt-2 p-2 rounded bg-muted/50 border border-border">
+                          <p className="text-xs text-muted-foreground mb-1">Detected text:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {analysis.ocrText.slice(0, 6).map((text, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">
+                                {text}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* NOT_DETECTED: No card-like object found */}
+                  {analysis.detectionStatus === 'not_detected' && (
+                    <div className="flex flex-col items-start gap-2">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-destructive" />
+                        <span className="text-sm font-medium text-destructive">Card not detected</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Please upload a clear photo of the card. Make sure the card is centered and well-lit.
                       </p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Pricing Info for Sell Mode */}
-              {mode === 'sell' && analysis.pricing && (
+              {/* Pricing Info for Sell Mode - show for both confirmed and needs_confirmation */}
+              {mode === 'sell' && analysis.pricing && analysis.detectionStatus !== 'not_detected' && (
                 <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 space-y-3">
                   <h4 className="font-medium text-sm flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary" />
                     AI Pricing Intelligence
+                    {analysis.detectionStatus === 'detected_needs_confirmation' && (
+                      <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
+                        Estimated
+                      </Badge>
+                    )}
                   </h4>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg bg-background/80">
@@ -479,8 +564,8 @@ export function CardScannerUpload({
                 </div>
               )}
 
-              {/* Visible Observations for Grading Mode */}
-              {mode === 'grading' && analysis.ocrText.length > 0 && (
+              {/* Visible Observations for Grading Mode - only show if confirmed */}
+              {mode === 'grading' && analysis.detectionStatus === 'detected_confirmed' && analysis.ocrText.length > 0 && (
                 <div className="p-4 rounded-lg bg-muted/50 border border-border">
                   <h4 className="text-sm font-medium mb-2">Detected Text</h4>
                   <div className="flex flex-wrap gap-1">
@@ -493,6 +578,7 @@ export function CardScannerUpload({
                 </div>
               )}
 
+              {/* Action buttons based on detection status */}
               <div className="flex gap-3 pt-2">
                 <Button 
                   variant="outline" 
@@ -500,15 +586,41 @@ export function CardScannerUpload({
                   onClick={handleRetryWithNewImage}
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  Scan Different Card
+                  Scan different card
                 </Button>
-                <Button 
-                  className="flex-1" 
-                  onClick={handleConfirmScan}
-                >
-                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                  {mode === 'sell' ? 'Use This Card' : 'Continue'}
-                </Button>
+                
+                {/* For confirmed: simple "Use this card" */}
+                {analysis.detectionStatus === 'detected_confirmed' && (
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleConfirmScan}
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Use this card
+                  </Button>
+                )}
+
+                {/* For needs confirmation: "Confirm card details" */}
+                {analysis.detectionStatus === 'detected_needs_confirmation' && (
+                  <Button 
+                    className="flex-1" 
+                    onClick={handleConfirmScan}
+                  >
+                    <Edit3 className="w-4 h-4 mr-2" />
+                    Confirm card details
+                  </Button>
+                )}
+
+                {/* For not detected: only retry option, no confirm */}
+                {analysis.detectionStatus === 'not_detected' && (
+                  <Button 
+                    variant="secondary"
+                    className="flex-1" 
+                    onClick={onSkip}
+                  >
+                    Enter details manually
+                  </Button>
+                )}
               </div>
             </motion.div>
           )}

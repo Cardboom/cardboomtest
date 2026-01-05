@@ -14,8 +14,15 @@ interface PricingData {
   listingsCount: number;
 }
 
+// Three-tier detection status model
+export type CardDetectionStatus = 
+  | 'detected_confirmed'      // High confidence match (≥0.75) with index match
+  | 'detected_needs_confirmation'  // Card detected but needs user confirmation
+  | 'not_detected';           // No card-like object detected
+
 export interface CardAnalysis {
   detected: boolean;
+  detectionStatus: CardDetectionStatus;
   cardName: string | null;
   setName: string | null;
   cardNumber: string | null;
@@ -30,6 +37,13 @@ export interface CardAnalysis {
     category: string;
     image_url: string | null;
   } | null;
+  // Fields that need confirmation (confidence < 0.75)
+  needsConfirmation: {
+    cardName: boolean;
+    setName: boolean;
+    category: boolean;
+    cardNumber: boolean;
+  };
 }
 
 export const useCardAnalysis = () => {
@@ -79,15 +93,48 @@ export const useCardAnalysis = () => {
         throw new Error(data.error);
       }
 
-      setAnalysis(data as CardAnalysis);
-
-      if (data.detected && data.cardName) {
-        toast.success(`Detected: ${data.cardName}`);
+      // Determine detection status based on confidence and match
+      const hasIndexMatch = !!data.matchedMarketItem;
+      const highConfidence = data.confidence >= 0.75;
+      const cardLikeObjectDetected = data.detected || data.ocrText?.length > 0 || data.cardName;
+      
+      let detectionStatus: CardDetectionStatus;
+      if (highConfidence && hasIndexMatch) {
+        detectionStatus = 'detected_confirmed';
+      } else if (cardLikeObjectDetected) {
+        detectionStatus = 'detected_needs_confirmation';
       } else {
-        toast.info('Card detected but no exact match found. Enter details manually.');
+        detectionStatus = 'not_detected';
       }
 
-      return data as CardAnalysis;
+      // Determine which fields need confirmation (confidence < 0.5 for that field)
+      const needsConfirmation = {
+        cardName: !data.cardName || data.confidence < 0.5,
+        setName: !data.setName || data.confidence < 0.6,
+        category: !data.category || data.confidence < 0.5,
+        cardNumber: !data.cardNumber || data.confidence < 0.5,
+      };
+
+      const enrichedAnalysis: CardAnalysis = {
+        ...data,
+        detectionStatus,
+        needsConfirmation,
+        // Keep detected true if we found a card-like object
+        detected: cardLikeObjectDetected,
+      };
+
+      setAnalysis(enrichedAnalysis);
+
+      // Show appropriate toast based on detection status
+      if (detectionStatus === 'detected_confirmed') {
+        toast.success(`Card identified: ${data.cardName}`);
+      } else if (detectionStatus === 'detected_needs_confirmation') {
+        toast.info('Card detected — please confirm the details');
+      } else {
+        toast.warning('No card detected. Please upload a clear card image.');
+      }
+
+      return enrichedAnalysis;
 
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to analyze card image';
