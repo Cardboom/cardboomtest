@@ -95,3 +95,6 @@ verify_jwt = true
 
 [functions.digital-fulfillment]
 verify_jwt = false
+
+[functions.grading-regrade]
+verify_jwt = true
