@@ -7,24 +7,39 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// CardBoom Indexer JSON Schema
-interface CardBoomIndexResult {
-  game: 'Pokemon' | 'One Piece' | 'MTG' | 'Yu-Gi-Oh' | 'Sports' | 'Lorcana' | 'Other';
-  language: 'Japanese' | 'English' | 'Korean' | 'Chinese' | 'German' | 'French' | 'Other';
-  card_name: { original: string | null; english: string | null };
-  set: { name: string | null; code: string | null; release_year: number | null };
-  card_number: string | null;
-  rarity: string | null;
-  card_type: string | null;
-  attributes: {
-    hp_or_power: string | null;
-    element_or_color: string | null;
-    cost: string | null;
-  };
-  cvi_key: string | null;
-  confidence_score: number;
-  needs_review: boolean;
-  notes: string;
+// Ximilar TCG Identification API
+const XIMILAR_TCG_ENDPOINT = 'https://api.ximilar.com/collectibles/v2/identify';
+
+interface XimilarTCGResult {
+  records: Array<{
+    _status: { code: number; text: string };
+    _id: string;
+    best_match?: {
+      name: string;
+      set_name?: string;
+      set_code?: string;
+      card_number?: string;
+      rarity?: string;
+      language?: string;
+      game?: string;
+      _id?: string;
+      prob?: number;
+      image_url?: string;
+    };
+    matches?: Array<{
+      name: string;
+      set_name?: string;
+      set_code?: string;
+      card_number?: string;
+      rarity?: string;
+      language?: string;
+      game?: string;
+      _id?: string;
+      prob?: number;
+    }>;
+    _width?: number;
+    _height?: number;
+  }>;
 }
 
 interface SingleCardResult {
@@ -65,185 +80,160 @@ interface SingleCardResult {
     card_number: string | null;
     rarity: string | null;
   } | null;
+  ximilarId: string | null;
 }
 
-const CARDBOOM_INDEXER_PROMPT = `You are CardBoom AI Card Indexer.
-
-You are given an image of a trading card (Pokémon, One Piece, MTG, Yu-Gi-Oh, sports, Lorcana, or other TCG).
-
-Your task:
-1) Identify the card with maximum certainty
-2) Extract ALL relevant metadata needed for a CardBoom card page + listing + grading
-3) Return normalized data that can be saved to database and displayed in UI
-
-RULES:
-- NEVER return only a character name
-- ALWAYS attempt to infer set using artwork, language, numbering, symbols, rarity marks, and layout
-- If a field cannot be confirmed, return null and state why in notes
-- Do NOT hallucinate set names, set codes, or card numbers
-- Output MUST be valid JSON ONLY
-
-RETURN THIS JSON SCHEMA:
-{
-  "game": "Pokemon | One Piece | MTG | Yu-Gi-Oh | Sports | Lorcana | Other",
-  "language": "Japanese | English | Korean | Chinese | German | French | Other",
-  "card_name": { "original": "string", "english": "string | null" },
-  "set": { "name": "string | null", "code": "string | null", "release_year": "number | null" },
-  "card_number": "string | null",
-  "rarity": "string | null",
-  "card_type": "string | null",
-  "attributes": {
-    "hp_or_power": "string | null",
-    "element_or_color": "string | null",
-    "cost": "string | null"
-  },
-  "cvi_key": "string | null",
-  "confidence_score": 0.00,
-  "needs_review": true,
-  "notes": "string"
+function mapGameToCategory(game: string | undefined): string {
+  if (!game) return 'tcg';
+  const gameLower = game.toLowerCase();
+  
+  if (gameLower.includes('pokemon') || gameLower.includes('pokémon')) return 'pokemon';
+  if (gameLower.includes('one piece')) return 'onepiece';
+  if (gameLower.includes('magic') || gameLower === 'mtg') return 'mtg';
+  if (gameLower.includes('yu-gi-oh') || gameLower.includes('yugioh')) return 'yugioh';
+  if (gameLower.includes('lorcana')) return 'lorcana';
+  if (gameLower.includes('sports') || gameLower.includes('nba') || gameLower.includes('nfl') || gameLower.includes('mlb')) return 'nba';
+  
+  return 'tcg';
 }
 
-DERIVED FIELD RULES:
-- cvi_key must be \`\${game}|\${set.code}|\${card_number}|\${language}\` IF set.code and card_number are known; else null.
-- needs_review must be true if (set.code is null OR card_number is null OR confidence_score < 0.75)
-
-CATEGORY MAPPING:
-- "Pokemon" -> "pokemon"
-- "One Piece" -> "onepiece"  
-- "MTG" -> "mtg"
-- "Yu-Gi-Oh" -> "yugioh"
-- "Sports" -> "nba" (default sports, can be "football", "baseball", "soccer" based on content)
-- "Lorcana" -> "lorcana"
-- "Other" -> "tcg"`;
-
-function mapGameToCategory(game: string): string {
-  const mapping: Record<string, string> = {
-    'Pokemon': 'pokemon',
-    'One Piece': 'onepiece',
-    'MTG': 'mtg',
-    'Yu-Gi-Oh': 'yugioh',
-    'Sports': 'nba',
-    'Lorcana': 'lorcana',
-    'Other': 'tcg'
-  };
-  return mapping[game] || 'tcg';
-}
-
-async function analyzeWithGPT(imageBase64: string, openaiKey: string): Promise<CardBoomIndexResult> {
+async function analyzeWithXimilar(imageBase64: string, ximilarToken: string): Promise<{
+  cardName: string | null;
+  cardNameEnglish: string | null;
+  setName: string | null;
+  setCode: string | null;
+  cardNumber: string | null;
+  rarity: string | null;
+  language: string | null;
+  game: string | null;
+  confidence: number;
+  ximilarId: string | null;
+  notes: string;
+}> {
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('Calling Ximilar TCG Identification API...');
+    
+    const response = await fetch(XIMILAR_TCG_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiKey}`,
+        'Authorization': `Token ${ximilarToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: CARDBOOM_INDEXER_PROMPT },
+        records: [
           {
-            role: 'user',
-            content: [
-              { type: 'text', text: 'Analyze this trading card image and extract all visible information. Return only valid JSON.' },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${imageBase64}`,
-                  detail: 'high'
-                }
-              }
-            ]
+            _base64: imageBase64,
           }
-        ],
-        max_tokens: 800,
-        temperature: 0.1,
+        ]
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Ximilar API error:', response.status, errorText);
+      throw new Error(`Ximilar API error: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
-    
-    // Parse JSON from response (handle markdown code blocks)
-    let jsonStr = content;
-    if (content.includes('```json')) {
-      jsonStr = content.split('```json')[1].split('```')[0].trim();
-    } else if (content.includes('```')) {
-      jsonStr = content.split('```')[1].split('```')[0].trim();
+    const data: XimilarTCGResult = await response.json();
+    console.log('Ximilar response:', JSON.stringify(data, null, 2));
+
+    if (!data.records || data.records.length === 0) {
+      return {
+        cardName: null,
+        cardNameEnglish: null,
+        setName: null,
+        setCode: null,
+        cardNumber: null,
+        rarity: null,
+        language: null,
+        game: null,
+        confidence: 0,
+        ximilarId: null,
+        notes: 'No card detected by Ximilar',
+      };
     }
-    
-    const parsed = JSON.parse(jsonStr);
-    
-    // Build cvi_key if we have enough data
-    let cviKey: string | null = null;
-    if (parsed.set?.code && parsed.card_number) {
-      cviKey = `${parsed.game}|${parsed.set.code}|${parsed.card_number}|${parsed.language}`;
+
+    const record = data.records[0];
+    const bestMatch = record.best_match;
+
+    if (!bestMatch) {
+      return {
+        cardName: null,
+        cardNameEnglish: null,
+        setName: null,
+        setCode: null,
+        cardNumber: null,
+        rarity: null,
+        language: null,
+        game: null,
+        confidence: 0,
+        ximilarId: record._id || null,
+        notes: 'Card detected but no match found in Ximilar database',
+      };
     }
-    
-    // Determine if review is needed
-    const needsReview = !parsed.set?.code || !parsed.card_number || (parsed.confidence_score || 0) < 0.75;
+
+    const confidence = bestMatch.prob || 0;
     
     return {
-      game: parsed.game || 'Other',
-      language: parsed.language || 'English',
-      card_name: {
-        original: parsed.card_name?.original || null,
-        english: parsed.card_name?.english || parsed.card_name?.original || null,
-      },
-      set: {
-        name: parsed.set?.name || null,
-        code: parsed.set?.code || null,
-        release_year: parsed.set?.release_year || null,
-      },
-      card_number: parsed.card_number || null,
-      rarity: parsed.rarity || null,
-      card_type: parsed.card_type || null,
-      attributes: parsed.attributes || {
-        hp_or_power: null,
-        element_or_color: null,
-        cost: null,
-      },
-      cvi_key: cviKey || parsed.cvi_key || null,
-      confidence_score: typeof parsed.confidence_score === 'number' ? parsed.confidence_score : 0.5,
-      needs_review: needsReview,
-      notes: parsed.notes || '',
+      cardName: bestMatch.name || null,
+      cardNameEnglish: bestMatch.name || null, // Ximilar returns English names
+      setName: bestMatch.set_name || null,
+      setCode: bestMatch.set_code || null,
+      cardNumber: bestMatch.card_number || null,
+      rarity: bestMatch.rarity || null,
+      language: bestMatch.language || 'English',
+      game: bestMatch.game || null,
+      confidence,
+      ximilarId: bestMatch._id || record._id || null,
+      notes: `Ximilar match confidence: ${(confidence * 100).toFixed(1)}%`,
     };
   } catch (error) {
-    console.error('GPT analysis error:', error);
+    console.error('Ximilar analysis error:', error);
     return {
-      game: 'Other',
-      language: 'English',
-      card_name: { original: null, english: null },
-      set: { name: null, code: null, release_year: null },
-      card_number: null,
+      cardName: null,
+      cardNameEnglish: null,
+      setName: null,
+      setCode: null,
+      cardNumber: null,
       rarity: null,
-      card_type: null,
-      attributes: { hp_or_power: null, element_or_color: null, cost: null },
-      cvi_key: null,
-      confidence_score: 0,
-      needs_review: true,
-      notes: 'Failed to analyze image',
+      language: null,
+      game: null,
+      confidence: 0,
+      ximilarId: null,
+      notes: `Ximilar error: ${error instanceof Error ? error.message : 'Unknown error'}`,
     };
   }
 }
 
 async function enrichWithMarketData(
   supabase: any,
-  indexResult: CardBoomIndexResult
+  ximilarResult: {
+    cardName: string | null;
+    cardNameEnglish: string | null;
+    setName: string | null;
+    setCode: string | null;
+    cardNumber: string | null;
+    rarity: string | null;
+    language: string | null;
+    game: string | null;
+    confidence: number;
+    ximilarId: string | null;
+    notes: string;
+  }
 ): Promise<SingleCardResult> {
   let matchedItem = null;
   let pricing = null;
 
-  const category = mapGameToCategory(indexResult.game);
+  const category = mapGameToCategory(ximilarResult.game || undefined);
+  const nameToSearch = ximilarResult.cardNameEnglish || ximilarResult.cardName;
   
-  // Prefer English name for searching
-  const nameToSearch = indexResult.card_name.english || indexResult.card_name.original;
-  
+  // Build cvi_key if we have enough data
+  let cviKey: string | null = null;
+  if (ximilarResult.setCode && ximilarResult.cardNumber && ximilarResult.game) {
+    const language = ximilarResult.language || 'English';
+    cviKey = `${ximilarResult.game}|${ximilarResult.setCode}|${ximilarResult.cardNumber}|${language}`;
+  }
+
   if (nameToSearch) {
     const searchName = nameToSearch
       .replace(/[^\w\s]/g, ' ')
@@ -251,18 +241,34 @@ async function enrichWithMarketData(
       .trim()
       .toLowerCase();
 
-    console.log('Searching for card:', searchName, 'Category:', category);
+    console.log('Searching for card:', searchName, 'Category:', category, 'CVI Key:', cviKey);
 
     // First try to find by cvi_key if available
-    if (indexResult.cvi_key) {
+    if (cviKey) {
       const { data: cviMatch } = await supabase
         .from('market_items')
         .select('*')
-        .eq('cvi_key', indexResult.cvi_key)
+        .eq('cvi_key', cviKey)
         .single();
       
       if (cviMatch) {
         matchedItem = cviMatch;
+        console.log('Found exact CVI key match:', cviMatch.name);
+      }
+    }
+    
+    // Fallback: search by set_code + card_number
+    if (!matchedItem && ximilarResult.setCode && ximilarResult.cardNumber) {
+      const { data: setMatch } = await supabase
+        .from('market_items')
+        .select('*')
+        .eq('set_code', ximilarResult.setCode)
+        .eq('card_number', ximilarResult.cardNumber)
+        .limit(1);
+      
+      if (setMatch && setMatch.length > 0) {
+        matchedItem = setMatch[0];
+        console.log('Found set+number match:', matchedItem.name);
       }
     }
     
@@ -283,6 +289,7 @@ async function enrichWithMarketData(
 
       if (matches && matches.length > 0) {
         matchedItem = matches[0];
+        console.log('Found name match:', matchedItem.name);
 
         const prices = matches.map((item: any) => item.current_price).filter((p: number) => p > 0);
         const sortedPrices = [...prices].sort((a, b) => a - b);
@@ -317,30 +324,30 @@ async function enrichWithMarketData(
   }
 
   // Boost confidence if we found a market match
-  let finalConfidence = indexResult.confidence_score;
+  let finalConfidence = ximilarResult.confidence;
   if (matchedItem && finalConfidence < 0.85) {
     finalConfidence = Math.min(0.9, finalConfidence + 0.15);
   }
 
-  // Re-evaluate needs_review with boosted confidence
-  const needsReview = !indexResult.set.code || !indexResult.card_number || finalConfidence < 0.75;
+  // Determine if review is needed
+  const needsReview = !ximilarResult.setCode || !ximilarResult.cardNumber || finalConfidence < 0.75;
 
   return {
-    detected: !!(indexResult.card_name.original || indexResult.card_name.english),
-    cardName: indexResult.card_name.original,
-    cardNameEnglish: indexResult.card_name.english,
-    setName: matchedItem?.set_name || indexResult.set.name,
-    setCode: matchedItem?.set_code || indexResult.set.code,
-    cardNumber: matchedItem?.card_number || indexResult.card_number,
-    rarity: matchedItem?.rarity || indexResult.rarity,
-    cardType: indexResult.card_type,
-    estimatedCondition: 'Near Mint', // Default, will be refined by grading
+    detected: !!(ximilarResult.cardName || ximilarResult.cardNameEnglish),
+    cardName: ximilarResult.cardName,
+    cardNameEnglish: ximilarResult.cardNameEnglish,
+    setName: matchedItem?.set_name || ximilarResult.setName,
+    setCode: matchedItem?.set_code || ximilarResult.setCode,
+    cardNumber: matchedItem?.card_number || ximilarResult.cardNumber,
+    rarity: matchedItem?.rarity || ximilarResult.rarity,
+    cardType: null,
+    estimatedCondition: 'Near Mint',
     category: matchedItem?.category || category,
-    language: indexResult.language,
-    cviKey: indexResult.cvi_key,
+    language: ximilarResult.language || 'English',
+    cviKey,
     confidence: finalConfidence,
     needsReview,
-    notes: indexResult.notes,
+    notes: ximilarResult.notes,
     ocrText: [],
     pricing,
     matchedMarketItem: matchedItem ? {
@@ -353,6 +360,7 @@ async function enrichWithMarketData(
       card_number: matchedItem.card_number,
       rarity: matchedItem.rarity,
     } : null,
+    ximilarId: ximilarResult.ximilarId,
   };
 }
 
@@ -371,11 +379,11 @@ serve(async (req) => {
       );
     }
 
-    const openaiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiKey) {
-      console.error('OPENAI_API_KEY not configured');
+    const ximilarToken = Deno.env.get('XIMILAR_API_TOKEN');
+    if (!ximilarToken) {
+      console.error('XIMILAR_API_TOKEN not configured');
       return new Response(
-        JSON.stringify({ error: 'AI service not configured' }),
+        JSON.stringify({ error: 'Card recognition service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -401,14 +409,14 @@ serve(async (req) => {
       }
     }
 
-    console.log('Analyzing card with CardBoom AI Indexer...');
+    console.log('Analyzing card with Ximilar TCG Identification...');
     
-    // Analyze with GPT Vision using CardBoom Indexer prompt
-    const indexResult = await analyzeWithGPT(base64Image, openaiKey);
-    console.log('Index result:', indexResult);
+    // Analyze with Ximilar TCG Identification API
+    const ximilarResult = await analyzeWithXimilar(base64Image, ximilarToken);
+    console.log('Ximilar result:', ximilarResult);
 
     // Enrich with market data
-    const result = await enrichWithMarketData(supabase, indexResult);
+    const result = await enrichWithMarketData(supabase, ximilarResult);
 
     console.log('Final analysis result:', { 
       detected: result.detected, 
@@ -420,7 +428,8 @@ serve(async (req) => {
       cviKey: result.cviKey,
       confidence: result.confidence,
       needsReview: result.needsReview,
-      hasMatch: !!result.matchedMarketItem
+      hasMatch: !!result.matchedMarketItem,
+      ximilarId: result.ximilarId,
     });
 
     return new Response(
