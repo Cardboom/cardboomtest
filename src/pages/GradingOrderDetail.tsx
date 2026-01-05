@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +15,7 @@ import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award, Timer, Loader2 } from 'lucide-react';
-import { format, differenceInMinutes, addHours } from 'date-fns';
+import { format, addHours } from 'date-fns';
 
 export default function GradingOrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +38,33 @@ export default function GradingOrderDetail() {
   }, [id, getOrder]);
 
   const category = order ? GRADING_CATEGORIES.find(c => c.id === order.category) : null;
+  const isCompleted = order?.status === 'completed';
+  const isPending = order ? ['queued', 'in_review', 'pending_payment'].includes(order.status) : false;
+
+  // Calculate countdown for pending orders (1 hour from submission) - with live updates
+  const [countdown, setCountdown] = useState({ minutes: 60, seconds: 0 });
+  
+  useEffect(() => {
+    if (!isPending || !order?.paid_at) return;
+    
+    const updateCountdown = () => {
+      const paidAt = new Date(order.paid_at!);
+      const expectedCompletion = addHours(paidAt, 1);
+      const now = new Date();
+      const totalSecondsRemaining = Math.max(0, Math.floor((expectedCompletion.getTime() - now.getTime()) / 1000));
+      
+      setCountdown({
+        minutes: Math.floor(totalSecondsRemaining / 60),
+        seconds: totalSecondsRemaining % 60
+      });
+    };
+    
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [isPending, order?.paid_at]);
+
+  const countdownExpired = countdown.minutes === 0 && countdown.seconds === 0;
 
   if (isLoading) {
     return (
@@ -64,31 +91,6 @@ export default function GradingOrderDetail() {
     );
   }
 
-  const isCompleted = order.status === 'completed';
-  const isPending = ['queued', 'in_review', 'pending_payment'].includes(order.status);
-
-  // Calculate countdown for pending orders (1 hour from submission)
-  const countdownInfo = useMemo(() => {
-    if (!isPending || !order.paid_at) return null;
-    
-    const paidAt = new Date(order.paid_at);
-    const expectedCompletion = addHours(paidAt, 1);
-    const now = new Date();
-    const minutesRemaining = differenceInMinutes(expectedCompletion, now);
-    
-    if (minutesRemaining <= 0) {
-      return { expired: true, text: 'Processing...', subtext: 'Your result should be ready any moment now' };
-    }
-    
-    if (minutesRemaining < 60) {
-      return { expired: false, text: `~${minutesRemaining} min`, subtext: 'Estimated time remaining' };
-    }
-    
-    const hours = Math.floor(minutesRemaining / 60);
-    const mins = minutesRemaining % 60;
-    return { expired: false, text: `~${hours}h ${mins}m`, subtext: 'Estimated time remaining' };
-  }, [isPending, order.paid_at]);
-
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -113,27 +115,52 @@ export default function GradingOrderDetail() {
             {isCompleted ? <GradingResultCard order={order} /> : (
               <>
                 {/* Countdown Timer for Pending Orders */}
-                {countdownInfo && (
-                  <Card className="border-primary/30 bg-primary/5">
-                    <CardContent className="p-6 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-3">
-                        {countdownInfo.expired ? (
-                          <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                        ) : (
-                          <Timer className="w-6 h-6 text-primary" />
+                {isPending && order.paid_at && (
+                  <Card className="border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
+                    <CardContent className="p-6 text-center relative">
+                      {/* Animated background pulse */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-pulse" />
+                      
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-center gap-2 mb-4">
+                          {countdownExpired ? (
+                            <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                          ) : (
+                            <Timer className="w-6 h-6 text-primary animate-pulse" />
+                          )}
+                          <span className="text-sm font-semibold text-primary uppercase tracking-widest">
+                            {countdownExpired ? 'Finalizing Results' : 'CardBoom Index Processing'}
+                          </span>
+                        </div>
+                        
+                        {/* Big countdown display */}
+                        <div className="flex items-center justify-center gap-3 mb-3">
+                          <div className="bg-background/80 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[80px] shadow-lg border border-primary/20">
+                            <p className="text-4xl font-bold text-foreground tabular-nums">
+                              {String(countdown.minutes).padStart(2, '0')}
+                            </p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Minutes</p>
+                          </div>
+                          <span className="text-3xl font-bold text-primary animate-pulse">:</span>
+                          <div className="bg-background/80 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[80px] shadow-lg border border-primary/20">
+                            <p className="text-4xl font-bold text-foreground tabular-nums">
+                              {String(countdown.seconds).padStart(2, '0')}
+                            </p>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Seconds</p>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground">
+                          {countdownExpired ? 'Your result should be ready any moment now' : 'Estimated time remaining'}
+                        </p>
+                        
+                        {!countdownExpired && (
+                          <Badge variant="secondary" className="mt-4">
+                            <RefreshCw className="w-3 h-3 mr-1" />
+                            Auto-refreshes when ready
+                          </Badge>
                         )}
-                        <span className="text-sm font-medium text-primary uppercase tracking-wide">
-                          {countdownInfo.expired ? 'Finalizing Results' : 'CardBoom Index Processing'}
-                        </span>
                       </div>
-                      <p className="text-3xl font-bold text-foreground mb-1">{countdownInfo.text}</p>
-                      <p className="text-sm text-muted-foreground">{countdownInfo.subtext}</p>
-                      {!countdownInfo.expired && (
-                        <Badge variant="secondary" className="mt-3">
-                          <RefreshCw className="w-3 h-3 mr-1" />
-                          Refresh page to check status
-                        </Badge>
-                      )}
                     </CardContent>
                   </Card>
                 )}
