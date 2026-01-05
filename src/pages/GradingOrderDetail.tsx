@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { useGrading, GradingOrder, GRADING_CATEGORIES } from '@/hooks/useGrading';
 import { GradingResultCard } from '@/components/grading/GradingResultCard';
 import { OrderStatusTimeline } from '@/components/grading/OrderStatusTimeline';
@@ -13,8 +14,8 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award, Timer, Loader2 } from 'lucide-react';
+import { format, differenceInMinutes, addHours } from 'date-fns';
 
 export default function GradingOrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -64,6 +65,29 @@ export default function GradingOrderDetail() {
   }
 
   const isCompleted = order.status === 'completed';
+  const isPending = ['queued', 'in_review', 'pending_payment'].includes(order.status);
+
+  // Calculate countdown for pending orders (1 hour from submission)
+  const countdownInfo = useMemo(() => {
+    if (!isPending || !order.paid_at) return null;
+    
+    const paidAt = new Date(order.paid_at);
+    const expectedCompletion = addHours(paidAt, 1);
+    const now = new Date();
+    const minutesRemaining = differenceInMinutes(expectedCompletion, now);
+    
+    if (minutesRemaining <= 0) {
+      return { expired: true, text: 'Processing...', subtext: 'Your result should be ready any moment now' };
+    }
+    
+    if (minutesRemaining < 60) {
+      return { expired: false, text: `~${minutesRemaining} min`, subtext: 'Estimated time remaining' };
+    }
+    
+    const hours = Math.floor(minutesRemaining / 60);
+    const mins = minutesRemaining % 60;
+    return { expired: false, text: `~${hours}h ${mins}m`, subtext: 'Estimated time remaining' };
+  }, [isPending, order.paid_at]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,10 +111,37 @@ export default function GradingOrderDetail() {
         <div className="grid lg:grid-cols-2 gap-6">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
             {isCompleted ? <GradingResultCard order={order} /> : (
-              <Card className="border-border/50">
-                <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-lg"><RefreshCw className="w-5 h-5" />Order Status</CardTitle></CardHeader>
-                <CardContent><OrderStatusTimeline status={order.status} paidAt={order.paid_at} submittedAt={order.submitted_at} completedAt={order.completed_at} /></CardContent>
-              </Card>
+              <>
+                {/* Countdown Timer for Pending Orders */}
+                {countdownInfo && (
+                  <Card className="border-primary/30 bg-primary/5">
+                    <CardContent className="p-6 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        {countdownInfo.expired ? (
+                          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                        ) : (
+                          <Timer className="w-6 h-6 text-primary" />
+                        )}
+                        <span className="text-sm font-medium text-primary uppercase tracking-wide">
+                          {countdownInfo.expired ? 'Finalizing Results' : 'CardBoom Index Processing'}
+                        </span>
+                      </div>
+                      <p className="text-3xl font-bold text-foreground mb-1">{countdownInfo.text}</p>
+                      <p className="text-sm text-muted-foreground">{countdownInfo.subtext}</p>
+                      {!countdownInfo.expired && (
+                        <Badge variant="secondary" className="mt-3">
+                          <RefreshCw className="w-3 h-3 mr-1" />
+                          Refresh page to check status
+                        </Badge>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+                <Card className="border-border/50">
+                  <CardHeader className="pb-3"><CardTitle className="flex items-center gap-2 text-lg"><RefreshCw className="w-5 h-5" />Order Status</CardTitle></CardHeader>
+                  <CardContent><OrderStatusTimeline status={order.status} paidAt={order.paid_at} submittedAt={order.submitted_at} completedAt={order.completed_at} /></CardContent>
+                </Card>
+              </>
             )}
             <Card className="border-border/50">
               <CardHeader className="pb-3"><CardTitle className="text-lg">Order Info</CardTitle></CardHeader>

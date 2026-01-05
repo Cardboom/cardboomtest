@@ -32,7 +32,8 @@ import {
   Plus,
   Minus,
   Lightbulb,
-  CheckCircle2
+  CheckCircle2,
+  Clock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -622,7 +623,18 @@ export default function GradingNew() {
                 <CardContent className="pt-10 pb-8">
                   <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center mx-auto mb-6"><Sparkles className="w-8 h-8 text-white" /></motion.div>
                   <h2 className="text-2xl font-bold mb-2">Order Submitted!</h2>
-                  <p className="text-muted-foreground mb-6">Your card is in the grading queue. Results in 1-5 days.</p>
+                  <p className="text-muted-foreground mb-4">Your CardBoom Index result is being processed.</p>
+                  
+                  {/* Countdown Timer */}
+                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mb-6">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Clock className="w-5 h-5 text-primary" />
+                      <span className="font-semibold text-primary">Estimated Result Time</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">~1 Hour</p>
+                    <p className="text-xs text-muted-foreground mt-1">Results typically arrive within 1 hour. Complex cards may take longer.</p>
+                  </div>
+                  
                   <Badge variant="secondary" className="mb-6">Order: {createdOrder?.id?.slice(0, 8)}...</Badge>
                   <div className="space-y-3">
                     <Button className="w-full h-11 rounded-full" onClick={() => navigate(`/grading/orders/${createdOrder?.id}`)}>View Order Status</Button>
