@@ -14,26 +14,39 @@ function useImageTexture(url: string): THREE.Texture | null {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
-    if (!url) return;
+    if (!url) {
+      setTexture(null);
+      return;
+    }
 
-    const img = new Image();
+    let cancelled = false;
+    let loadedTexture: THREE.Texture | null = null;
+
+    const img = new window.Image();
     img.crossOrigin = 'anonymous';
     
     img.onload = () => {
+      if (cancelled) return;
       const tex = new THREE.Texture(img);
       tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
       tex.needsUpdate = true;
+      loadedTexture = tex;
       setTexture(tex);
     };
     
-    img.onerror = (err) => {
-      console.error('Texture load error:', url, err);
+    img.onerror = () => {
+      console.error('CardOverlayPreview texture load error:', url);
+      if (!cancelled) setTexture(null);
     };
     
     img.src = url;
 
     return () => {
-      texture?.dispose();
+      cancelled = true;
+      loadedTexture?.dispose();
     };
   }, [url]);
 
