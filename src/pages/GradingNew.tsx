@@ -43,6 +43,7 @@ import { useGradingCredits } from '@/hooks/useGradingCredits';
 import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { CardAnalysis } from '@/hooks/useCardAnalysis';
 import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
+import { ImageCropper } from '@/components/grading/ImageCropper';
 
 type Step = 'category' | 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
@@ -86,6 +87,11 @@ export default function GradingNew() {
   const [useAIScanner, setUseAIScanner] = useState(true);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewedCardData, setReviewedCardData] = useState<ReviewedCardData | null>(null);
+  
+  // Cropping state
+  const [showCropper, setShowCropper] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string>('');
+  const [cropSide, setCropSide] = useState<'front' | 'back'>('front');
 
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
@@ -130,12 +136,20 @@ export default function GradingNew() {
 
   const handleImageChange = (side: 'front' | 'back', file: File | null) => {
     if (!file) return;
-    if (side === 'front') {
-      setFrontImage(file);
-      setFrontPreview(URL.createObjectURL(file));
+    // Open cropper for manual uploads
+    const previewUrl = URL.createObjectURL(file);
+    setCropImageSrc(previewUrl);
+    setCropSide(side);
+    setShowCropper(true);
+  };
+  
+  const handleCropComplete = (croppedFile: File, previewUrl: string) => {
+    if (cropSide === 'front') {
+      setFrontImage(croppedFile);
+      setFrontPreview(previewUrl);
     } else {
-      setBackImage(file);
-      setBackPreview(URL.createObjectURL(file));
+      setBackImage(croppedFile);
+      setBackPreview(previewUrl);
     }
   };
 
@@ -687,6 +701,15 @@ export default function GradingNew() {
             description: 'Now upload the back of the card',
           });
         }}
+      />
+      
+      {/* Image Cropper Modal */}
+      <ImageCropper
+        open={showCropper}
+        imageSrc={cropImageSrc}
+        onClose={() => setShowCropper(false)}
+        onCropComplete={handleCropComplete}
+        aspect={2.5 / 3.5}
       />
     </div>
   );

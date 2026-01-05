@@ -275,35 +275,41 @@ serve(async (req) => {
       console.log('Ximilar records count:', ximilarData.records?.length);
       
       if (ximilarData.records && ximilarData.records.length > 0) {
-        // Get the first successful record (typically front side)
-        // Find a record with valid grades
+        // Find a record with valid grades (status 200 and grades object)
         let gradeRecord = ximilarData.records.find((r: any) => r.grades && r._status?.code === 200);
         
-        // If no record with grades found, use first record
-        if (!gradeRecord) {
-          gradeRecord = ximilarData.records[0];
-        }
+        // Check how many records succeeded vs failed
+        const successfulRecords = ximilarData.records.filter((r: any) => r._status?.code === 200 && r.grades);
+        const failedRecords = ximilarData.records.filter((r: any) => r._status?.code !== 200);
         
-        console.log('Using record for grades:', JSON.stringify(gradeRecord?.grades));
-        console.log('Record _status:', JSON.stringify(gradeRecord?._status));
+        console.log(`Successful records: ${successfulRecords.length}, Failed records: ${failedRecords.length}`);
         
-        // Check if record has an error status
-        if (gradeRecord._status?.code !== 200) {
-          console.error('Ximilar grading failed for record:', gradeRecord._status?.text);
-          // Don't throw - mark as in_review so admin can handle
+        // If we have at least one successful record with grades, use it
+        if (gradeRecord) {
+          console.log('Using successful record for grades:', JSON.stringify(gradeRecord?.grades));
+          console.log('Record _status:', JSON.stringify(gradeRecord?._status));
+          
+          // Log any failed records for reference but don't fail the grading
+          if (failedRecords.length > 0) {
+            console.log('Some records failed (non-blocking):', failedRecords.map((r: any) => r._status?.text).join(', '));
+          }
+        } else {
+          // All records failed - mark as in_review
+          const firstRecord = ximilarData.records[0];
+          console.error('All Ximilar records failed:', firstRecord._status?.text);
+          
           await supabase
             .from('grading_orders')
             .update({
               status: 'in_review',
               submitted_at: new Date().toISOString(),
-              grading_notes: `Ximilar error: ${gradeRecord._status?.text || 'Unknown error'}`,
+              grading_notes: `Ximilar error: ${firstRecord._status?.text || 'Unknown error'}`,
               external_request_id: ximilarData.status?.request_id || null
             })
             .eq('id', orderId);
             
           console.log(`Order ${orderId} marked for manual review due to Ximilar error`);
           
-          // Fetch and return updated order
           const { data: updatedOrder } = await supabase
             .from('grading_orders')
             .select('*')
@@ -361,7 +367,7 @@ serve(async (req) => {
         const overlayUrl = gradeRecord._full_url_card || null;
         const exactUrl = gradeRecord._exact_url_card || null;
 
-        // Update order with results
+        // Update order with results - clear grading_notes on success
         const { error: updateGradeError } = await supabase
           .from('grading_orders')
           .update({
@@ -386,7 +392,9 @@ serve(async (req) => {
             exact_url: exactUrl,
             overlay_coordinates: gradeRecord._objects || null,
             confidence: null,
-            external_request_id: ximilarData.status?.request_id || null
+            external_request_id: ximilarData.status?.request_id || null,
+            // Clear any previous error notes on successful grading
+            grading_notes: null
           })
           .eq('id', orderId);
 
