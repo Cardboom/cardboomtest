@@ -136,6 +136,12 @@ export default function GradingNew() {
     if (cropSide === 'front') {
       setFrontImage(croppedFile);
       setFrontPreview(previewUrl);
+      toast({
+        title: cardAnalysis?.detected ? 'Card Recognized!' : 'Image Ready',
+        description: cardAnalysis?.detected 
+          ? `${cardAnalysis.cardNameEnglish || cardAnalysis.cardName || 'Card'}`
+          : 'Now upload the back',
+      });
     } else {
       setBackImage(croppedFile);
       setBackPreview(previewUrl);
@@ -235,8 +241,6 @@ export default function GradingNew() {
                   mode="grading"
                   onScanComplete={(scanAnalysis, file, previewUrl) => {
                     setCardAnalysis(scanAnalysis);
-                    setFrontImage(file);
-                    setFrontPreview(previewUrl);
                     
                     // Auto-detect category
                     if (scanAnalysis.category) {
@@ -246,15 +250,16 @@ export default function GradingNew() {
                       if (matchedCategory) setCategory(matchedCategory.id);
                     }
                     
+                    // Open cropper for front image
+                    setCropImageSrc(previewUrl);
+                    setCropSide('front');
+                    setShowCropper(true);
+                    
+                    // Store temp data for after cropping
+                    setFrontImage(file);
+                    
                     if (scanAnalysis.needsReview) {
                       setShowReviewModal(true);
-                    } else {
-                      toast({
-                        title: scanAnalysis.detected ? 'Card Recognized!' : 'Image Uploaded',
-                        description: scanAnalysis.detected 
-                          ? `${scanAnalysis.cardNameEnglish || scanAnalysis.cardName || 'Card'}`
-                          : 'Now upload the back',
-                      });
                     }
                   }}
                   className="border-0 shadow-none bg-transparent p-0"
