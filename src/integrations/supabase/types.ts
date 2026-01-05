@@ -3270,6 +3270,8 @@ export type Database = {
           edges_grade: number | null
           error_message: string | null
           estimated_psa_range: string | null
+          estimated_value_graded: number | null
+          estimated_value_raw: number | null
           exact_url: string | null
           external_request_id: string | null
           eye_appeal_grade: number | null
@@ -3304,6 +3306,7 @@ export type Database = {
           tcg: string | null
           updated_at: string
           user_id: string
+          value_increase_percent: number | null
           variant: string | null
           ximilar_centering_grade: number | null
           ximilar_corners_grade: number | null
@@ -3333,6 +3336,8 @@ export type Database = {
           edges_grade?: number | null
           error_message?: string | null
           estimated_psa_range?: string | null
+          estimated_value_graded?: number | null
+          estimated_value_raw?: number | null
           exact_url?: string | null
           external_request_id?: string | null
           eye_appeal_grade?: number | null
@@ -3367,6 +3372,7 @@ export type Database = {
           tcg?: string | null
           updated_at?: string
           user_id: string
+          value_increase_percent?: number | null
           variant?: string | null
           ximilar_centering_grade?: number | null
           ximilar_corners_grade?: number | null
@@ -3396,6 +3402,8 @@ export type Database = {
           edges_grade?: number | null
           error_message?: string | null
           estimated_psa_range?: string | null
+          estimated_value_graded?: number | null
+          estimated_value_raw?: number | null
           exact_url?: string | null
           external_request_id?: string | null
           eye_appeal_grade?: number | null
@@ -3430,6 +3438,7 @@ export type Database = {
           tcg?: string | null
           updated_at?: string
           user_id?: string
+          value_increase_percent?: number | null
           variant?: string | null
           ximilar_centering_grade?: number | null
           ximilar_corners_grade?: number | null

@@ -2,7 +2,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { GradingOrder } from '@/hooks/useGrading';
-import { Award, Target, Layers, CornerDownRight, Maximize2, Sparkles, AlertTriangle, Info, Shield, TrendingUp } from 'lucide-react';
+import { Award, Target, Layers, CornerDownRight, Maximize2, Sparkles, AlertTriangle, Info, Shield, TrendingUp, DollarSign, ArrowUpRight } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion } from 'framer-motion';
 import { GradingFeedbackDialog } from './GradingFeedbackDialog';
@@ -149,7 +149,43 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
           </div>
         )}
 
-        {/* Risk Flags */}
+        {/* Estimated Value Section */}
+        {(order.estimated_value_raw || order.estimated_value_graded) && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-4 p-4 rounded-lg bg-gradient-to-br from-emerald-500/10 to-green-500/5 border border-emerald-500/20"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <DollarSign className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Estimated Value</span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 rounded-lg bg-background/50">
+                <p className="text-xs text-muted-foreground mb-1">Raw / Ungraded</p>
+                <p className="text-xl font-bold text-foreground">
+                  ${order.estimated_value_raw?.toFixed(2) || '—'}
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Graded Value</p>
+                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                  ${order.estimated_value_graded?.toFixed(2) || '—'}
+                </p>
+              </div>
+            </div>
+            {order.value_increase_percent && order.value_increase_percent > 0 && (
+              <div className="mt-3 flex items-center justify-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                <ArrowUpRight className="w-4 h-4" />
+                <span className="text-sm font-semibold">+{order.value_increase_percent}% value increase with grading</span>
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              AI-estimated values based on current market data
+            </p>
+          </motion.div>
+        )}
         {riskFlags.length > 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
