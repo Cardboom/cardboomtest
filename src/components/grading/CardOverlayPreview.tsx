@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, Suspense } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { RoundedBox, OrbitControls } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
@@ -9,60 +9,42 @@ interface CardOverlayPreviewProps {
   order: GradingOrder;
 }
 
-// Card mesh component with texture loading inside Three context
+// Helper to load texture via Image element (handles CORS properly)
+function useImageTexture(url: string): THREE.Texture | null {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+
+  useEffect(() => {
+    if (!url) return;
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const tex = new THREE.Texture(img);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.needsUpdate = true;
+      setTexture(tex);
+    };
+    
+    img.onerror = (err) => {
+      console.error('Texture load error:', url, err);
+    };
+    
+    img.src = url;
+
+    return () => {
+      texture?.dispose();
+    };
+  }, [url]);
+
+  return texture;
+}
+
+// Card mesh component with texture loading
 function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const [frontTexture, setFrontTexture] = useState<THREE.Texture | null>(null);
-  const [backTexture, setBackTexture] = useState<THREE.Texture | null>(null);
-  const { gl } = useThree();
-
-  useEffect(() => {
-    if (!frontUrl) return;
-
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
-    
-    loader.load(
-      frontUrl,
-      (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.flipY = true;
-        texture.needsUpdate = true;
-        gl.initTexture(texture);
-        setFrontTexture(texture);
-      },
-      undefined,
-      (err) => console.error('Front texture error:', err)
-    );
-
-    return () => {
-      frontTexture?.dispose();
-    };
-  }, [frontUrl, gl]);
-
-  useEffect(() => {
-    if (!backUrl) return;
-
-    const loader = new THREE.TextureLoader();
-    loader.setCrossOrigin('anonymous');
-    
-    loader.load(
-      backUrl,
-      (texture) => {
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.flipY = true;
-        texture.needsUpdate = true;
-        gl.initTexture(texture);
-        setBackTexture(texture);
-      },
-      undefined,
-      (err) => console.error('Back texture error:', err)
-    );
-
-    return () => {
-      backTexture?.dispose();
-    };
-  }, [backUrl, gl]);
+  const frontTexture = useImageTexture(frontUrl);
+  const backTexture = useImageTexture(backUrl);
 
   useFrame((state) => {
     if (!meshRef.current) return;
