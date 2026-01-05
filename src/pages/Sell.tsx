@@ -593,7 +593,7 @@ const SellPage = () => {
             {/* AI Scanner Upload Section */}
             {activeTab === 'create' && showAIScanner && !imagePreview && (
               <div className="mb-6">
-                <CardScannerUpload
+              <CardScannerUpload
                   mode="sell"
                   onScanComplete={(scanAnalysis, file, previewUrl) => {
                     setScannedAnalysis(scanAnalysis);
@@ -601,27 +601,18 @@ const SellPage = () => {
                     setImagePreview(previewUrl);
                     setShowAIScanner(false);
                     
-                    // Auto-fill form fields
+                    // Always show review modal for user verification
                     if (scanAnalysis.detected) {
-                      setFormData(prev => ({
-                        ...prev,
-                        title: scanAnalysis.cardNameEnglish || scanAnalysis.cardName || prev.title,
-                        category: scanAnalysis.category || prev.category,
-                        condition: scanAnalysis.estimatedCondition || prev.condition,
-                        price: scanAnalysis.pricing?.medianSold?.toFixed(2) || prev.price,
-                        setName: scanAnalysis.setName || prev.setName,
-                        setCode: scanAnalysis.setCode || prev.setCode,
-                        cardNumber: scanAnalysis.cardNumber || prev.cardNumber,
-                        rarity: scanAnalysis.rarity || prev.rarity,
-                        language: scanAnalysis.language || prev.language,
-                      }));
-                      
-                      // Show review modal if confirmation needed
-                      if (scanAnalysis.needsReview) {
-                        setShowReviewModal(true);
-                      } else {
-                        toast.success('Card identified with high confidence! Form auto-filled.');
+                      // Pre-fill pricing if available
+                      if (scanAnalysis.pricing?.medianSold) {
+                        setFormData(prev => ({
+                          ...prev,
+                          price: scanAnalysis.pricing?.medianSold?.toFixed(2) || prev.price,
+                          condition: scanAnalysis.estimatedCondition || prev.condition,
+                        }));
                       }
+                      // Always show review modal so user can verify/edit before form is filled
+                      setShowReviewModal(true);
                     }
                   }}
                   onSkip={() => setShowAIScanner(false)}
@@ -643,17 +634,29 @@ const SellPage = () => {
                 <CardContent className="pt-6">
                   {/* AI Identified Badge */}
                   {scannedAnalysis?.detected && (
-                    <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between">
+                    <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <Sparkles className="h-4 w-4 text-primary" />
                         <span className="text-sm font-medium">AI Identified</span>
-                        {scannedAnalysis.cardNameEnglish && (
-                          <span className="text-sm text-muted-foreground">• {scannedAnalysis.cardNameEnglish}</span>
+                        {formData.title && (
+                          <span className="text-sm text-muted-foreground">• {formData.title}</span>
                         )}
                       </div>
-                      <Badge variant={scannedAnalysis.confidence >= 0.75 ? "default" : "secondary"}>
-                        {Math.round(scannedAnalysis.confidence * 100)}% confidence
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={scannedAnalysis.confidence >= 0.75 ? "default" : "secondary"}>
+                          {Math.round(scannedAnalysis.confidence * 100)}% confidence
+                        </Badge>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 text-xs gap-1"
+                          onClick={() => setShowReviewModal(true)}
+                        >
+                          <Pencil className="h-3 w-3" />
+                          Edit
+                        </Button>
+                      </div>
                     </div>
                   )}
                   
