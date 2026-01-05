@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
@@ -5,10 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// Ximilar APIs
-const XIMILAR_OCR_URL = "https://api.ximilar.com/ocr/v2/detect";
-const XIMILAR_DETECT_URL = "https://api.ximilar.com/detection/v2/detect";
 
 interface SingleCardResult {
   detected: boolean;
@@ -39,73 +36,157 @@ interface SingleCardResult {
   boundingBox?: { x: number; y: number; width: number; height: number };
 }
 
-interface BatchAnalysisResult {
-  totalDetected: number;
-  cards: SingleCardResult[];
+interface GPTCardAnalysis {
+  detected: boolean;
+  cardName: string | null;
+  setName: string | null;
+  cardNumber: string | null;
+  category: string | null;
+  estimatedCondition: string | null;
+  confidence: number;
+  notes: string | null;
 }
 
-async function analyzeCardRegion(
-  supabase: any,
-  ocrText: string[],
-  ximilarToken: string,
-  hasImageContent: boolean = true // Flag indicating if an image with content was provided
-): Promise<Omit<SingleCardResult, 'boundingBox'>> {
-  // Extract card info from OCR text
-  let extractedCardName = '';
-  let extractedSetName = '';
-  let extractedCardNumber = '';
+async function analyzeWithGPT(imageBase64: string, openaiKey: string): Promise<GPTCardAnalysis> {
+  const systemPrompt = `You are CardBoom's AI Card Recognition system. Analyze the uploaded image and extract trading card information.
 
-  const cardNumberPattern = /(\d{1,4})\s*\/\s*\d{1,4}|#\s*(\d+)|No\.?\s*(\d+)/i;
-  
-  for (const text of ocrText) {
-    const match = text.match(cardNumberPattern);
-    if (match) {
-      extractedCardNumber = match[1] || match[2] || match[3];
+STRICT RULES:
+1. If you see a trading card (Pokemon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Lorcana, sports cards, etc.), set detected=true
+2. Extract the card name, set name, card number, and category
+3. Estimate the condition based on visible wear (Mint, Near Mint, Excellent, Good, Poor)
+4. Confidence should be 0.9+ if you can clearly read the card name, 0.7-0.9 if partially visible, 0.5-0.7 if guessing
+
+CATEGORY VALUES (use exactly):
+- "pokemon" for Pokemon cards
+- "mtg" for Magic: The Gathering
+- "yugioh" for Yu-Gi-Oh! cards
+- "onepiece" for One Piece TCG
+- "lorcana" for Disney Lorcana
+- "nba" for basketball cards
+- "football" for NFL/football cards
+- "baseball" for baseball cards
+- "soccer" for soccer/football cards
+- "figures" for collectible figures
+- "gaming" for gaming items
+
+Return ONLY valid JSON with this exact structure:
+{
+  "detected": boolean,
+  "cardName": string or null,
+  "setName": string or null,
+  "cardNumber": string or null,
+  "category": string or null,
+  "estimatedCondition": string or null,
+  "confidence": number (0-1),
+  "notes": string or null
+}`;
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: 'Analyze this trading card image and extract all visible information.' },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/jpeg;base64,${imageBase64}`,
+                  detail: 'high'
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    
+    // Parse JSON from response (handle markdown code blocks)
+    let jsonStr = content;
+    if (content.includes('```json')) {
+      jsonStr = content.split('```json')[1].split('```')[0].trim();
+    } else if (content.includes('```')) {
+      jsonStr = content.split('```')[1].split('```')[0].trim();
     }
     
-    if (text.match(/\b(base|jungle|fossil|team rocket|neo|gym|legendary|e-series|ex|diamond|pearl|platinum|heartgold|soulsilver|black|white|xy|sun|moon|sword|shield|scarlet|violet|151|obsidian|paldea|prismatic|surging|op01|op02|op03|op04|op05|op06|op07|op08|op09)\b/i)) {
-      extractedSetName = text;
-    }
+    const parsed = JSON.parse(jsonStr);
+    return {
+      detected: parsed.detected ?? false,
+      cardName: parsed.cardName || null,
+      setName: parsed.setName || null,
+      cardNumber: parsed.cardNumber || null,
+      category: parsed.category || null,
+      estimatedCondition: parsed.estimatedCondition || 'Near Mint',
+      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
+      notes: parsed.notes || null,
+    };
+  } catch (error) {
+    console.error('GPT analysis error:', error);
+    return {
+      detected: false,
+      cardName: null,
+      setName: null,
+      cardNumber: null,
+      category: null,
+      estimatedCondition: null,
+      confidence: 0,
+      notes: null,
+    };
   }
+}
 
-  if (ocrText.length > 0) {
-    const sortedByLength = [...ocrText].sort((a, b) => b.length - a.length);
-    const potentialNames = sortedByLength.filter(t => 
-      t.length > 3 && 
-      !t.match(/^\d+/) && 
-      !t.match(/^(HP|ATK|DEF|\d+\/\d+)$/i)
-    );
-    if (potentialNames.length > 0) {
-      extractedCardName = potentialNames[0];
-    }
-  }
-
-  // Determine if a card-like object was detected
-  // If we have ANY OCR text, we likely have a card (even if we can't identify it)
-  const hasCardLikeContent = ocrText.length > 0 || hasImageContent;
-
-  // Search for matching market items
+async function enrichWithMarketData(
+  supabase: any,
+  gptAnalysis: GPTCardAnalysis
+): Promise<SingleCardResult> {
   let matchedItem = null;
   let pricing = null;
 
-  if (extractedCardName) {
-    const searchName = extractedCardName
+  if (gptAnalysis.cardName) {
+    const searchName = gptAnalysis.cardName
       .replace(/[^\w\s]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
       .toLowerCase();
 
-    const { data: exactMatch } = await supabase
+    // Search for matching market items
+    let query = supabase
       .from('market_items')
       .select('*')
-      .ilike('name', `%${searchName}%`)
+      .ilike('name', `%${searchName}%`);
+    
+    // Filter by category if detected
+    if (gptAnalysis.category) {
+      query = query.eq('category', gptAnalysis.category);
+    }
+
+    const { data: matches } = await query
       .order('current_price', { ascending: false })
       .limit(10);
 
-    if (exactMatch && exactMatch.length > 0) {
-      matchedItem = exactMatch[0];
+    if (matches && matches.length > 0) {
+      matchedItem = matches[0];
 
-      const prices = exactMatch.map((item: any) => item.current_price).filter((p: number) => p > 0);
+      const prices = matches.map((item: any) => item.current_price).filter((p: number) => p > 0);
       const sortedPrices = [...prices].sort((a, b) => a - b);
       
       if (sortedPrices.length > 0) {
@@ -116,8 +197,8 @@ async function analyzeCardRegion(
         const maxProfitPrice = Math.round(medianSold * 1.10 * 100) / 100;
 
         let priceConfidence: 'high' | 'medium' | 'low' = 'low';
-        if (exactMatch.length >= 5) priceConfidence = 'high';
-        else if (exactMatch.length >= 3) priceConfidence = 'medium';
+        if (matches.length >= 5) priceConfidence = 'high';
+        else if (matches.length >= 3) priceConfidence = 'medium';
         
         const trendDirection: 'up' | 'down' | 'stable' = trend7d > 2 ? 'up' : trend7d < -2 ? 'down' : 'stable';
 
@@ -129,65 +210,28 @@ async function analyzeCardRegion(
           quickSellPrice,
           maxProfitPrice,
           priceConfidence,
-          salesCount: exactMatch.length,
-          listingsCount: exactMatch.length,
+          salesCount: matches.length,
+          listingsCount: matches.length,
         };
       }
     }
   }
 
-  let estimatedCondition = 'Near Mint';
-  const conditionKeywords = ocrText.join(' ').toLowerCase();
-  if (conditionKeywords.includes('mint') || conditionKeywords.includes('gem')) {
-    estimatedCondition = 'Mint';
-  } else if (conditionKeywords.includes('excellent') || conditionKeywords.includes('ex')) {
-    estimatedCondition = 'Excellent';
-  } else if (conditionKeywords.includes('good') || conditionKeywords.includes('gd')) {
-    estimatedCondition = 'Good';
-  }
-
-  let category = matchedItem?.category || null;
-  if (!category) {
-    const textLower = ocrText.join(' ').toLowerCase();
-    if (textLower.includes('pokémon') || textLower.includes('pokemon')) category = 'pokemon';
-    else if (textLower.includes('magic') || textLower.includes('mtg')) category = 'mtg';
-    else if (textLower.includes('yu-gi-oh') || textLower.includes('yugioh')) category = 'yugioh';
-    else if (textLower.includes('one piece')) category = 'onepiece';
-    else if (textLower.includes('lorcana')) category = 'lorcana';
-    else if (textLower.includes('nba') || textLower.includes('basketball')) category = 'nba';
-    else if (textLower.includes('nfl') || textLower.includes('football')) category = 'football';
-  }
-
-  // Card is "detected" if we have OCR text OR image content that looks like a card
-  // This enables the three-tier detection model:
-  // - detected=true + high confidence + match = "detected_confirmed"
-  // - detected=true + low confidence or no match = "detected_needs_confirmation"
-  // - detected=false = "not_detected" (only for blank/invalid images)
-  const detected = hasCardLikeContent;
-  
-  // Confidence scoring:
-  // - 0.85+ if we have a market item match
-  // - 0.6 if we extracted a card name
-  // - 0.4 if we have OCR text but no name (still a card, just can't identify)
-  // - 0.2 if no OCR but image provided (possible card, needs confirmation)
-  let confidence = 0.2;
-  if (matchedItem) {
-    confidence = 0.85;
-  } else if (extractedCardName) {
-    confidence = 0.6;
-  } else if (ocrText.length > 0) {
-    confidence = 0.4;
+  // Boost confidence if we found a market match
+  let finalConfidence = gptAnalysis.confidence;
+  if (matchedItem && finalConfidence < 0.85) {
+    finalConfidence = Math.min(0.9, finalConfidence + 0.15);
   }
 
   return {
-    detected,
-    cardName: matchedItem?.name || extractedCardName || null,
-    setName: matchedItem?.set_name || extractedSetName || null,
-    cardNumber: extractedCardNumber || null,
-    estimatedCondition,
-    category,
-    confidence,
-    ocrText,
+    detected: gptAnalysis.detected,
+    cardName: matchedItem?.name || gptAnalysis.cardName,
+    setName: matchedItem?.set_name || gptAnalysis.setName,
+    cardNumber: gptAnalysis.cardNumber,
+    estimatedCondition: gptAnalysis.estimatedCondition || 'Near Mint',
+    category: matchedItem?.category || gptAnalysis.category,
+    confidence: finalConfidence,
+    ocrText: [], // GPT doesn't return raw OCR
     pricing,
     matchedMarketItem: matchedItem ? {
       id: matchedItem.id,
@@ -204,7 +248,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl, imageBase64, batchMode } = await req.json();
+    const { imageUrl, imageBase64 } = await req.json();
 
     if (!imageUrl && !imageBase64) {
       return new Response(
@@ -213,11 +257,11 @@ serve(async (req) => {
       );
     }
 
-    const ximilarToken = Deno.env.get('XIMILAR_API_TOKEN');
-    if (!ximilarToken) {
-      console.error('XIMILAR_API_TOKEN not configured');
+    const openaiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiKey) {
+      console.error('OPENAI_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'Image analysis service not configured' }),
+        JSON.stringify({ error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -226,179 +270,38 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const imagePayload = imageBase64 
-      ? { _base64: imageBase64 }
-      : { _url: imageUrl };
-
-    // For batch mode: Use object detection to find multiple cards
-    if (batchMode) {
-      console.log('Batch mode: Detecting multiple cards in image...');
-
-      // First, run OCR on the full image to get all text regions with positions
-      const ocrResponse = await fetch(XIMILAR_OCR_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${ximilarToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          records: [imagePayload]
-        })
-      });
-
-      const ocrData = await ocrResponse.json();
-      console.log('Batch OCR response received');
-
-      // Group OCR text by spatial regions (cards)
-      const allObjects = ocrData.records?.[0]?._objects || [];
-      
-      // If no OCR objects, try to detect cards using object detection
-      if (allObjects.length === 0) {
-        console.log('No OCR text found, returning empty batch');
+    // Convert URL to base64 if needed
+    let base64Image = imageBase64;
+    if (imageUrl && !imageBase64) {
+      try {
+        const imgResponse = await fetch(imageUrl);
+        const arrayBuffer = await imgResponse.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        base64Image = btoa(String.fromCharCode(...uint8Array));
+      } catch (e) {
+        console.error('Failed to fetch image URL:', e);
         return new Response(
-          JSON.stringify({ totalDetected: 0, cards: [] } as BatchAnalysisResult),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Failed to fetch image' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      // Group text objects by their vertical position to identify separate cards
-      // Assuming cards are laid out in a grid or row
-      const cardGroups: { texts: string[]; bounds: { x: number; y: number; w: number; h: number } }[] = [];
-      
-      // Sort objects by position and group nearby ones
-      const sortedObjects = allObjects.sort((a: any, b: any) => {
-        const aY = a.bound_box?.[1] || 0;
-        const bY = b.bound_box?.[1] || 0;
-        return aY - bY;
-      });
-
-      // Simple clustering: group text that's close together
-      const CLUSTER_THRESHOLD = 200; // pixels - adjust based on typical card size
-      
-      for (const obj of sortedObjects) {
-        const text = obj.text || obj._text || '';
-        if (!text || text.length < 2) continue;
-        
-        const bounds = obj.bound_box || [0, 0, 100, 100];
-        const objCenter = {
-          x: (bounds[0] + bounds[2]) / 2,
-          y: (bounds[1] + bounds[3]) / 2
-        };
-        
-        // Find if this belongs to an existing card group
-        let foundGroup = false;
-        for (const group of cardGroups) {
-          const groupCenterX = (group.bounds.x + group.bounds.w) / 2;
-          const groupCenterY = (group.bounds.y + group.bounds.h) / 2;
-          
-          const distance = Math.sqrt(
-            Math.pow(objCenter.x - groupCenterX, 2) + 
-            Math.pow(objCenter.y - groupCenterY, 2)
-          );
-          
-          if (distance < CLUSTER_THRESHOLD) {
-            group.texts.push(text);
-            // Expand bounds
-            group.bounds.x = Math.min(group.bounds.x, bounds[0]);
-            group.bounds.y = Math.min(group.bounds.y, bounds[1]);
-            group.bounds.w = Math.max(group.bounds.w, bounds[2]);
-            group.bounds.h = Math.max(group.bounds.h, bounds[3]);
-            foundGroup = true;
-            break;
-          }
-        }
-        
-        if (!foundGroup) {
-          cardGroups.push({
-            texts: [text],
-            bounds: { x: bounds[0], y: bounds[1], w: bounds[2], h: bounds[3] }
-          });
-        }
-      }
-
-      console.log(`Found ${cardGroups.length} potential card regions`);
-
-      // Analyze each card group
-      const cardResults: SingleCardResult[] = [];
-      
-      for (const group of cardGroups) {
-        if (group.texts.length < 1) continue;
-        
-        const result = await analyzeCardRegion(supabase, group.texts, ximilarToken);
-        
-        if (result.detected) {
-          cardResults.push({
-            ...result,
-            boundingBox: {
-              x: group.bounds.x,
-              y: group.bounds.y,
-              width: group.bounds.w - group.bounds.x,
-              height: group.bounds.h - group.bounds.y
-            }
-          });
-        }
-      }
-
-      // If clustering didn't find cards, try treating all OCR as one card
-      if (cardResults.length === 0 && allObjects.length > 0) {
-        const allTexts = allObjects
-          .map((obj: any) => obj.text || obj._text || '')
-          .filter((t: string) => t.length > 0);
-        
-        const singleResult = await analyzeCardRegion(supabase, allTexts, ximilarToken);
-        if (singleResult.detected) {
-          cardResults.push(singleResult);
-        }
-      }
-
-      const batchResult: BatchAnalysisResult = {
-        totalDetected: cardResults.length,
-        cards: cardResults
-      };
-
-      console.log(`Batch analysis complete: ${batchResult.totalDetected} cards detected`);
-
-      return new Response(
-        JSON.stringify(batchResult),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
     }
 
-    // Single card mode (original behavior)
-    console.log('Single card mode: Analyzing image...');
+    console.log('Analyzing card with GPT Vision...');
+    
+    // Analyze with GPT Vision
+    const gptAnalysis = await analyzeWithGPT(base64Image, openaiKey);
+    console.log('GPT analysis result:', gptAnalysis);
 
-    let ocrText: string[] = [];
-    try {
-      const ocrResponse = await fetch(XIMILAR_OCR_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Token ${ximilarToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          records: [imagePayload]
-        })
-      });
+    // Enrich with market data
+    const result = await enrichWithMarketData(supabase, gptAnalysis);
 
-      const ocrData = await ocrResponse.json();
-      console.log('OCR response received');
-
-      if (ocrData.records && ocrData.records[0]) {
-        const texts = ocrData.records[0]._objects || [];
-        ocrText = texts.map((obj: any) => obj.text || obj._text || '').filter((t: string) => t.length > 0);
-      }
-    } catch (ocrError) {
-      console.error('OCR failed:', ocrError);
-    }
-
-    // Pass true for hasImageContent since we received an image
-    const result = await analyzeCardRegion(supabase, ocrText, ximilarToken, true);
-
-    console.log('Single card analysis complete:', { 
+    console.log('Final analysis result:', { 
       detected: result.detected, 
       cardName: result.cardName,
+      category: result.category,
       confidence: result.confidence,
-      ocrTextCount: ocrText.length
+      hasMatch: !!result.matchedMarketItem
     });
 
     return new Response(
