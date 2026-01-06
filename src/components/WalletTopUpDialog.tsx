@@ -106,7 +106,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
           cardHolderName,
           cardNumber: cardNumber.replace(/\s/g, ''),
           expireMonth,
-          expireYear: '20' + expireYear,
+          expireYear, // Send raw 2-digit year, edge function handles formatting
           cvc,
           buyerName,
           buyerSurname,

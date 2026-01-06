@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const IYZICO_API_KEY = Deno.env.get('IYZICO_API_KEY')!;
 const IYZICO_SECRET_KEY = Deno.env.get('IYZICO_SECRET_KEY')!;
-const IYZICO_BASE_URL = 'https://api.iyzipay.com';
+const IYZICO_BASE_URL = Deno.env.get('IYZICO_BASE_URL') || 'https://sandbox-api.iyzipay.com';
 
 // Generate iyzico authorization header
 function generateAuthorizationHeader(
@@ -143,10 +143,9 @@ serve(async (req) => {
       return redirectWithError(frontendUrl, 'Invalid callback');
     }
 
-    // SECURITY: Validate conversationId format (UUID pattern)
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidPattern.test(conversationId.replace('CB-', ''))) {
-      console.error('Invalid conversationId format');
+    // SECURITY: Validate conversationId format (should start with topup_ or be a valid pattern)
+    if (!conversationId.startsWith('topup_') && !conversationId.startsWith('CB-')) {
+      console.error('Invalid conversationId format:', conversationId);
       return redirectWithError(frontendUrl, 'Invalid request');
     }
 
