@@ -16,6 +16,7 @@ interface WalletTopUpDialogProps {
 }
 
 const FLAT_FEE_USD = 0.5; // $0.50 flat fee
+const TRY_MARKUP_PERCENT = 0.08; // 8% markup on TRY conversion for revenue
 type PaymentCurrency = 'USD' | 'TRY';
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
@@ -28,7 +29,8 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const [paymentCurrency, setPaymentCurrency] = useState<PaymentCurrency>('TRY'); // Default to TRY for Turkish cards
 
   const { exchangeRates } = useCurrency();
-  const tryRate = exchangeRates.USD_TRY || 38; // Fallback rate
+  const baseRate = exchangeRates.USD_TRY || 38; // Fallback rate
+  const tryRate = baseRate * (1 + TRY_MARKUP_PERCENT); // Apply 8% markup for revenue
 
   // Get subscription status for fee calculation
   const { isPro } = useSubscription(userId);

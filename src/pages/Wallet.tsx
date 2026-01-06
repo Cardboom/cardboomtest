@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
 import { WireTransferDialog } from '@/components/WireTransferDialog';
+import { PaymentSuccessDialog } from '@/components/PaymentSuccessDialog';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { toast } from 'sonner';
 
@@ -32,22 +33,29 @@ const WalletPage = () => {
   const [loading, setLoading] = useState(true);
   const [showCardTopUp, setShowCardTopUp] = useState(false);
   const [showWireTransfer, setShowWireTransfer] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successAmount, setSuccessAmount] = useState(0);
+  const [successPaymentId, setSuccessPaymentId] = useState<string | undefined>();
   const [user, setUser] = useState<any>(null);
 
   // Handle payment callback from iyzico
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     const amount = searchParams.get('amount');
+    const paymentId = searchParams.get('paymentId');
     const error = searchParams.get('error');
 
     if (paymentStatus === 'success' && amount) {
-      toast.success(`Successfully added ${formatPrice(Number(amount))} to your wallet!`);
+      // Show success dialog instead of just a toast
+      setSuccessAmount(Number(amount));
+      setSuccessPaymentId(paymentId || undefined);
+      setShowSuccessDialog(true);
       setSearchParams({});
     } else if (paymentStatus === 'failed') {
       toast.error(error || 'Payment failed. Please try again.');
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams, formatPrice]);
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -306,6 +314,18 @@ const WalletPage = () => {
       <WireTransferDialog
         open={showWireTransfer}
         onOpenChange={setShowWireTransfer}
+      />
+
+      <PaymentSuccessDialog
+        open={showSuccessDialog}
+        onOpenChange={(open) => {
+          setShowSuccessDialog(open);
+          if (!open && user) {
+            fetchWalletData(user.id);
+          }
+        }}
+        amount={successAmount}
+        paymentId={successPaymentId}
       />
     </div>
   );
