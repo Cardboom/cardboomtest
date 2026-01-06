@@ -289,6 +289,25 @@ serve(async (req) => {
       console.error('Failed to create transaction:', txError);
     }
 
+    // Award Cardboom Gems for top-up (0.2% base, 0.25% for Pro)
+    // Using the earn_cardboom_points function
+    try {
+      const { error: gemsError } = await supabase.rpc('earn_cardboom_points', {
+        p_user_id: pendingPayment.user_id,
+        p_transaction_amount: pendingPayment.amount,
+        p_source: 'top_up',
+        p_description: 'Gems earned from wallet top-up'
+      });
+      
+      if (gemsError) {
+        console.error('Failed to award gems:', gemsError);
+      } else {
+        console.log('Gems awarded for top-up');
+      }
+    } catch (gemErr) {
+      console.error('Error awarding gems:', gemErr);
+    }
+
     // Update pending payment as completed
     await supabase
       .from('pending_payments')
@@ -301,11 +320,11 @@ serve(async (req) => {
 
     console.log('Payment completed successfully!');
 
-    // Redirect to wallet page with success
+    // Redirect to wallet page with success confirmation
     return new Response(null, {
       status: 302,
       headers: {
-        'Location': `${frontendUrl}/wallet?payment=success&amount=${pendingPayment.amount}`
+        'Location': `${frontendUrl}/wallet?payment=success&amount=${pendingPayment.amount}&paymentId=${paymentId}`
       }
     });
 
