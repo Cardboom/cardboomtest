@@ -46,7 +46,7 @@ function generatePkiString(obj: Record<string, unknown>, prefix = ''): string {
   return result;
 }
 
-// Generate iyzico authorization header using SHA-1 hash (V1 format for production)
+// Generate iyzico authorization header using SHA-1 hash (V1 format)
 async function generateAuthorizationV1(
   apiKey: string,
   secretKey: string,
@@ -54,19 +54,26 @@ async function generateAuthorizationV1(
   requestBody: Record<string, unknown>
 ): Promise<string> {
   const pkiString = generatePkiString(requestBody);
-  const hashString = apiKey + randomString + secretKey + pkiString;
+  
+  // Log PKI string for debugging (first 200 chars)
+  console.log('[iyzico-init-3ds] PKI String (first 200 chars):', pkiString.substring(0, 200));
+  
+  // Hash: apiKey + randomString + secretKey + pkiString
+  const hashInput = apiKey + randomString + secretKey + pkiString;
   
   const encoder = new TextEncoder();
-  const data = encoder.encode(hashString);
+  const data = encoder.encode(hashInput);
   const hashBuffer = await crypto.subtle.digest('SHA-1', data);
   const hashArray = new Uint8Array(hashBuffer);
   
-  // Convert to base64 directly from bytes (not hex)
+  // Convert SHA-1 hash bytes directly to base64
   const base64Hash = btoa(String.fromCharCode(...hashArray));
   
-  // Format: IYZWS apiKey:randomString:base64Hash
+  // iyzico V1 format: IYZWS base64(apiKey:randomString:base64Hash)
   const authString = `${apiKey}:${randomString}:${base64Hash}`;
   const authBase64 = btoa(authString);
+  
+  console.log('[iyzico-init-3ds] Auth header format: IYZWS base64(apiKey:rnd:hash)');
   
   return `IYZWS ${authBase64}`;
 }
