@@ -19,28 +19,30 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
   useEffect(() => {
     if (!frontUrl) return;
     
-    const img = new window.Image();
-    img.crossOrigin = 'anonymous';
+    let disposed = false;
+    const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
     
-    img.onload = () => {
-      const tex = new THREE.Texture(img);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-      tex.minFilter = THREE.LinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.needsUpdate = true;
-      setFrontTexture(tex);
-    };
-    
-    img.onerror = () => {
-      console.error('Front texture load failed:', frontUrl);
-    };
-    
-    img.src = frontUrl;
+    loader.load(
+      frontUrl,
+      (tex) => {
+        if (disposed) {
+          tex.dispose();
+          return;
+        }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.flipY = true;
+        tex.needsUpdate = true;
+        setFrontTexture(tex);
+      },
+      undefined,
+      (err) => {
+        console.error('Front texture load failed:', frontUrl, err);
+      }
+    );
     
     return () => {
-      img.onload = null;
-      img.onerror = null;
+      disposed = true;
     };
   }, [frontUrl]);
 
@@ -48,28 +50,30 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
   useEffect(() => {
     if (!backUrl) return;
     
-    const img = new window.Image();
-    img.crossOrigin = 'anonymous';
+    let disposed = false;
+    const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
     
-    img.onload = () => {
-      const tex = new THREE.Texture(img);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-      tex.minFilter = THREE.LinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.needsUpdate = true;
-      setBackTexture(tex);
-    };
-    
-    img.onerror = () => {
-      console.error('Back texture load failed:', backUrl);
-    };
-    
-    img.src = backUrl;
+    loader.load(
+      backUrl,
+      (tex) => {
+        if (disposed) {
+          tex.dispose();
+          return;
+        }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.flipY = true;
+        tex.needsUpdate = true;
+        setBackTexture(tex);
+      },
+      undefined,
+      (err) => {
+        console.error('Back texture load failed:', backUrl, err);
+      }
+    );
     
     return () => {
-      img.onload = null;
-      img.onerror = null;
+      disposed = true;
     };
   }, [backUrl]);
 
@@ -82,28 +86,34 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
   const height = 3.5;
   const depth = 0.03;
 
+  // Use a simple box geometry with materials array
   return (
     <mesh ref={meshRef}>
-      <RoundedBox args={[width, height, depth]} radius={0.08} smoothness={4}>
-        <meshStandardMaterial attach="material-0" color="#1a1a2e" />
-        <meshStandardMaterial attach="material-1" color="#1a1a2e" />
-        <meshStandardMaterial attach="material-2" color="#1a1a2e" />
-        <meshStandardMaterial attach="material-3" color="#1a1a2e" />
-        <meshStandardMaterial 
-          attach="material-4" 
-          map={frontTexture}
-          color={frontTexture ? "#ffffff" : "#2a2a4e"}
-          roughness={0.3}
-          metalness={0.1}
-        />
-        <meshStandardMaterial 
-          attach="material-5" 
-          map={backTexture}
-          color={backTexture ? "#ffffff" : "#2a2a4e"}
-          roughness={0.3}
-          metalness={0.1}
-        />
-      </RoundedBox>
+      <boxGeometry args={[width, height, depth]} />
+      {/* Right face */}
+      <meshStandardMaterial attach="material-0" color="#1a1a2e" />
+      {/* Left face */}
+      <meshStandardMaterial attach="material-1" color="#1a1a2e" />
+      {/* Top face */}
+      <meshStandardMaterial attach="material-2" color="#1a1a2e" />
+      {/* Bottom face */}
+      <meshStandardMaterial attach="material-3" color="#1a1a2e" />
+      {/* Front face (card front) */}
+      <meshStandardMaterial 
+        attach="material-4" 
+        map={frontTexture}
+        color="#ffffff"
+        roughness={0.3}
+        metalness={0.1}
+      />
+      {/* Back face (card back) */}
+      <meshStandardMaterial 
+        attach="material-5" 
+        map={backTexture}
+        color="#ffffff"
+        roughness={0.3}
+        metalness={0.1}
+      />
     </mesh>
   );
 }
