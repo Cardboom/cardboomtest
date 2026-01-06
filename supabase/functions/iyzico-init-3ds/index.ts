@@ -83,7 +83,9 @@ serve(async (req) => {
     }
 
     const { 
-      amount, 
+      amountUSD, // Amount in USD for wallet credit
+      paymentCurrency = 'TRY', // Currency to charge the card in (TRY or USD)
+      tryRate = 38, // Exchange rate if paying in TRY
       cardHolderName, 
       cardNumber, 
       expireMonth, 
@@ -101,27 +103,40 @@ serve(async (req) => {
     } = await req.json();
 
     // Validate amount
-    if (typeof amount !== 'number' || isNaN(amount) || amount < 10 || amount > 10000) {
+    if (typeof amountUSD !== 'number' || isNaN(amountUSD) || amountUSD < 10 || amountUSD > 10000) {
       throw new Error('Invalid amount. Must be between $10 and $10,000');
     }
 
     const feePercent = 0.065;
     const flatFee = 0.50;
-    const fee = (amount * feePercent) + flatFee;
-    const total = amount + fee;
+    const feeUSD = (amountUSD * feePercent) + flatFee;
+    const totalUSD = amountUSD + feeUSD;
+    
+    // Calculate payment amount based on currency
+    const paymentAmount = paymentCurrency === 'TRY' ? totalUSD * tryRate : totalUSD;
+    const currency = paymentCurrency === 'TRY' ? 'TRY' : 'USD';
+    
     const conversationId = `topup_${user.id.substring(0, 8)}_${Date.now()}`;
     const basketId = `basket_${Date.now()}`;
 
-    console.log('[iyzico-init-3ds] Processing payment:', { amount, fee, total, userId: user.id });
+    console.log('[iyzico-init-3ds] Processing payment:', { 
+      amountUSD, 
+      feeUSD, 
+      totalUSD, 
+      paymentCurrency: currency,
+      paymentAmount,
+      tryRate,
+      userId: user.id 
+    });
     console.log('[iyzico-init-3ds] Using base URL:', IYZICO_BASE_URL);
 
     const { error: insertError } = await supabase
       .from('pending_payments')
       .insert({
         user_id: user.id,
-        amount,
-        fee,
-        total,
+        amount: amountUSD, // Store in USD
+        fee: feeUSD,
+        total: totalUSD,
         conversation_id: conversationId,
         status: 'pending'
       });
@@ -140,18 +155,18 @@ serve(async (req) => {
       return parseFloat(fixed).toString();
     };
     
-    // Build request object
+    // Build request object with correct currency
     const iyzicoRequest = {
       locale: 'en',
       conversationId: conversationId,
-      price: formatPrice(total),
-      paidPrice: formatPrice(total),
+      price: formatPrice(paymentAmount),
+      paidPrice: formatPrice(paymentAmount),
       installment: 1,
       paymentChannel: 'WEB',
       basketId: basketId,
       paymentGroup: 'PRODUCT',
       callbackUrl: callbackUrl,
-      currency: 'USD',
+      currency: currency, // TRY for Turkish cards, USD for international
       paymentCard: {
         cardHolderName: cardHolderName,
         cardNumber: cardNumber.replace(/\s/g, ''),
@@ -192,7 +207,7 @@ serve(async (req) => {
       basketItems: [
         {
           id: 'wallet_topup',
-          price: formatPrice(total),
+          price: formatPrice(paymentAmount),
           name: 'Wallet Top-up',
           category1: 'Digital',
           category2: 'Wallet',
@@ -202,7 +217,8 @@ serve(async (req) => {
     };
 
     console.log('[iyzico-init-3ds] Callback URL:', callbackUrl);
-    console.log('[iyzico-init-3ds] Formatted price:', formatPrice(total));
+    console.log('[iyzico-init-3ds] Currency:', currency);
+    console.log('[iyzico-init-3ds] Payment amount:', formatPrice(paymentAmount));
 
     const randomKey = Date.now().toString() + Math.random().toString(36).substring(2, 15);
     const uriPath = '/payment/3dsecure/initialize';
