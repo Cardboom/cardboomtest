@@ -193,26 +193,50 @@ const Profile = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch featured card data
+  // Fetch featured card data - check both portfolio_items and listings
   const { data: featuredCard } = useQuery({
     queryKey: ['featured-card', profile?.featured_card_id],
     queryFn: async () => {
       if (!profile?.featured_card_id) return null;
-      const { data, error } = await supabase
+      
+      // Try portfolio_items first
+      const { data: portfolioData } = await supabase
         .from('portfolio_items')
         .select('id, custom_name, grade, image_url, market_items(id, name, image_url, current_price, category)')
         .eq('id', profile.featured_card_id)
-        .single();
-      if (error) return null;
-      const marketItem = data.market_items as any;
-      return {
-        id: data.id,
-        name: data.custom_name || marketItem?.name || 'Unknown Card',
-        image_url: data.image_url || marketItem?.image_url || '/placeholder.svg',
-        grade: data.grade,
-        current_price: marketItem?.current_price,
-        category: marketItem?.category,
-      };
+        .maybeSingle();
+      
+      if (portfolioData) {
+        const marketItem = portfolioData.market_items as any;
+        return {
+          id: portfolioData.id,
+          name: portfolioData.custom_name || marketItem?.name || 'Unknown Card',
+          image_url: portfolioData.image_url || marketItem?.image_url || '/placeholder.svg',
+          grade: portfolioData.grade,
+          current_price: marketItem?.current_price,
+          category: marketItem?.category,
+        };
+      }
+      
+      // Try listings if not found in portfolio
+      const { data: listingData } = await supabase
+        .from('listings')
+        .select('id, title, image_url, price, category')
+        .eq('id', profile.featured_card_id)
+        .maybeSingle();
+      
+      if (listingData) {
+        return {
+          id: listingData.id,
+          name: listingData.title || 'Unknown Card',
+          image_url: listingData.image_url || '/placeholder.svg',
+          grade: null,
+          current_price: listingData.price,
+          category: listingData.category,
+        };
+      }
+      
+      return null;
     },
     enabled: !!profile?.featured_card_id,
   });
