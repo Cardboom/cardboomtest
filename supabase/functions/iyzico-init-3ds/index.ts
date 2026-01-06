@@ -12,73 +12,52 @@ const IYZICO_SECRET_KEY = (Deno.env.get('IYZICO_SECRET_KEY') || '').trim();
 // Remove trailing slash from base URL if present
 const IYZICO_BASE_URL = (Deno.env.get('IYZICO_BASE_URL') || 'https://api.iyzipay.com').replace(/\/$/, '').trim();
 
-// Generate PKI string from object (iyzico specific format)
-// Keys must be in the EXACT order iyzico expects, not alphabetical
-function generatePkiString(obj: Record<string, unknown>): string {
-  let result = '[';
-  
-  const entries = Object.entries(obj);
-  for (let i = 0; i < entries.length; i++) {
-    const [key, value] = entries[i];
-    if (value === null || value === undefined) continue;
-    
-    if (Array.isArray(value)) {
-      result += `${key}=[`;
-      for (let j = 0; j < value.length; j++) {
-        const item = value[j];
-        if (typeof item === 'object' && item !== null) {
-          result += generatePkiString(item as Record<string, unknown>);
-        } else {
-          result += String(item);
-        }
-        if (j < value.length - 1) {
-          result += ', ';
-        }
-      }
-      result += ']';
-    } else if (typeof value === 'object') {
-      result += `${key}=${generatePkiString(value as Record<string, unknown>)}`;
-    } else {
-      result += `${key}=${value}`;
-    }
-    
-    if (i < entries.length - 1) {
-      result += ',';
-    }
-  }
-  
-  result += ']';
-  return result;
-}
-
-// Generate iyzico authorization header using SHA1 (V1 format)
-// IMPORTANT: iyzico requires exact format - apiKey + randomString + secretKey + pkiString
-// The random key header must be "x-iyzi-rnd" with the exact same random string
-async function generateAuthorizationV1(
+// Generate iyzico authorization header using HMAC-SHA256 (V2 format - recommended for production)
+// Formula: HMACSHA256(randomKey + uriPath + requestBody, secretKey)
+// Header: IYZWSv2 base64("apiKey:" + apiKey + "&randomKey:" + randomKey + "&signature:" + signature)
+async function generateAuthorizationV2(
   apiKey: string,
   secretKey: string,
-  randomString: string,
-  pkiString: string
+  randomKey: string,
+  uriPath: string,
+  requestBody: string
 ): Promise<string> {
   const encoder = new TextEncoder();
   
-  // Exact order: apiKey + randomString + secretKey + pkiString
-  const hashInput = apiKey + randomString + secretKey + pkiString;
+  // HMAC-SHA256: sign(randomKey + uriPath + requestBody, secretKey)
+  const dataToSign = randomKey + uriPath + requestBody;
   
-  console.log('[iyzico-init-3ds] Hash input length:', hashInput.length);
-  console.log('[iyzico-init-3ds] API Key used:', apiKey);
-  console.log('[iyzico-init-3ds] Secret Key length:', secretKey?.length);
+  console.log('[iyzico-init-3ds] V2 Auth - Data to sign length:', dataToSign.length);
+  console.log('[iyzico-init-3ds] V2 Auth - URI Path:', uriPath);
+  console.log('[iyzico-init-3ds] V2 Auth - Random Key:', randomKey);
   
-  const hashBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(hashInput));
-  const hashArray = new Uint8Array(hashBuffer);
-  const hashBase64 = btoa(String.fromCharCode.apply(null, [...hashArray]));
+  // Import the secret key for HMAC
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secretKey),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
   
-  console.log('[iyzico-init-3ds] Using V1 SHA1 auth format');
-  console.log('[iyzico-init-3ds] PKI string length:', pkiString.length);
-  console.log('[iyzico-init-3ds] SHA1 hash (base64):', hashBase64);
+  // Create HMAC signature
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(dataToSign));
+  const signatureArray = new Uint8Array(signatureBuffer);
   
-  // Format: "IYZWS apiKey:base64Hash"
-  return `IYZWS ${apiKey}:${hashBase64}`;
+  // Convert to hex string
+  const signatureHex = Array.from(signatureArray)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  console.log('[iyzico-init-3ds] V2 Auth - Signature (hex):', signatureHex.substring(0, 32) + '...');
+  
+  // Build the authorization string
+  const authString = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signatureHex}`;
+  const authBase64 = btoa(authString);
+  
+  console.log('[iyzico-init-3ds] Using V2 HMAC-SHA256 auth format');
+  
+  return `IYZWSv2 ${authBase64}`;
 }
 
 serve(async (req) => {
@@ -154,13 +133,19 @@ serve(async (req) => {
 
     const callbackUrl = `${supabaseUrl}/functions/v1/iyzico-callback`;
     
-    // Build request object with fields in the EXACT order iyzico expects
-    // The order matters for PKI string generation!
+    // Format price - remove trailing zeros as per iyzico documentation
+    const formatPrice = (price: number): string => {
+      const fixed = price.toFixed(2);
+      // Remove trailing zeros: 10.00 -> 10, 10.50 -> 10.5
+      return parseFloat(fixed).toString();
+    };
+    
+    // Build request object
     const iyzicoRequest = {
       locale: 'en',
       conversationId: conversationId,
-      price: total.toFixed(2),
-      paidPrice: total.toFixed(2),
+      price: formatPrice(total),
+      paidPrice: formatPrice(total),
       installment: 1,
       paymentChannel: 'WEB',
       basketId: basketId,
@@ -207,7 +192,7 @@ serve(async (req) => {
       basketItems: [
         {
           id: 'wallet_topup',
-          price: total.toFixed(2),
+          price: formatPrice(total),
           name: 'Wallet Top-up',
           category1: 'Digital',
           category2: 'Wallet',
@@ -217,24 +202,33 @@ serve(async (req) => {
     };
 
     console.log('[iyzico-init-3ds] Callback URL:', callbackUrl);
+    console.log('[iyzico-init-3ds] Formatted price:', formatPrice(total));
 
-    const randomString = Date.now().toString();
-    const pkiString = generatePkiString(iyzicoRequest);
-    const authorization = await generateAuthorizationV1(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, pkiString);
+    const randomKey = Date.now().toString() + Math.random().toString(36).substring(2, 15);
+    const uriPath = '/payment/3dsecure/initialize';
+    const requestBody = JSON.stringify(iyzicoRequest);
     
-    console.log('[iyzico-init-3ds] Random string:', randomString);
+    const authorization = await generateAuthorizationV2(
+      IYZICO_API_KEY, 
+      IYZICO_SECRET_KEY, 
+      randomKey, 
+      uriPath, 
+      requestBody
+    );
+    
+    console.log('[iyzico-init-3ds] Random key:', randomKey);
     console.log('[iyzico-init-3ds] API Key (first 10):', IYZICO_API_KEY?.substring(0, 10) + '...');
-    console.log('[iyzico-init-3ds] Secret Key configured:', !!IYZICO_SECRET_KEY);
+    console.log('[iyzico-init-3ds] Secret Key length:', IYZICO_SECRET_KEY?.length);
 
-    const response = await fetch(`${IYZICO_BASE_URL}/payment/3dsecure/initialize`, {
+    const response = await fetch(`${IYZICO_BASE_URL}${uriPath}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authorization,
-        'x-iyzi-rnd': randomString,
+        'x-iyzi-rnd': randomKey,
         'Accept': 'application/json'
       },
-      body: JSON.stringify(iyzicoRequest)
+      body: requestBody
     });
 
     const data = await response.json();
