@@ -8,7 +8,7 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileShowcase } from '@/components/profile/ProfileShowcase';
 import { ProfileCollectionStats } from '@/components/profile/ProfileCollectionStats';
-import { Featured3DCard } from '@/components/profile/Featured3DCard';
+import { FeaturedCardPreview } from '@/components/profile/FeaturedCardPreview';
 import { FeaturedCardSelector } from '@/components/profile/FeaturedCardSelector';
 import { useProfile } from '@/hooks/useProfile';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -140,32 +140,52 @@ const Profile = () => {
   });
 
   // Fetch user's portfolio items and stats
-  const { data: portfolioData } = useQuery({
+  const { data: portfolioData, refetch: refetchPortfolio } = useQuery({
     queryKey: ['user-portfolio-full', profile?.id],
     queryFn: async () => {
       if (!profile?.id) return { items: [], stats: { totalItems: 0, totalValue: 0, totalCost: 0, pnl: 0, pnlPercent: 0 } };
-      const { data, error } = await supabase
+      
+      // Fetch portfolio items
+      const { data: portfolioItems, error: portfolioError } = await supabase
         .from('portfolio_items')
         .select('*, market_item:market_items(*)')
         .eq('user_id', profile.id)
         .order('created_at', { ascending: false });
-      if (error) throw error;
+      if (portfolioError) throw portfolioError;
       
-      const items = data || [];
-      const totalValue = items.reduce((sum, item) => {
+      // Also fetch card instances for complete count
+      const { data: cardInstancesData, error: instancesError } = await supabase
+        .from('card_instances')
+        .select('id, current_value, acquisition_price')
+        .eq('owner_user_id', profile.id)
+        .eq('is_active', true);
+      if (instancesError) throw instancesError;
+      
+      const items = portfolioItems || [];
+      const instances = cardInstancesData || [];
+      
+      // Calculate totals from portfolio items
+      const portfolioValue = items.reduce((sum, item) => {
         const price = item.market_item?.current_price || item.purchase_price || 0;
         return sum + (price * (item.quantity || 1));
       }, 0);
-      const totalCost = items.reduce((sum, item) => {
+      const portfolioCost = items.reduce((sum, item) => {
         return sum + ((item.purchase_price || 0) * (item.quantity || 1));
       }, 0);
+      
+      // Add card instances values
+      const instancesValue = instances.reduce((sum, inst) => sum + (inst.current_value || 0), 0);
+      const instancesCost = instances.reduce((sum, inst) => sum + (inst.acquisition_price || 0), 0);
+      
+      const totalValue = portfolioValue + instancesValue;
+      const totalCost = portfolioCost + instancesCost;
       const pnl = totalValue - totalCost;
       const pnlPercent = totalCost > 0 ? ((pnl / totalCost) * 100) : 0;
       
       return {
         items,
         stats: {
-          totalItems: items.length,
+          totalItems: items.length + instances.length,
           totalValue,
           totalCost,
           pnl,
@@ -174,6 +194,7 @@ const Profile = () => {
       };
     },
     enabled: !!profile?.id,
+    refetchOnWindowFocus: true,
   });
 
   // Fetch user's card instances (graded cards and inventory)
@@ -327,7 +348,7 @@ const Profile = () => {
         {/* Featured Card + Showcase Grid */}
         <div className="grid md:grid-cols-3 gap-6">
           <div className="md:col-span-1">
-            <Featured3DCard
+            <FeaturedCardPreview
               card={featuredCard || null}
               isOwnProfile={isOwnProfile}
               onSelectCard={() => setFeaturedSelectorOpen(true)}

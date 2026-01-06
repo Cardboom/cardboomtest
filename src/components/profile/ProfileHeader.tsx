@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload, Crown, Gem, Building2 } from 'lucide-react';
+import { Edit2, Camera, Save, X, Shield, ShieldCheck, Upload, Crown, Gem, Building2, Clock } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +40,7 @@ interface ProfileHeaderProps {
     custom_guru?: string | null;
     show_collection_count?: boolean;
     show_portfolio_value?: boolean;
+    last_login_at?: string | null;
   };
   backgrounds: any[];
   unlockedBackgrounds: string[];
@@ -214,6 +216,12 @@ export const ProfileHeader = ({
                   <p className="text-sm text-muted-foreground">
                     {t.profile.memberSince} {memberSince}
                   </p>
+                  {profile.last_login_at && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      Last online {formatDistanceToNow(new Date(profile.last_login_at), { addSuffix: true })}
+                    </p>
+                  )}
                   <Badge variant="outline" className="gap-1">
                     {t.profile.level}: {profile.level}
                   </Badge>
@@ -240,7 +248,7 @@ export const ProfileHeader = ({
                     ))}
                     {profile.custom_guru && (
                       <Badge variant="secondary" className="bg-purple-500/20 text-purple-400">
-                        {profile.custom_guru}
+                        {profile.custom_guru === 'gaming_coach' ? 'Gaming Coach' : profile.custom_guru}
                       </Badge>
                     )}
                   </div>

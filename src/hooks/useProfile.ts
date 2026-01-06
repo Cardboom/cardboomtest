@@ -36,6 +36,7 @@ interface Profile {
   featured_card_id: string | null;
   profile_color_primary: string | null;
   profile_color_secondary: string | null;
+  last_login_at: string | null;
 }
 
 export const useProfile = (userId?: string) => {
@@ -85,6 +86,7 @@ export const useProfile = (userId?: string) => {
         featured_card_id: profileData.featured_card_id,
         profile_color_primary: profileData.profile_color_primary,
         profile_color_secondary: profileData.profile_color_secondary,
+        last_login_at: profileData.last_login_at,
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
