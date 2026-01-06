@@ -52,34 +52,33 @@ function generatePkiString(obj: Record<string, unknown>): string {
 }
 
 // Generate iyzico authorization header using SHA-256 hash (V2 format)
+// Format: IYZWSv2 base64(apiKey:secretKey:sha256HashBase64)
 async function generateAuthorizationV2(
   apiKey: string,
   secretKey: string,
   randomString: string,
   requestBody: string
 ): Promise<string> {
-  // V2 format uses: SHA256(randomString + requestBody)
-  const hashInput = randomString + requestBody;
-  
   const encoder = new TextEncoder();
-  const data = encoder.encode(hashInput);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = new Uint8Array(hashBuffer);
   
-  // Convert to hex string
-  const hashHex = Array.from(hashArray).map(b => b.toString(16).padStart(2, '0')).join('');
+  // Step 1: SHA256(randomString + requestBody)
+  const hashInput = randomString + requestBody;
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(hashInput));
+  const hashBase64 = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
   
-  // Create signature: sha256(secretKey + hashHex)
-  const signatureInput = secretKey + hashHex;
-  const signatureData = encoder.encode(signatureInput);
-  const signatureBuffer = await crypto.subtle.digest('SHA-256', signatureData);
-  const signatureArray = new Uint8Array(signatureBuffer);
-  const signatureHex = Array.from(signatureArray).map(b => b.toString(16).padStart(2, '0')).join('');
+  // Step 2: SHA256(secretKey + hashBase64)
+  const signatureInput = secretKey + hashBase64;
+  const signatureBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(signatureInput));
+  const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
   
-  // V2 header format: IYZWSv2 apiKey:signatureHex
-  console.log('[iyzico-init-3ds] Using V2 auth format');
+  // Step 3: Create authorization string and base64 encode it
+  const authString = `${apiKey}:${randomString}:${signatureBase64}`;
+  const authBase64 = btoa(authString);
   
-  return `IYZWSv2 ${apiKey}:${signatureHex}`;
+  console.log('[iyzico-init-3ds] Using V2 auth format with base64 encoding');
+  console.log('[iyzico-init-3ds] Random:', randomString);
+  
+  return `IYZWSv2 ${authBase64}`;
 }
 
 serve(async (req) => {
