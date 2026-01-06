@@ -69,6 +69,8 @@ const SellPage = () => {
     imageUrl: string | null;
   } | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [selectedListings, setSelectedListings] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState('create');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [createdListing, setCreatedListing] = useState<{
@@ -374,10 +376,58 @@ const SellPage = () => {
 
       if (error) throw error;
       toast.success('Listing deleted');
+      setSelectedListings(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
       fetchListings();
     } catch (error) {
       console.error('Error deleting listing:', error);
       toast.error('Failed to delete listing');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedListings.size === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedListings.size} listing(s)?`)) return;
+
+    setBulkDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .delete()
+        .in('id', Array.from(selectedListings));
+
+      if (error) throw error;
+      toast.success(`${selectedListings.size} listing(s) deleted`);
+      setSelectedListings(new Set());
+      fetchListings();
+    } catch (error) {
+      console.error('Error bulk deleting listings:', error);
+      toast.error('Failed to delete listings');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const toggleSelectListing = (id: string) => {
+    setSelectedListings(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedListings.size === listings.length) {
+      setSelectedListings(new Set());
+    } else {
+      setSelectedListings(new Set(listings.map(l => l.id)));
     }
   };
 
@@ -1043,8 +1093,37 @@ const SellPage = () => {
             <TabsContent value="listings">
               {/* Bulk Import Header */}
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Your Listings</h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="text-lg font-semibold">Your Listings</h3>
+                  {listings.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="select-all"
+                        checked={selectedListings.size === listings.length && listings.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                      <Label htmlFor="select-all" className="text-sm text-muted-foreground cursor-pointer">
+                        Select All ({selectedListings.size}/{listings.length})
+                      </Label>
+                    </div>
+                  )}
+                </div>
                 <div className="flex gap-2">
+                  {selectedListings.size > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={handleBulkDelete}
+                      disabled={bulkDeleting}
+                    >
+                      {bulkDeleting ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4 mr-2" />
+                      )}
+                      Delete {selectedListings.size} Selected
+                    </Button>
+                  )}
                   <BulkImageImportDialog onImportComplete={fetchListings} />
                   <BulkImportDialog onImportComplete={fetchListings} />
                 </div>
@@ -1071,86 +1150,93 @@ const SellPage = () => {
               ) : (
                 <div className="space-y-4">
                   {listings.map((listing) => (
-                    <Card key={listing.id}>
+                    <Card key={listing.id} className={selectedListings.has(listing.id) ? 'ring-2 ring-primary' : ''}>
                       <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-foreground">{listing.title}</h3>
-                              {getStatusBadge(listing.status)}
+                        <div className="flex items-start gap-3">
+                          <Checkbox
+                            checked={selectedListings.has(listing.id)}
+                            onCheckedChange={() => toggleSelectListing(listing.id)}
+                            className="mt-1"
+                          />
+                          <div className="flex items-start justify-between flex-1">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-foreground">{listing.title}</h3>
+                                {getStatusBadge(listing.status)}
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                                <span>{listing.category.toUpperCase()}</span>
+                                <span>•</span>
+                                <span>{listing.condition}</span>
+                                <span>•</span>
+                                <span>{new Date(listing.created_at).toLocaleDateString()}</span>
+                              </div>
+                              <p className="text-lg font-bold text-foreground">
+                                {formatCurrency(Number(listing.price))}
+                              </p>
+                              <div className="flex items-center gap-2 mt-2">
+                                {listing.allows_vault && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <Vault className="h-3 w-3 mr-1" /> Vault
+                                  </Badge>
+                                )}
+                                {listing.allows_trade && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <ArrowLeftRight className="h-3 w-3 mr-1" /> Trade
+                                  </Badge>
+                                )}
+                                {listing.allows_shipping && (
+                                  <Badge variant="outline" className="text-xs">
+                                    <Truck className="h-3 w-3 mr-1" /> Ship
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                              <span>{listing.category.toUpperCase()}</span>
-                              <span>•</span>
-                              <span>{listing.condition}</span>
-                              <span>•</span>
-                              <span>{new Date(listing.created_at).toLocaleDateString()}</span>
-                            </div>
-                            <p className="text-lg font-bold text-foreground">
-                              {formatCurrency(Number(listing.price))}
-                            </p>
-                            <div className="flex items-center gap-2 mt-2">
-                              {listing.allows_vault && (
-                                <Badge variant="outline" className="text-xs">
-                                  <Vault className="h-3 w-3 mr-1" /> Vault
-                                </Badge>
-                              )}
-                              {listing.allows_trade && (
-                                <Badge variant="outline" className="text-xs">
-                                  <ArrowLeftRight className="h-3 w-3 mr-1" /> Trade
-                                </Badge>
-                              )}
-                              {listing.allows_shipping && (
-                                <Badge variant="outline" className="text-xs">
-                                  <Truck className="h-3 w-3 mr-1" /> Ship
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                          {listing.image_url && (
-                            <img 
-                              src={listing.image_url} 
-                              alt={listing.title}
-                              className="w-16 h-16 object-cover rounded-lg mr-4 flex-shrink-0"
-                            />
-                          )}
-                          {!listing.image_url && (
-                            <div className="w-16 h-16 bg-secondary rounded-lg mr-4 flex-shrink-0 flex items-center justify-center">
-                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                            {listing.status === 'active' && (
-                              <CreateCollectiveDialog
-                                listingId={listing.id}
-                                itemName={listing.title}
-                                totalValue={Number(listing.price)}
-                                imageUrl={listing.image_url || undefined}
+                            {listing.image_url && (
+                              <img 
+                                src={listing.image_url} 
+                                alt={listing.title}
+                                className="w-16 h-16 object-cover rounded-lg mr-4 flex-shrink-0"
                               />
                             )}
-                            <div className="flex items-center gap-2">
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleViewListing(listing.id)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon"
-                                onClick={() => handleViewListing(listing.id)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="text-destructive"
-                                onClick={() => handleDelete(listing.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                            {!listing.image_url && (
+                              <div className="w-16 h-16 bg-secondary rounded-lg mr-4 flex-shrink-0 flex items-center justify-center">
+                                <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                              {listing.status === 'active' && (
+                                <CreateCollectiveDialog
+                                  listingId={listing.id}
+                                  itemName={listing.title}
+                                  totalValue={Number(listing.price)}
+                                  imageUrl={listing.image_url || undefined}
+                                />
+                              )}
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleViewListing(listing.id)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  onClick={() => handleViewListing(listing.id)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="text-destructive"
+                                  onClick={() => handleDelete(listing.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
