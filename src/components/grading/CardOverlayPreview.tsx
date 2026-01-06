@@ -9,55 +9,69 @@ interface CardOverlayPreviewProps {
   order: GradingOrder;
 }
 
-// Helper to load texture via Image element (handles CORS properly)
-function useImageTexture(url: string): THREE.Texture | null {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+// Card mesh component with inline texture loading for proper CORS handling
+function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const [frontTexture, setFrontTexture] = useState<THREE.Texture | null>(null);
+  const [backTexture, setBackTexture] = useState<THREE.Texture | null>(null);
 
+  // Load front texture
   useEffect(() => {
-    if (!url) {
-      setTexture(null);
-      return;
-    }
-
-    let cancelled = false;
-    let loadedTexture: THREE.Texture | null = null;
-
+    if (!frontUrl) return;
+    
     const img = new window.Image();
     img.crossOrigin = 'anonymous';
     
     img.onload = () => {
-      if (cancelled) return;
       const tex = new THREE.Texture(img);
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
       tex.minFilter = THREE.LinearFilter;
       tex.magFilter = THREE.LinearFilter;
       tex.needsUpdate = true;
-      loadedTexture = tex;
-      setTexture(tex);
+      setFrontTexture(tex);
     };
     
     img.onerror = () => {
-      console.error('CardOverlayPreview texture load error:', url);
-      if (!cancelled) setTexture(null);
+      console.error('Front texture load failed:', frontUrl);
     };
     
-    img.src = url;
-
+    img.src = frontUrl;
+    
     return () => {
-      cancelled = true;
-      loadedTexture?.dispose();
+      img.onload = null;
+      img.onerror = null;
     };
-  }, [url]);
+  }, [frontUrl]);
 
-  return texture;
-}
-
-// Card mesh component with texture loading
-function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const frontTexture = useImageTexture(frontUrl);
-  const backTexture = useImageTexture(backUrl);
+  // Load back texture
+  useEffect(() => {
+    if (!backUrl) return;
+    
+    const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      const tex = new THREE.Texture(img);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.needsUpdate = true;
+      setBackTexture(tex);
+    };
+    
+    img.onerror = () => {
+      console.error('Back texture load failed:', backUrl);
+    };
+    
+    img.src = backUrl;
+    
+    return () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+  }, [backUrl]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
