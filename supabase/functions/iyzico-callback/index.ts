@@ -6,32 +6,47 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const IYZICO_API_KEY = Deno.env.get('IYZICO_API_KEY')!;
-const IYZICO_SECRET_KEY = Deno.env.get('IYZICO_SECRET_KEY')!;
-const IYZICO_BASE_URL = Deno.env.get('IYZICO_BASE_URL') || 'https://sandbox-api.iyzipay.com';
+// Trim any whitespace from secrets
+const IYZICO_API_KEY = (Deno.env.get('IYZICO_API_KEY') || '').trim();
+const IYZICO_SECRET_KEY = (Deno.env.get('IYZICO_SECRET_KEY') || '').trim();
+const IYZICO_BASE_URL = (Deno.env.get('IYZICO_BASE_URL') || 'https://api.iyzipay.com').replace(/\/$/, '').trim();
 
-// Generate iyzico authorization header
-function generateAuthorizationHeader(
+// Generate iyzico authorization header using HMAC-SHA256 (V2 format)
+async function generateAuthorizationV2(
   apiKey: string,
   secretKey: string,
-  randomString: string,
-  request: string
-): string {
+  randomKey: string,
+  uriPath: string,
+  requestBody: string
+): Promise<string> {
   const encoder = new TextEncoder();
-  const hashInput = randomString + request;
   
-  let hash = 0;
-  const data = encoder.encode(hashInput);
-  for (let i = 0; i < data.length; i++) {
-    hash = ((hash << 5) - hash) + data[i];
-    hash = hash & hash;
-  }
+  // HMAC-SHA256: sign(randomKey + uriPath + requestBody, secretKey)
+  const dataToSign = randomKey + uriPath + requestBody;
   
-  const hashString = Math.abs(hash).toString(16);
-  const authString = apiKey + randomString + secretKey + hashString;
+  // Import the secret key for HMAC
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secretKey),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
   
-  const base64 = btoa(authString);
-  return `IYZWS ${apiKey}:${base64}`;
+  // Create HMAC signature
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(dataToSign));
+  const signatureArray = new Uint8Array(signatureBuffer);
+  
+  // Convert to hex string
+  const signatureHex = Array.from(signatureArray)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  // Build the authorization string
+  const authString = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signatureHex}`;
+  const authBase64 = btoa(authString);
+  
+  return `IYZWSv2 ${authBase64}`;
 }
 
 // HMAC-SHA1 signature verification for iyzico callbacks
@@ -79,7 +94,7 @@ async function verifyIyzicoSignature(
   return result === 0;
 }
 
-// Alternative: Verify payment by calling iyzico API directly
+// Verify payment by calling iyzico API directly
 async function verifyPaymentWithIyzico(
   paymentId: string,
   conversationId: string
@@ -90,21 +105,26 @@ async function verifyPaymentWithIyzico(
     paymentId
   };
 
-  const randomString = Date.now().toString();
+  const randomKey = Date.now().toString() + Math.random().toString(36).substring(2, 15);
+  const uriPath = '/payment/detail';
   const requestBody = JSON.stringify(retrieveRequest);
 
   try {
-    const response = await fetch(`${IYZICO_BASE_URL}/payment/detail`, {
+    const authorization = await generateAuthorizationV2(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomKey, uriPath, requestBody);
+    
+    const response = await fetch(`${IYZICO_BASE_URL}${uriPath}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': generateAuthorizationHeader(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, requestBody),
-        'x-iyzi-rnd': randomString
+        'Authorization': authorization,
+        'x-iyzi-rnd': randomKey,
+        'Accept': 'application/json'
       },
       body: requestBody
     });
 
     const data = await response.json();
+    console.log('Payment detail response:', data.status, data.errorMessage);
     
     if (data.status === 'success' && data.paymentId === paymentId) {
       return { verified: true, data };
@@ -210,17 +230,21 @@ serve(async (req) => {
       paymentId
     };
 
-    const randomString = Date.now().toString();
+    const randomKey = Date.now().toString() + Math.random().toString(36).substring(2, 15);
+    const uriPath = '/payment/3dsecure/auth';
     const requestBody = JSON.stringify(completeRequest);
 
     console.log('Completing 3DS payment...');
 
-    const response = await fetch(`${IYZICO_BASE_URL}/payment/3dsecure/auth`, {
+    const authorization = await generateAuthorizationV2(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomKey, uriPath, requestBody);
+
+    const response = await fetch(`${IYZICO_BASE_URL}${uriPath}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': generateAuthorizationHeader(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, requestBody),
-        'x-iyzi-rnd': randomString
+        'Authorization': authorization,
+        'x-iyzi-rnd': randomKey,
+        'Accept': 'application/json'
       },
       body: requestBody
     });
