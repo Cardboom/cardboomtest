@@ -10,52 +10,65 @@ const IYZICO_API_KEY = Deno.env.get('IYZICO_API_KEY')!;
 const IYZICO_SECRET_KEY = Deno.env.get('IYZICO_SECRET_KEY')!;
 const IYZICO_BASE_URL = Deno.env.get('IYZICO_BASE_URL') || 'https://sandbox-api.iyzipay.com';
 
-// Generate iyzico authorization header using HMACSHA256 (V2 format)
-// Formula: HMACSHA256(randomKey + uriPath + requestBody, secretKey)
-// Header: IYZWSv2 base64("apiKey:" + apiKey + "&randomKey:" + randomKey + "&signature:" + encryptedData)
-async function generateAuthorizationV2(
+// Generate PKI string from object (iyzico specific format)
+// Keys must be in the EXACT order iyzico expects, not alphabetical
+function generatePkiString(obj: Record<string, unknown>): string {
+  let result = '[';
+  
+  const entries = Object.entries(obj);
+  for (let i = 0; i < entries.length; i++) {
+    const [key, value] = entries[i];
+    if (value === null || value === undefined) continue;
+    
+    if (Array.isArray(value)) {
+      result += `${key}=[`;
+      for (let j = 0; j < value.length; j++) {
+        const item = value[j];
+        if (typeof item === 'object' && item !== null) {
+          result += generatePkiString(item as Record<string, unknown>);
+        } else {
+          result += String(item);
+        }
+        if (j < value.length - 1) {
+          result += ', ';
+        }
+      }
+      result += ']';
+    } else if (typeof value === 'object') {
+      result += `${key}=${generatePkiString(value as Record<string, unknown>)}`;
+    } else {
+      result += `${key}=${value}`;
+    }
+    
+    if (i < entries.length - 1) {
+      result += ',';
+    }
+  }
+  
+  result += ']';
+  return result;
+}
+
+// Generate iyzico authorization header using SHA1 (V1 format)
+// This is the tried and tested format used by the official SDK
+async function generateAuthorizationV1(
   apiKey: string,
   secretKey: string,
-  randomKey: string,
-  uriPath: string,
-  requestBody: string
+  randomString: string,
+  pkiString: string
 ): Promise<string> {
   const encoder = new TextEncoder();
   
-  // Step 1: Generate HMAC-SHA256 signature
-  // encryptedData = HMACSHA256(randomKey + uriPath + requestBody, secretKey)
-  const dataToSign = randomKey + uriPath + requestBody;
+  // hashString = apiKey + randomString + secretKey + pkiString
+  const hashInput = apiKey + randomString + secretKey + pkiString;
+  const hashBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(hashInput));
+  const hashBase64 = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
   
-  // Import the secret key for HMAC
-  const keyData = encoder.encode(secretKey);
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
+  console.log('[iyzico-init-3ds] Using V1 SHA1 auth format');
+  console.log('[iyzico-init-3ds] PKI string length:', pkiString.length);
+  console.log('[iyzico-init-3ds] PKI string (first 100 chars):', pkiString.substring(0, 100) + '...');
   
-  // Sign the data
-  const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(dataToSign));
-  
-  // Convert to hex string (not base64!)
-  const signatureHex = Array.from(new Uint8Array(signatureBuffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-  
-  // Step 2: Create base64 encoded authorization string
-  // base64("apiKey:" + apiKey + "&randomKey:" + randomKey + "&signature:" + encryptedData)
-  const authString = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signatureHex}`;
-  const base64Encoded = btoa(authString);
-  
-  console.log('[iyzico-init-3ds] Using V2 HMACSHA256 auth format');
-  console.log('[iyzico-init-3ds] Random key:', randomKey);
-  console.log('[iyzico-init-3ds] URI path:', uriPath);
-  console.log('[iyzico-init-3ds] Signature (first 20 chars):', signatureHex.substring(0, 20) + '...');
-  
-  // Step 3: Return authorization header
-  return `IYZWSv2 ${base64Encoded}`;
+  return `IYZWS ${apiKey}:${hashBase64}`;
 }
 
 serve(async (req) => {
@@ -103,8 +116,7 @@ serve(async (req) => {
       throw new Error('Invalid amount. Must be between $10 and $10,000');
     }
 
-    // Get fee rate from request (passed from frontend based on user subscription)
-    const feePercent = 0.065; // Default 6.5%, frontend already calculates correct fee
+    const feePercent = 0.065;
     const flatFee = 0.50;
     const fee = (amount * feePercent) + flatFee;
     const total = amount + fee;
@@ -112,6 +124,7 @@ serve(async (req) => {
     const basketId = `basket_${Date.now()}`;
 
     console.log('[iyzico-init-3ds] Processing payment:', { amount, fee, total, userId: user.id });
+    console.log('[iyzico-init-3ds] Using base URL:', IYZICO_BASE_URL);
 
     const { error: insertError } = await supabase
       .from('pending_payments')
@@ -131,24 +144,26 @@ serve(async (req) => {
 
     const callbackUrl = `${supabaseUrl}/functions/v1/iyzico-callback`;
     
-    // iyzico expects price as string with 2 decimal places
-    const iyzicoRequest: Record<string, unknown> = {
+    // Build request object with fields in the EXACT order iyzico expects
+    // The order matters for PKI string generation!
+    const iyzicoRequest = {
       locale: 'en',
-      conversationId,
+      conversationId: conversationId,
       price: total.toFixed(2),
       paidPrice: total.toFixed(2),
       installment: 1,
       paymentChannel: 'WEB',
-      basketId,
+      basketId: basketId,
       paymentGroup: 'PRODUCT',
-      callbackUrl,
+      callbackUrl: callbackUrl,
       currency: 'USD',
       paymentCard: {
-        cardHolderName,
+        cardHolderName: cardHolderName,
         cardNumber: cardNumber.replace(/\s/g, ''),
         expireYear: expireYear.length === 2 ? `20${expireYear}` : expireYear,
         expireMonth: expireMonth.padStart(2, '0'),
-        cvc
+        cvc: cvc,
+        registerCard: 0
       },
       buyer: {
         id: user.id.substring(0, 20),
@@ -157,6 +172,8 @@ serve(async (req) => {
         identityNumber: '11111111111',
         email: buyerEmail || user.email || 'test@test.com',
         gsmNumber: buyerPhone || '+905000000000',
+        registrationDate: '2013-04-21 15:12:09',
+        lastLoginDate: '2015-10-05 12:43:35',
         registrationAddress: buyerAddress || 'Test Address',
         city: buyerCity || 'Istanbul',
         country: buyerCountry || 'Turkey',
@@ -189,26 +206,25 @@ serve(async (req) => {
       ]
     };
 
-    console.log('[iyzico-init-3ds] Sending 3DS init request to:', IYZICO_BASE_URL);
     console.log('[iyzico-init-3ds] Callback URL:', callbackUrl);
 
-    const randomKey = Date.now().toString();
-    const uriPath = '/payment/3dsecure/initialize';
-    const requestBodyStr = JSON.stringify(iyzicoRequest);
-    const authorization = await generateAuthorizationV2(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomKey, uriPath, requestBodyStr);
+    const randomString = Date.now().toString();
+    const pkiString = generatePkiString(iyzicoRequest);
+    const authorization = await generateAuthorizationV1(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, pkiString);
     
-    console.log('[iyzico-init-3ds] Random key:', randomKey);
-    console.log('[iyzico-init-3ds] API Key configured:', !!IYZICO_API_KEY);
+    console.log('[iyzico-init-3ds] Random string:', randomString);
+    console.log('[iyzico-init-3ds] API Key (first 10):', IYZICO_API_KEY?.substring(0, 10) + '...');
     console.log('[iyzico-init-3ds] Secret Key configured:', !!IYZICO_SECRET_KEY);
 
-    const response = await fetch(`${IYZICO_BASE_URL}${uriPath}`, {
+    const response = await fetch(`${IYZICO_BASE_URL}/payment/3dsecure/initialize`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': authorization,
-        'x-iyzi-rnd': randomKey
+        'x-iyzi-rnd': randomString,
+        'Accept': 'application/json'
       },
-      body: requestBodyStr
+      body: JSON.stringify(iyzicoRequest)
     });
 
     const data = await response.json();
