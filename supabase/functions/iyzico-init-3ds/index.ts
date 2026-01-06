@@ -6,9 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const IYZICO_API_KEY = Deno.env.get('IYZICO_API_KEY')!;
-const IYZICO_SECRET_KEY = Deno.env.get('IYZICO_SECRET_KEY')!;
-const IYZICO_BASE_URL = Deno.env.get('IYZICO_BASE_URL') || 'https://sandbox-api.iyzipay.com';
+// Trim any whitespace from secrets that could corrupt the signature
+const IYZICO_API_KEY = (Deno.env.get('IYZICO_API_KEY') || '').trim();
+const IYZICO_SECRET_KEY = (Deno.env.get('IYZICO_SECRET_KEY') || '').trim();
+// Remove trailing slash from base URL if present
+const IYZICO_BASE_URL = (Deno.env.get('IYZICO_BASE_URL') || 'https://api.iyzipay.com').replace(/\/$/, '').trim();
 
 // Generate PKI string from object (iyzico specific format)
 // Keys must be in the EXACT order iyzico expects, not alphabetical
@@ -50,7 +52,8 @@ function generatePkiString(obj: Record<string, unknown>): string {
 }
 
 // Generate iyzico authorization header using SHA1 (V1 format)
-// This is the tried and tested format used by the official SDK
+// IMPORTANT: iyzico requires exact format - apiKey + randomString + secretKey + pkiString
+// The random key header must be "x-iyzi-rnd" with the exact same random string
 async function generateAuthorizationV1(
   apiKey: string,
   secretKey: string,
@@ -59,15 +62,22 @@ async function generateAuthorizationV1(
 ): Promise<string> {
   const encoder = new TextEncoder();
   
-  // hashString = apiKey + randomString + secretKey + pkiString
+  // Exact order: apiKey + randomString + secretKey + pkiString
   const hashInput = apiKey + randomString + secretKey + pkiString;
+  
+  console.log('[iyzico-init-3ds] Hash input length:', hashInput.length);
+  console.log('[iyzico-init-3ds] API Key used:', apiKey);
+  console.log('[iyzico-init-3ds] Secret Key length:', secretKey?.length);
+  
   const hashBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(hashInput));
-  const hashBase64 = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
+  const hashArray = new Uint8Array(hashBuffer);
+  const hashBase64 = btoa(String.fromCharCode.apply(null, [...hashArray]));
   
   console.log('[iyzico-init-3ds] Using V1 SHA1 auth format');
   console.log('[iyzico-init-3ds] PKI string length:', pkiString.length);
-  console.log('[iyzico-init-3ds] PKI string (first 100 chars):', pkiString.substring(0, 100) + '...');
+  console.log('[iyzico-init-3ds] SHA1 hash (base64):', hashBase64);
   
+  // Format: "IYZWS apiKey:base64Hash"
   return `IYZWS ${apiKey}:${hashBase64}`;
 }
 
