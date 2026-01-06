@@ -5256,15 +5256,7 @@ export type Database = {
           wire_transfer_code?: string | null
           xp?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_featured_card_id_fkey"
-            columns: ["featured_card_id"]
-            isOneToOne: false
-            referencedRelation: "portfolio_items"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       promo_code_uses: {
         Row: {
@@ -7514,15 +7506,7 @@ export type Database = {
           trust_review_count?: number | null
           xp?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_featured_card_id_fkey"
-            columns: ["featured_card_id"]
-            isOneToOne: false
-            referencedRelation: "portfolio_items"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {
