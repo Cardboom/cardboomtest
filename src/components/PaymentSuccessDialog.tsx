@@ -89,8 +89,8 @@ export const PaymentSuccessDialog = ({ open, onOpenChange, amount, paymentId }: 
           )}
         </div>
 
-        <Button onClick={() => onOpenChange(false)} className="w-full">
-          Done
+        <Button onClick={() => onOpenChange(false)} className="w-full" size="lg">
+          View Wallet Balance
         </Button>
       </DialogContent>
     </Dialog>
