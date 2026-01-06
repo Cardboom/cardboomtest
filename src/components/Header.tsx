@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Gem, Flame } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Gem, Flame, Rocket } from 'lucide-react';
+import { useSubscription } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { CardboomPointsBadge } from '@/components/CardboomPointsBadge';
 import { supabase } from '@/integrations/supabase/client';
@@ -68,6 +69,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const { isPro } = useSubscription(user?.id);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -437,8 +439,17 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent font-semibold">CardBoom Pass</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/pricing')} className="text-primary">
-                    <Crown className="w-4 h-4 mr-2" />
-                    {t.nav.upgradePro}
+                    {isPro ? (
+                      <>
+                        <Rocket className="w-4 h-4 mr-2" />
+                        Upgrade to Enterprise
+                      </>
+                    ) : (
+                      <>
+                        <Crown className="w-4 h-4 mr-2" />
+                        {t.nav.upgradePro}
+                      </>
+                    )}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/messages')} className="relative">
                     <MessageCircle className="w-4 h-4 mr-2" />
@@ -619,9 +630,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t.nav.account}</span>
                 </div>
                 
-                <Link to="/sell" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  <TrendingUp className="w-5 h-5 text-muted-foreground" />
-                  <span>{t.nav.sell}</span>
+                <Link to="/sell" className="flex items-center gap-3 py-3 px-3 rounded-xl bg-primary/10 hover:bg-primary/20 transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <span className="text-primary font-semibold">{t.nav.sell}</span>
                 </Link>
                 <Link to="/portfolio" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <PieChart className="w-5 h-5 text-muted-foreground" />
