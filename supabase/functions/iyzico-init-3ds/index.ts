@@ -10,36 +10,41 @@ const IYZICO_API_KEY = Deno.env.get('IYZICO_API_KEY')!;
 const IYZICO_SECRET_KEY = Deno.env.get('IYZICO_SECRET_KEY')!;
 const IYZICO_BASE_URL = Deno.env.get('IYZICO_BASE_URL') || 'https://sandbox-api.iyzipay.com';
 
-// Generate PKI string from object (iyzico specific format)
-function generatePkiString(obj: Record<string, unknown>, prefix = ''): string {
-  let result = prefix ? `${prefix}=[` : '[';
+// Generate PKI string from object (iyzico specific format - no spaces, alphabetical order)
+function generatePkiString(obj: Record<string, unknown>): string {
+  let result = '[';
   
-  for (const [key, value] of Object.entries(obj)) {
+  // Sort keys alphabetically as required by iyzico
+  const sortedKeys = Object.keys(obj).sort();
+  
+  for (const key of sortedKeys) {
+    const value = obj[key];
     if (value === null || value === undefined) continue;
     
     if (Array.isArray(value)) {
       result += `${key}=[`;
-      for (const item of value) {
+      for (let i = 0; i < value.length; i++) {
+        const item = value[i];
         if (typeof item === 'object' && item !== null) {
           result += generatePkiString(item as Record<string, unknown>);
-          result += ', ';
         } else {
-          result += `${item}, `;
+          result += `${item}`;
+        }
+        if (i < value.length - 1) {
+          result += ',';
         }
       }
-      if (value.length > 0) {
-        result = result.slice(0, -2);
-      }
-      result += '], ';
+      result += '],';
     } else if (typeof value === 'object') {
-      result += `${key}=${generatePkiString(value as Record<string, unknown>)}, `;
+      result += `${key}=${generatePkiString(value as Record<string, unknown>)},`;
     } else {
-      result += `${key}=${value}, `;
+      result += `${key}=${value},`;
     }
   }
   
-  if (result.endsWith(', ')) {
-    result = result.slice(0, -2);
+  // Remove trailing comma if present
+  if (result.endsWith(',')) {
+    result = result.slice(0, -1);
   }
   
   result += ']';
