@@ -86,34 +86,34 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
   const height = 3.5;
   const depth = 0.03;
 
-  // Use a simple box geometry with materials array
+  // Standard TCG card aspect ratio with rounded corners
   return (
     <mesh ref={meshRef}>
-      <boxGeometry args={[width, height, depth]} />
-      {/* Right face */}
-      <meshStandardMaterial attach="material-0" color="#1a1a2e" />
-      {/* Left face */}
-      <meshStandardMaterial attach="material-1" color="#1a1a2e" />
-      {/* Top face */}
-      <meshStandardMaterial attach="material-2" color="#1a1a2e" />
-      {/* Bottom face */}
-      <meshStandardMaterial attach="material-3" color="#1a1a2e" />
-      {/* Front face (card front) */}
-      <meshStandardMaterial 
-        attach="material-4" 
-        map={frontTexture}
-        color="#ffffff"
-        roughness={0.3}
-        metalness={0.1}
-      />
-      {/* Back face (card back) */}
-      <meshStandardMaterial 
-        attach="material-5" 
-        map={backTexture}
-        color="#ffffff"
-        roughness={0.3}
-        metalness={0.1}
-      />
+      <RoundedBox args={[2.5, 3.5, 0.04]} radius={0.1} smoothness={4}>
+        {/* Edges - dark color for card sides */}
+        <meshStandardMaterial attach="material-0" color="#0a0a0a" />
+        <meshStandardMaterial attach="material-1" color="#0a0a0a" />
+        <meshStandardMaterial attach="material-2" color="#0a0a0a" />
+        <meshStandardMaterial attach="material-3" color="#0a0a0a" />
+        {/* Front face with card image */}
+        <meshStandardMaterial 
+          attach="material-4" 
+          map={frontTexture}
+          color="#ffffff"
+          roughness={0.2}
+          metalness={0.05}
+          transparent={false}
+        />
+        {/* Back face with back image */}
+        <meshStandardMaterial 
+          attach="material-5" 
+          map={backTexture}
+          color="#ffffff"
+          roughness={0.2}
+          metalness={0.05}
+          transparent={false}
+        />
+      </RoundedBox>
     </mesh>
   );
 }
