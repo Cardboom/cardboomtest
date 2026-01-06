@@ -7,6 +7,7 @@ import { CreditCard, AlertCircle, Loader2, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface WalletTopUpDialogProps {
   open: boolean;
@@ -14,7 +15,8 @@ interface WalletTopUpDialogProps {
   onSuccess: () => void;
 }
 
-const FLAT_FEE = 0.5; // $0.50 flat fee on all transfers
+const FLAT_FEE_USD = 0.5; // $0.50 flat fee
+type PaymentCurrency = 'USD' | 'TRY';
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
   const [amount, setAmount] = useState('');
@@ -23,6 +25,10 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const [threeDSContent, setThreeDSContent] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [userId, setUserId] = useState<string | undefined>();
+  const [paymentCurrency, setPaymentCurrency] = useState<PaymentCurrency>('TRY'); // Default to TRY for Turkish cards
+
+  const { exchangeRates } = useCurrency();
+  const tryRate = exchangeRates.USD_TRY || 38; // Fallback rate
 
   // Get subscription status for fee calculation
   const { isPro } = useSubscription(userId);
@@ -42,10 +48,14 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const [buyerAddress, setBuyerAddress] = useState('');
   const [buyerCity, setBuyerCity] = useState('');
 
-  const numAmount = parseFloat(amount) || 0;
-  const percentFee = numAmount * (TOPUP_FEE_PERCENT / 100);
-  const fee = percentFee + FLAT_FEE;
-  const total = numAmount + fee;
+  // Calculate amounts in USD (internal) and display currency
+  const numAmountUSD = parseFloat(amount) || 0;
+  const percentFee = numAmountUSD * (TOPUP_FEE_PERCENT / 100);
+  const feeUSD = percentFee + FLAT_FEE_USD;
+  const totalUSD = numAmountUSD + feeUSD;
+  
+  // Convert to TRY if payment currency is TRY
+  const displayTotal = paymentCurrency === 'TRY' ? totalUSD * tryRate : totalUSD;
 
   // Fetch user ID for subscription check
   useEffect(() => {
@@ -69,7 +79,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   }, [open]);
 
   const handleAmountContinue = () => {
-    if (numAmount < 10) {
+    if (numAmountUSD < 10) {
       toast.error('Minimum top-up is $10');
       return;
     }
@@ -102,11 +112,13 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
 
       const { data, error } = await supabase.functions.invoke('iyzico-init-3ds', {
         body: {
-          amount: numAmount,
+          amountUSD: numAmountUSD, // Amount in USD for wallet credit
+          paymentCurrency, // Currency to charge the card in
+          tryRate, // Exchange rate for conversion
           cardHolderName,
           cardNumber: cardNumber.replace(/\s/g, ''),
           expireMonth,
-          expireYear, // Send raw 2-digit year, edge function handles formatting
+          expireYear,
           cvc,
           buyerName,
           buyerSurname,
@@ -153,11 +165,21 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
     return v;
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatUSD = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
+  };
+
+  const formatPaymentAmount = (amountInUSD: number) => {
+    if (paymentCurrency === 'TRY') {
+      return new Intl.NumberFormat('tr-TR', {
+        style: 'currency',
+        currency: 'TRY',
+      }).format(amountInUSD * tryRate);
+    }
+    return formatUSD(amountInUSD);
   };
 
   // Render 3DS iframe
@@ -197,15 +219,45 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
 
         {step === 'amount' && (
           <div className="space-y-6">
+            {/* Payment Currency Selection */}
+            <div>
+              <Label className="mb-2 block">Payment Currency</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={paymentCurrency === 'TRY' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPaymentCurrency('TRY')}
+                  className="flex-1"
+                >
+                  🇹🇷 TRY (Turkish Cards)
+                </Button>
+                <Button
+                  type="button"
+                  variant={paymentCurrency === 'USD' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPaymentCurrency('USD')}
+                  className="flex-1"
+                >
+                  🇺🇸 USD (International)
+                </Button>
+              </div>
+              {paymentCurrency === 'TRY' && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Rate: 1 USD = {tryRate.toFixed(2)} TRY
+                </p>
+              )}
+            </div>
+
             {/* Preset amounts */}
             <div>
-              <Label className="mb-2 block">Quick Select</Label>
+              <Label className="mb-2 block">Quick Select (Wallet Credit in USD)</Label>
               <div className="flex flex-wrap gap-2">
                 {presetAmounts.map((preset) => (
                   <Button
                     key={preset}
                     type="button"
-                    variant={numAmount === preset ? 'default' : 'outline'}
+                    variant={numAmountUSD === preset ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setAmount(preset.toString())}
                   >
@@ -217,7 +269,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
 
             {/* Custom amount */}
             <div>
-              <Label htmlFor="amount">Custom Amount (USD)</Label>
+              <Label htmlFor="amount">Custom Amount (USD wallet credit)</Label>
               <div className="relative mt-1.5">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                 <Input
@@ -234,26 +286,26 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
             </div>
 
             {/* Fee breakdown */}
-            {numAmount > 0 && (
+            {numAmountUSD > 0 && (
               <div className="p-4 rounded-lg bg-muted/50 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Amount</span>
-                  <span>{formatCurrency(numAmount)}</span>
+                  <span className="text-muted-foreground">Wallet Credit</span>
+                  <span>{formatUSD(numAmountUSD)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span className="flex items-center gap-1">
                     Processing Fee ({TOPUP_FEE_PERCENT}%)
                     {isPro && <Crown className="h-3 w-3 text-amber-500" />}
                   </span>
-                  <span>{formatCurrency(percentFee)}</span>
+                  <span>{formatUSD(percentFee)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Flat Fee</span>
-                  <span>{formatCurrency(FLAT_FEE)}</span>
+                  <span>{formatUSD(FLAT_FEE_USD)}</span>
                 </div>
                 <div className="flex justify-between font-medium text-foreground border-t border-border pt-2">
-                  <span>Total Charge</span>
-                  <span>{formatCurrency(total)}</span>
+                  <span>You Pay ({paymentCurrency})</span>
+                  <span>{formatPaymentAmount(totalUSD)}</span>
                 </div>
               </div>
             )}
@@ -262,7 +314,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
               <Button type="button" variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button className="flex-1" onClick={handleAmountContinue} disabled={numAmount < 10}>
+              <Button className="flex-1" onClick={handleAmountContinue} disabled={numAmountUSD < 10}>
                 Continue
               </Button>
             </div>
@@ -365,9 +417,13 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
             </div>
 
             <div className="p-4 rounded-lg bg-muted/50 space-y-2 text-sm">
+              <div className="flex justify-between text-muted-foreground">
+                <span>Wallet Credit</span>
+                <span>{formatUSD(numAmountUSD)}</span>
+              </div>
               <div className="flex justify-between font-medium text-foreground">
-                <span>Total to Pay</span>
-                <span>{formatCurrency(total)}</span>
+                <span>Total to Pay ({paymentCurrency})</span>
+                <span>{formatPaymentAmount(totalUSD)}</span>
               </div>
             </div>
 
@@ -384,7 +440,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
               </Button>
               <Button type="submit" className="flex-1" disabled={loading}>
                 {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {loading ? 'Processing...' : `Pay ${formatCurrency(total)}`}
+                {loading ? 'Processing...' : `Pay ${formatPaymentAmount(totalUSD)}`}
               </Button>
             </div>
           </form>
