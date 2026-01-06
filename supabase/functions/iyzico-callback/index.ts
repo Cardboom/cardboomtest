@@ -274,7 +274,7 @@ serve(async (req) => {
     }
 
     // Create transaction record
-    const { error: txError } = await supabase
+    const { data: txData, error: txError } = await supabase
       .from('transactions')
       .insert({
         wallet_id: wallet.id,
@@ -283,10 +283,14 @@ serve(async (req) => {
         fee: pendingPayment.fee,
         description: `Wallet top-up via iyzico (${paymentId})`,
         reference_id: null
-      });
+      })
+      .select()
+      .single();
 
     if (txError) {
-      console.error('Failed to create transaction:', txError);
+      console.error('Failed to create transaction:', txError.message, txError.details, txError.hint);
+    } else {
+      console.log('Transaction created successfully:', txData?.id);
     }
 
     // Award Cardboom Gems for top-up (0.2% base, 0.25% for Pro)

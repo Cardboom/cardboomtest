@@ -320,8 +320,11 @@ const WalletPage = () => {
         open={showSuccessDialog}
         onOpenChange={(open) => {
           setShowSuccessDialog(open);
-          if (!open && user) {
-            fetchWalletData(user.id);
+          if (!open) {
+            // Refresh wallet data when closing the success dialog
+            if (user) {
+              fetchWalletData(user.id);
+            }
           }
         }}
         amount={successAmount}
