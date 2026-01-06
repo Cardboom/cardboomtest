@@ -192,36 +192,20 @@ serve(async (req) => {
     }
 
     // Check if 3DS was successful (mdStatus = 1 means success)
-    if (status !== 'success' || mdStatus !== '1') {
+    // mdStatus values: 1 = success, 2/3/4 = various failures, 0 = 3DS not applied
+    if (mdStatus !== '1') {
       console.log('3DS verification failed:', { status, mdStatus });
       
       await supabase
         .from('pending_payments')
         .update({ status: 'failed' })
         .eq('conversation_id', conversationId)
-        .eq('status', 'pending'); // Only update if still pending
+        .eq('status', 'pending');
 
       return redirectWithError(frontendUrl, '3DS verification failed');
     }
 
-    // SECURITY: Verify payment authenticity by calling iyzico API directly
-    // This is the most secure method as it confirms the payment exists on iyzico's side
-    console.log('Verifying payment authenticity with iyzico API...');
-    const verificationResult = await verifyPaymentWithIyzico(paymentId, conversationId);
-    
-    if (!verificationResult.verified) {
-      console.error('Payment verification failed:', verificationResult.error);
-      
-      await supabase
-        .from('pending_payments')
-        .update({ status: 'failed', payment_id: paymentId })
-        .eq('conversation_id', conversationId)
-        .eq('status', 'pending');
-
-      return redirectWithError(frontendUrl, 'Payment verification failed');
-    }
-
-    console.log('Payment verified successfully with iyzico API');
+    console.log('3DS verification successful, completing payment...');
 
     // Complete the 3DS payment
     const completeRequest = {
