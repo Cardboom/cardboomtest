@@ -51,34 +51,26 @@ function generatePkiString(obj: Record<string, unknown>): string {
   return result;
 }
 
-// Generate iyzico authorization header using SHA-256 hash (V2 format)
-// Format: IYZWSv2 base64(apiKey:secretKey:sha256HashBase64)
-async function generateAuthorizationV2(
+// Generate iyzico authorization header using V1 format
+// V1 format: IYZWS apiKey:base64(sha1(apiKey + randomString + secretKey + pkiString))
+async function generateAuthorizationV1(
   apiKey: string,
   secretKey: string,
   randomString: string,
-  requestBody: string
+  pkiString: string
 ): Promise<string> {
   const encoder = new TextEncoder();
   
-  // Step 1: SHA256(randomString + requestBody)
-  const hashInput = randomString + requestBody;
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(hashInput));
+  // SHA1(apiKey + randomString + secretKey + pkiString)
+  const hashInput = apiKey + randomString + secretKey + pkiString;
+  const hashBuffer = await crypto.subtle.digest('SHA-1', encoder.encode(hashInput));
   const hashBase64 = btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
   
-  // Step 2: SHA256(secretKey + hashBase64)
-  const signatureInput = secretKey + hashBase64;
-  const signatureBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(signatureInput));
-  const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signatureBuffer)));
-  
-  // Step 3: Create authorization string and base64 encode it
-  const authString = `${apiKey}:${randomString}:${signatureBase64}`;
-  const authBase64 = btoa(authString);
-  
-  console.log('[iyzico-init-3ds] Using V2 auth format with base64 encoding');
+  console.log('[iyzico-init-3ds] Using V1 auth format (IYZWS)');
   console.log('[iyzico-init-3ds] Random:', randomString);
+  console.log('[iyzico-init-3ds] PKI length:', pkiString.length);
   
-  return `IYZWSv2 ${authBase64}`;
+  return `IYZWS ${apiKey}:${hashBase64}`;
 }
 
 serve(async (req) => {
@@ -216,8 +208,8 @@ serve(async (req) => {
     console.log('[iyzico-init-3ds] Callback URL:', callbackUrl);
 
     const randomString = Date.now().toString();
-    const requestBodyStr = JSON.stringify(iyzicoRequest);
-    const authorization = await generateAuthorizationV2(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, requestBodyStr);
+    const pkiString = generatePkiString(iyzicoRequest);
+    const authorization = await generateAuthorizationV1(IYZICO_API_KEY, IYZICO_SECRET_KEY, randomString, pkiString);
     
     console.log('[iyzico-init-3ds] Random string:', randomString);
     console.log('[iyzico-init-3ds] API Key configured:', !!IYZICO_API_KEY);
