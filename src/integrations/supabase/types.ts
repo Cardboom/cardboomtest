@@ -3276,6 +3276,51 @@ export type Database = {
           },
         ]
       }
+      gem_gift_cards: {
+        Row: {
+          claimed_at: string | null
+          code: string
+          created_at: string
+          denomination_cents: number
+          expires_at: string
+          gem_amount: number
+          id: string
+          message: string | null
+          recipient_email: string | null
+          recipient_id: string | null
+          sender_id: string
+          status: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          code?: string
+          created_at?: string
+          denomination_cents: number
+          expires_at?: string
+          gem_amount: number
+          id?: string
+          message?: string | null
+          recipient_email?: string | null
+          recipient_id?: string | null
+          sender_id: string
+          status?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          code?: string
+          created_at?: string
+          denomination_cents?: number
+          expires_at?: string
+          gem_amount?: number
+          id?: string
+          message?: string | null
+          recipient_email?: string | null
+          recipient_id?: string | null
+          sender_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       grading_credit_history: {
         Row: {
           created_at: string
@@ -7904,6 +7949,7 @@ export type Database = {
         Returns: Json
       }
       check_inventory_integrity: { Args: never; Returns: Json }
+      claim_gift_card: { Args: { gift_code: string }; Returns: Json }
       complete_sale_transfer: {
         Args: {
           p_actor_user_id: string
@@ -7998,6 +8044,14 @@ export type Database = {
           p_user_id: string
         }
         Returns: boolean
+      }
+      spend_gems_on_service: {
+        Args: {
+          p_amount: number
+          p_reference_id?: string
+          p_service_type: string
+        }
+        Returns: Json
       }
       unlock_inventory: {
         Args: {
