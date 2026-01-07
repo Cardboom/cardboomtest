@@ -44,6 +44,7 @@ export interface CardAnalysis {
     name: string;
     category: string;
     image_url: string | null;
+    current_price?: number | null;
     set_name?: string | null;
     set_code?: string | null;
     card_number?: string | null;

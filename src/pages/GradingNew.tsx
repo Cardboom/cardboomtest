@@ -213,7 +213,7 @@ export default function GradingNew() {
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <CartDrawer items={cartItems} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onRemoveItem={(id) => setCartItems(items => items.filter(item => item.id !== id))} />
       
-      <main className="container mx-auto px-4 pt-20 pb-24 max-w-md">
+      <main className="container mx-auto px-4 pt-20 pb-24 max-w-2xl">
         {/* Back Button */}
         <Button 
           variant="ghost" 
@@ -301,23 +301,53 @@ export default function GradingNew() {
                       </div>
                     )}
 
-                    {/* Estimated Value Preview */}
+                    {/* Estimated Value Preview - Using REAL data from market analysis */}
                     {cardAnalysis?.detected && (
-                      <div className="p-3 rounded-xl bg-muted/50 border border-border space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Estimated Value</p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="text-center p-2 rounded-lg bg-background">
-                            <p className="text-xs text-muted-foreground">Raw (Ungraded)</p>
-                            <p className="text-lg font-bold text-foreground">$25-50</p>
+                      <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Market Value</p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-center p-3 rounded-lg bg-background border border-border">
+                            <p className="text-xs text-muted-foreground mb-1">Raw (Ungraded)</p>
+                            <p className="text-xl font-bold text-foreground">
+                              {cardAnalysis.pricing?.medianSold 
+                                ? `$${cardAnalysis.pricing.medianSold.toLocaleString()}`
+                                : cardAnalysis.matchedMarketItem?.current_price
+                                  ? `$${cardAnalysis.matchedMarketItem.current_price.toLocaleString()}`
+                                  : 'No data'
+                              }
+                            </p>
+                            {cardAnalysis.pricing?.priceConfidence && (
+                              <Badge variant="outline" className="mt-1 text-[10px]">
+                                {cardAnalysis.pricing.priceConfidence} confidence
+                              </Badge>
+                            )}
                           </div>
-                          <div className="text-center p-2 rounded-lg bg-gain/10 border border-gain/20">
-                            <p className="text-xs text-gain">Graded (Est.)</p>
-                            <p className="text-lg font-bold text-gain">$80-250</p>
+                          <div className="text-center p-3 rounded-lg bg-gain/10 border border-gain/20">
+                            <p className="text-xs text-gain mb-1">Graded (Est. PSA 9+)</p>
+                            <p className="text-xl font-bold text-gain">
+                              {cardAnalysis.pricing?.maxProfitPrice 
+                                ? `$${Math.round(cardAnalysis.pricing.maxProfitPrice * 2.5).toLocaleString()}`
+                                : cardAnalysis.matchedMarketItem?.current_price
+                                  ? `$${Math.round(cardAnalysis.matchedMarketItem.current_price * 2.5).toLocaleString()}`
+                                  : 'No data'
+                              }
+                            </p>
+                            <p className="text-[10px] text-gain/70 mt-1">2-3x raw value typical</p>
                           </div>
                         </div>
-                        <p className="text-[10px] text-center text-muted-foreground">
-                          *Estimates based on market data · Final value depends on grade
-                        </p>
+                        <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
+                          <span>
+                            {cardAnalysis.pricing?.salesCount 
+                              ? `Based on ${cardAnalysis.pricing.salesCount} sales`
+                              : 'Live market data'
+                            }
+                          </span>
+                          {cardAnalysis.pricing?.trend7d !== undefined && cardAnalysis.pricing.trend7d !== 0 && (
+                            <span className={cardAnalysis.pricing.trend7d > 0 ? 'text-gain' : 'text-loss'}>
+                              {cardAnalysis.pricing.trend7d > 0 ? '↑' : '↓'} {Math.abs(cardAnalysis.pricing.trend7d).toFixed(1)}% 7d
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -372,14 +402,32 @@ export default function GradingNew() {
                       </div>
                     </div>
 
-                    {/* Continue Button */}
-                    <Button 
-                      className="w-full h-12 rounded-full gap-2 text-base font-medium" 
-                      disabled={!frontImage || !backImage} 
-                      onClick={handleNext}
-                    >
-                      Continue <ArrowRight className="w-4 h-4" />
-                    </Button>
+                    {/* Continue / Confirm Card Details Button - always visible */}
+                    <div className="pt-2 border-t border-border">
+                      <Button 
+                        className="w-full h-14 rounded-xl gap-2 text-base font-semibold shadow-lg" 
+                        size="lg"
+                        disabled={!frontImage || !backImage} 
+                        onClick={handleNext}
+                      >
+                        {backImage ? (
+                          <>
+                            <CheckCircle2 className="w-5 h-5" />
+                            Confirm Card Details
+                          </>
+                        ) : (
+                          <>
+                            <Camera className="w-5 h-5" />
+                            Add Back Image to Continue
+                          </>
+                        )}
+                      </Button>
+                      {!backImage && frontImage && (
+                        <p className="text-xs text-center text-muted-foreground mt-2">
+                          Upload back image to proceed
+                        </p>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               )}
