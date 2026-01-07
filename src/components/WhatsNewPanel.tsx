@@ -84,7 +84,12 @@ export function WhatsNewPanel() {
               
               {/* Grade Badge - Show grading info or Ungraded */}
               <div className="absolute top-2 right-2">
-                {listing.grading_company === 'CardBoom' ? (
+                {listing.grading_company === 'CardBoom' && listing.grade === 'Pending' ? (
+                  <Badge variant="outline" className="bg-background/80 backdrop-blur-sm text-amber-500 border-amber-500/30 gap-1">
+                    <Award className="w-3 h-3" />
+                    Grading...
+                  </Badge>
+                ) : listing.grading_company === 'CardBoom' ? (
                   <Badge className="bg-primary text-primary-foreground gap-1">
                     <Award className="w-3 h-3" />
                     CB {listing.grade || 'Graded'}
