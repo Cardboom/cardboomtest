@@ -140,6 +140,8 @@ const navGroups: NavGroup[] = [
     label: "System",
     icon: Settings,
     items: [
+      { id: "launch-check", label: "Launch Check", icon: Shield },
+      { id: "system-status", label: "System Status", icon: Activity },
       { id: "api", label: "API", icon: Globe },
       { id: "diagnostics", label: "Diagnostics", icon: Activity },
       { id: "currency", label: "Currency", icon: Wallet },

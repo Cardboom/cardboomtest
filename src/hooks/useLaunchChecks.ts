@@ -313,11 +313,11 @@ async function checkReelsProcessing(): Promise<CheckResult> {
 async function checkOpenDisputes(): Promise<CheckResult> {
   const start = Date.now();
   try {
-    // Simple count check without filtering by status to avoid type issues
+    // Check order_disputes table for open disputes
     const { count, error } = await supabase
-      .from('orders')
+      .from('order_disputes')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'disputed');
+      .eq('status', 'open');
     
     if (error) throw error;
     
@@ -325,10 +325,10 @@ async function checkOpenDisputes(): Promise<CheckResult> {
     
     return {
       id: 'disputes-open',
-      name: 'Disputed Orders',
+      name: 'Open Disputes',
       category: 'disputes',
       status: disputeCount > 10 ? 'warn' : 'pass',
-      message: `${disputeCount} disputed orders`,
+      message: `${disputeCount} open disputes`,
       fixHint: disputeCount > 10 ? 'High dispute volume - review in Disputes section' : undefined,
       duration: Date.now() - start,
       details: { count: disputeCount },

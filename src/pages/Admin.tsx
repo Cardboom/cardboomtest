@@ -54,6 +54,8 @@ import { SystemAccountsManager } from '@/components/admin/SystemAccountsManager'
 import { InventoryIntegrityDashboard } from '@/components/admin/InventoryIntegrityDashboard';
 import { DigitalProductsManager } from '@/components/admin/DigitalProductsManager';
 import { EscalationManagement } from '@/components/admin/EscalationManagement';
+import { LaunchCheckDashboard } from '@/components/admin/LaunchCheckDashboard';
+import { SystemStatusDashboard } from '@/components/admin/SystemStatusDashboard';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -280,6 +282,10 @@ const Admin = () => {
         return <InventoryIntegrityDashboard />;
       case 'digital-products':
         return <DigitalProductsManager />;
+      case 'launch-check':
+        return <LaunchCheckDashboard />;
+      case 'system-status':
+        return <SystemStatusDashboard />;
       default:
         return <RevenueDashboard />;
     }
