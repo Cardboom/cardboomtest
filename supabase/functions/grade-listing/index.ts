@@ -117,7 +117,11 @@ serve(async (req) => {
 
     for (const listing of eligibleListings) {
       try {
-        // Create grading order
+        // Normalize card name for matching - remove all non-alphanumeric chars and lowercase
+        // e.g., "Monkey D. Luffy EB02-061" -> "monkeydluffyeb02061"
+        const normalizedCardName = listing.title?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
+        
+        // Create grading order with normalized card name for consistent matching
         const { data: order, error: orderError } = await supabase
           .from('grading_orders')
           .insert({
@@ -128,7 +132,7 @@ serve(async (req) => {
             price_usd: pricePerCard,
             price_cents: pricePerCard * 100,
             status: 'queued',
-            card_name: listing.title,
+            card_name: normalizedCardName, // Store normalized for matching
             listing_created_id: listing.id,
             speed_tier: speed_tier,
           })
