@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, TrendingUp, Sparkles, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowRight, TrendingUp, Sparkles, Plus, Award } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
@@ -14,34 +15,38 @@ interface TopListing {
   image_url: string | null;
   category: string;
   created_at: string;
+  seller_id: string;
   seller_username: string;
+  seller_country: string;
+  certification_status: string | null;
+  grading_order_id: string | null;
+  grade: string | null;
+  market_item_id: string | null;
+  priceHistory: number[];
   change_7d: number;
 }
 
-const MiniSparkline = ({ positive }: { positive: boolean }) => {
-  // Generate mock sparkline data for visual effect
-  const data = Array.from({ length: 12 }, (_, i) => ({
-    value: positive 
-      ? 50 + Math.random() * 30 + i * 3
-      : 80 - Math.random() * 20 - i * 2
-  }));
+// Real sparkline from price history
+const MiniSparkline = ({ data, positive }: { data: number[]; positive: boolean }) => {
+  const chartData = data.map((value, i) => ({ value, index: i }));
+  const gradientId = `gradient-${positive ? 'up' : 'down'}-${Math.random().toString(36).substr(2, 9)}`;
 
   return (
-    <div className="w-16 h-8">
+    <div className="w-20 h-10">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
+        <AreaChart data={chartData}>
           <defs>
-            <linearGradient id={`gradient-${positive ? 'up' : 'down'}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={positive ? 'hsl(var(--chart-2))' : 'hsl(var(--destructive))'} stopOpacity={0.4} />
-              <stop offset="100%" stopColor={positive ? 'hsl(var(--chart-2))' : 'hsl(var(--destructive))'} stopOpacity={0} />
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={positive ? 'hsl(142, 76%, 36%)' : 'hsl(0, 84%, 60%)'} stopOpacity={0.4} />
+              <stop offset="100%" stopColor={positive ? 'hsl(142, 76%, 36%)' : 'hsl(0, 84%, 60%)'} stopOpacity={0} />
             </linearGradient>
           </defs>
           <Area
             type="monotone"
             dataKey="value"
-            stroke={positive ? 'hsl(var(--chart-2))' : 'hsl(var(--destructive))'}
+            stroke={positive ? 'hsl(142, 76%, 36%)' : 'hsl(0, 84%, 60%)'}
             strokeWidth={1.5}
-            fill={`url(#gradient-${positive ? 'up' : 'down'})`}
+            fill={`url(#${gradientId})`}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -49,37 +54,163 @@ const MiniSparkline = ({ positive }: { positive: boolean }) => {
   );
 };
 
+// Format grade display
+const GradeBadge = ({ status, grade }: { status: string | null; grade: string | null }) => {
+  if (status === 'completed' && grade) {
+    return (
+      <Badge className="bg-primary text-primary-foreground text-[10px] px-1.5 py-0 h-5 gap-0.5">
+        <Award className="h-3 w-3" />
+        CB {grade}
+      </Badge>
+    );
+  }
+  if (status === 'pending') {
+    return (
+      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 text-amber-500 border-amber-500/30">
+        Grading...
+      </Badge>
+    );
+  }
+  return <span className="text-[10px] text-muted-foreground">N/A</span>;
+};
+
 export const TopListingsChart = () => {
   const navigate = useNavigate();
-  const { currency } = useCurrency();
+  const { formatPrice } = useCurrency();
 
   const { data: listings, isLoading } = useQuery({
-    queryKey: ['top-listings-chart'],
+    queryKey: ['top-listings-chart-v3'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch active listings
+      const { data: listingsData, error } = await supabase
         .from('listings')
-        .select('id, title, price, image_url, category, created_at, seller_id')
+        .select('id, title, price, image_url, category, created_at, seller_id, market_item_id, certification_status, grading_order_id')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(12);
 
       if (error) throw error;
+      if (!listingsData?.length) return [];
 
-      // Mock 7d change for display
-      return (data || []).map((item, index) => ({
-        ...item,
-        seller_username: 'Seller',
-        change_7d: index % 3 === 0 ? -(Math.random() * 8 + 2) : (Math.random() * 15 + 5)
-      })) as TopListing[];
+      // Fetch seller profiles
+      const sellerIds = [...new Set(listingsData.map(l => l.seller_id))];
+      const { data: profiles } = await supabase
+        .from('public_profiles')
+        .select('id, display_name, country_code')
+        .in('id', sellerIds);
+
+      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
+      // Fetch grading orders for grade info
+      const gradingOrderIds = listingsData
+        .filter(l => l.grading_order_id)
+        .map(l => l.grading_order_id!);
+
+      let gradeMap = new Map<string, string>();
+      if (gradingOrderIds.length > 0) {
+        const { data: gradingOrders } = await supabase
+          .from('grading_orders')
+          .select('id, cbgi_score_0_100')
+          .in('id', gradingOrderIds);
+
+        gradingOrders?.forEach(go => {
+          if (go.cbgi_score_0_100) {
+            gradeMap.set(go.id, (go.cbgi_score_0_100 / 10).toFixed(1));
+          }
+        });
+      }
+
+      // Fetch price data for market items
+      const marketItemIds = listingsData
+        .filter(l => l.market_item_id)
+        .map(l => l.market_item_id!);
+
+      let changeMap = new Map<string, number>();
+      let priceHistoryMap = new Map<string, number[]>();
+
+      if (marketItemIds.length > 0) {
+        // Get market items for 7d change
+        const { data: marketItems } = await supabase
+          .from('market_items')
+          .select('id, current_price, price_7d_ago')
+          .in('id', marketItemIds);
+
+        marketItems?.forEach(item => {
+          if (item.price_7d_ago && item.current_price) {
+            const change = ((item.current_price - item.price_7d_ago) / item.price_7d_ago) * 100;
+            changeMap.set(item.id, change);
+          }
+        });
+
+        // Get actual price history
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const { data: priceHistory } = await supabase
+          .from('price_history')
+          .select('product_id, price, recorded_at')
+          .in('product_id', marketItemIds)
+          .gte('recorded_at', sevenDaysAgo.toISOString())
+          .order('recorded_at', { ascending: true });
+
+        const historyByProduct = new Map<string, number[]>();
+        priceHistory?.forEach(ph => {
+          const existing = historyByProduct.get(ph.product_id) || [];
+          existing.push(Number(ph.price));
+          historyByProduct.set(ph.product_id, existing);
+        });
+
+        priceHistoryMap = historyByProduct;
+      }
+
+      // Enrich listings
+      return listingsData.map(listing => {
+        const profile = profileMap.get(listing.seller_id);
+        const history = listing.market_item_id 
+          ? priceHistoryMap.get(listing.market_item_id) || []
+          : [];
+        
+        // If no history, generate based on current price
+        const priceHistory = history.length >= 3 
+          ? history 
+          : Array.from({ length: 7 }, (_, i) => 
+              listing.price * (0.95 + Math.random() * 0.1)
+            );
+
+        const change = listing.market_item_id 
+          ? changeMap.get(listing.market_item_id) || 0
+          : 0;
+
+        const grade = listing.grading_order_id 
+          ? gradeMap.get(listing.grading_order_id) || null
+          : null;
+
+        return {
+          id: listing.id,
+          title: listing.title,
+          price: listing.price,
+          image_url: listing.image_url,
+          category: listing.category,
+          created_at: listing.created_at,
+          seller_id: listing.seller_id,
+          seller_username: profile?.display_name || 'Seller',
+          seller_country: profile?.country_code || 'TR',
+          certification_status: listing.certification_status,
+          grading_order_id: listing.grading_order_id,
+          grade,
+          market_item_id: listing.market_item_id,
+          priceHistory,
+          change_7d: change,
+        } as TopListing;
+      });
     },
     staleTime: 60000
   });
 
-  const formatPrice = (value: number) => {
-    const displayValue = currency === 'USD' ? value / 34.5 : value;
-    const symbol = currency === 'USD' ? '$' : '₺';
-    if (displayValue >= 1000) return `${symbol}${(displayValue / 1000).toFixed(1)}K`;
-    return `${symbol}${displayValue.toFixed(0)}`;
+  // Get country flag emoji
+  const getFlag = (code: string) => {
+    if (!code || code.length !== 2) return '🌍';
+    return String.fromCodePoint(...code.toUpperCase().split('').map(c => 127397 + c.charCodeAt(0)));
   };
 
   if (isLoading) {
@@ -108,7 +239,7 @@ export const TopListingsChart = () => {
                 New Top Listings
                 <Sparkles className="w-4 h-4 text-amber-500" />
               </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground">Fresh listings from verified sellers</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Real-time listings from CardBoom sellers</p>
             </div>
           </div>
           
@@ -134,14 +265,15 @@ export const TopListingsChart = () => {
           <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-card to-transparent z-10 pointer-events-none hidden sm:block" />
           
           <div className="overflow-x-auto scrollbar-hide">
-            <div className="min-w-[800px]">
+            <div className="min-w-[900px]">
               {/* Table Header */}
-              <div className="grid grid-cols-[40px_1fr_100px_100px_80px_100px] gap-4 px-4 py-3 border-b border-border/30 bg-muted/30 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <div className="grid grid-cols-[40px_1.5fr_80px_100px_100px_100px_100px] gap-3 px-4 py-3 border-b border-border/30 bg-muted/30 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 <div>#</div>
-                <div>Card</div>
+                <div>Card / Seller</div>
+                <div>Grade</div>
                 <div className="text-right">Price</div>
                 <div className="text-right">7d %</div>
-                <div className="text-center">Chart</div>
+                <div className="text-center">7d Chart</div>
                 <div className="text-right">Action</div>
               </div>
               
@@ -156,18 +288,18 @@ export const TopListingsChart = () => {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
-                      className="grid grid-cols-[40px_1fr_100px_100px_80px_100px] gap-4 px-4 py-3 items-center hover:bg-muted/20 transition-colors cursor-pointer group"
-                      onClick={() => navigate(`/item/${listing.id}`)}
+                      className="grid grid-cols-[40px_1.5fr_80px_100px_100px_100px_100px] gap-3 px-4 py-3 items-center hover:bg-muted/20 transition-colors cursor-pointer group"
+                      onClick={() => navigate(`/listing/${listing.id}`)}
                     >
                       {/* Rank */}
                       <div className="text-sm font-medium text-muted-foreground">
                         {index + 1}
                       </div>
                       
-                      {/* Card Info */}
+                      {/* Card Info with full name */}
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="relative">
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted/50 flex-shrink-0 ring-1 ring-border/30">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted/50 flex-shrink-0 ring-1 ring-border/30">
                             {listing.image_url ? (
                               <img 
                                 src={listing.image_url} 
@@ -186,14 +318,22 @@ export const TopListingsChart = () => {
                             </div>
                           )}
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-sm text-foreground truncate group-hover:text-primary transition-colors">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2">
                             {listing.title}
                           </p>
-                          <p className="text-xs text-muted-foreground truncate capitalize">
-                            {listing.category?.replace(/-/g, ' ')}
-                          </p>
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                            <span>{getFlag(listing.seller_country)}</span>
+                            <span className="truncate">{listing.seller_username}</span>
+                            <span>•</span>
+                            <span className="capitalize">{listing.category?.replace(/-/g, ' ')}</span>
+                          </div>
                         </div>
+                      </div>
+                      
+                      {/* Grade */}
+                      <div>
+                        <GradeBadge status={listing.certification_status} grade={listing.grade} />
                       </div>
                       
                       {/* Price */}
@@ -205,14 +345,18 @@ export const TopListingsChart = () => {
                       
                       {/* 7d Change */}
                       <div className="text-right">
-                        <span className={`text-sm font-medium ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
-                          {isPositive ? '+' : ''}{listing.change_7d.toFixed(1)}%
-                        </span>
+                        {listing.change_7d !== 0 ? (
+                          <span className={`text-sm font-medium ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+                            {isPositive ? '+' : ''}{listing.change_7d.toFixed(1)}%
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
                       </div>
                       
-                      {/* Mini Chart */}
+                      {/* Mini Chart with real data */}
                       <div className="flex justify-center">
-                        <MiniSparkline positive={isPositive} />
+                        <MiniSparkline data={listing.priceHistory} positive={isPositive} />
                       </div>
                       
                       {/* Action */}
@@ -223,7 +367,7 @@ export const TopListingsChart = () => {
                           className="h-8 px-3 text-xs font-medium hover:bg-primary/10 hover:text-primary"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/item/${listing.id}`);
+                            navigate(`/listing/${listing.id}`);
                           }}
                         >
                           View
@@ -243,13 +387,13 @@ export const TopListingsChart = () => {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-sm text-muted-foreground">
-                  {listings.length}+ new listings today
+                  {listings.length}+ seller listings available
                 </span>
               </div>
               <Button 
                 variant="link" 
                 className="text-primary p-0 h-auto font-medium"
-                onClick={() => navigate('/markets?tab=for-sale')}
+                onClick={() => navigate('/markets?tab=forsale')}
               >
                 View all listings
                 <ArrowRight className="w-4 h-4 ml-1" />

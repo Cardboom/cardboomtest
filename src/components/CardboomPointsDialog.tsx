@@ -7,6 +7,7 @@ import { useCardboomPoints } from '@/hooks/useCardboomPoints';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface CardboomPointsDialogProps {
   open: boolean;
@@ -16,6 +17,7 @@ interface CardboomPointsDialogProps {
 export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialogProps) => {
   const [userId, setUserId] = useState<string | undefined>();
   const { t } = useLanguage();
+  const { currency, formatPrice } = useCurrency();
   
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -24,6 +26,12 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
   }, []);
 
   const { balance, totalEarned, totalSpent, history, loading } = useCardboomPoints(userId);
+
+  // Convert gems to currency value (1 gem = $0.01 USD base)
+  const getGemValue = (gemAmount: number) => {
+    const usdValue = gemAmount * 0.01;
+    return formatPrice(usdValue);
+  };
 
   const getSourceIcon = (source: string) => {
     switch (source) {
@@ -77,13 +85,13 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                 </span>
               </div>
               <p className="text-sm text-sky-400/80 font-medium mt-1">
-                ≈ ${loading ? '...' : (balance * 0.01).toFixed(2)} USD
+                ≈ {loading ? '...' : getGemValue(balance)}
               </p>
               <p className="text-xs text-muted-foreground mt-2">
                 Earned: {totalEarned.toLocaleString()} • Spent: {totalSpent.toLocaleString()}
               </p>
               <p className="text-[10px] text-muted-foreground/70 mt-1">
-                1 gem = $0.01
+                1 gem = {getGemValue(1)}
               </p>
             </div>
           </div>
@@ -139,9 +147,9 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                   Example Earnings
                 </h4>
                 <div className="text-xs text-muted-foreground space-y-1">
-                  <p>• $100 top-up → <span className="text-sky-400 font-medium">0.20 gems</span></p>
-                  <p>• $500 card purchase → <span className="text-sky-400 font-medium">1.00 gems</span></p>
-                  <p>• $2.50 Card War bet → <span className="text-sky-400 font-medium">0.005 gems</span></p>
+                  <p>• {formatPrice(100)} top-up → <span className="text-sky-400 font-medium">0.20 gems</span></p>
+                  <p>• {formatPrice(500)} card purchase → <span className="text-sky-400 font-medium">1.00 gems</span></p>
+                  <p>• {formatPrice(2.50)} Card War bet → <span className="text-sky-400 font-medium">0.005 gems</span></p>
                 </div>
               </div>
             </TabsContent>
@@ -175,9 +183,14 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
                           </p>
                         </div>
                       </div>
-                      <Badge variant={item.transaction_type === 'earn' ? 'default' : 'destructive'} className="font-mono">
-                        {item.transaction_type === 'earn' ? '+' : ''}{item.amount.toFixed(2)}
-                      </Badge>
+                      <div className="text-right">
+                        <Badge variant={item.transaction_type === 'earn' ? 'default' : 'destructive'} className="font-mono">
+                          {item.transaction_type === 'earn' ? '+' : ''}{item.amount.toFixed(2)}
+                        </Badge>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          ≈ {getGemValue(Math.abs(item.amount))}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
