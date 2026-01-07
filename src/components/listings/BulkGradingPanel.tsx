@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Award, Store, CheckSquare, Square, ArrowRight, Sparkles } from 'lucide-react';
+import { Award, Store, CheckSquare, Square, ArrowRight, Sparkles, Loader2 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface Listing {
   id: string;
@@ -22,13 +24,15 @@ interface Listing {
 interface BulkGradingPanelProps {
   listings: Listing[];
   onNavigateToListing?: (id: string) => void;
+  onGradingSubmitted?: () => void;
 }
 
-export function BulkGradingPanel({ listings, onNavigateToListing }: BulkGradingPanelProps) {
+export function BulkGradingPanel({ listings, onNavigateToListing, onGradingSubmitted }: BulkGradingPanelProps) {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkMode, setBulkMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filter ungraded listings
   const ungradedListings = listings.filter(l => 
@@ -53,11 +57,39 @@ export function BulkGradingPanel({ listings, onNavigateToListing }: BulkGradingP
     }
   };
 
-  const handleBulkGrade = () => {
+  const handleBulkGrade = async () => {
     if (selectedIds.size === 0) return;
-    // Navigate to grading page with selected listing IDs
-    const ids = Array.from(selectedIds).join(',');
-    navigate(`/grading/new?listings=${ids}`);
+    
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('grade-listing', {
+        body: {
+          listing_ids: Array.from(selectedIds),
+          speed_tier: 'standard',
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        if (data.error === 'Insufficient balance') {
+          toast.error(`Insufficient balance. Need $${data.required}, have $${data.available}`);
+          navigate('/wallet');
+          return;
+        }
+        throw new Error(data.error);
+      }
+
+      toast.success(`${data.orders_created} card(s) submitted for grading!`);
+      setSelectedIds(new Set());
+      setBulkMode(false);
+      onGradingSubmitted?.();
+    } catch (error) {
+      console.error('Bulk grading error:', error);
+      toast.error('Failed to submit for grading. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (listings.length === 0) {
@@ -110,12 +142,21 @@ export function BulkGradingPanel({ listings, onNavigateToListing }: BulkGradingP
                   <Button
                     size="sm"
                     onClick={handleBulkGrade}
-                    disabled={selectedIds.size === 0}
+                    disabled={selectedIds.size === 0 || isSubmitting}
                     className="bg-gradient-to-r from-primary to-blue-500"
                   >
-                    <Award className="w-4 h-4 mr-1" />
-                    Grade {selectedIds.size} Card{selectedIds.size !== 1 ? 's' : ''}
-                    <ArrowRight className="w-4 h-4 ml-1" />
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                        Grading...
+                      </>
+                    ) : (
+                      <>
+                        <Award className="w-4 h-4 mr-1" />
+                        Grade {selectedIds.size} (${selectedIds.size * 10})
+                        <ArrowRight className="w-4 h-4 ml-1" />
+                      </>
+                    )}
                   </Button>
                 </>
               ) : (

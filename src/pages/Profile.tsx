@@ -543,6 +543,7 @@ const Profile = () => {
                   <BulkGradingPanel 
                     listings={portfolioData.listings}
                     onNavigateToListing={(id) => navigate(`/listing/${id}`)}
+                    onGradingSubmitted={() => refetchPortfolio()}
                   />
                 )}
 
