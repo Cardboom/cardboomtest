@@ -3,7 +3,7 @@ export const categoryLabels: Record<string, string> = {
   'all': 'All Categories',
   'pokemon': 'Pokémon',
   'yugioh': 'Yu-Gi-Oh!',
-  'mtg': 'Magic: The Gathering',
+  'mtg': 'MTG',
   'lorcana': 'Disney Lorcana',
   'one-piece': 'One Piece',
   'onepiece': 'One Piece',
@@ -68,7 +68,7 @@ export const getCategoryIcon = (category: string): string => {
 // Main categories to display in navigation (sorted by popularity)
 export const mainCategories = [
   { id: 'all', label: 'All', icon: '📦', count: 35000 },
-  { id: 'mtg', label: 'Magic: The Gathering', icon: '🪄', count: 9790 },
+  { id: 'mtg', label: 'MTG', icon: '🪄', count: 9790 },
   { id: 'yugioh', label: 'Yu-Gi-Oh!', icon: '🔮', count: 9690 },
   { id: 'pokemon', label: 'Pokémon', icon: '⚡', count: 9151 },
   { id: 'gaming', label: 'Video Games', icon: '🎮', count: 7006 },

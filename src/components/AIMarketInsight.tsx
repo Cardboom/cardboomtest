@@ -107,7 +107,7 @@ export const AIMarketInsight = () => {
           const categoryLabels: Record<string, string> = {
             pokemon: 'Pokemon',
             yugioh: 'Yu-Gi-Oh!',
-            mtg: 'Magic: The Gathering',
+            mtg: 'MTG',
             lorcana: 'Disney Lorcana',
             'lol-riftbound': 'LoL Riftbound',
             gaming: 'Gaming',
