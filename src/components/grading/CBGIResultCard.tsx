@@ -176,43 +176,55 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
           </div>
         )}
 
-        {/* Estimated Value Section */}
-        {(order.estimated_value_raw || order.estimated_value_graded) && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-4 p-4 rounded-lg bg-gradient-to-br from-emerald-500/10 to-green-500/5 border border-emerald-500/20"
-          >
-            <div className="flex items-center gap-2 mb-3">
+        {/* Estimated Value Section - Always show for completed orders */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-4 p-4 rounded-lg bg-gradient-to-br from-emerald-500/10 to-green-500/5 border border-emerald-500/20"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-emerald-600" />
               <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Estimated Value</span>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 rounded-lg bg-background/50">
-                <p className="text-xs text-muted-foreground mb-1">Raw / Ungraded</p>
-                <p className="text-xl font-bold text-foreground">
-                  ${order.estimated_value_raw?.toFixed(2) || '—'}
-                </p>
-              </div>
-              <div className="text-center p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Graded Value</p>
-                <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
-                  ${order.estimated_value_graded?.toFixed(2) || '—'}
-                </p>
-              </div>
-            </div>
-            {order.value_increase_percent && order.value_increase_percent > 0 && (
-              <div className="mt-3 flex items-center justify-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                <ArrowUpRight className="w-4 h-4" />
-                <span className="text-sm font-semibold">+{order.value_increase_percent}% value increase with grading</span>
-              </div>
+            {order.estimated_value_raw && order.estimated_value_graded && (
+              <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
+                +${(order.estimated_value_graded - order.estimated_value_raw).toFixed(0)} Value Added
+              </Badge>
             )}
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              AI-estimated values based on current market data
-            </p>
-          </motion.div>
-        )}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-3 rounded-lg bg-background/50 border border-border/30">
+              <p className="text-xs text-muted-foreground mb-1">Ungraded (Before)</p>
+              <p className="text-xl font-bold text-foreground">
+                {order.estimated_value_raw ? `$${order.estimated_value_raw.toFixed(0)}` : '—'}
+              </p>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-1 font-medium">
+                CB {cbgiScore?.toFixed(1)} Graded
+              </p>
+              <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+                {order.estimated_value_graded ? `$${order.estimated_value_graded.toFixed(0)}` : '—'}
+              </p>
+            </div>
+          </div>
+          
+          {order.value_increase_percent && order.value_increase_percent > 0 && (
+            <div className="mt-3 p-2 rounded-lg bg-emerald-500/5 flex items-center justify-center gap-2">
+              <ArrowUpRight className="w-5 h-5 text-emerald-500" />
+              <span className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                +{order.value_increase_percent}% ROI from grading
+              </span>
+            </div>
+          )}
+          
+          <p className="text-[10px] text-muted-foreground mt-3 text-center">
+            AI-estimated values based on current market data • For reference only
+          </p>
+        </motion.div>
         {riskFlags.length > 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}

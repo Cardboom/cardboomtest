@@ -171,7 +171,7 @@ serve(async (req) => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${supabaseServiceKey}`,
             },
-            body: JSON.stringify({ order_id: order.id }),
+            body: JSON.stringify({ orderId: order.id }), // Use orderId to match cbgi-grade
           }).catch(err => {
             console.error('Failed to trigger grading for order:', order.id, err);
           });

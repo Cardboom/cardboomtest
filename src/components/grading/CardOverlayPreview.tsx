@@ -4,6 +4,9 @@ import { RoundedBox, OrbitControls } from '@react-three/drei';
 import { GradingOrder } from '@/hooks/useGrading';
 import { cn } from '@/lib/utils';
 import * as THREE from 'three';
+import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
+import { Award, RotateCw } from 'lucide-react';
 
 interface CardOverlayPreviewProps {
   order: GradingOrder;
@@ -82,21 +85,14 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
     meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
   });
 
-  const width = 2.5;
-  const height = 3.5;
-  const depth = 0.03;
-
-  // Standard TCG card with boxGeometry (RoundedBox doesn't support multi-material)
   return (
     <group ref={meshRef}>
       <mesh>
         <boxGeometry args={[2.5, 3.5, 0.04]} />
-        {/* Right, Left, Top, Bottom edges - dark */}
         <meshStandardMaterial attach="material-0" color="#0a0a0a" />
         <meshStandardMaterial attach="material-1" color="#0a0a0a" />
         <meshStandardMaterial attach="material-2" color="#0a0a0a" />
         <meshStandardMaterial attach="material-3" color="#0a0a0a" />
-        {/* Front face (Z+) with card front image */}
         <meshStandardMaterial 
           attach="material-4" 
           map={frontTexture}
@@ -104,7 +100,6 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
           roughness={0.2}
           metalness={0.05}
         />
-        {/* Back face (Z-) with card back image */}
         <meshStandardMaterial 
           attach="material-5" 
           map={backTexture}
@@ -117,7 +112,7 @@ function CardMesh({ frontUrl, backUrl }: { frontUrl: string; backUrl: string }) 
   );
 }
 
-// Fallback component while loading
+// Fallback component while 3D loads
 function CardFallback() {
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -136,7 +131,71 @@ function CardFallback() {
   );
 }
 
+// Simple 2D card preview for fast initial load
+function Simple2DPreview({ order, onLoad3D }: { order: GradingOrder; onLoad3D: () => void }) {
+  const getGradeBadgeColor = (grade: number | null) => {
+    if (!grade) return 'from-gray-500 to-gray-600';
+    if (grade >= 9.5) return 'from-amber-400 to-yellow-500';
+    if (grade >= 9) return 'from-emerald-400 to-green-500';
+    if (grade >= 8) return 'from-blue-400 to-cyan-500';
+    if (grade >= 7) return 'from-purple-400 to-violet-500';
+    return 'from-gray-400 to-slate-500';
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="relative w-[280px] rounded-2xl overflow-hidden bg-gradient-to-b from-gray-900 to-black shadow-2xl p-4"
+    >
+      {/* Card image */}
+      <div className="relative rounded-xl overflow-hidden">
+        {order.front_image_url ? (
+          <img 
+            src={order.front_image_url} 
+            alt="Card preview"
+            className="w-full aspect-[2.5/3.5] object-cover"
+          />
+        ) : (
+          <div className="w-full aspect-[2.5/3.5] bg-muted/30 flex items-center justify-center">
+            <Award className="w-12 h-12 text-muted-foreground/30" />
+          </div>
+        )}
+        
+        {/* Grade overlay */}
+        {order.final_grade && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+            <div className={cn(
+              'px-5 py-1.5 rounded-full bg-gradient-to-r shadow-lg backdrop-blur-sm',
+              getGradeBadgeColor(order.final_grade)
+            )}>
+              <span className="text-white font-bold text-base drop-shadow flex items-center gap-1.5">
+                <Award className="w-4 h-4" />
+                CB {order.final_grade.toFixed(1)}
+              </span>
+            </div>
+          </div>
+        )}
+        
+        {/* Shine overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
+      </div>
+      
+      {/* View 3D button */}
+      <button 
+        onClick={onLoad3D}
+        className="mt-3 w-full py-2 px-4 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/20 text-sm font-medium text-primary flex items-center justify-center gap-2 transition-colors"
+      >
+        <RotateCw className="w-4 h-4" />
+        View 3D Card
+      </button>
+    </motion.div>
+  );
+}
+
 export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
+  const [show3D, setShow3D] = useState(false);
+  
   const getGradeBadgeColor = (grade: number | null) => {
     if (!grade) return 'from-gray-500 to-gray-600';
     if (grade >= 9.5) return 'from-amber-400 to-yellow-500';
@@ -148,6 +207,15 @@ export function CardOverlayPreview({ order }: CardOverlayPreviewProps) {
 
   const frontUrl = order.front_image_url || '';
   const backUrl = order.back_image_url || order.front_image_url || '';
+
+  // Show simple 2D preview first for fast load
+  if (!show3D) {
+    return (
+      <div className="flex flex-col items-center">
+        <Simple2DPreview order={order} onLoad3D={() => setShow3D(true)} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center">
