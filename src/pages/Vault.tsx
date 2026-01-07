@@ -307,6 +307,35 @@ const VaultPage = () => {
             </motion.div>
           </div>
 
+          {/* Grade from Vault CTA */}
+          {verifiedItems.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <Card className="p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-primary/20">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Grade Your Cards from Vault</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Get CBGI certification for verified items • 20% off 2nd grading monthly
+                      </p>
+                    </div>
+                  </div>
+                  <Button onClick={() => navigate('/grading')} className="gap-2 shrink-0">
+                    <Shield className="w-4 h-4" />
+                    Start Grading
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
           {/* Tabs & Items */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-muted/50">

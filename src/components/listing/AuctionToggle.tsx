@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Gavel, Calendar, Clock, DollarSign, Info } from 'lucide-react';
+import { Gavel, Calendar, Clock, DollarSign, Info, Lock, Building2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuctionEligibility } from '@/hooks/useAuctionEligibility';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuctionToggleProps {
   enabled: boolean;
@@ -49,8 +51,45 @@ export const AuctionToggle = ({
   startDate,
   onStartDateChange,
 }: AuctionToggleProps) => {
+  const [userId, setUserId] = useState<string | undefined>();
+  
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id);
+    });
+  }, []);
+
+  const { canCreate, isEnterprise, loading } = useAuctionEligibility(userId);
   const startingPriceNum = parseFloat(startingPrice) || 0;
   const estimatedFee = startingPriceNum * SALE_FEE_RATE;
+
+  // Only show for enterprise sellers
+  if (!loading && !isEnterprise) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/30">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-muted">
+              <Gavel className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div>
+              <Label className="text-base font-medium flex items-center gap-2 text-muted-foreground">
+                Auction Mode
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Building2 className="h-3 w-3" />
+                  Enterprise Only
+                </Badge>
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Upgrade to Enterprise to create auctions
+              </p>
+            </div>
+          </div>
+          <Lock className="h-5 w-5 text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -63,6 +102,10 @@ export const AuctionToggle = ({
             <Label className="text-base font-medium flex items-center gap-2">
               Auction Mode
               <Badge variant="outline" className="text-xs">$0.50 listing fee</Badge>
+              <Badge className="text-xs gap-1 bg-gradient-to-r from-violet-600 to-purple-600 text-white border-0">
+                <Building2 className="h-3 w-3" />
+                Enterprise
+              </Badge>
             </Label>
             <p className="text-sm text-muted-foreground">
               Let buyers bid on your item • 5% sale fee
