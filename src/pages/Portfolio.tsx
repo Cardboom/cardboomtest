@@ -35,60 +35,6 @@ interface PortfolioItem {
   image: string;
 }
 
-// Initial mock portfolio data
-const INITIAL_PORTFOLIO: PortfolioItem[] = [
-  { 
-    id: '1', 
-    name: 'Charizard Base Set', 
-    grade: 'psa10' as CardGrade,
-    purchasePrice: 380000, 
-    currentPrice: 420000,
-    quantity: 1,
-    inVault: true,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: '2', 
-    name: 'LeBron James Rookie', 
-    grade: 'psa10' as CardGrade,
-    purchasePrice: 220000, 
-    currentPrice: 245000,
-    quantity: 1,
-    inVault: false,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: '3', 
-    name: 'Monkey D. Luffy Leader', 
-    grade: 'psa10' as CardGrade,
-    purchasePrice: 500, 
-    currentPrice: 850,
-    quantity: 3,
-    inVault: false,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: '4', 
-    name: 'Pikachu Illustrator', 
-    grade: 'psa9' as CardGrade,
-    purchasePrice: 2200000, 
-    currentPrice: 2500000,
-    quantity: 1,
-    inVault: true,
-    image: '/placeholder.svg'
-  },
-  { 
-    id: '5', 
-    name: 'Michael Jordan Fleer Rookie', 
-    grade: 'psa8' as CardGrade,
-    purchasePrice: 45000, 
-    currentPrice: 52000,
-    quantity: 1,
-    inVault: false,
-    image: '/placeholder.svg'
-  },
-];
-
 const Portfolio = () => {
   const navigate = useNavigate();
   const { formatPrice: formatCurrencyPrice } = useCurrency();
@@ -97,26 +43,86 @@ const Portfolio = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
-  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>(INITIAL_PORTFOLIO);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
-  const handleRemoveItem = (id: string) => {
-    setPortfolioItems(items => items.filter(item => item.id !== id));
-    setSelectedItems(prev => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
     });
-    toast.success('Item removed from portfolio');
+  }, []);
+
+  // Fetch real portfolio data from database
+  const { data: portfolioItems = [], refetch: refetchPortfolio } = useQuery({
+    queryKey: ['portfolio-items', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      // Fetch portfolio_items with market data
+      const { data: dbItems, error } = await supabase
+        .from('portfolio_items')
+        .select('*, market_item:market_items(*)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Transform to PortfolioItem format
+      return (dbItems || []).map(item => ({
+        id: item.id,
+        name: item.custom_name || item.market_item?.name || 'Unknown Card',
+        grade: (item.grade || 'raw') as CardGrade,
+        purchasePrice: item.purchase_price || 0,
+        currentPrice: item.market_item?.current_price || item.purchase_price || 0,
+        quantity: item.quantity || 1,
+        inVault: false,
+        image: item.image_url || item.market_item?.image_url || '/placeholder.svg',
+      }));
+    },
+    enabled: !!user,
+  });
+
+  const handleRemoveItem = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('portfolio_items')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user?.id);
+      
+      if (error) throw error;
+      
+      refetchPortfolio();
+      setSelectedItems(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      toast.success('Item removed from portfolio');
+    } catch (error) {
+      toast.error('Failed to remove item');
+    }
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (selectedItems.size === 0) return;
-    setPortfolioItems(items => items.filter(item => !selectedItems.has(item.id)));
-    toast.success(`${selectedItems.size} item${selectedItems.size > 1 ? 's' : ''} removed from portfolio`);
-    setSelectedItems(new Set());
-    setIsSelectionMode(false);
+    
+    try {
+      const { error } = await supabase
+        .from('portfolio_items')
+        .delete()
+        .in('id', Array.from(selectedItems))
+        .eq('user_id', user?.id);
+      
+      if (error) throw error;
+      
+      refetchPortfolio();
+      toast.success(`${selectedItems.size} item${selectedItems.size > 1 ? 's' : ''} removed from portfolio`);
+      setSelectedItems(new Set());
+      setIsSelectionMode(false);
+    } catch (error) {
+      toast.error('Failed to remove items');
+    }
   };
 
   const toggleItemSelection = (id: string) => {
@@ -139,11 +145,6 @@ const Portfolio = () => {
     }
   };
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-  }, []);
 
   // Fetch user's fractional holdings
   const { data: fractionalHoldings } = useQuery({
