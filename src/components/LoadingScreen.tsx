@@ -10,7 +10,7 @@ export const LoadingScreen = () => {
   const isDark = theme === 'dark';
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center">
+    <div className="fixed inset-0 z-[9999] bg-background dark:bg-[hsl(222,47%,11%)] flex flex-col items-center justify-center">
       {/* Animated background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />

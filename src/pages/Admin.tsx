@@ -53,6 +53,7 @@ import { WhaleInviteManager } from '@/components/admin/WhaleInviteManager';
 import { SystemAccountsManager } from '@/components/admin/SystemAccountsManager';
 import { InventoryIntegrityDashboard } from '@/components/admin/InventoryIntegrityDashboard';
 import { DigitalProductsManager } from '@/components/admin/DigitalProductsManager';
+import { EscalationManagement } from '@/components/admin/EscalationManagement';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
