@@ -328,17 +328,54 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
         }]) || []);
       }
       
-      // Transform to include seller info at top level
-      const listingsWithSeller = (data || []).map((listing: any) => {
+      // Fetch grading orders for listings that have grading_order_id
+      const gradingOrderIds = (data || [])
+        .filter((l: any) => l.grading_order_id)
+        .map((l: any) => l.grading_order_id);
+      
+      let gradingMap = new Map<string, { status: string; cbgi_score: number | null }>();
+      
+      if (gradingOrderIds.length > 0) {
+        const { data: gradingOrders } = await supabase
+          .from('grading_orders')
+          .select('id, status, cbgi_score_0_100')
+          .in('id', gradingOrderIds);
+        
+        gradingMap = new Map(gradingOrders?.map(g => [g.id, { 
+          status: g.status, 
+          cbgi_score: g.cbgi_score_0_100 
+        }]) || []);
+      }
+      
+      // Transform to include seller info and grading data at top level
+      const listingsWithData = (data || []).map((listing: any) => {
         const profile = profileMap.get(listing.seller_id);
+        const grading = listing.grading_order_id ? gradingMap.get(listing.grading_order_id) : null;
+        
+        // Determine grading display
+        let gradingCompany = listing.grading_company;
+        let grade = listing.grade;
+        
+        if (grading) {
+          if (grading.status === 'completed' && grading.cbgi_score !== null) {
+            gradingCompany = 'CardBoom';
+            grade = (grading.cbgi_score / 10).toFixed(1);
+          } else if (grading.status === 'pending' || grading.status === 'queued' || grading.status === 'processing') {
+            gradingCompany = 'CardBoom';
+            grade = 'Pending';
+          }
+        }
+        
         return {
           ...listing,
           seller_username: profile?.display_name || 'Seller',
           seller_country_code: profile?.country_code || 'TR',
+          grading_company: gradingCompany,
+          grade: grade,
         };
       });
       
-      setListings(listingsWithSeller);
+      setListings(listingsWithData);
       setLastUpdated(new Date());
     } catch (err) {
       console.error('Error fetching listings:', err);
