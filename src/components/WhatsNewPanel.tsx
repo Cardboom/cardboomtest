@@ -121,6 +121,12 @@ export function WhatsNewPanel() {
                 {listing.title}
               </h3>
               
+              {listing.set_name && (
+                <p className="text-xs text-muted-foreground truncate">
+                  {listing.set_name}
+                </p>
+              )}
+              
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <span className="text-base leading-none">
                   {getCountryFlag(listing.seller_country_code || 'TR')}
