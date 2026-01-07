@@ -347,28 +347,30 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
       
       // Fetch all grading orders for these sellers to match by title
       if (sellerIds.length > 0) {
-        const { data: gradingOrders } = await supabase
+        const { data: gradingOrders, error: gradingError } = await supabase
           .from('grading_orders')
           .select('id, user_id, card_name, status, cbgi_score_0_100')
           .in('user_id', sellerIds);
         
-        // Map by ID for direct lookup
-        gradingOrders?.forEach(g => {
+        if (gradingError) {
+          console.error('[useListings] Error fetching grading orders:', gradingError);
+        }
+        
+        // Map by ID for direct lookup and filter out nulls in JS
+        gradingOrders?.filter(g => g.card_name).forEach(g => {
           gradingMap.set(g.id, { 
             status: g.status, 
             cbgi_score: g.cbgi_score_0_100 
           });
           // Also map by seller+normalized title for fallback matching
-          if (g.card_name) {
-            const key = `${g.user_id}:${normalizeCardName(g.card_name)}`;
-            // Only keep the most recent/completed one
-            const existing = gradingBySellerTitle.get(key);
-            if (!existing || g.status === 'completed') {
-              gradingBySellerTitle.set(key, {
-                status: g.status,
-                cbgi_score: g.cbgi_score_0_100
-              });
-            }
+          const key = `${g.user_id}:${normalizeCardName(g.card_name)}`;
+          // Only keep the completed one, or the first one if none are completed
+          const existing = gradingBySellerTitle.get(key);
+          if (!existing || (g.status === 'completed' && existing.status !== 'completed')) {
+            gradingBySellerTitle.set(key, {
+              status: g.status,
+              cbgi_score: g.cbgi_score_0_100
+            });
           }
         });
       }
