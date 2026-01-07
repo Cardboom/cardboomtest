@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
+import { ItemListings } from '@/components/item/ItemListings';
 import { ShareButton } from '@/components/ShareButton';
 import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
 import { CardPriceEstimates } from '@/components/CardPriceEstimates';
@@ -507,87 +508,9 @@ const CardPage = () => {
               )}
             </section>
 
-            {/* Active Listings */}
+            {/* Active Listings - TCGPlayer style */}
             <section aria-labelledby="listings-heading">
-              <div className="glass rounded-xl p-6">
-                <h2 id="listings-heading" className="font-display text-xl font-semibold text-foreground mb-4">
-                  {t.market.activeListings} ({activeListings?.length || 0})
-                </h2>
-                {activeListings && activeListings.length > 0 ? (
-                  <div className="space-y-3">
-                    {activeListings.map((listing) => {
-                      const isOwner = user?.id === listing.seller_id;
-                      return (
-                        <Card key={listing.id} className="glass hover:border-primary/30 transition-colors">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <img 
-                                  src={listing.image_url || '/placeholder.svg'} 
-                                  alt={listing.title}
-                                  className="w-16 h-16 object-cover rounded-lg"
-                                  loading="lazy"
-                                />
-                                <div>
-                                  <h3 className="font-semibold">{listing.title}</h3>
-                                  <p className="text-sm text-muted-foreground">{listing.condition}</p>
-                                  {isOwner && (
-                                    <Badge variant="secondary" className="mt-1 text-xs">Your listing</Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right space-y-2">
-                                <p className="font-display text-xl font-bold">${listing.price}</p>
-                                <div className="flex gap-2">
-                                  <Button size="sm" asChild>
-                                    <Link to={`/listing/${listing.id}`}>
-                                      {t.market.view} <ExternalLink className="w-3 h-3 ml-1" />
-                                    </Link>
-                                  </Button>
-                                  {isOwner && (
-                                    <Button 
-                                      size="sm" 
-                                      variant="destructive"
-                                      onClick={async (e) => {
-                                        e.preventDefault();
-                                        if (!confirm('Are you sure you want to delete this listing?')) return;
-                                        const { error } = await supabase
-                                          .from('listings')
-                                          .delete()
-                                          .eq('id', listing.id)
-                                          .eq('seller_id', user.id);
-                                        if (error) {
-                                          toast.error('Failed to delete listing');
-                                        } else {
-                                          toast.success('Listing deleted');
-                                          queryClient.invalidateQueries({ queryKey: ['card-listings'] });
-                                        }
-                                      }}
-                                    >
-                                      Delete
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <ShoppingCart className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-semibold mb-2">No Active Listings</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Be the first to list this item!
-                    </p>
-                    <Button onClick={() => navigate('/sell')}>
-                      List Now
-                    </Button>
-                  </div>
-                )}
-              </div>
+              {item && <ItemListings itemId={item.id} itemName={item.name} />}
             </section>
           </div>
         </div>
