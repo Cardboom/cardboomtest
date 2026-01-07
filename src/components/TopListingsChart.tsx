@@ -117,8 +117,8 @@ export const TopListingsChart = () => {
 
       // Build grade map by grading_order_id
       const gradeMap = new Map<string, { score: string; status: string }>();
-      // Build fallback map by seller + normalized title
-      const fallbackGradeMap = new Map<string, { score: string; status: string }>();
+      // Build fallback array for fuzzy matching by seller
+      const sellerGrades = new Map<string, Array<{ normalizedName: string; score: string; status: string }>>();
       
       // Improved normalization - removes all non-alphanumeric and handles dots/spaces
       const normalizeCardName = (name: string) => 
@@ -137,16 +137,39 @@ export const TopListingsChart = () => {
           gradeMap.set(go.id, { score: score || '', status: go.status });
         }
         
-        // Fallback by seller + card name
-        if (go.card_name && go.user_id) {
-          const key = `${go.user_id}-${normalizeCardName(go.card_name)}`;
-          const existing = fallbackGradeMap.get(key);
-          // Prefer completed over pending
-          if (!existing || (go.status === 'completed' && existing.status !== 'completed')) {
-            fallbackGradeMap.set(key, { score: score || '', status: go.status });
-          }
+        // Build seller-based fuzzy matching array
+        if (go.card_name && go.user_id && score) {
+          const existing = sellerGrades.get(go.user_id) || [];
+          existing.push({
+            normalizedName: normalizeCardName(go.card_name),
+            score: score || '',
+            status: go.status
+          });
+          sellerGrades.set(go.user_id, existing);
         }
       });
+      
+      // Function to find best matching grade for a listing
+      const findMatchingGrade = (sellerId: string, listingTitle: string): { score: string; status: string } | null => {
+        const sellerGradeList = sellerGrades.get(sellerId);
+        if (!sellerGradeList?.length) return null;
+        
+        const normalizedTitle = normalizeCardName(listingTitle);
+        
+        // Try exact match first
+        const exactMatch = sellerGradeList.find(g => g.normalizedName === normalizedTitle);
+        if (exactMatch) return { score: exactMatch.score, status: exactMatch.status };
+        
+        // Try: listing title contains grading card name (e.g., "Monkey D. Luffy EB02-061" contains "monkeydluffy")
+        const containsMatch = sellerGradeList.find(g => normalizedTitle.includes(g.normalizedName));
+        if (containsMatch) return { score: containsMatch.score, status: containsMatch.status };
+        
+        // Try: grading card name contains listing title
+        const reverseMatch = sellerGradeList.find(g => g.normalizedName.includes(normalizedTitle) && normalizedTitle.length > 5);
+        if (reverseMatch) return { score: reverseMatch.score, status: reverseMatch.status };
+        
+        return null;
+      };
 
       // Fetch price data for market items
       const marketItemIds = listingsData
@@ -216,10 +239,9 @@ export const TopListingsChart = () => {
           gradeInfo = gradeMap.get(listing.grading_order_id) || null;
         }
         
-        // Fallback: match by seller + normalized title
+        // Fallback: fuzzy match by seller + title
         if (!gradeInfo?.score) {
-          const fallbackKey = `${listing.seller_id}-${normalizeCardName(listing.title)}`;
-          gradeInfo = fallbackGradeMap.get(fallbackKey) || null;
+          gradeInfo = findMatchingGrade(listing.seller_id, listing.title);
         }
 
         // Determine certification status
