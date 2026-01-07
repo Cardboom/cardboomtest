@@ -79,10 +79,7 @@ export const SellerInfoCard = ({
             <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground">{seller.username}</span>
               {seller.isVerified && (
-                <Badge className="bg-primary/20 text-primary border-primary/30 gap-1">
-                  <BadgeCheck className="w-3 h-3" />
-                  Verified
-                </Badge>
+                <BadgeCheck className="w-5 h-5 text-[#0abab5]" />
               )}
             </div>
             {seller.memberSince && (
