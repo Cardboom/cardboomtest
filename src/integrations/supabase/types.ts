@@ -4658,15 +4658,63 @@ export type Database = {
           },
         ]
       }
+      order_escalations: {
+        Row: {
+          created_at: string
+          escalated_by: string
+          escalation_type: string
+          id: string
+          order_id: string
+          reason: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          escalated_by: string
+          escalation_type: string
+          id?: string
+          order_id: string
+          reason?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          escalated_by?: string
+          escalation_type?: string
+          id?: string
+          order_id?: string
+          reason?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_escalations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
+          admin_escalated_at: string | null
+          buyer_confirmed_at: string | null
           buyer_fee: number
           buyer_fee_cents: number | null
           buyer_id: string
           card_instance_id: string | null
+          confirmation_deadline: string | null
           created_at: string
           delivery_deadline: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
+          escalation_reason: string | null
           escrow_locked_at: string | null
           escrow_released_at: string | null
           escrow_status: string | null
@@ -4678,6 +4726,7 @@ export type Database = {
           price: number
           price_cents: number | null
           sale_lane: Database["public"]["Enums"]["sale_lane"] | null
+          seller_confirmed_at: string | null
           seller_fee: number
           seller_fee_cents: number | null
           seller_id: string
@@ -4689,13 +4738,17 @@ export type Database = {
           verification_required: boolean | null
         }
         Insert: {
+          admin_escalated_at?: string | null
+          buyer_confirmed_at?: string | null
           buyer_fee: number
           buyer_fee_cents?: number | null
           buyer_id: string
           card_instance_id?: string | null
+          confirmation_deadline?: string | null
           created_at?: string
           delivery_deadline?: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
+          escalation_reason?: string | null
           escrow_locked_at?: string | null
           escrow_released_at?: string | null
           escrow_status?: string | null
@@ -4707,6 +4760,7 @@ export type Database = {
           price: number
           price_cents?: number | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
+          seller_confirmed_at?: string | null
           seller_fee: number
           seller_fee_cents?: number | null
           seller_id: string
@@ -4718,13 +4772,17 @@ export type Database = {
           verification_required?: boolean | null
         }
         Update: {
+          admin_escalated_at?: string | null
+          buyer_confirmed_at?: string | null
           buyer_fee?: number
           buyer_fee_cents?: number | null
           buyer_id?: string
           card_instance_id?: string | null
+          confirmation_deadline?: string | null
           created_at?: string
           delivery_deadline?: string | null
           delivery_option?: Database["public"]["Enums"]["delivery_option"]
+          escalation_reason?: string | null
           escrow_locked_at?: string | null
           escrow_released_at?: string | null
           escrow_status?: string | null
@@ -4736,6 +4794,7 @@ export type Database = {
           price?: number
           price_cents?: number | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
+          seller_confirmed_at?: string | null
           seller_fee?: number
           seller_fee_cents?: number | null
           seller_id?: string
