@@ -114,6 +114,27 @@ export const useAuctions = (category?: string) => {
 
       if (bidError) throw bidError;
 
+      // Send outbid notification to previous highest bidder
+      if (auction.highest_bidder_id && auction.highest_bidder_id !== session.user.id) {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            user_id: auction.highest_bidder_id,
+            type: 'outbid',
+            title: '⚠️ You\'ve Been Outbid!',
+            body: `Someone bid $${amount.toLocaleString()} on "${auction.title}". Bid now to stay in the lead!`,
+            data: { auction_id: auctionId, new_bid: amount },
+          },
+        });
+
+        // Mark previous bids as notified
+        await supabase
+          .from('auction_bids')
+          .update({ outbid_notified: true })
+          .eq('auction_id', auctionId)
+          .eq('bidder_id', auction.highest_bidder_id)
+          .eq('outbid_notified', false);
+      }
+
       // Update previous winning bids
       await supabase
         .from('auction_bids')

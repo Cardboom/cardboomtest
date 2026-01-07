@@ -287,6 +287,7 @@ export type Database = {
           is_auto_bid: boolean
           is_winning: boolean
           max_bid: number | null
+          outbid_notified: boolean | null
         }
         Insert: {
           amount: number
@@ -297,6 +298,7 @@ export type Database = {
           is_auto_bid?: boolean
           is_winning?: boolean
           max_bid?: number | null
+          outbid_notified?: boolean | null
         }
         Update: {
           amount?: number
@@ -307,6 +309,7 @@ export type Database = {
           is_auto_bid?: boolean
           is_winning?: boolean
           max_bid?: number | null
+          outbid_notified?: boolean | null
         }
         Relationships: [
           {
@@ -368,8 +371,10 @@ export type Database = {
           highest_bidder_id: string | null
           id: string
           image_url: string | null
+          listing_fee: number | null
           listing_id: string | null
           reserve_price: number | null
+          sale_fee_rate: number | null
           seller_id: string
           source_card_instance_id: string | null
           source_type: string
@@ -395,8 +400,10 @@ export type Database = {
           highest_bidder_id?: string | null
           id?: string
           image_url?: string | null
+          listing_fee?: number | null
           listing_id?: string | null
           reserve_price?: number | null
+          sale_fee_rate?: number | null
           seller_id: string
           source_card_instance_id?: string | null
           source_type?: string
@@ -422,8 +429,10 @@ export type Database = {
           highest_bidder_id?: string | null
           id?: string
           image_url?: string | null
+          listing_fee?: number | null
           listing_id?: string | null
           reserve_price?: number | null
+          sale_fee_rate?: number | null
           seller_id?: string
           source_card_instance_id?: string | null
           source_type?: string
@@ -4338,9 +4347,11 @@ export type Database = {
         Row: {
           amount: number
           buyer_id: string
+          counter_price: number | null
           created_at: string
           expires_at: string | null
           id: string
+          is_counter_offer: boolean | null
           listing_id: string
           message: string | null
           parent_offer_id: string | null
@@ -4351,9 +4362,11 @@ export type Database = {
         Insert: {
           amount: number
           buyer_id: string
+          counter_price?: number | null
           created_at?: string
           expires_at?: string | null
           id?: string
+          is_counter_offer?: boolean | null
           listing_id: string
           message?: string | null
           parent_offer_id?: string | null
@@ -4364,9 +4377,11 @@ export type Database = {
         Update: {
           amount?: number
           buyer_id?: string
+          counter_price?: number | null
           created_at?: string
           expires_at?: string | null
           id?: string
+          is_counter_offer?: boolean | null
           listing_id?: string
           message?: string | null
           parent_offer_id?: string | null
@@ -6963,6 +6978,7 @@ export type Database = {
           first_card_bonus_applied: boolean | null
           id: string
           image_url: string | null
+          last_storage_charge_at: string | null
           listing_id: string | null
           order_id: string | null
           owner_id: string
@@ -6971,7 +6987,9 @@ export type Database = {
           shipped_at: string | null
           shipping_fee_paid: number | null
           status: string | null
+          storage_fee_cents: number | null
           title: string
+          total_storage_fees_paid_cents: number | null
           tracking_number: string | null
           verified_at: string | null
         }
@@ -6986,6 +7004,7 @@ export type Database = {
           first_card_bonus_applied?: boolean | null
           id?: string
           image_url?: string | null
+          last_storage_charge_at?: string | null
           listing_id?: string | null
           order_id?: string | null
           owner_id: string
@@ -6994,7 +7013,9 @@ export type Database = {
           shipped_at?: string | null
           shipping_fee_paid?: number | null
           status?: string | null
+          storage_fee_cents?: number | null
           title: string
+          total_storage_fees_paid_cents?: number | null
           tracking_number?: string | null
           verified_at?: string | null
         }
@@ -7009,6 +7030,7 @@ export type Database = {
           first_card_bonus_applied?: boolean | null
           id?: string
           image_url?: string | null
+          last_storage_charge_at?: string | null
           listing_id?: string | null
           order_id?: string | null
           owner_id?: string
@@ -7017,7 +7039,9 @@ export type Database = {
           shipped_at?: string | null
           shipping_fee_paid?: number | null
           status?: string | null
+          storage_fee_cents?: number | null
           title?: string
+          total_storage_fees_paid_cents?: number | null
           tracking_number?: string | null
           verified_at?: string | null
         }
@@ -7067,6 +7091,60 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      vault_storage_charges: {
+        Row: {
+          amount_cents: number
+          billing_period_end: string
+          billing_period_start: string
+          charged_at: string
+          created_at: string
+          id: string
+          status: string
+          transaction_id: string | null
+          user_id: string
+          vault_item_id: string | null
+        }
+        Insert: {
+          amount_cents?: number
+          billing_period_end: string
+          billing_period_start: string
+          charged_at?: string
+          created_at?: string
+          id?: string
+          status?: string
+          transaction_id?: string | null
+          user_id: string
+          vault_item_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          billing_period_end?: string
+          billing_period_start?: string
+          charged_at?: string
+          created_at?: string
+          id?: string
+          status?: string
+          transaction_id?: string | null
+          user_id?: string
+          vault_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_storage_charges_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_storage_charges_vault_item_id_fkey"
+            columns: ["vault_item_id"]
+            isOneToOne: false
+            referencedRelation: "vault_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       verified_sellers: {
         Row: {

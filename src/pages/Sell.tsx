@@ -31,6 +31,8 @@ import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard'
 import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
 import { useCardIndexer } from '@/hooks/useCardIndexer';
 import { CertificationToggle, CertificationTier } from '@/components/listing/CertificationToggle';
+import { AuctionToggle, AUCTION_LISTING_FEE } from '@/components/listing/AuctionToggle';
+import { useAuctions } from '@/hooks/useAuctions';
 interface Listing {
   id: string;
   title: string;
@@ -111,6 +113,13 @@ const SellPage = () => {
     boostTier: 'none' as 'none' | '24h' | '7d' | 'top_category',
     certificationEnabled: true,
     certificationTier: 'standard' as 'standard' | 'express',
+    // Auction fields
+    isAuction: false,
+    auctionStartingPrice: '',
+    auctionReservePrice: '',
+    auctionBuyNowPrice: '',
+    auctionDurationDays: '7',
+    auctionStartDate: '',
   });
 
   useEffect(() => {
@@ -363,6 +372,12 @@ const SellPage = () => {
         boostTier: 'none',
         certificationEnabled: true,
         certificationTier: 'standard',
+        isAuction: false,
+        auctionStartingPrice: '',
+        auctionReservePrice: '',
+        auctionBuyNowPrice: '',
+        auctionDurationDays: '7',
+        auctionStartDate: '',
       });
       clearImage();
       fetchListings();
@@ -581,6 +596,12 @@ const SellPage = () => {
         boostTier: 'none',
         certificationEnabled: true,
         certificationTier: 'standard',
+        isAuction: false,
+        auctionStartingPrice: '',
+        auctionReservePrice: '',
+        auctionBuyNowPrice: '',
+        auctionDurationDays: '7',
+        auctionStartDate: '',
       });
       clearImage();
       setShowInstantSellDialog(false);
@@ -979,6 +1000,22 @@ const SellPage = () => {
                       tier={formData.certificationTier}
                       onEnabledChange={(enabled) => setFormData({ ...formData, certificationEnabled: enabled })}
                       onTierChange={(tier) => setFormData({ ...formData, certificationTier: tier })}
+                    />
+
+                    {/* Auction Mode */}
+                    <AuctionToggle
+                      enabled={formData.isAuction}
+                      onEnabledChange={(enabled) => setFormData({ ...formData, isAuction: enabled })}
+                      startingPrice={formData.auctionStartingPrice}
+                      onStartingPriceChange={(price) => setFormData({ ...formData, auctionStartingPrice: price })}
+                      reservePrice={formData.auctionReservePrice}
+                      onReservePriceChange={(price) => setFormData({ ...formData, auctionReservePrice: price })}
+                      buyNowPrice={formData.auctionBuyNowPrice}
+                      onBuyNowPriceChange={(price) => setFormData({ ...formData, auctionBuyNowPrice: price })}
+                      durationDays={formData.auctionDurationDays}
+                      onDurationChange={(days) => setFormData({ ...formData, auctionDurationDays: days })}
+                      startDate={formData.auctionStartDate}
+                      onStartDateChange={(date) => setFormData({ ...formData, auctionStartDate: date })}
                     />
 
                     <div className="space-y-4">
