@@ -297,45 +297,8 @@ const Index = () => {
 
         {/* Top Listings Chart - CoinMarketCap style */}
         <TopListingsChart />
-        
-        {/* Live Market Section */}
-        <ScrollReveal>
-          <section ref={marketRef} className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between mb-4 sm:mb-8">
-                <div>
-                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-                    {t.market.popularCollections}
-                  </h2>
-                  <LiveUpdateIndicator 
-                    lastUpdated={lastUpdated} 
-                    updateCount={updateCount}
-                    className="mt-1"
-                  />
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/markets')}
-                  className="hidden sm:flex"
-                >
-                  {t.market.seeAllMarkets}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-              
-              <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
-                <ScrollReveal delay={100}>
-                  <LiveMarketTable items={topGainers} title={`${t.market.topGainers} 📈`} />
-                </ScrollReveal>
-                <ScrollReveal delay={200}>
-                  <LiveMarketTable items={topLosers} title={`${t.market.topLosers} 📉`} />
-                </ScrollReveal>
-              </div>
-            </div>
-          </section>
-        </ScrollReveal>
 
-        {/* 2026 Features: AI Insights + Social + Gamification */}
+        {/* Smart Trading Hub - moved directly below Top Listings */}
         <ScrollReveal>
           <section className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
             <div className="container mx-auto px-4">
@@ -347,7 +310,6 @@ const Index = () => {
                   </h2>
                   <p className="text-muted-foreground text-sm sm:text-base mt-1">{t.smartHub.subtitle}</p>
                 </div>
-                {/* Fractional market button temporarily disabled */}
               </div>
 
               <Tabs defaultValue="popular" className="space-y-4 sm:space-y-6">
@@ -402,6 +364,43 @@ const Index = () => {
                   <SmartAlertsPanel />
                 </TabsContent>
               </Tabs>
+            </div>
+          </section>
+        </ScrollReveal>
+        
+        {/* Live Market Section */}
+        <ScrollReveal>
+          <section ref={marketRef} className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center justify-between mb-4 sm:mb-8">
+                <div>
+                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                    {t.market.popularCollections}
+                  </h2>
+                  <LiveUpdateIndicator 
+                    lastUpdated={lastUpdated} 
+                    updateCount={updateCount}
+                    className="mt-1"
+                  />
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/markets')}
+                  className="hidden sm:flex"
+                >
+                  {t.market.seeAllMarkets}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+              
+              <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
+                <ScrollReveal delay={100}>
+                  <LiveMarketTable items={topGainers} title={`${t.market.topGainers} 📈`} />
+                </ScrollReveal>
+                <ScrollReveal delay={200}>
+                  <LiveMarketTable items={topLosers} title={`${t.market.topLosers} 📉`} />
+                </ScrollReveal>
+              </div>
             </div>
           </section>
         </ScrollReveal>
