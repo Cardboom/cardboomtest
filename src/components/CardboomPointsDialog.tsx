@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { GiftCardPurchase } from '@/components/gems/GiftCardPurchase';
+import { ClaimGiftCard } from '@/components/gems/ClaimGiftCard';
 
 interface CardboomPointsDialogProps {
   open: boolean;
@@ -93,6 +95,12 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
               <p className="text-[10px] text-muted-foreground/70 mt-1">
                 1 gem = {getGemValue(1)}
               </p>
+            </div>
+
+            {/* Gift Card Actions */}
+            <div className="flex gap-2 justify-center">
+              <GiftCardPurchase userBalance={0} onPurchaseComplete={() => {}} />
+              <ClaimGiftCard onClaimComplete={() => {}} />
             </div>
           </div>
 
