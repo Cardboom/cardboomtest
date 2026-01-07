@@ -10,14 +10,23 @@ interface Subscription {
   started_at: string;
   expires_at: string | null;
   auto_renew: boolean;
+  billing_cycle?: 'monthly' | 'yearly';
 }
 
 export const useSubscription = (userId?: string) => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Monthly prices
   const PRO_PRICE = 9.99;
   const ENTERPRISE_PRICE = 29.99;
+  
+  // Yearly prices (11 months - 1 month free)
+  const PRO_YEARLY_PRICE = PRO_PRICE * 11;
+  const ENTERPRISE_YEARLY_PRICE = ENTERPRISE_PRICE * 11;
+  
+  // Enterprise perks
+  const ENTERPRISE_FREE_GRADINGS_PER_MONTH = 1;
 
   useEffect(() => {
     if (userId) {
@@ -64,14 +73,22 @@ export const useSubscription = (userId?: string) => {
     return true;
   };
 
-  const subscribe = async (tier: 'pro' | 'enterprise' = 'pro') => {
+  const subscribe = async (tier: 'pro' | 'enterprise' = 'pro', billingCycle: 'monthly' | 'yearly' = 'monthly') => {
     if (!userId) {
       toast.error('Please sign in to subscribe');
       return false;
     }
 
-    const price = tier === 'enterprise' ? ENTERPRISE_PRICE : PRO_PRICE;
+    // Calculate price based on tier and billing cycle
+    let price: number;
+    if (tier === 'enterprise') {
+      price = billingCycle === 'yearly' ? ENTERPRISE_YEARLY_PRICE : ENTERPRISE_PRICE;
+    } else {
+      price = billingCycle === 'yearly' ? PRO_YEARLY_PRICE : PRO_PRICE;
+    }
+    
     const tierLabel = tier === 'enterprise' ? 'Enterprise' : 'Pro';
+    const cycleLabel = billingCycle === 'yearly' ? 'Annual' : 'Monthly';
 
     try {
       // Get user's wallet
@@ -84,7 +101,7 @@ export const useSubscription = (userId?: string) => {
       if (walletError) throw walletError;
 
       if (Number(wallet.balance) < price) {
-        toast.error(`Insufficient balance. You need $${price} for ${tierLabel} subscription.`);
+        toast.error(`Insufficient balance. You need $${price.toFixed(2)} for ${tierLabel} ${cycleLabel} subscription.`);
         return false;
       }
 
@@ -104,12 +121,16 @@ export const useSubscription = (userId?: string) => {
           wallet_id: wallet.id,
           type: 'withdrawal',
           amount: -price,
-          description: `${tierLabel} Subscription - Monthly`,
+          description: `${tierLabel} Subscription - ${cycleLabel}`,
         });
 
-      // Calculate expiry (30 days from now)
+      // Calculate expiry based on billing cycle
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30);
+      if (billingCycle === 'yearly') {
+        expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+      } else {
+        expiresAt.setDate(expiresAt.getDate() + 30);
+      }
 
       // Create or update subscription
       const { data: existingSub } = await supabase
@@ -118,16 +139,18 @@ export const useSubscription = (userId?: string) => {
         .eq('user_id', userId)
         .maybeSingle();
 
+      const subscriptionData = {
+        tier: tier,
+        price_monthly: tier === 'enterprise' ? ENTERPRISE_PRICE : PRO_PRICE,
+        started_at: new Date().toISOString(),
+        expires_at: expiresAt.toISOString(),
+        auto_renew: true,
+      };
+
       if (existingSub) {
         const { error: updateError } = await supabase
           .from('user_subscriptions')
-          .update({
-            tier: tier,
-            price_monthly: price,
-            started_at: new Date().toISOString(),
-            expires_at: expiresAt.toISOString(),
-            auto_renew: true,
-          })
+          .update(subscriptionData)
           .eq('user_id', userId);
 
         if (updateError) throw updateError;
@@ -136,17 +159,14 @@ export const useSubscription = (userId?: string) => {
           .from('user_subscriptions')
           .insert({
             user_id: userId,
-            tier: tier,
-            price_monthly: price,
-            started_at: new Date().toISOString(),
-            expires_at: expiresAt.toISOString(),
-            auto_renew: true,
+            ...subscriptionData,
           });
 
         if (insertError) throw insertError;
       }
 
-      toast.success(`Welcome to ${tierLabel}! Enjoy reduced fees and premium features.`);
+      const savings = billingCycle === 'yearly' ? ' You saved 1 month free!' : '';
+      toast.success(`Welcome to ${tierLabel}! Enjoy reduced fees and premium features.${savings}`);
       await fetchSubscription();
       return true;
 
@@ -211,6 +231,9 @@ export const useSubscription = (userId?: string) => {
     getFeeRates,
     PRO_PRICE,
     ENTERPRISE_PRICE,
+    PRO_YEARLY_PRICE,
+    ENTERPRISE_YEARLY_PRICE,
+    ENTERPRISE_FREE_GRADINGS_PER_MONTH,
     refetch: fetchSubscription,
   };
 };

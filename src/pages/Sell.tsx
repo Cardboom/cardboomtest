@@ -30,6 +30,7 @@ import { ListingSuccessModal } from '@/components/listing/ListingSuccessModal';
 import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard';
 import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
 import { useCardIndexer } from '@/hooks/useCardIndexer';
+import { CertificationToggle, CertificationTier } from '@/components/listing/CertificationToggle';
 interface Listing {
   id: string;
   title: string;
@@ -108,6 +109,8 @@ const SellPage = () => {
     minShares: 10,
     dailyVerification: true,
     boostTier: 'none' as 'none' | '24h' | '7d' | 'top_category',
+    certificationEnabled: true,
+    certificationTier: 'standard' as 'none' | 'standard' | 'express',
   });
 
   useEffect(() => {
@@ -356,6 +359,8 @@ const SellPage = () => {
         minShares: 10,
         dailyVerification: true,
         boostTier: 'none',
+        certificationEnabled: true,
+        certificationTier: 'standard',
       });
       clearImage();
       fetchListings();
@@ -572,6 +577,8 @@ const SellPage = () => {
         minShares: 10,
         dailyVerification: true,
         boostTier: 'none',
+        certificationEnabled: true,
+        certificationTier: 'standard',
       });
       clearImage();
       setShowInstantSellDialog(false);
@@ -964,7 +971,14 @@ const SellPage = () => {
                       </div>
                     </div>
 
-                    {/* Fractional Selling Option */}
+                    {/* CardBoom Certification */}
+                    <CertificationToggle
+                      enabled={formData.certificationEnabled}
+                      tier={formData.certificationTier}
+                      onEnabledChange={(enabled) => setFormData({ ...formData, certificationEnabled: enabled })}
+                      onTierChange={(tier) => setFormData({ ...formData, certificationTier: tier })}
+                    />
+
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-primary/5 to-transparent">
                         <div className="flex items-center gap-3">

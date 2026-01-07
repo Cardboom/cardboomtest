@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Crown, Check, Zap, Shield, TrendingDown, Star } from 'lucide-react';
+import { Crown, Check, Zap, Shield, TrendingDown, Star, Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSubscription } from '@/hooks/useSubscription';
+import { cn } from '@/lib/utils';
 
 interface SubscriptionUpgradeDialogProps {
   userId: string;
@@ -25,11 +27,12 @@ export const SubscriptionUpgradeDialog = ({
 }: SubscriptionUpgradeDialogProps) => {
   const [open, setOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const { subscribe, PRO_PRICE } = useSubscription(userId);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+  const { subscribe, PRO_PRICE, PRO_YEARLY_PRICE } = useSubscription(userId);
 
   const handleSubscribe = async () => {
     setProcessing(true);
-    const success = await subscribe();
+    const success = await subscribe('pro', billingCycle);
     setProcessing(false);
     
     if (success) {
@@ -38,16 +41,24 @@ export const SubscriptionUpgradeDialog = ({
     }
   };
 
+  const displayPrice = billingCycle === 'yearly' 
+    ? PRO_YEARLY_PRICE 
+    : PRO_PRICE;
+  
+  const monthlyEquivalent = billingCycle === 'yearly'
+    ? (PRO_YEARLY_PRICE / 12).toFixed(2)
+    : PRO_PRICE.toFixed(2);
+
   const proFeatures = [
     {
       icon: TrendingDown,
       title: 'Reduced Trading Fees',
-      description: '2.5% buyer fee (vs 5%), 4.5% seller fee (vs 8%)',
+      description: '4.5% buyer fee (vs 6%), 6% seller fee (vs 8.5%)',
     },
     {
       icon: Zap,
       title: 'Lower Deposit Fees',
-      description: '4.5% card fee (vs 6%), 1.5% wire fee (vs 3%)',
+      description: '4.5% card fee (vs 7%), 1.5% wire fee (vs 3%)',
     },
     {
       icon: Crown,
@@ -88,12 +99,32 @@ export const SubscriptionUpgradeDialog = ({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Billing Toggle */}
+          <Tabs value={billingCycle} onValueChange={(v) => setBillingCycle(v as 'monthly' | 'yearly')} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="monthly">Monthly</TabsTrigger>
+              <TabsTrigger value="yearly" className="relative">
+                Yearly
+                <Badge className="absolute -top-2 -right-2 bg-green-500 text-[10px] px-1.5">
+                  Save 1 month
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           {/* Price */}
           <div className="text-center p-4 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/30">
             <div className="text-4xl font-bold text-foreground">
-              ${PRO_PRICE}
-              <span className="text-lg font-normal text-muted-foreground">/month</span>
+              ${displayPrice.toFixed(2)}
+              <span className="text-lg font-normal text-muted-foreground">
+                /{billingCycle === 'yearly' ? 'year' : 'month'}
+              </span>
             </div>
+            {billingCycle === 'yearly' && (
+              <p className="text-sm text-primary mt-1">
+                Just ${monthlyEquivalent}/month · 1 month FREE
+              </p>
+            )}
             <p className="text-sm text-muted-foreground mt-1">
               Paid from your wallet balance
             </p>
@@ -119,13 +150,13 @@ export const SubscriptionUpgradeDialog = ({
             <p className="text-xs text-muted-foreground mb-2">💡 Example savings on a $100 trade:</p>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="text-muted-foreground">Free:</span> $5 buyer + $8 seller = <span className="text-destructive">$13</span>
+                <span className="text-muted-foreground">Free:</span> $6 buyer + $8.50 seller = <span className="text-destructive">$14.50</span>
               </div>
               <div>
-                <span className="text-muted-foreground">Pro:</span> $2.50 + $4.50 = <span className="text-primary">$7</span>
+                <span className="text-muted-foreground">Pro:</span> $4.50 + $6 = <span className="text-primary">$10.50</span>
               </div>
             </div>
-            <p className="text-xs text-primary mt-2">Save $6 per $100 traded!</p>
+            <p className="text-xs text-primary mt-2">Save $4 per $100 traded!</p>
           </div>
 
           {/* Subscribe Button */}
@@ -139,13 +170,13 @@ export const SubscriptionUpgradeDialog = ({
             ) : (
               <>
                 <Crown className="h-4 w-4" />
-                Subscribe for ${PRO_PRICE}/month
+                Subscribe for ${displayPrice.toFixed(2)}/{billingCycle === 'yearly' ? 'year' : 'month'}
               </>
             )}
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            Auto-renews monthly. Cancel anytime from your profile.
+            Auto-renews {billingCycle === 'yearly' ? 'annually' : 'monthly'}. Cancel anytime from your profile.
           </p>
         </div>
       </DialogContent>
