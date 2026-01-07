@@ -176,7 +176,6 @@ serve(async (req) => {
         wallet_id: wallet.id,
         type: 'grading_fee',
         amount: -gradingPrice,
-        currency: 'USD',
         description: `Card grading fee - Order ${orderId}`,
         reference_id: orderId
       });
