@@ -23,13 +23,13 @@ export const LivePriceCell = ({
     <AnimatePresence mode="wait">
       <motion.div
         key={`${price}-${isUpdated}`}
-        initial={isUpdated ? { scale: 1.1, opacity: 0 } : false}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        initial={isUpdated ? { y: priceIncreased ? 10 : priceDecreased ? -10 : 0, opacity: 0 } : false}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className={cn(
-          "font-semibold transition-colors duration-300",
-          isUpdated && priceIncreased && "text-gain bg-gain/10 px-2 py-0.5 rounded",
-          isUpdated && priceDecreased && "text-loss bg-loss/10 px-2 py-0.5 rounded",
+          "font-semibold tabular-nums transition-colors duration-300",
+          isUpdated && priceIncreased && "text-gain",
+          isUpdated && priceDecreased && "text-loss",
           !isUpdated && "text-foreground",
           className
         )}

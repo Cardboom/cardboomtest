@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -143,15 +143,10 @@ export const TrendingSection = () => {
                         {formatPrice(item.price)}
                       </span>
                       <span className={cn(
-                        'flex items-center gap-1 text-sm font-medium transition-all duration-300',
+                        'text-sm font-medium tabular-nums transition-all duration-300',
                         isPositive ? 'text-gain' : 'text-loss',
-                        item.priceUpdated && "scale-105"
+                        item.priceUpdated && "animate-[price-update_0.5s_ease-out]"
                       )}>
-                        {isPositive ? (
-                          <TrendingUp className="w-4 h-4" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4" />
-                        )}
                         {isPositive ? '+' : ''}{item.priceChange.toFixed(2)}%
                       </span>
                     </div>

@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
@@ -74,31 +73,19 @@ export const AnimatedPrice = ({
     lg: 'text-lg',
   };
 
-  const iconSize = {
-    sm: 'w-3 h-3',
-    md: 'w-4 h-4',
-    lg: 'w-5 h-5',
-  };
-
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 font-semibold transition-all duration-300',
+        'inline-flex items-center gap-1 font-semibold tabular-nums transition-all duration-300',
         sizeClasses[size],
         isAnimating && direction === 'up' && 'text-gain',
         isAnimating && direction === 'down' && 'text-loss',
         !isAnimating && 'text-foreground',
-        isAnimating && 'scale-105',
+        isAnimating && 'animate-[price-update_0.5s_ease-out]',
         className
       )}
     >
       {formatPrice(displayValue)}
-      {showTrend && isAnimating && direction === 'up' && (
-        <TrendingUp className={cn(iconSize[size], 'animate-bounce text-gain')} />
-      )}
-      {showTrend && isAnimating && direction === 'down' && (
-        <TrendingDown className={cn(iconSize[size], 'animate-bounce text-loss')} />
-      )}
     </span>
   );
 };
