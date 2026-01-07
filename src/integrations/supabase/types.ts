@@ -211,6 +211,56 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_trending_cards: {
+        Row: {
+          card_name: string
+          category: string
+          data_sources: string[] | null
+          discovered_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          market_item_id: string | null
+          predicted_direction: string | null
+          trend_reason: string | null
+          trend_score: number | null
+        }
+        Insert: {
+          card_name: string
+          category: string
+          data_sources?: string[] | null
+          discovered_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          market_item_id?: string | null
+          predicted_direction?: string | null
+          trend_reason?: string | null
+          trend_score?: number | null
+        }
+        Update: {
+          card_name?: string
+          category?: string
+          data_sources?: string[] | null
+          discovered_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          market_item_id?: string | null
+          predicted_direction?: string | null
+          trend_reason?: string | null
+          trend_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_trending_cards_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       api_request_logs: {
         Row: {
           api_key: string
@@ -981,6 +1031,74 @@ export type Database = {
             foreignKeyName: "card_instances_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_price_estimates: {
+        Row: {
+          card_name: string
+          category: string
+          confidence_score: number | null
+          created_at: string
+          data_source: string | null
+          expires_at: string | null
+          id: string
+          market_item_id: string | null
+          notes: string | null
+          price_psa_10: number | null
+          price_psa_6: number | null
+          price_psa_7: number | null
+          price_psa_8: number | null
+          price_psa_9: number | null
+          price_ungraded: number | null
+          set_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          card_name: string
+          category: string
+          confidence_score?: number | null
+          created_at?: string
+          data_source?: string | null
+          expires_at?: string | null
+          id?: string
+          market_item_id?: string | null
+          notes?: string | null
+          price_psa_10?: number | null
+          price_psa_6?: number | null
+          price_psa_7?: number | null
+          price_psa_8?: number | null
+          price_psa_9?: number | null
+          price_ungraded?: number | null
+          set_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          card_name?: string
+          category?: string
+          confidence_score?: number | null
+          created_at?: string
+          data_source?: string | null
+          expires_at?: string | null
+          id?: string
+          market_item_id?: string | null
+          notes?: string | null
+          price_psa_10?: number | null
+          price_psa_6?: number | null
+          price_psa_7?: number | null
+          price_psa_8?: number | null
+          price_psa_9?: number | null
+          price_ungraded?: number | null
+          set_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_price_estimates_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: true
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -3726,6 +3844,66 @@ export type Database = {
             columns: ["wallet_id"]
             isOneToOne: false
             referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_card_data: {
+        Row: {
+          contributed_to_catalog: boolean | null
+          detected_card_name: string | null
+          detected_card_number: string | null
+          detected_category: string | null
+          detected_language: string | null
+          detected_rarity: string | null
+          detected_set_name: string | null
+          id: string
+          listing_id: string | null
+          match_confidence: number | null
+          matched_market_item_id: string | null
+          processed_at: string | null
+        }
+        Insert: {
+          contributed_to_catalog?: boolean | null
+          detected_card_name?: string | null
+          detected_card_number?: string | null
+          detected_category?: string | null
+          detected_language?: string | null
+          detected_rarity?: string | null
+          detected_set_name?: string | null
+          id?: string
+          listing_id?: string | null
+          match_confidence?: number | null
+          matched_market_item_id?: string | null
+          processed_at?: string | null
+        }
+        Update: {
+          contributed_to_catalog?: boolean | null
+          detected_card_name?: string | null
+          detected_card_number?: string | null
+          detected_category?: string | null
+          detected_language?: string | null
+          detected_rarity?: string | null
+          detected_set_name?: string | null
+          id?: string
+          listing_id?: string | null
+          match_confidence?: number | null
+          matched_market_item_id?: string | null
+          processed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_card_data_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_card_data_matched_market_item_id_fkey"
+            columns: ["matched_market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
         ]

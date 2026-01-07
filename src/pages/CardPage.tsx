@@ -20,6 +20,7 @@ import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
 import { ShareButton } from '@/components/ShareButton';
 import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
+import { CardPriceEstimates } from '@/components/CardPriceEstimates';
 import { CardDiscussionPanel } from '@/components/discussions/CardDiscussionPanel';
 import { 
   generateCardSlug, 
@@ -463,6 +464,18 @@ const CardPage = () => {
                 text={`Check out ${cardName} on CardBoom`}
               />
             </div>
+
+            {/* Price Estimates by Grade */}
+            <section aria-labelledby="price-estimates-heading">
+              {item && (
+                <CardPriceEstimates
+                  marketItemId={item.id}
+                  cardName={item.name}
+                  setName={item.set_name}
+                  category={item.category}
+                />
+              )}
+            </section>
 
             {/* Price Chart - Full Width */}
             <section aria-labelledby="price-chart-heading">
