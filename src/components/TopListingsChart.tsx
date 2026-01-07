@@ -79,21 +79,29 @@ export const TopListingsChart = () => {
   const { formatPrice } = useCurrency();
 
   const { data: listings, isLoading } = useQuery({
-    queryKey: ['top-listings-chart-v3'],
+    queryKey: ['top-listings-chart-v4'],
     queryFn: async () => {
-      // Fetch active listings
+      // Fetch active listings - ONLY with images
       const { data: listingsData, error } = await supabase
         .from('listings')
         .select('id, title, price, image_url, category, created_at, seller_id, market_item_id, certification_status, grading_order_id')
         .eq('status', 'active')
+        .not('image_url', 'is', null)
         .order('created_at', { ascending: false })
-        .limit(12);
+        .limit(20);
 
       if (error) throw error;
       if (!listingsData?.length) return [];
 
+      // Filter out placeholder/invalid images
+      const validListings = listingsData.filter(l => 
+        l.image_url && 
+        !l.image_url.includes('placeholder') && 
+        !l.image_url.startsWith('data:')
+      );
+
       // Fetch seller profiles
-      const sellerIds = [...new Set(listingsData.map(l => l.seller_id))];
+      const sellerIds = [...new Set(validListings.map(l => l.seller_id))];
       const { data: profiles } = await supabase
         .from('public_profiles')
         .select('id, display_name, country_code')
@@ -101,24 +109,43 @@ export const TopListingsChart = () => {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // Fetch grading orders for grade info
-      const gradingOrderIds = listingsData
-        .filter(l => l.grading_order_id)
-        .map(l => l.grading_order_id!);
+      // Fetch ALL grading orders for these sellers to enable fallback matching
+      const { data: allGradingOrders } = await supabase
+        .from('grading_orders')
+        .select('id, user_id, card_name, cbgi_score_0_100, status')
+        .in('user_id', sellerIds);
 
-      let gradeMap = new Map<string, string>();
-      if (gradingOrderIds.length > 0) {
-        const { data: gradingOrders } = await supabase
-          .from('grading_orders')
-          .select('id, cbgi_score_0_100')
-          .in('id', gradingOrderIds);
+      // Build grade map by grading_order_id
+      const gradeMap = new Map<string, { score: string; status: string }>();
+      // Build fallback map by seller + normalized title
+      const fallbackGradeMap = new Map<string, { score: string; status: string }>();
+      
+      const normalizeCardName = (name: string) => 
+        name?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
 
-        gradingOrders?.forEach(go => {
-          if (go.cbgi_score_0_100) {
-            gradeMap.set(go.id, (go.cbgi_score_0_100 / 10).toFixed(1));
+      allGradingOrders?.forEach(go => {
+        const scoreValue = go.cbgi_score_0_100;
+        let score: string | null = null;
+        
+        if (scoreValue) {
+          // Normalize score - if > 10, divide by 10
+          score = (scoreValue > 10 ? scoreValue / 10 : scoreValue).toFixed(1);
+        }
+        
+        if (go.id) {
+          gradeMap.set(go.id, { score: score || '', status: go.status });
+        }
+        
+        // Fallback by seller + card name
+        if (go.card_name && go.user_id) {
+          const key = `${go.user_id}-${normalizeCardName(go.card_name)}`;
+          const existing = fallbackGradeMap.get(key);
+          // Prefer completed over pending
+          if (!existing || (go.status === 'completed' && existing.status !== 'completed')) {
+            fallbackGradeMap.set(key, { score: score || '', status: go.status });
           }
-        });
-      }
+        }
+      });
 
       // Fetch price data for market items
       const marketItemIds = listingsData
@@ -164,7 +191,7 @@ export const TopListingsChart = () => {
       }
 
       // Enrich listings
-      return listingsData.map(listing => {
+      return validListings.map(listing => {
         const profile = profileMap.get(listing.seller_id);
         const history = listing.market_item_id 
           ? priceHistoryMap.get(listing.market_item_id) || []
@@ -181,9 +208,23 @@ export const TopListingsChart = () => {
           ? changeMap.get(listing.market_item_id) || 0
           : 0;
 
-        const grade = listing.grading_order_id 
-          ? gradeMap.get(listing.grading_order_id) || null
-          : null;
+        // Get grade from direct link or fallback matching
+        let gradeInfo: { score: string; status: string } | null = null;
+        
+        if (listing.grading_order_id) {
+          gradeInfo = gradeMap.get(listing.grading_order_id) || null;
+        }
+        
+        // Fallback: match by seller + normalized title
+        if (!gradeInfo?.score) {
+          const fallbackKey = `${listing.seller_id}-${normalizeCardName(listing.title)}`;
+          gradeInfo = fallbackGradeMap.get(fallbackKey) || null;
+        }
+
+        // Determine certification status
+        const certStatus = gradeInfo?.status === 'completed' ? 'completed' 
+          : gradeInfo?.status === 'pending' ? 'pending'
+          : listing.certification_status;
 
         return {
           id: listing.id,
@@ -195,14 +236,14 @@ export const TopListingsChart = () => {
           seller_id: listing.seller_id,
           seller_username: profile?.display_name || 'Seller',
           seller_country: profile?.country_code || 'TR',
-          certification_status: listing.certification_status,
+          certification_status: certStatus,
           grading_order_id: listing.grading_order_id,
-          grade,
+          grade: gradeInfo?.score || null,
           market_item_id: listing.market_item_id,
           priceHistory,
           change_7d: change,
         } as TopListing;
-      });
+      }).slice(0, 12);
     },
     staleTime: 60000
   });
