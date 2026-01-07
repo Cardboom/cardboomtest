@@ -309,29 +309,7 @@ const SellPage = () => {
 
       if (!listingData) throw new Error('Failed to create listing');
 
-      // Create fractional listing if enabled
-      if (formData.enableFractional && listingData) {
-        const sharePrice = price / formData.totalShares;
-        const { error: fractionalError } = await supabase
-          .from('fractional_listings')
-          .insert({
-            listing_id: listingData.id,
-            total_shares: formData.totalShares,
-            available_shares: formData.totalShares,
-            share_price: sharePrice,
-            min_shares: formData.minShares,
-            daily_verification_required: formData.dailyVerification,
-            owner_id: session.user.id,
-            next_verification_due: formData.dailyVerification 
-              ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() 
-              : null,
-          });
-
-        if (fractionalError) {
-          console.error('Error creating fractional listing:', fractionalError);
-          toast.error('Listing created but fractional setup failed');
-        }
-      }
+      // Fractional shares removed - feature disabled
 
       // Check listing achievements
       try {
@@ -1018,103 +996,12 @@ const SellPage = () => {
                       onStartDateChange={(date) => setFormData({ ...formData, auctionStartDate: date })}
                     />
 
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 rounded-lg border bg-gradient-to-r from-primary/5 to-transparent">
-                        <div className="flex items-center gap-3">
-                          <PieChart className="h-5 w-5 text-primary" />
-                          <div>
-                            <Label className="text-base font-semibold">Sell as Fractional Shares</Label>
-                            <p className="text-sm text-muted-foreground">
-                              Allow buyers to purchase ownership shares of this card
-                            </p>
-                          </div>
-                        </div>
-                        <Switch
-                          checked={formData.enableFractional}
-                          onCheckedChange={(checked) => setFormData({ ...formData, enableFractional: checked })}
-                        />
-                      </div>
-
-                      {formData.enableFractional && (
-                        <div className="p-4 rounded-lg border space-y-4 bg-muted/30">
-                          {/* Total Shares */}
-                          <div className="space-y-3">
-                            <div className="flex justify-between">
-                              <Label>Total Shares</Label>
-                              <span className="text-sm text-muted-foreground">{formData.totalShares} shares</span>
-                            </div>
-                            <Slider
-                              value={[formData.totalShares]}
-                              onValueChange={([value]) => setFormData({ ...formData, totalShares: value })}
-                              min={10}
-                              max={1000}
-                              step={10}
-                            />
-                            {formData.price && (
-                              <p className="text-sm text-muted-foreground">
-                                Each share = ${(parseFloat(formData.price) / formData.totalShares).toFixed(2)} ({(100/formData.totalShares).toFixed(2)}% ownership)
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Minimum Purchase */}
-                          <div className="space-y-3">
-                            <div className="flex justify-between">
-                              <Label>Minimum Purchase</Label>
-                              <span className="text-sm text-muted-foreground">{formData.minShares} shares ({(formData.minShares/formData.totalShares*100).toFixed(1)}%)</span>
-                            </div>
-                            <Slider
-                              value={[formData.minShares]}
-                              onValueChange={([value]) => setFormData({ ...formData, minShares: value })}
-                              min={1}
-                              max={Math.min(100, formData.totalShares)}
-                              step={1}
-                            />
-                            {formData.price && (
-                              <p className="text-sm text-muted-foreground">
-                                Minimum investment: ${((parseFloat(formData.price) / formData.totalShares) * formData.minShares).toFixed(2)}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Daily Verification */}
-                          <div className="flex items-center justify-between p-3 rounded-lg border">
-                            <div className="flex items-center gap-3">
-                              <Shield className="h-5 w-5 text-primary" />
-                              <div>
-                                <Label className="text-sm">Daily Verification</Label>
-                                <p className="text-xs text-muted-foreground">
-                                  Upload daily photos to verify ownership
-                                </p>
-                              </div>
-                            </div>
-                            <Switch
-                              checked={formData.dailyVerification}
-                              onCheckedChange={(checked) => setFormData({ ...formData, dailyVerification: checked })}
-                            />
-                          </div>
-
-                          {/* Info Box */}
-                          <div className="flex gap-3 p-3 rounded-lg bg-blue-500/10">
-                            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                            <div className="text-xs text-muted-foreground">
-                              <p className="font-medium text-foreground mb-1">How fractional selling works:</p>
-                              <ul className="list-disc list-inside space-y-0.5">
-                                <li>Buyers purchase shares of your card</li>
-                                <li>You retain physical possession</li>
-                                <li>Daily verification builds trust with investors</li>
-                                <li>Get funded faster by allowing smaller investments</li>
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* Fractional shares removed - enterprise feature only */}
 
                     <div className="flex flex-col gap-3">
                       <Button type="submit" disabled={submitting || uploading} className="w-full gap-2">
                         {(submitting || uploading) && <Loader2 className="h-4 w-4 animate-spin" />}
-                        {uploading ? 'Uploading Image...' : submitting ? 'Creating...' : formData.enableFractional ? 'Create Fractional Listing' : 'Create Listing'}
+                        {uploading ? 'Uploading Image...' : submitting ? 'Creating...' : 'Create Listing'}
                       </Button>
                       
                       <div className="relative">

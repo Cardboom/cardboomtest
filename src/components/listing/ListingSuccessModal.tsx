@@ -38,15 +38,23 @@ export const ListingSuccessModal = ({
     const url = `${window.location.origin}/listing/${listing.id}`;
     const text = `Check out "${listing.title}" on CardBoom!`;
 
-    if (navigator.share) {
-      try {
+    try {
+      if (navigator.share && navigator.canShare?.({ title: listing.title, text, url })) {
         await navigator.share({ title: listing.title, text, url });
-      } catch (e) {
-        // User cancelled or share failed
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard!');
       }
-    } else {
-      await navigator.clipboard.writeText(url);
-      toast.success('Link copied to clipboard!');
+    } catch (e: any) {
+      // If share was cancelled or failed, fallback to clipboard
+      if (e.name !== 'AbortError') {
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success('Link copied to clipboard!');
+        } catch {
+          toast.error('Failed to copy link');
+        }
+      }
     }
   };
 

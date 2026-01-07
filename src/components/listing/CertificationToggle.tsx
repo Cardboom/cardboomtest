@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, ShieldCheck, AlertTriangle, Globe, Eye, Users, Clock, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+import { Shield, ShieldCheck, AlertTriangle, Globe, Eye, Users, Clock, Zap, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -202,7 +202,7 @@ export const CertificationToggle = ({
           )}
         </AnimatePresence>
 
-        {/* Warning when disabled */}
+        {/* Warning when disabled - show potential price increase */}
         <AnimatePresence>
           {showWarning && !enabled && (
             <motion.div
@@ -211,15 +211,30 @@ export const CertificationToggle = ({
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                    Ungraded cards may receive lower visibility
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Certified cards are shown first in search results and typically sell faster with higher buyer confidence.
-                  </p>
+              <div className="mt-4 space-y-3">
+                <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                      Ungraded cards may receive lower visibility
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Certified cards are shown first in search results and typically sell faster with higher buyer confidence.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Potential price increase info */}
+                <div className="p-3 rounded-lg bg-gain/10 border border-gain/30 flex items-start gap-3">
+                  <TrendingUp className="h-5 w-5 text-gain flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-gain">
+                      Potential value with CBGI 9 grade
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      High-grade cards (CBGI 9+) typically sell for <span className="font-semibold text-foreground">2-5x more</span> than ungraded copies. Consider certification to maximize your sale price.
+                    </p>
+                  </div>
                 </div>
               </div>
             </motion.div>
