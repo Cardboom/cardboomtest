@@ -3269,6 +3269,9 @@ export type Database = {
           cvi_key: string | null
           edges_grade: number | null
           error_message: string | null
+          estimated_completion_at: string | null
+          estimated_days_max: number | null
+          estimated_days_min: number | null
           estimated_psa_range: string | null
           estimated_value_graded: number | null
           estimated_value_raw: number | null
@@ -3299,6 +3302,7 @@ export type Database = {
           rarity: string | null
           set_code: string | null
           set_name: string | null
+          speed_tier: string | null
           status: Database["public"]["Enums"]["grading_order_status"]
           submitted_at: string | null
           suggested_price: number | null
@@ -3335,6 +3339,9 @@ export type Database = {
           cvi_key?: string | null
           edges_grade?: number | null
           error_message?: string | null
+          estimated_completion_at?: string | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
           estimated_psa_range?: string | null
           estimated_value_graded?: number | null
           estimated_value_raw?: number | null
@@ -3365,6 +3372,7 @@ export type Database = {
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
+          speed_tier?: string | null
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
           suggested_price?: number | null
@@ -3401,6 +3409,9 @@ export type Database = {
           cvi_key?: string | null
           edges_grade?: number | null
           error_message?: string | null
+          estimated_completion_at?: string | null
+          estimated_days_max?: number | null
+          estimated_days_min?: number | null
           estimated_psa_range?: string | null
           estimated_value_graded?: number | null
           estimated_value_raw?: number | null
@@ -3431,6 +3442,7 @@ export type Database = {
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
+          speed_tier?: string | null
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
           suggested_price?: number | null
@@ -3801,6 +3813,10 @@ export type Database = {
           allows_shipping: boolean
           allows_trade: boolean
           allows_vault: boolean
+          boost_expires_at: string | null
+          boost_price_paid: number | null
+          boost_purchased_at: string | null
+          boost_tier: string | null
           card_number: string | null
           category: string
           condition: string
@@ -3835,6 +3851,10 @@ export type Database = {
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
+          boost_expires_at?: string | null
+          boost_price_paid?: number | null
+          boost_purchased_at?: string | null
+          boost_tier?: string | null
           card_number?: string | null
           category: string
           condition?: string
@@ -3869,6 +3889,10 @@ export type Database = {
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
+          boost_expires_at?: string | null
+          boost_price_paid?: number | null
+          boost_purchased_at?: string | null
+          boost_tier?: string | null
           card_number?: string | null
           category?: string
           condition?: string

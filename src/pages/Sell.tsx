@@ -107,6 +107,7 @@ const SellPage = () => {
     totalShares: 100,
     minShares: 10,
     dailyVerification: true,
+    boostTier: 'none' as 'none' | '24h' | '7d' | 'top_category',
   });
 
   useEffect(() => {
