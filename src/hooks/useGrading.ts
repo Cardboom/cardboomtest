@@ -63,6 +63,14 @@ export interface GradingOrder {
   estimated_value_raw: number | null;
   estimated_value_graded: number | null;
   value_increase_percent: number | null;
+  // Speed tier and auto-list fields
+  speed_tier: 'standard' | 'express' | 'priority' | null;
+  estimated_days_min: number | null;
+  estimated_days_max: number | null;
+  estimated_completion_at: string | null;
+  auto_list_enabled: boolean | null;
+  auto_list_price: number | null;
+  listing_created_id: string | null;
 }
 
 export const GRADING_PRICE_USD = 10; // Base price (standard tier)
@@ -126,7 +134,9 @@ export function useGrading() {
     category: string,
     frontImageFile: File,
     backImageFile: File,
-    speedTier: 'standard' | 'express' | 'priority' = 'standard'
+    speedTier: 'standard' | 'express' | 'priority' = 'standard',
+    autoListEnabled: boolean = false,
+    autoListPrice: number | null = null
   ): Promise<GradingOrder | null> => {
     const tierConfig = GRADING_SPEED_TIERS[speedTier];
     try {
@@ -165,7 +175,7 @@ export function useGrading() {
         .from('grading-images')
         .getPublicUrl(backPath);
 
-      // Create order with speed tier
+      // Create order with speed tier and auto-list settings
       const { data: order, error: createError } = await supabase
         .from('grading_orders')
         .insert({
@@ -180,6 +190,8 @@ export function useGrading() {
           speed_tier: speedTier,
           estimated_days_min: tierConfig.daysMin,
           estimated_days_max: tierConfig.daysMax,
+          auto_list_enabled: autoListEnabled,
+          auto_list_price: autoListPrice,
         })
         .select()
         .single();

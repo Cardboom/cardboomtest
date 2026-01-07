@@ -519,6 +519,71 @@ serve(async (req) => {
         } else {
           console.log(`Card instance created for user ${user.id} from grading order ${orderId}`);
         }
+
+        // Auto-list if Grade & Flip is enabled
+        if (existingOrder.auto_list_enabled) {
+          console.log('Auto-list enabled, creating listing...');
+          
+          // Calculate suggested price based on grade
+          const suggestedPrice = existingOrder.auto_list_price || Math.max(10, finalGrade * 15);
+          
+          // Create listing
+          const { data: listing, error: listingError } = await supabase
+            .from('listings')
+            .insert({
+              seller_id: user.id,
+              title: cbgiResult.card_name || existingOrder.card_name || 'Graded Card',
+              description: `CardBoom Graded: ${finalGrade.toFixed(1)}/10 (${cbgiResult.estimated_psa_range || 'N/A'})`,
+              category: existingOrder.category || 'other',
+              condition: getGradeLabelFromScore(cbgiScore),
+              price: suggestedPrice,
+              image_url: existingOrder.front_image_url,
+              status: 'active',
+              market_item_id: existingOrder.market_item_id || null,
+              set_name: existingOrder.set_name,
+              set_code: existingOrder.set_code,
+              card_number: existingOrder.card_number,
+              rarity: existingOrder.rarity,
+              language: existingOrder.language,
+              cvi_key: existingOrder.cvi_key,
+              grading_order_id: orderId,
+              certification_status: 'completed',
+            })
+            .select()
+            .single();
+
+          if (listingError) {
+            console.error('Failed to auto-list after grading:', listingError);
+          } else if (listing) {
+            console.log(`Auto-listed graded card: ${listing.id}`);
+            
+            // Update grading order with listing reference
+            await supabase
+              .from('grading_orders')
+              .update({ listing_created_id: listing.id })
+              .eq('id', orderId);
+
+            // Send notification about auto-listing
+            try {
+              await fetch(`${supabaseUrl}/functions/v1/send-notification`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${supabaseServiceKey}`,
+                },
+                body: JSON.stringify({
+                  user_id: user.id,
+                  type: 'order_update',
+                  title: 'Card Listed! 🎉',
+                  body: `Your graded ${cbgiResult.card_name || 'card'} (${finalGrade.toFixed(1)}/10) is now live for $${suggestedPrice.toFixed(2)}`,
+                  data: { listing_id: listing.id },
+                }),
+              });
+            } catch (e) {
+              console.error('Failed to send auto-list notification:', e);
+            }
+          }
+        }
       }
 
       console.log(`Order ${orderId} completed - CBGI Score: ${cbgiScore}/100, Final Grade: ${finalGrade}`);
