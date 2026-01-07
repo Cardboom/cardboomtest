@@ -35,6 +35,7 @@ import { FeatureShowcase } from '@/components/FeatureShowcase';
 import { useNavigate, Link } from 'react-router-dom';
 import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
 import { CardWarsSection } from '@/components/CardWarsSection';
+import { TopListingsChart } from '@/components/TopListingsChart';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -293,6 +294,9 @@ const Index = () => {
 
         {/* Grading CTA Section (only for non-logged-in users) */}
         {!user && <GradingCTA />}
+
+        {/* Top Listings Chart - CoinMarketCap style */}
+        <TopListingsChart />
         
         {/* Live Market Section */}
         <ScrollReveal>
