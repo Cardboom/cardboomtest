@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PurchaseDialog } from '@/components/purchase/PurchaseDialog';
+import { CardPriceEstimates } from '@/components/CardPriceEstimates';
 
 interface Listing {
   id: string;
@@ -540,6 +541,14 @@ const ListingDetail = () => {
               </Card>
             )}
 
+            {/* Price Estimates by Grade */}
+            <CardPriceEstimates
+              marketItemId={listing.market_item_id || undefined}
+              cardName={listing.title}
+              setName={listing.set_name || undefined}
+              category={listing.category}
+            />
+
             {/* Description */}
             {listing.description && (
               <p className="text-muted-foreground text-sm">{listing.description}</p>
@@ -586,7 +595,34 @@ const ListingDetail = () => {
             />
 
             {user?.id === listing.seller_id && (
-              <Badge className="bg-primary/20 text-primary">This is your listing</Badge>
+              <div className="flex items-center gap-3">
+                <Badge className="bg-primary/20 text-primary">This is your listing</Badge>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="gap-2"
+                  onClick={async () => {
+                    if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) return;
+                    try {
+                      const { error } = await supabase
+                        .from('listings')
+                        .delete()
+                        .eq('id', listing.id)
+                        .eq('seller_id', user.id);
+                      
+                      if (error) throw error;
+                      toast.success('Listing deleted successfully');
+                      navigate('/profile');
+                    } catch (err) {
+                      console.error('Error deleting listing:', err);
+                      toast.error('Failed to delete listing');
+                    }
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Listing
+                </Button>
+              </div>
             )}
           </div>
         </div>
