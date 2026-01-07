@@ -21,6 +21,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { AchievementsShowcase } from '@/components/achievements/AchievementsShowcase';
 import { AppRatingReward } from '@/components/rewards/AppRatingReward';
+import { BulkGradingPanel } from '@/components/listings/BulkGradingPanel';
 
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
@@ -164,7 +165,7 @@ const Profile = () => {
       // Fetch active listings (cards listed for sale should show in portfolio)
       const { data: userListings, error: listingsError } = await supabase
         .from('listings')
-        .select('id, title, image_url, price, category, condition, status, created_at')
+        .select('id, title, image_url, price, category, condition, status, created_at, certification_status, grading_order_id')
         .eq('seller_id', profile.id)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
@@ -537,51 +538,12 @@ const Profile = () => {
                   </Card>
                 )}
 
-                {/* Active Listings in Portfolio Section */}
+                {/* Active Listings with Bulk Grading */}
                 {portfolioData?.listings && portfolioData.listings.length > 0 && (
-                  <Card className="mb-6">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Store className="h-5 w-5 text-primary" />
-                        Listed for Sale
-                        <Badge variant="secondary" className="ml-2">{portfolioData.listings.length}</Badge>
-                        <Badge variant="outline" className="ml-1 text-xs">Included in Portfolio</Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {portfolioData.listings.map((listing: any) => (
-                          <div 
-                            key={listing.id} 
-                            className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:border-primary/40 cursor-pointer transition-colors relative"
-                            onClick={() => navigate(`/listing/${listing.id}`)}
-                          >
-                            <Badge className="absolute top-2 right-2 text-xs bg-primary/90">For Sale</Badge>
-                            {listing.image_url ? (
-                              <img 
-                                src={listing.image_url} 
-                                alt={listing.title} 
-                                className="w-full h-32 object-cover rounded-lg mb-3" 
-                              />
-                            ) : (
-                              <div className="w-full h-32 bg-muted rounded-lg mb-3 flex items-center justify-center">
-                                <Store className="w-8 h-8 text-muted-foreground/30" />
-                              </div>
-                            )}
-                            <h4 className="font-medium text-sm truncate">{listing.title}</h4>
-                            <div className="flex items-center justify-between mt-2">
-                              <span className="font-bold text-primary">
-                                {formatPrice(listing.price)}
-                              </span>
-                              {listing.condition && (
-                                <Badge variant="outline" className="text-xs">{listing.condition}</Badge>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <BulkGradingPanel 
+                    listings={portfolioData.listings}
+                    onNavigateToListing={(id) => navigate(`/listing/${id}`)}
+                  />
                 )}
 
                 {/* Portfolio Items Section */}

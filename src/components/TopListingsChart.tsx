@@ -120,8 +120,9 @@ export const TopListingsChart = () => {
       // Build fallback map by seller + normalized title
       const fallbackGradeMap = new Map<string, { score: string; status: string }>();
       
+      // Improved normalization - removes all non-alphanumeric and handles dots/spaces
       const normalizeCardName = (name: string) => 
-        name?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
+        name?.toLowerCase().replace(/[^a-z0-9]/gi, '') || '';
 
       allGradingOrders?.forEach(go => {
         const scoreValue = go.cbgi_score_0_100;
