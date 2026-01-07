@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GRADING_PRICE_USD = 10;
+// Speed tier pricing - price is now stored on the order itself
 const GEM_RATE = 0.002; // 0.2% in gems (or 0.25% for Pro)
 
 // CBGI Grading system prompt
@@ -144,9 +144,12 @@ serve(async (req) => {
       );
     }
 
-    if (wallet.balance < GRADING_PRICE_USD) {
+    // Use order's price_usd (based on speed tier)
+    const gradingPrice = existingOrder.price_usd || 10;
+    
+    if (wallet.balance < gradingPrice) {
       return new Response(
-        JSON.stringify({ error: 'Insufficient balance', required: GRADING_PRICE_USD, current: wallet.balance }),
+        JSON.stringify({ error: 'Insufficient balance', required: gradingPrice, current: wallet.balance }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -154,7 +157,7 @@ serve(async (req) => {
     // Atomically deduct balance
     const { error: deductError } = await supabase
       .from('wallets')
-      .update({ balance: wallet.balance - GRADING_PRICE_USD, updated_at: new Date().toISOString() })
+      .update({ balance: wallet.balance - gradingPrice, updated_at: new Date().toISOString() })
       .eq('id', wallet.id)
       .eq('balance', wallet.balance); // Optimistic lock
 
@@ -172,7 +175,7 @@ serve(async (req) => {
       .insert({
         wallet_id: wallet.id,
         type: 'grading_fee',
-        amount: -GRADING_PRICE_USD,
+        amount: -gradingPrice,
         currency: 'USD',
         description: `Card grading fee - Order ${orderId}`,
         reference_id: orderId
@@ -194,9 +197,9 @@ serve(async (req) => {
       
       const isPro = subscription?.tier === 'pro' || subscription?.tier === 'enterprise';
       const gemRate = isPro ? 0.0025 : 0.002;
-      const gemsEarned = Math.floor(GRADING_PRICE_USD * gemRate * 100); // Convert to gems (1 gem = $0.01)
+      const gemsEarned = Math.floor(gradingPrice * gemRate * 100); // Convert to gems (1 gem = $0.01)
       
-      console.log(`Gem calculation: $${GRADING_PRICE_USD} * ${gemRate} * 100 = ${gemsEarned} gems`);
+      console.log(`Gem calculation: $${gradingPrice} * ${gemRate} * 100 = ${gemsEarned} gems`);
       
       if (gemsEarned > 0) {
         // Get or create cardboom_points record - use maybeSingle to avoid error if no record
@@ -503,7 +506,7 @@ serve(async (req) => {
             grading_company: 'CardBoom',
             image_url: existingOrder.front_image_url,
             current_value: 0,
-            acquisition_price: GRADING_PRICE_USD,
+            acquisition_price: gradingPrice,
             acquisition_date: new Date().toISOString(),
             location: 'owner',
             status: 'available',

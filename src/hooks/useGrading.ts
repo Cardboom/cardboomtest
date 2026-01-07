@@ -65,7 +65,13 @@ export interface GradingOrder {
   value_increase_percent: number | null;
 }
 
-export const GRADING_PRICE_USD = 10;
+export const GRADING_PRICE_USD = 10; // Base price (standard tier)
+
+export const GRADING_SPEED_TIERS = {
+  standard: { price: 10, daysMin: 4, daysMax: 7 },
+  express: { price: 15, daysMin: 3, daysMax: 5 },
+  priority: { price: 25, daysMin: 1, daysMax: 2 },
+};
 
 export const GRADING_CATEGORIES = [
   { id: 'pokemon', name: 'Pokémon', icon: '⚡' },
@@ -119,8 +125,10 @@ export function useGrading() {
   const createOrder = async (
     category: string,
     frontImageFile: File,
-    backImageFile: File
+    backImageFile: File,
+    speedTier: 'standard' | 'express' | 'priority' = 'standard'
   ): Promise<GradingOrder | null> => {
+    const tierConfig = GRADING_SPEED_TIERS[speedTier];
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -157,7 +165,7 @@ export function useGrading() {
         .from('grading-images')
         .getPublicUrl(backPath);
 
-      // Create order
+      // Create order with speed tier
       const { data: order, error: createError } = await supabase
         .from('grading_orders')
         .insert({
@@ -168,7 +176,10 @@ export function useGrading() {
           status: 'pending_payment',
           front_image_url: frontUrl,
           back_image_url: backUrl,
-          price_usd: GRADING_PRICE_USD
+          price_usd: tierConfig.price,
+          speed_tier: speedTier,
+          estimated_days_min: tierConfig.daysMin,
+          estimated_days_max: tierConfig.daysMax,
         })
         .select()
         .single();

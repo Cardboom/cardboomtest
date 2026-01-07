@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { GradingCreditsDisplay } from '@/components/grading/GradingCreditsDisplay';
 import { GradeAndFlipToggle } from '@/components/grading/GradeAndFlipToggle';
+import { SpeedTierSelector, SpeedTier, SPEED_TIERS } from '@/components/grading/SpeedTierSelector';
 import { useGradingCredits } from '@/hooks/useGradingCredits';
 import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { CardAnalysis } from '@/hooks/useCardAnalysis';
@@ -48,7 +49,6 @@ import { ImageCropper } from '@/components/grading/ImageCropper';
 type Step = 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
 
-const BASE_GRADING_PRICE = 10;
 const PROTECTION_SLIP_PRICE = 5;
 const BULK_DISCOUNT_THRESHOLD = 10;
 const BULK_DISCOUNT_PERCENT = 25;
@@ -80,6 +80,7 @@ export default function GradingNew() {
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('shipping');
   const [includeProtection, setIncludeProtection] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [speedTier, setSpeedTier] = useState<SpeedTier>('standard');
   const [autoListEnabled, setAutoListEnabled] = useState(false);
   const [autoListPrice, setAutoListPrice] = useState<number | null>(null);
   const [userId, setUserId] = useState<string | undefined>(undefined);
@@ -113,16 +114,27 @@ export default function GradingNew() {
   const currentStepIndex = steps.findIndex(s => s.key === step);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
-  // Calculate pricing
+  // Calculate pricing based on speed tier
   const pricing = useMemo(() => {
-    const basePerCard = BASE_GRADING_PRICE + (includeProtection ? PROTECTION_SLIP_PRICE : 0);
+    const selectedSpeed = SPEED_TIERS.find(t => t.id === speedTier) || SPEED_TIERS[0];
+    const basePerCard = selectedSpeed.price + (includeProtection ? PROTECTION_SLIP_PRICE : 0);
     const subtotal = basePerCard * quantity;
     const hasBulkDiscount = quantity >= BULK_DISCOUNT_THRESHOLD;
     const discountAmount = hasBulkDiscount ? subtotal * (BULK_DISCOUNT_PERCENT / 100) : 0;
     const total = subtotal - discountAmount;
     
-    return { basePerCard, subtotal, hasBulkDiscount, discountAmount, total, savings: discountAmount };
-  }, [quantity, includeProtection]);
+    return { 
+      basePerCard, 
+      subtotal, 
+      hasBulkDiscount, 
+      discountAmount, 
+      total, 
+      savings: discountAmount,
+      speedPrice: selectedSpeed.price,
+      daysMin: selectedSpeed.daysMin,
+      daysMax: selectedSpeed.daysMax,
+    };
+  }, [quantity, includeProtection, speedTier]);
 
   const handleBackImageChange = (file: File | null) => {
     if (!file) return;
@@ -177,7 +189,7 @@ export default function GradingNew() {
     if (!frontImage || !backImage) return;
     setIsSubmitting(true);
     try {
-      const order = await createOrder(category, frontImage, backImage);
+      const order = await createOrder(category, frontImage, backImage, speedTier);
       if (!order) { setIsSubmitting(false); return; }
       const success = await submitAndPay(order.id, order.idempotency_key);
       if (success) { setCreatedOrder(order); setStep('success'); }
@@ -394,6 +406,12 @@ export default function GradingNew() {
                     </div>
                   )}
 
+                  {/* Speed Tier */}
+                  <SpeedTierSelector
+                    value={speedTier}
+                    onChange={setSpeedTier}
+                  />
+
                   {/* Delivery */}
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">Delivery</Label>
@@ -488,6 +506,10 @@ export default function GradingNew() {
                       <span className="font-medium">{quantity}x</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-muted-foreground">Speed</span>
+                      <span className="font-medium capitalize">{speedTier} ({pricing.daysMin}-{pricing.daysMax} days)</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Delivery</span>
                       <span className="font-medium flex items-center gap-1">
                         {deliveryOption === 'shipping' ? <Truck className="w-3 h-3" /> : <Vault className="w-3 h-3" />}
@@ -519,7 +541,7 @@ export default function GradingNew() {
                   </div>
                   
                   <div className="p-2 rounded-lg bg-primary/5 text-center">
-                    <p className="text-xs">⏱️ Turnaround: <span className="font-semibold">~1 hour</span></p>
+                    <p className="text-xs">⏱️ Turnaround: <span className="font-semibold">{pricing.daysMin}-{pricing.daysMax} days</span></p>
                   </div>
                   
                   <Button className="w-full h-12 rounded-full gap-2 text-base font-medium" onClick={handleNext}>
@@ -584,7 +606,7 @@ export default function GradingNew() {
                       <>Pay & Submit <Check className="w-4 h-4" /></>
                     )}
                   </Button>
-                  <p className="text-[10px] text-center text-muted-foreground">Results typically in ~1 hour</p>
+                  <p className="text-[10px] text-center text-muted-foreground">Results in {pricing.daysMin}-{pricing.daysMax} days</p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -609,9 +631,9 @@ export default function GradingNew() {
                   <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mb-4">
                     <div className="flex items-center justify-center gap-2 mb-1">
                       <Clock className="w-4 h-4 text-primary" />
-                      <span className="font-semibold text-primary text-sm">Est. Result</span>
+                      <span className="font-semibold text-primary text-sm">Est. Completion</span>
                     </div>
-                    <p className="text-2xl font-bold">~1 Hour</p>
+                    <p className="text-2xl font-bold">{pricing.daysMin}-{pricing.daysMax} Days</p>
                   </div>
                   
                   <Badge variant="secondary" className="mb-4">Order: {createdOrder?.id?.slice(0, 8)}...</Badge>
