@@ -11,6 +11,18 @@ interface PriceEstimateRequest {
   set_name?: string
   category: string
   force_refresh?: boolean
+  image_url?: string
+}
+
+interface XimilarPricing {
+  item_id: string
+  item_link: string
+  name: string
+  price: number
+  currency: string
+  source: string
+  grade_company?: string
+  grade?: string
 }
 
 interface PriceEstimates {
@@ -22,6 +34,128 @@ interface PriceEstimates {
   price_psa_10: number | null
   confidence_score: number
   notes: string
+  data_source: string
+}
+
+// Map Ximilar pricing data to grade-specific prices
+function processPricingData(pricingList: XimilarPricing[]): PriceEstimates {
+  const prices: Record<string, number[]> = {
+    ungraded: [],
+    psa_6: [],
+    psa_7: [],
+    psa_8: [],
+    psa_9: [],
+    psa_10: [],
+  }
+
+  const sources = new Set<string>()
+
+  for (const item of pricingList) {
+    // Convert to USD if needed
+    let priceUSD = item.price
+    if (item.currency === 'EUR') priceUSD = item.price * 1.08
+    else if (item.currency === 'GBP') priceUSD = item.price * 1.27
+    
+    sources.add(item.source)
+
+    if (item.grade_company && item.grade) {
+      const gradeNum = parseFloat(item.grade)
+      if (item.grade_company.toUpperCase() === 'PSA') {
+        if (gradeNum === 10) prices.psa_10.push(priceUSD)
+        else if (gradeNum === 9) prices.psa_9.push(priceUSD)
+        else if (gradeNum === 8) prices.psa_8.push(priceUSD)
+        else if (gradeNum === 7) prices.psa_7.push(priceUSD)
+        else if (gradeNum >= 5 && gradeNum <= 6) prices.psa_6.push(priceUSD)
+      } else if (['BGS', 'CGC', 'SGC'].includes(item.grade_company.toUpperCase())) {
+        // Map other grading companies to PSA equivalents
+        if (gradeNum >= 9.5) prices.psa_10.push(priceUSD * 0.9) // BGS 9.5 ≈ PSA 10 value
+        else if (gradeNum === 9) prices.psa_9.push(priceUSD)
+        else if (gradeNum === 8 || gradeNum === 8.5) prices.psa_8.push(priceUSD)
+      }
+    } else {
+      // Ungraded/raw card
+      prices.ungraded.push(priceUSD)
+    }
+  }
+
+  // Calculate median for each grade
+  const getMedian = (arr: number[]): number | null => {
+    if (arr.length === 0) return null
+    const sorted = [...arr].sort((a, b) => a - b)
+    const mid = Math.floor(sorted.length / 2)
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+  }
+
+  const rawPrice = getMedian(prices.ungraded)
+  const psa10Price = getMedian(prices.psa_10)
+  const psa9Price = getMedian(prices.psa_9)
+  const psa8Price = getMedian(prices.psa_8)
+  const psa7Price = getMedian(prices.psa_7)
+  const psa6Price = getMedian(prices.psa_6)
+
+  // Estimate missing grades based on available data
+  const estimatedPrices = estimateMissingGrades(rawPrice, psa6Price, psa7Price, psa8Price, psa9Price, psa10Price)
+
+  // Calculate confidence based on data availability
+  const dataPoints = [rawPrice, psa6Price, psa7Price, psa8Price, psa9Price, psa10Price].filter(p => p !== null).length
+  const confidence = Math.min(0.95, 0.4 + (dataPoints * 0.1) + (pricingList.length * 0.02))
+
+  const sourceList = Array.from(sources).join(', ')
+  
+  return {
+    price_ungraded: estimatedPrices.ungraded,
+    price_psa_6: estimatedPrices.psa_6,
+    price_psa_7: estimatedPrices.psa_7,
+    price_psa_8: estimatedPrices.psa_8,
+    price_psa_9: estimatedPrices.psa_9,
+    price_psa_10: estimatedPrices.psa_10,
+    confidence_score: Math.round(confidence * 100) / 100,
+    notes: `Data from ${sourceList || 'market sources'}. Based on ${pricingList.length} listings.`,
+    data_source: 'ximilar_tcgplayer_ebay',
+  }
+}
+
+// Estimate missing grade prices using market multipliers
+function estimateMissingGrades(
+  raw: number | null,
+  psa6: number | null,
+  psa7: number | null,
+  psa8: number | null,
+  psa9: number | null,
+  psa10: number | null
+): Record<string, number | null> {
+  // Standard multipliers based on market data
+  const multipliers = {
+    raw_to_psa10: 0.08,      // Raw is typically 8% of PSA 10
+    psa6_to_psa10: 0.15,     // PSA 6 is ~15% of PSA 10
+    psa7_to_psa10: 0.25,     // PSA 7 is ~25% of PSA 10
+    psa8_to_psa10: 0.40,     // PSA 8 is ~40% of PSA 10
+    psa9_to_psa10: 0.60,     // PSA 9 is ~60% of PSA 10
+  }
+
+  let basePSA10 = psa10
+
+  // Try to derive PSA 10 from other grades if not available
+  if (!basePSA10) {
+    if (psa9) basePSA10 = psa9 / multipliers.psa9_to_psa10
+    else if (psa8) basePSA10 = psa8 / multipliers.psa8_to_psa10
+    else if (psa7) basePSA10 = psa7 / multipliers.psa7_to_psa10
+    else if (psa6) basePSA10 = psa6 / multipliers.psa6_to_psa10
+    else if (raw) basePSA10 = raw / multipliers.raw_to_psa10
+  }
+
+  if (!basePSA10) {
+    return { ungraded: raw, psa_6: psa6, psa_7: psa7, psa_8: psa8, psa_9: psa9, psa_10: psa10 }
+  }
+
+  return {
+    ungraded: raw ?? Math.round(basePSA10 * multipliers.raw_to_psa10),
+    psa_6: psa6 ?? Math.round(basePSA10 * multipliers.psa6_to_psa10),
+    psa_7: psa7 ?? Math.round(basePSA10 * multipliers.psa7_to_psa10),
+    psa_8: psa8 ?? Math.round(basePSA10 * multipliers.psa8_to_psa10),
+    psa_9: psa9 ?? Math.round(basePSA10 * multipliers.psa9_to_psa10),
+    psa_10: psa10 ?? Math.round(basePSA10),
+  }
 }
 
 Deno.serve(async (req) => {
@@ -32,11 +166,11 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
+    const ximilarToken = Deno.env.get('XIMILAR_API_TOKEN')
     
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    const { market_item_id, card_name, set_name, category, force_refresh }: PriceEstimateRequest = await req.json()
+    const { market_item_id, card_name, set_name, category, force_refresh, image_url }: PriceEstimateRequest = await req.json()
 
     if (!card_name || !category) {
       return new Response(
@@ -80,105 +214,159 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (!openaiKey) {
-      console.error('[fetch-price-estimates] OPENAI_API_KEY not configured')
+    if (!ximilarToken) {
+      console.error('[fetch-price-estimates] XIMILAR_API_TOKEN not configured')
       return new Response(
-        JSON.stringify({ error: 'AI pricing not available' }),
+        JSON.stringify({ error: 'Pricing service not available' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log(`[fetch-price-estimates] Fetching AI estimates for: ${card_name} (${category})`)
+    console.log(`[fetch-price-estimates] Fetching Ximilar pricing for: ${card_name} (${category})`)
 
-    const prompt = `You are a TCG and collectibles pricing expert with deep knowledge of current market values.
+    // Build search query for Ximilar
+    const searchQuery = `${card_name} ${set_name || ''}`.trim()
+    
+    // Try to get image URL from market_items if not provided
+    let cardImageUrl = image_url
+    if (!cardImageUrl && market_item_id) {
+      const { data: marketItem } = await supabase
+        .from('market_items')
+        .select('image_url')
+        .eq('id', market_item_id)
+        .single()
+      cardImageUrl = marketItem?.image_url
+    }
 
-Analyze this card and provide realistic USD price estimates:
+    let pricingData: XimilarPricing[] = []
+    let ximilarSuccess = false
 
-Card Name: ${card_name}
-Set: ${set_name || 'Unknown'}
-Category: ${category}
-
-Provide price estimates in USD for each condition/grade:
-1. Ungraded (Near Mint raw condition)
-2. PSA 6 (Excellent-Mint)
-3. PSA 7 (Near Mint)
-4. PSA 8 (Near Mint-Mint)
-5. PSA 9 (Mint)
-6. PSA 10 (Gem Mint)
-
-Consider:
-- Current market demand and trends
-- Recent sold comparables
-- Card rarity and print run
-- Historical price movements
-- Population reports for graded cards
-
-Return ONLY valid JSON in this exact format:
-{
-  "price_ungraded": 15.00,
-  "price_psa_6": 25.00,
-  "price_psa_7": 40.00,
-  "price_psa_8": 75.00,
-  "price_psa_9": 150.00,
-  "price_psa_10": 500.00,
-  "confidence_score": 0.85,
-  "notes": "Brief explanation of pricing factors"
-}
-
-If you cannot find reliable data for this card, set confidence_score below 0.5 and explain in notes.`
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are a TCG card pricing expert. Provide accurate, realistic market values based on current data. Always return valid JSON.' 
+    // If we have an image, use Ximilar's visual search with pricing
+    if (cardImageUrl) {
+      try {
+        const ximilarResponse = await fetch('https://api.ximilar.com/collectibles/v2/tcg_id', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Token ${ximilarToken}`,
+            'Content-Type': 'application/json',
           },
-          { role: 'user', content: prompt }
-        ],
-        max_tokens: 800,
-        temperature: 0.3,
-      }),
-    })
+          body: JSON.stringify({
+            records: [{ _url: cardImageUrl }],
+            pricing: true,
+          }),
+        })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('[fetch-price-estimates] OpenAI error:', response.status, errorText)
-      return new Response(
-        JSON.stringify({ error: 'AI pricing failed' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+        if (ximilarResponse.ok) {
+          const ximilarData = await ximilarResponse.json()
+          const record = ximilarData.records?.[0]
+          const bestMatch = record?._objects?.[0]?._identification?.best_match
+          
+          if (bestMatch?.pricing?.list) {
+            pricingData = bestMatch.pricing.list
+            ximilarSuccess = true
+            console.log(`[fetch-price-estimates] Got ${pricingData.length} pricing records from Ximilar`)
+          }
+        }
+      } catch (ximilarError) {
+        console.error('[fetch-price-estimates] Ximilar image lookup failed:', ximilarError)
+      }
     }
 
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content
-
-    if (!content) {
-      throw new Error('No content in AI response')
-    }
-
-    // Parse JSON from response
-    let estimates: PriceEstimates
-    try {
-      let jsonStr = content.trim()
-      if (jsonStr.startsWith('```json')) jsonStr = jsonStr.slice(7)
-      else if (jsonStr.startsWith('```')) jsonStr = jsonStr.slice(3)
-      if (jsonStr.endsWith('```')) jsonStr = jsonStr.slice(0, -3)
+    // If no image or Ximilar failed, try text-based search via TCGPlayer/eBay data in our DB
+    if (!ximilarSuccess || pricingData.length === 0) {
+      console.log('[fetch-price-estimates] Falling back to database price history')
       
-      estimates = JSON.parse(jsonStr.trim())
-    } catch (parseError) {
-      console.error('[fetch-price-estimates] Failed to parse AI response:', content)
+      // Check price_history table for recent sales
+      const { data: priceHistory } = await supabase
+        .from('price_history')
+        .select('price, source')
+        .eq('product_id', market_item_id || '')
+        .gte('recorded_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .order('recorded_at', { ascending: false })
+        .limit(50)
+
+      if (priceHistory && priceHistory.length > 0) {
+        // Convert to Ximilar format for processing
+        pricingData = priceHistory.map(ph => ({
+          item_id: '',
+          item_link: '',
+          name: card_name,
+          price: Number(ph.price),
+          currency: 'USD',
+          source: ph.source || 'price_history',
+        }))
+      }
+    }
+
+    // If still no data, check market_items for current price as baseline
+    if (pricingData.length === 0 && market_item_id) {
+      const { data: marketItem } = await supabase
+        .from('market_items')
+        .select('current_price, psa_10_price, psa_9_price')
+        .eq('id', market_item_id)
+        .single()
+
+      if (marketItem?.current_price) {
+        // Use existing market data
+        const gradeEstimates = estimateMissingGrades(
+          null,
+          null,
+          null,
+          null,
+          marketItem.psa_9_price ? Number(marketItem.psa_9_price) : null,
+          marketItem.psa_10_price ? Number(marketItem.psa_10_price) : marketItem.current_price
+        )
+
+        const recordData = {
+          market_item_id: market_item_id || null,
+          card_name,
+          set_name: set_name || null,
+          category,
+          price_ungraded: gradeEstimates.ungraded,
+          price_psa_6: gradeEstimates.psa_6,
+          price_psa_7: gradeEstimates.psa_7,
+          price_psa_8: gradeEstimates.psa_8,
+          price_psa_9: gradeEstimates.psa_9,
+          price_psa_10: gradeEstimates.psa_10,
+          confidence_score: 0.6,
+          notes: 'Estimated from current market price. Limited historical data.',
+          data_source: 'market_items_estimate',
+          updated_at: new Date().toISOString(),
+          expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days for estimates
+        }
+
+        // Upsert the estimate
+        if (market_item_id) {
+          await supabase
+            .from('card_price_estimates')
+            .upsert(recordData, { onConflict: 'market_item_id' })
+        }
+
+        return new Response(JSON.stringify({
+          ...recordData,
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString(),
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+    }
+
+    // Process pricing data
+    if (pricingData.length === 0) {
       return new Response(
-        JSON.stringify({ error: 'Failed to parse pricing data' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          error: 'No pricing data available',
+          card_name,
+          category,
+          confidence_score: 0,
+          notes: 'Insufficient data - no market prices found for this card.'
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    const estimates = processPricingData(pricingData)
 
     // Store in database
     const recordData = {
@@ -192,14 +380,14 @@ If you cannot find reliable data for this card, set confidence_score below 0.5 a
       price_psa_8: estimates.price_psa_8,
       price_psa_9: estimates.price_psa_9,
       price_psa_10: estimates.price_psa_10,
-      confidence_score: estimates.confidence_score || 0.7,
-      notes: estimates.notes || null,
-      data_source: 'openai_gpt4o',
+      confidence_score: estimates.confidence_score,
+      notes: estimates.notes,
+      data_source: estimates.data_source,
       updated_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     }
 
-    // Upsert based on market_item_id or card_name
+    // Upsert based on market_item_id
     if (market_item_id) {
       const { error: upsertError } = await supabase
         .from('card_price_estimates')
@@ -209,7 +397,6 @@ If you cannot find reliable data for this card, set confidence_score below 0.5 a
         console.error('[fetch-price-estimates] Upsert error:', upsertError)
       }
     } else {
-      // Insert without conflict handling for non-market items
       const { error: insertError } = await supabase
         .from('card_price_estimates')
         .insert(recordData)
