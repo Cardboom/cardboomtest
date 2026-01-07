@@ -137,14 +137,41 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
           </div>
         </motion.div>
 
-        {/* Card info if available */}
+        {/* Card Details Section */}
         {(order.card_name || cbgiJson?.card_name) && (
-          <div className="mb-4 p-3 rounded-lg bg-muted/30 border border-border/30">
-            <p className="text-sm font-medium">{cbgiJson?.card_name || order.card_name}</p>
-            <div className="flex flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
-              {(cbgiJson?.set || order.set_name) && <span>{cbgiJson?.set || order.set_name}</span>}
-              {order.card_number && <span>#{order.card_number}</span>}
-              {order.rarity && <Badge variant="outline" className="text-xs h-5">{order.rarity}</Badge>}
+          <div className="mb-4 p-4 rounded-lg bg-muted/30 border border-border/30">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Award className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-foreground leading-tight">
+                  {cbgiJson?.card_name || order.card_name}
+                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-sm text-muted-foreground">
+                  {(cbgiJson?.set || order.set_name) && (
+                    <span className="flex items-center gap-1">
+                      <Layers className="w-3.5 h-3.5" />
+                      {cbgiJson?.set || order.set_name}
+                    </span>
+                  )}
+                  {order.card_number && (
+                    <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
+                      #{order.card_number}
+                    </span>
+                  )}
+                  {order.category && (
+                    <Badge variant="outline" className="text-xs h-5 capitalize">
+                      {order.category.replace(/-/g, ' ')}
+                    </Badge>
+                  )}
+                  {order.rarity && (
+                    <Badge variant="secondary" className="text-xs h-5">
+                      {order.rarity}
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}

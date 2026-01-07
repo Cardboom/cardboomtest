@@ -40,6 +40,16 @@ serve(async (req) => {
       );
     }
 
+    // Check if user is admin for instant grading
+    const { data: adminRole } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    const isAdmin = !!adminRole;
+
     const { listing_ids, speed_tier = 'standard' }: GradeListingRequest = await req.json();
 
     if (!listing_ids || !Array.isArray(listing_ids) || listing_ids.length === 0) {
@@ -117,11 +127,8 @@ serve(async (req) => {
 
     for (const listing of eligibleListings) {
       try {
-        // Normalize card name for matching - remove all non-alphanumeric chars and lowercase
-        // e.g., "Monkey D. Luffy EB02-061" -> "monkeydluffyeb02061"
-        const normalizedCardName = listing.title?.toLowerCase().replace(/[^a-z0-9]/g, '') || '';
-        
-        // Create grading order with normalized card name for consistent matching
+        // Create grading order with EXACT listing title for database consistency
+        // e.g., "Nami ONE PIECE Heroines Edition EB03-053" stored as-is
         const { data: order, error: orderError } = await supabase
           .from('grading_orders')
           .insert({
@@ -132,7 +139,7 @@ serve(async (req) => {
             price_usd: pricePerCard,
             price_cents: pricePerCard * 100,
             status: 'queued',
-            card_name: normalizedCardName, // Store normalized for matching
+            card_name: listing.title, // Store EXACT title for matching
             listing_created_id: listing.id,
             speed_tier: speed_tier,
           })
@@ -155,17 +162,21 @@ serve(async (req) => {
 
         createdOrders.push(order);
 
-        // Trigger the grading process
-        fetch(`${supabaseUrl}/functions/v1/cbgi-grade`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({ order_id: order.id }),
-        }).catch(err => {
-          console.error('Failed to trigger grading for order:', order.id, err);
-        });
+        // Trigger the grading process ONLY for admins (instant grading)
+        // Normal users will wait for the countdown timer, then grading triggers via cron/manual
+        if (isAdmin) {
+          fetch(`${supabaseUrl}/functions/v1/cbgi-grade`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({ order_id: order.id }),
+          }).catch(err => {
+            console.error('Failed to trigger grading for order:', order.id, err);
+          });
+        }
+        // For non-admins, grading will be triggered after countdown expires
 
       } catch (err) {
         errors.push({ listing_id: listing.id, error: String(err) });
