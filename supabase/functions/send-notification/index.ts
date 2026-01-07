@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface NotificationPayload {
   user_id: string;
-  type: 'price_alert' | 'new_offer' | 'message' | 'order_update' | 'follower' | 'review' | 'referral';
+  type: 'price_alert' | 'new_offer' | 'message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created';
   title: string;
   body: string;
   data?: Record<string, unknown>;
@@ -23,7 +23,11 @@ function getNotificationUrl(type: string, data?: Record<string, unknown>): strin
     case 'message':
       return data?.conversation_id ? `/messages?id=${data.conversation_id}` : '/messages';
     case 'order_update':
-      return data?.order_id ? `/orders/${data.order_id}` : '/portfolio';
+      return data?.listing_id ? `/listing/${data.listing_id}` : (data?.order_id ? `/orders/${data.order_id}` : '/portfolio');
+    case 'grading_complete':
+      return data?.listing_id ? `/listing/${data.listing_id}` : (data?.grading_order_id ? `/grading/orders/${data.grading_order_id}` : '/grading/orders');
+    case 'listing_created':
+      return data?.listing_id ? `/listing/${data.listing_id}` : '/sell';
     case 'follower':
       return data?.follower_id ? `/user/${data.follower_id}` : '/';
     default:

@@ -447,6 +447,44 @@ Return ONLY valid JSON:
       console.error('Failed to create card instance:', instanceError);
     }
 
+    // If this grading was linked to a listing, update the listing's certification status
+    if (order.listing_created_id) {
+      const { error: listingUpdateError } = await supabase
+        .from('listings')
+        .update({ certification_status: 'completed' })
+        .eq('id', order.listing_created_id);
+
+      if (listingUpdateError) {
+        console.error('Failed to update listing certification status:', listingUpdateError);
+      }
+    }
+
+    // Send notification to user that grading is complete
+    try {
+      const cardName = cbgiResult.card_name || order.card_name || 'Your card';
+      await fetch(`${supabaseUrl}/functions/v1/send-notification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          user_id: order.user_id,
+          type: 'order_update',
+          title: 'Grading Complete! 🏆',
+          body: `${cardName} has been graded: CardBoom Index ${finalGrade.toFixed(1)}/10 (${cbgiResult.estimated_psa_range})`,
+          data: { 
+            grading_order_id: orderId,
+            listing_id: order.listing_created_id,
+            final_grade: finalGrade,
+          },
+        }),
+      });
+      console.log('Grading completion notification sent to user:', order.user_id);
+    } catch (notifError) {
+      console.error('Failed to send grading completion notification:', notifError);
+    }
+
     // Fetch updated order
     const { data: updatedOrder } = await supabase
       .from('grading_orders')

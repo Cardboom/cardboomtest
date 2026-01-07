@@ -7,7 +7,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export type CertificationTier = 'none' | 'standard' | 'express';
+export type CertificationTier = 'standard' | 'express';
 
 interface CertificationToggleProps {
   enabled: boolean;
@@ -48,9 +48,6 @@ export const CertificationToggle = ({
       setShowWarning(true);
     } else {
       setShowWarning(false);
-      if (tier === 'none') {
-        onTierChange('standard');
-      }
     }
     onEnabledChange(checked);
   };
@@ -160,7 +157,7 @@ export const CertificationToggle = ({
                         exit={{ opacity: 0, height: 0 }}
                       >
                         <RadioGroup 
-                          value={tier === 'none' ? 'standard' : tier}
+                          value={tier}
                           onValueChange={(value) => onTierChange(value as CertificationTier)}
                           className="grid grid-cols-2 gap-3"
                         >

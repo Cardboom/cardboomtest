@@ -19,6 +19,8 @@ interface CreateListingParams {
   allowsVault?: boolean;
   allowsTrade?: boolean;
   allowsShipping?: boolean;
+  certificationEnabled?: boolean;
+  certificationTier?: 'standard' | 'express';
 }
 
 interface CreateGradingOrderParams {
@@ -110,6 +112,8 @@ export function useCardIndexer() {
     allowsVault = true,
     allowsTrade = true,
     allowsShipping = true,
+    certificationEnabled = false,
+    certificationTier = 'standard',
   }: CreateListingParams) => {
     try {
       // First, upsert the market item
@@ -119,36 +123,94 @@ export function useCardIndexer() {
         currentPrice: price,
       });
 
-      // Create the listing
+      // Create the listing (initially without grading)
+      const listingData: Record<string, unknown> = {
+        seller_id: userId,
+        title: cardData.cardNameEnglish || cardData.cardName,
+        description,
+        category: cardData.category,
+        condition,
+        price,
+        image_url: imageUrl,
+        market_item_id: marketItem.id,
+        set_name: cardData.setName,
+        set_code: cardData.setCode,
+        card_number: cardData.cardNumber,
+        rarity: cardData.rarity,
+        language: cardData.language,
+        cvi_key: cardData.cviKey,
+        ai_confidence: cardData.confidence,
+        allows_vault: allowsVault,
+        allows_trade: allowsTrade,
+        allows_shipping: allowsShipping,
+        status: 'active',
+        certification_status: certificationEnabled ? 'pending' : 'none',
+      };
+
       const { data: listing, error } = await supabase
         .from('listings')
-        .insert({
-          seller_id: userId,
-          title: cardData.cardNameEnglish || cardData.cardName,
-          description,
-          category: cardData.category,
-          condition,
-          price,
-          image_url: imageUrl,
-          market_item_id: marketItem.id,
-          set_name: cardData.setName,
-          set_code: cardData.setCode,
-          card_number: cardData.cardNumber,
-          rarity: cardData.rarity,
-          language: cardData.language,
-          cvi_key: cardData.cviKey,
-          ai_confidence: cardData.confidence,
-          allows_vault: allowsVault,
-          allows_trade: allowsTrade,
-          allows_shipping: allowsShipping,
-          status: 'active',
-        })
+        .insert(listingData as any)
         .select()
         .single();
 
       if (error) throw error;
 
-      return { listing, marketItem };
+      // If certification is enabled, create a grading order linked to this listing
+      let gradingOrder = null;
+      if (certificationEnabled && listing) {
+        const tierPrices = { standard: 10, express: 15 };
+        const gradingPrice = tierPrices[certificationTier] || 10;
+
+        const { data: order, error: gradingError } = await supabase
+          .from('grading_orders')
+          .insert({
+            user_id: userId,
+            category: cardData.category,
+            front_image_url: imageUrl,
+            back_image_url: imageUrl, // Use same image if no back provided
+            price_usd: gradingPrice,
+            price_cents: gradingPrice * 100,
+            status: 'queued',
+            card_name: cardData.cardNameEnglish || cardData.cardName,
+            set_name: cardData.setName,
+            set_code: cardData.setCode,
+            card_number: cardData.cardNumber,
+            rarity: cardData.rarity,
+            language: cardData.language,
+            cvi_key: cardData.cviKey,
+            market_item_id: marketItem.id,
+            listing_created_id: listing.id,
+            speed_tier: certificationTier,
+          } as any)
+          .select()
+          .single();
+
+        if (!gradingError && order) {
+          gradingOrder = order;
+          // Update listing with grading order reference
+          await supabase
+            .from('listings')
+            .update({ grading_order_id: order.id })
+            .eq('id', listing.id);
+        }
+      }
+
+      // Send notification for listing creation
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            user_id: userId,
+            type: 'order_update',
+            title: 'Listing Created! 🎉',
+            body: `Your listing "${cardData.cardNameEnglish || cardData.cardName}" is now live on the marketplace.`,
+            data: { listing_id: listing.id },
+          },
+        });
+      } catch (notifError) {
+        console.error('Failed to send listing notification:', notifError);
+      }
+
+      return { listing, marketItem, gradingOrder };
     } catch (error) {
       console.error('Error creating listing:', error);
       throw error;

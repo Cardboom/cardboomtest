@@ -110,7 +110,7 @@ const SellPage = () => {
     dailyVerification: true,
     boostTier: 'none' as 'none' | '24h' | '7d' | 'top_category',
     certificationEnabled: true,
-    certificationTier: 'standard' as 'none' | 'standard' | 'express',
+    certificationTier: 'standard' as 'standard' | 'express',
   });
 
   useEffect(() => {
@@ -284,7 +284,7 @@ const SellPage = () => {
       };
 
       // Use the card indexer to create listing linked to market_items
-      const { listing: listingData, marketItem } = await createListing({
+      const { listing: listingData, marketItem, gradingOrder } = await createListing({
         userId: session.user.id,
         cardData,
         imageUrl: imageUrl || undefined,
@@ -294,6 +294,8 @@ const SellPage = () => {
         allowsVault: formData.allowsVault,
         allowsTrade: formData.allowsTrade,
         allowsShipping: formData.allowsShipping,
+        certificationEnabled: formData.certificationEnabled,
+        certificationTier: formData.certificationTier,
       });
 
       if (!listingData) throw new Error('Failed to create listing');
