@@ -69,21 +69,34 @@ export function BulkGradingPanel({ listings, onNavigateToListing, onGradingSubmi
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function invoke error:', error);
+        toast.error(error.message || 'Failed to connect to grading service');
+        return;
+      }
 
-      if (data.error) {
+      if (data?.error) {
         if (data.error === 'Insufficient balance') {
           toast.error(`Insufficient balance. Need $${data.required}, have $${data.available}`);
           navigate('/wallet');
           return;
         }
-        throw new Error(data.error);
+        if (data.error === 'All selected listings are already graded or in progress') {
+          toast.info('All selected cards are already graded or in progress');
+          return;
+        }
+        toast.error(data.error);
+        return;
       }
 
-      toast.success(`${data.orders_created} card(s) submitted for grading!`);
-      setSelectedIds(new Set());
-      setBulkMode(false);
-      onGradingSubmitted?.();
+      if (data?.success) {
+        toast.success(`${data.orders_created} card(s) submitted for grading! Total: $${data.total_cost}`);
+        setSelectedIds(new Set());
+        setBulkMode(false);
+        onGradingSubmitted?.();
+      } else {
+        toast.error('Unexpected response from grading service');
+      }
     } catch (error) {
       console.error('Bulk grading error:', error);
       toast.error('Failed to submit for grading. Please try again.');
