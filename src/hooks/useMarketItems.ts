@@ -392,8 +392,10 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
         if (grading) {
           if (grading.status === 'completed' && grading.cbgi_score !== null) {
             gradingCompany = 'CardBoom';
-            grade = (grading.cbgi_score / 10).toFixed(1);
-          } else if (grading.status === 'pending' || grading.status === 'queued' || grading.status === 'processing') {
+            // Handle both 0-10 and 0-100 scales - if score > 10, it's 0-100 scale
+            const score = grading.cbgi_score > 10 ? grading.cbgi_score / 10 : grading.cbgi_score;
+            grade = score.toFixed(1);
+          } else if (grading.status === 'pending' || grading.status === 'queued' || grading.status === 'processing' || grading.status === 'in_review') {
             gradingCompany = 'CardBoom';
             grade = 'Pending';
           }

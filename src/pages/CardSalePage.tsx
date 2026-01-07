@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { CardHeroSection, CardImageModule, PriceMarketPanel, BuyBox, SellerInfoCard, EscrowSection, CardDetailsSection } from '@/components/card-sale';
 import { CardSocialProof } from '@/components/CardSocialProof';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
+import { ItemListings } from '@/components/item/ItemListings';
 import { CardDiscussionPanel } from '@/components/discussions/CardDiscussionPanel';
 import { generateCardUrl } from '@/lib/seoSlug';
 
@@ -218,6 +219,9 @@ const CardSalePage = () => {
 
         {/* Full Width Sections */}
         <div className="mt-8 space-y-8">
+          {/* All Sellers Section - TCGPlayer style */}
+          <ItemListings itemId={item.id} itemName={item.name} />
+          
           <CardSocialProof itemId={item.id} views={viewStats?.views24h || 0} watchlistCount={watchlistCount || 0} searchCount={Math.floor((viewStats?.views24h || 0) * 0.3)} mentionCount={Math.floor((watchlistCount || 0) * 0.5)} recentBuyers={5} />
           <PriceMarketPanel itemId={item.id} productId={item.external_id} itemName={item.name} category={item.category} currentPrice={item.current_price || 0} priceChange24h={item.change_24h} priceChange7d={item.change_7d} priceChange30d={item.change_30d} confidenceBand={{ low: (item.current_price || 100) * 0.9, high: (item.current_price || 100) * 1.1 }} psa10Price={(item as any).psa10_price} rawPrice={(item as any).raw_price} />
           <ItemSalesHistory itemId={id || ''} />
