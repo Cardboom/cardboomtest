@@ -14,8 +14,8 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award, Timer, Loader2 } from 'lucide-react';
-import { format, addHours } from 'date-fns';
+import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award, Timer, Loader2, ShoppingCart, Tag } from 'lucide-react';
+import { format, addDays, addHours, differenceInSeconds } from 'date-fns';
 
 export default function GradingOrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,30 +41,40 @@ export default function GradingOrderDetail() {
   const isCompleted = order?.status === 'completed';
   const isPending = order ? ['queued', 'in_review', 'pending_payment'].includes(order.status) : false;
 
-  // Calculate countdown for pending orders (1 hour from submission) - with live updates
-  const [countdown, setCountdown] = useState({ minutes: 60, seconds: 0 });
+  // Calculate countdown for pending orders based on speed tier
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   
   useEffect(() => {
     if (!isPending || !order?.paid_at) return;
     
+    // Get estimated days from the order or speed tier
+    const speedTierDays: Record<string, number> = {
+      'priority': 2,
+      'express': 5,
+      'standard': 7,
+    };
+    const estimatedDays = order.estimated_days_max || speedTierDays[order.speed_tier || 'standard'] || 7;
+    
     const updateCountdown = () => {
       const paidAt = new Date(order.paid_at!);
-      const expectedCompletion = addHours(paidAt, 1);
+      const expectedCompletion = addDays(paidAt, estimatedDays);
       const now = new Date();
-      const totalSecondsRemaining = Math.max(0, Math.floor((expectedCompletion.getTime() - now.getTime()) / 1000));
+      const totalSecondsRemaining = Math.max(0, differenceInSeconds(expectedCompletion, now));
       
-      setCountdown({
-        minutes: Math.floor(totalSecondsRemaining / 60),
-        seconds: totalSecondsRemaining % 60
-      });
+      const days = Math.floor(totalSecondsRemaining / 86400);
+      const hours = Math.floor((totalSecondsRemaining % 86400) / 3600);
+      const minutes = Math.floor((totalSecondsRemaining % 3600) / 60);
+      const seconds = totalSecondsRemaining % 60;
+      
+      setCountdown({ days, hours, minutes, seconds });
     };
     
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, [isPending, order?.paid_at]);
+  }, [isPending, order?.paid_at, order?.speed_tier, order?.estimated_days_max]);
 
-  const countdownExpired = countdown.minutes === 0 && countdown.seconds === 0;
+  const countdownExpired = countdown.days === 0 && countdown.hours === 0 && countdown.minutes === 0 && countdown.seconds === 0;
 
   if (isLoading) {
     return (
@@ -129,37 +139,55 @@ export default function GradingOrderDetail() {
                             <Timer className="w-6 h-6 text-primary animate-pulse" />
                           )}
                           <span className="text-sm font-semibold text-primary uppercase tracking-widest">
-                            {countdownExpired ? 'Finalizing Results' : 'CardBoom Index Processing'}
-                          </span>
-                        </div>
-                        
-                        {/* Big countdown display */}
-                        <div className="flex items-center justify-center gap-3 mb-3">
-                          <div className="bg-background/80 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[80px] shadow-lg border border-primary/20">
-                            <p className="text-4xl font-bold text-foreground tabular-nums">
-                              {String(countdown.minutes).padStart(2, '0')}
-                            </p>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Minutes</p>
-                          </div>
-                          <span className="text-3xl font-bold text-primary animate-pulse">:</span>
-                          <div className="bg-background/80 backdrop-blur-sm rounded-xl px-4 py-3 min-w-[80px] shadow-lg border border-primary/20">
-                            <p className="text-4xl font-bold text-foreground tabular-nums">
-                              {String(countdown.seconds).padStart(2, '0')}
-                            </p>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wide">Seconds</p>
-                          </div>
-                        </div>
-                        
-                        <p className="text-sm text-muted-foreground">
-                          {countdownExpired ? 'Your result should be ready any moment now' : 'Estimated time remaining'}
-                        </p>
-                        
-                        {!countdownExpired && (
-                          <Badge variant="secondary" className="mt-4">
-                            <RefreshCw className="w-3 h-3 mr-1" />
-                            Auto-refreshes when ready
-                          </Badge>
+                          {countdownExpired ? 'Finalizing Results' : 'CardBoom Index Processing'}
+                        </span>
+                      </div>
+                      
+                      {/* Big countdown display */}
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        {countdown.days > 0 && (
+                          <>
+                            <div className="bg-background/80 backdrop-blur-sm rounded-xl px-3 py-2 min-w-[60px] shadow-lg border border-primary/20">
+                              <p className="text-2xl font-bold text-foreground tabular-nums">
+                                {String(countdown.days).padStart(2, '0')}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Days</p>
+                            </div>
+                            <span className="text-xl font-bold text-primary">:</span>
+                          </>
                         )}
+                        <div className="bg-background/80 backdrop-blur-sm rounded-xl px-3 py-2 min-w-[60px] shadow-lg border border-primary/20">
+                          <p className="text-2xl font-bold text-foreground tabular-nums">
+                            {String(countdown.hours).padStart(2, '0')}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Hours</p>
+                        </div>
+                        <span className="text-xl font-bold text-primary animate-pulse">:</span>
+                        <div className="bg-background/80 backdrop-blur-sm rounded-xl px-3 py-2 min-w-[60px] shadow-lg border border-primary/20">
+                          <p className="text-2xl font-bold text-foreground tabular-nums">
+                            {String(countdown.minutes).padStart(2, '0')}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Min</p>
+                        </div>
+                        <span className="text-xl font-bold text-primary animate-pulse">:</span>
+                        <div className="bg-background/80 backdrop-blur-sm rounded-xl px-3 py-2 min-w-[60px] shadow-lg border border-primary/20">
+                          <p className="text-2xl font-bold text-foreground tabular-nums">
+                            {String(countdown.seconds).padStart(2, '0')}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Sec</p>
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground">
+                        {countdownExpired ? 'Your result should be ready any moment now' : `Estimated completion · ${order.speed_tier || 'standard'} tier`}
+                      </p>
+                      
+                      {!countdownExpired && (
+                        <Badge variant="secondary" className="mt-4">
+                          <RefreshCw className="w-3 h-3 mr-1" />
+                          Auto-refreshes when ready
+                        </Badge>
+                      )}
                       </div>
                     </CardContent>
                   </Card>
@@ -175,6 +203,9 @@ export default function GradingOrderDetail() {
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-4 h-4" /><span>Submitted</span></div><span className="font-medium">{format(new Date(order.created_at), 'MMM d, yyyy')}</span></div>
                 <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><DollarSign className="w-4 h-4" /><span>Price</span></div><span className="font-medium">${order.price_usd}</span></div>
+                {order.speed_tier && <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Timer className="w-4 h-4" /><span>Speed Tier</span></div><Badge variant="secondary" className="capitalize">{order.speed_tier}</Badge></div>}
+                {order.auto_list_enabled && <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><ShoppingCart className="w-4 h-4" /><span>Grade & Flip</span></div><Badge variant="secondary" className="bg-gain/10 text-gain border-gain/30">Enabled</Badge></div>}
+                {order.listing_created_id && <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Tag className="w-4 h-4" /><span>From Listing</span></div><Badge variant="outline">Via Sale Page</Badge></div>}
                 {order.paid_at && <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" /><span>Paid</span></div><span className="font-medium">{format(new Date(order.paid_at), 'MMM d, yyyy')}</span></div>}
                 {order.completed_at && <div className="flex items-center justify-between text-sm"><div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" /><span>Completed</span></div><span className="font-medium">{format(new Date(order.completed_at), 'MMM d, yyyy')}</span></div>}
               </CardContent>

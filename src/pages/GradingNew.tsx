@@ -49,7 +49,7 @@ import { ImageCropper } from '@/components/grading/ImageCropper';
 type Step = 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
 
-const PROTECTION_SLIP_PRICE = 5;
+const PROTECTION_BUNDLE_PRICE = 10; // Hologram seal + sleeve + CBGI tag
 const BULK_DISCOUNT_THRESHOLD = 10;
 const BULK_DISCOUNT_PERCENT = 25;
 
@@ -117,7 +117,7 @@ export default function GradingNew() {
   // Calculate pricing based on speed tier
   const pricing = useMemo(() => {
     const selectedSpeed = SPEED_TIERS.find(t => t.id === speedTier) || SPEED_TIERS[0];
-    const basePerCard = selectedSpeed.price + (includeProtection ? PROTECTION_SLIP_PRICE : 0);
+    const basePerCard = selectedSpeed.price + (includeProtection ? PROTECTION_BUNDLE_PRICE : 0);
     const subtotal = basePerCard * quantity;
     const hasBulkDiscount = quantity >= BULK_DISCOUNT_THRESHOLD;
     const discountAmount = hasBulkDiscount ? subtotal * (BULK_DISCOUNT_PERCENT / 100) : 0;
@@ -131,6 +131,7 @@ export default function GradingNew() {
       total, 
       savings: discountAmount,
       speedPrice: selectedSpeed.price,
+      protectionPrice: includeProtection ? PROTECTION_BUNDLE_PRICE : 0,
       daysMin: selectedSpeed.daysMin,
       daysMax: selectedSpeed.daysMax,
     };
@@ -189,7 +190,7 @@ export default function GradingNew() {
     if (!frontImage || !backImage) return;
     setIsSubmitting(true);
     try {
-      const order = await createOrder(category, frontImage, backImage, speedTier);
+      const order = await createOrder(category, frontImage, backImage, speedTier, autoListEnabled, autoListPrice);
       if (!order) { setIsSubmitting(false); return; }
       const success = await submitAndPay(order.id, order.idempotency_key);
       if (success) { setCreatedOrder(order); setStep('success'); }
@@ -294,20 +295,40 @@ export default function GradingNew() {
                             {cardAnalysis.setName || getCategoryIcon() + ' ' + category}
                           </p>
                         </div>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="text-xs flex-shrink-0">
                           {Math.round((cardAnalysis.confidence || 0.9) * 100)}%
                         </Badge>
                       </div>
                     )}
 
-                    {/* Image Previews */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* Estimated Value Preview */}
+                    {cardAnalysis?.detected && (
+                      <div className="p-3 rounded-xl bg-muted/50 border border-border space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Estimated Value</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="text-center p-2 rounded-lg bg-background">
+                            <p className="text-xs text-muted-foreground">Raw (Ungraded)</p>
+                            <p className="text-lg font-bold text-foreground">$25-50</p>
+                          </div>
+                          <div className="text-center p-2 rounded-lg bg-gain/10 border border-gain/20">
+                            <p className="text-xs text-gain">Graded (Est.)</p>
+                            <p className="text-lg font-bold text-gain">$80-250</p>
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-center text-muted-foreground">
+                          *Estimates based on market data · Final value depends on grade
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Image Previews - Fixed layout */}
+                    <div className="grid grid-cols-2 gap-4">
                       {/* Front Preview */}
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1.5 font-medium">FRONT</p>
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground mb-2 font-medium">FRONT</p>
                         <div className="aspect-[3/4] rounded-xl border-2 border-gain overflow-hidden relative">
                           <img src={frontPreview} alt="Front" className="w-full h-full object-cover" />
-                          <div className="absolute top-1.5 right-1.5">
+                          <div className="absolute top-2 right-2">
                             <Badge className="bg-gain/90 text-gain-foreground text-[10px] h-5 gap-0.5">
                               <CheckCircle2 className="w-3 h-3" /> AI
                             </Badge>
@@ -316,8 +337,8 @@ export default function GradingNew() {
                       </div>
 
                       {/* Back Upload */}
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1.5 font-medium">BACK</p>
+                      <div className="min-w-0">
+                        <p className="text-xs text-muted-foreground mb-2 font-medium">BACK</p>
                         <input 
                           ref={backInputRef} 
                           type="file" 
@@ -338,12 +359,12 @@ export default function GradingNew() {
                           {backPreview ? (
                             <img src={backPreview} alt="Back" className="w-full h-full object-cover" />
                           ) : (
-                            <div className="text-center p-3">
-                              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
-                                <Camera className="w-5 h-5 text-primary" />
+                            <div className="text-center p-4">
+                              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
+                                <Camera className="w-6 h-6 text-primary" />
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                Tap to add
+                                Tap to add back
                               </span>
                             </div>
                           )}
@@ -436,17 +457,27 @@ export default function GradingNew() {
                     </RadioGroup>
                   </div>
 
-                  {/* Protection */}
-                  <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-muted/30">
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-primary" />
+                  {/* Premium Protection Bundle */}
+                  <div className={cn(
+                    "flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer",
+                    includeProtection ? "border-primary bg-primary/5" : "border-border bg-muted/30"
+                  )} onClick={() => setIncludeProtection(!includeProtection)}>
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "p-2 rounded-lg",
+                        includeProtection ? "bg-primary text-primary-foreground" : "bg-muted"
+                      )}>
+                        <Shield className="w-5 h-5" />
+                      </div>
                       <div>
-                        <p className="text-sm font-medium">Premium Protection</p>
-                        <p className="text-xs text-muted-foreground">Hologram seal + sleeve</p>
+                        <p className="text-sm font-semibold">Premium Protection Bundle</p>
+                        <p className="text-xs text-muted-foreground">Hologram seal + Sleeve + CBGI Tag</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-primary">+${PROTECTION_SLIP_PRICE}</span>
+                      <Badge variant={includeProtection ? "default" : "secondary"} className="font-bold">
+                        +${PROTECTION_BUNDLE_PRICE}
+                      </Badge>
                       <Switch checked={includeProtection} onCheckedChange={setIncludeProtection} />
                     </div>
                   </div>
@@ -518,8 +549,14 @@ export default function GradingNew() {
                     </div>
                     {includeProtection && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Protection</span>
-                        <span className="font-medium text-primary">+${PROTECTION_SLIP_PRICE}/card</span>
+                        <span className="text-muted-foreground">Protection Bundle</span>
+                        <span className="font-medium text-primary">+${PROTECTION_BUNDLE_PRICE}/card</span>
+                      </div>
+                    )}
+                    {autoListEnabled && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Grade & Flip</span>
+                        <span className="font-medium text-gain">Enabled ✓</span>
                       </div>
                     )}
                     <div className="h-px bg-border my-1" />
