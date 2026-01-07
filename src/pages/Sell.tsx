@@ -355,6 +355,7 @@ const SellPage = () => {
         totalShares: 100,
         minShares: 10,
         dailyVerification: true,
+        boostTier: 'none',
       });
       clearImage();
       fetchListings();
@@ -570,6 +571,7 @@ const SellPage = () => {
         totalShares: 100,
         minShares: 10,
         dailyVerification: true,
+        boostTier: 'none',
       });
       clearImage();
       setShowInstantSellDialog(false);
