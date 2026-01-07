@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PurchaseDialog } from '@/components/purchase/PurchaseDialog';
 import { CardPriceEstimates } from '@/components/CardPriceEstimates';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Listing {
   id: string;
@@ -99,6 +100,7 @@ const getCategoryLabel = (cat: string) => {
 const ListingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
   const [listing, setListing] = useState<Listing | null>(null);
   const [gradingInfo, setGradingInfo] = useState<GradingInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -322,12 +324,6 @@ const ListingDetail = () => {
       console.error('Error deleting comment:', error);
       toast.error('Failed to delete comment');
     }
-  };
-
-  const formatPrice = (price: number) => {
-    if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
-    if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
-    return `$${price.toLocaleString()}`;
   };
 
   const getCategoryLabel = (cat: string) => {
