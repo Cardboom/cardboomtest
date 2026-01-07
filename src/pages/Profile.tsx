@@ -143,7 +143,7 @@ const Profile = () => {
   const { data: portfolioData, refetch: refetchPortfolio } = useQuery({
     queryKey: ['user-portfolio-full', profile?.id],
     queryFn: async () => {
-      if (!profile?.id) return { items: [], stats: { totalItems: 0, totalValue: 0, totalCost: 0, pnl: 0, pnlPercent: 0 } };
+      if (!profile?.id) return { items: [], listings: [], stats: { totalItems: 0, totalValue: 0, totalCost: 0, pnl: 0, pnlPercent: 0 } };
       
       // Fetch portfolio items
       const { data: portfolioItems, error: portfolioError } = await supabase
@@ -161,8 +161,18 @@ const Profile = () => {
         .eq('is_active', true);
       if (instancesError) throw instancesError;
       
+      // Fetch active listings (cards listed for sale should show in portfolio)
+      const { data: userListings, error: listingsError } = await supabase
+        .from('listings')
+        .select('id, title, image_url, price, category, condition, status, created_at')
+        .eq('seller_id', profile.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+      if (listingsError) console.error('Error fetching listings:', listingsError);
+      
       const items = portfolioItems || [];
       const instances = cardInstancesData || [];
+      const listings = userListings || [];
       
       // Calculate totals from portfolio items
       const portfolioValue = items.reduce((sum, item) => {
@@ -177,15 +187,19 @@ const Profile = () => {
       const instancesValue = instances.reduce((sum, inst) => sum + (inst.current_value || 0), 0);
       const instancesCost = instances.reduce((sum, inst) => sum + (inst.acquisition_price || 0), 0);
       
-      const totalValue = portfolioValue + instancesValue;
-      const totalCost = portfolioCost + instancesCost;
+      // Add listings values (price is both current value and cost basis for listings)
+      const listingsValue = listings.reduce((sum, listing) => sum + (listing.price || 0), 0);
+      
+      const totalValue = portfolioValue + instancesValue + listingsValue;
+      const totalCost = portfolioCost + instancesCost + listingsValue; // Use listing price as cost basis
       const pnl = totalValue - totalCost;
       const pnlPercent = totalCost > 0 ? ((pnl / totalCost) * 100) : 0;
       
       return {
         items,
+        listings,
         stats: {
-          totalItems: items.length + instances.length,
+          totalItems: items.length + instances.length + listings.length,
           totalValue,
           totalCost,
           pnl,
@@ -523,6 +537,53 @@ const Profile = () => {
                   </Card>
                 )}
 
+                {/* Active Listings in Portfolio Section */}
+                {portfolioData?.listings && portfolioData.listings.length > 0 && (
+                  <Card className="mb-6">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Store className="h-5 w-5 text-primary" />
+                        Listed for Sale
+                        <Badge variant="secondary" className="ml-2">{portfolioData.listings.length}</Badge>
+                        <Badge variant="outline" className="ml-1 text-xs">Included in Portfolio</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {portfolioData.listings.map((listing: any) => (
+                          <div 
+                            key={listing.id} 
+                            className="p-4 rounded-lg bg-primary/5 border border-primary/20 hover:border-primary/40 cursor-pointer transition-colors relative"
+                            onClick={() => navigate(`/listing/${listing.id}`)}
+                          >
+                            <Badge className="absolute top-2 right-2 text-xs bg-primary/90">For Sale</Badge>
+                            {listing.image_url ? (
+                              <img 
+                                src={listing.image_url} 
+                                alt={listing.title} 
+                                className="w-full h-32 object-cover rounded-lg mb-3" 
+                              />
+                            ) : (
+                              <div className="w-full h-32 bg-muted rounded-lg mb-3 flex items-center justify-center">
+                                <Store className="w-8 h-8 text-muted-foreground/30" />
+                              </div>
+                            )}
+                            <h4 className="font-medium text-sm truncate">{listing.title}</h4>
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="font-bold text-primary">
+                                {formatPrice(listing.price)}
+                              </span>
+                              {listing.condition && (
+                                <Badge variant="outline" className="text-xs">{listing.condition}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {/* Portfolio Items Section */}
                 <Card>
                   <CardHeader>
@@ -566,7 +627,7 @@ const Profile = () => {
                           </div>
                         ))}
                       </div>
-                    ) : (!cardInstances || cardInstances.length === 0) ? (
+                    ) : (!cardInstances || cardInstances.length === 0) && (!portfolioData?.listings || portfolioData.listings.length === 0) ? (
                       <div className="text-center py-8">
                         <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
                         <p className="text-muted-foreground">No items in collection</p>
