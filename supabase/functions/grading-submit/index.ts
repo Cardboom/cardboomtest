@@ -573,7 +573,7 @@ serve(async (req) => {
                 },
                 body: JSON.stringify({
                   user_id: user.id,
-                  type: 'order_update',
+                  type: 'listing_created',
                   title: 'Card Listed! 🎉',
                   body: `Your graded ${cbgiResult.card_name || 'card'} (${finalGrade.toFixed(1)}/10) is now live for $${suggestedPrice.toFixed(2)}`,
                   data: { listing_id: listing.id },
@@ -583,6 +583,63 @@ serve(async (req) => {
               console.error('Failed to send auto-list notification:', e);
             }
           }
+        }
+
+        // Send grading completion notification (in-app)
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              user_id: user.id,
+              type: 'grading_complete',
+              title: 'Grading Complete! 🎯',
+              body: `Your ${cbgiResult.card_name || 'card'} received a ${finalGrade.toFixed(1)}/10 grade (${cbgiResult.estimated_psa_range || 'N/A'})`,
+              data: { grading_order_id: orderId },
+            }),
+          });
+        } catch (e) {
+          console.error('Failed to send grading completion notification:', e);
+        }
+
+        // Send grading completion email
+        try {
+          // Fetch user email
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email, username, full_name')
+            .eq('id', user.id)
+            .single();
+
+          if (profile?.email) {
+            await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+              },
+              body: JSON.stringify({
+                to: profile.email,
+                template_key: 'grading_complete',
+                user_id: user.id,
+                variables: {
+                  user_name: profile.full_name || profile.username || 'Collector',
+                  card_name: cbgiResult.card_name || 'Your Card',
+                  grade: finalGrade.toFixed(1),
+                  psa_range: cbgiResult.estimated_psa_range || 'N/A',
+                  grade_label: getGradeLabelFromScore(finalGrade),
+                  order_url: `https://cardboom.com/grading/orders/${orderId}`,
+                },
+              }),
+            });
+            console.log('Grading completion email sent to:', profile.email);
+          }
+        } catch (emailError) {
+          console.error('Failed to send grading completion email:', emailError);
+          // Non-critical, continue
         }
       }
 

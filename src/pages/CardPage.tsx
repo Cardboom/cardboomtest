@@ -502,34 +502,65 @@ const CardPage = () => {
                 </h2>
                 {activeListings && activeListings.length > 0 ? (
                   <div className="space-y-3">
-                    {activeListings.map((listing) => (
-                      <Card key={listing.id} className="glass hover:border-primary/30 transition-colors">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <img 
-                                src={listing.image_url || '/placeholder.svg'} 
-                                alt={listing.title}
-                                className="w-16 h-16 object-cover rounded-lg"
-                                loading="lazy"
-                              />
-                              <div>
-                                <h3 className="font-semibold">{listing.title}</h3>
-                                <p className="text-sm text-muted-foreground">{listing.condition}</p>
+                    {activeListings.map((listing) => {
+                      const isOwner = user?.id === listing.seller_id;
+                      return (
+                        <Card key={listing.id} className="glass hover:border-primary/30 transition-colors">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <img 
+                                  src={listing.image_url || '/placeholder.svg'} 
+                                  alt={listing.title}
+                                  className="w-16 h-16 object-cover rounded-lg"
+                                  loading="lazy"
+                                />
+                                <div>
+                                  <h3 className="font-semibold">{listing.title}</h3>
+                                  <p className="text-sm text-muted-foreground">{listing.condition}</p>
+                                  {isOwner && (
+                                    <Badge variant="secondary" className="mt-1 text-xs">Your listing</Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="text-right space-y-2">
+                                <p className="font-display text-xl font-bold">${listing.price}</p>
+                                <div className="flex gap-2">
+                                  <Button size="sm" asChild>
+                                    <Link to={`/listing/${listing.id}`}>
+                                      {t.market.view} <ExternalLink className="w-3 h-3 ml-1" />
+                                    </Link>
+                                  </Button>
+                                  {isOwner && (
+                                    <Button 
+                                      size="sm" 
+                                      variant="destructive"
+                                      onClick={async (e) => {
+                                        e.preventDefault();
+                                        if (!confirm('Are you sure you want to delete this listing?')) return;
+                                        const { error } = await supabase
+                                          .from('listings')
+                                          .delete()
+                                          .eq('id', listing.id)
+                                          .eq('seller_id', user.id);
+                                        if (error) {
+                                          toast.error('Failed to delete listing');
+                                        } else {
+                                          toast.success('Listing deleted');
+                                          queryClient.invalidateQueries({ queryKey: ['card-listings'] });
+                                        }
+                                      }}
+                                    >
+                                      Delete
+                                    </Button>
+                                  )}
+                                </div>
                               </div>
                             </div>
-                            <div className="text-right">
-                              <p className="font-display text-xl font-bold">${listing.price}</p>
-                              <Button size="sm" asChild>
-                                <Link to={`/listing/${listing.id}`}>
-                                  {t.market.view} <ExternalLink className="w-3 h-3 ml-1" />
-                                </Link>
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-8">
