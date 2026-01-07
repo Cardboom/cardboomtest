@@ -328,6 +328,15 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
         }]) || []);
       }
       
+      // Helper to normalize card names for matching (remove punctuation, extra spaces)
+      const normalizeCardName = (name: string): string => {
+        return name
+          .toLowerCase()
+          .replace(/[.,\-_'"!?()]/g, ' ')  // Replace punctuation with spaces
+          .replace(/\s+/g, ' ')             // Collapse multiple spaces
+          .trim();
+      };
+      
       // Fetch grading orders - both by direct ID and by matching seller+title
       const gradingOrderIds = (data || [])
         .filter((l: any) => l.grading_order_id)
@@ -349,9 +358,9 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
             status: g.status, 
             cbgi_score: g.cbgi_score_0_100 
           });
-          // Also map by seller+title for fallback matching
+          // Also map by seller+normalized title for fallback matching
           if (g.card_name) {
-            const key = `${g.user_id}:${g.card_name.toLowerCase()}`;
+            const key = `${g.user_id}:${normalizeCardName(g.card_name)}`;
             // Only keep the most recent/completed one
             const existing = gradingBySellerTitle.get(key);
             if (!existing || g.status === 'completed') {
@@ -372,7 +381,7 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
         let grading = listing.grading_order_id ? gradingMap.get(listing.grading_order_id) : null;
         
         if (!grading && listing.seller_id && listing.title) {
-          const fallbackKey = `${listing.seller_id}:${listing.title.toLowerCase()}`;
+          const fallbackKey = `${listing.seller_id}:${normalizeCardName(listing.title)}`;
           grading = gradingBySellerTitle.get(fallbackKey);
         }
         
