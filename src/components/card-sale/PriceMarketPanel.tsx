@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  TrendingUp, TrendingDown, BarChart3, DollarSign, 
-  AlertCircle, ExternalLink, Info
+  BarChart3, DollarSign, AlertCircle, Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ItemPriceChart } from '@/components/item/ItemPriceChart';
@@ -67,10 +66,9 @@ export const PriceMarketPanel = ({
     <div className="text-center">
       <p className="text-muted-foreground text-xs mb-1">{label}</p>
       <span className={cn(
-        "inline-flex items-center gap-0.5 text-sm font-semibold",
+        "inline-flex items-center gap-0.5 text-sm font-semibold tabular-nums",
         change >= 0 ? "text-gain" : "text-loss"
       )}>
-        {change >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
         {change >= 0 ? '+' : ''}{change.toFixed(1)}%
       </span>
     </div>
@@ -98,13 +96,13 @@ export const PriceMarketPanel = ({
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {/* PSA 10 & Ungraded Price Display - For graded categories */}
+        {/* CBGI 10 & Ungraded Price Display - For graded categories */}
         {showGradedPrices && (psa10Price || rawPrice) && (
           <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20">
             {psa10Price && psa10Price > 0 && (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
-                  <Badge className="bg-amber-500 text-white text-xs font-bold">PSA 10</Badge>
+                  <Badge className="bg-amber-500 text-white text-xs font-bold">CBGI 10</Badge>
                 </div>
                 <p className="font-display text-xl font-bold text-amber-400">{formatPrice(psa10Price)}</p>
                 <p className="text-xs text-muted-foreground">Gem Mint</p>
@@ -181,33 +179,6 @@ export const PriceMarketPanel = ({
           />
         </div>
 
-        {/* External Price Comparison */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-            <ExternalLink className="w-4 h-4" />
-            Compare Prices
-          </h4>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="glass rounded-lg p-3 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">TCGPlayer</p>
-                <p className="font-semibold text-sm">{formatPrice(tcgplayerPrice || currentPrice * 1.05)}</p>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {tcgplayerPrice && tcgplayerPrice > currentPrice ? 'Higher' : 'Similar'}
-              </Badge>
-            </div>
-            <div className="glass rounded-lg p-3 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Cardmarket</p>
-                <p className="font-semibold text-sm">{formatPrice(cardmarketPrice || currentPrice * 0.92)}</p>
-              </div>
-              <Badge variant="outline" className="text-xs">
-                {cardmarketPrice && cardmarketPrice < currentPrice ? 'Lower' : 'Similar'}
-              </Badge>
-            </div>
-          </div>
-        </div>
 
         {/* Confidence Band */}
         {confidenceBand && (

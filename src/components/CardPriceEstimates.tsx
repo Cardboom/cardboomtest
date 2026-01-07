@@ -37,11 +37,11 @@ interface PriceEstimate {
 
 const gradeLabels = [
   { key: 'price_ungraded', label: 'Raw', grade: 'Ungraded', color: 'bg-muted' },
-  { key: 'price_psa_6', label: 'PSA 6', grade: 'EX-MT', color: 'bg-amber-500/20' },
-  { key: 'price_psa_7', label: 'PSA 7', grade: 'NM', color: 'bg-amber-400/20' },
-  { key: 'price_psa_8', label: 'PSA 8', grade: 'NM-MT', color: 'bg-emerald-500/20' },
-  { key: 'price_psa_9', label: 'PSA 9', grade: 'Mint', color: 'bg-blue-500/20' },
-  { key: 'price_psa_10', label: 'PSA 10', grade: 'Gem Mint', color: 'bg-primary/20' },
+  { key: 'price_psa_6', label: 'CBGI 6', grade: 'EX-MT', color: 'bg-amber-500/20' },
+  { key: 'price_psa_7', label: 'CBGI 7', grade: 'NM', color: 'bg-amber-400/20' },
+  { key: 'price_psa_8', label: 'CBGI 8', grade: 'NM-MT', color: 'bg-emerald-500/20' },
+  { key: 'price_psa_9', label: 'CBGI 9', grade: 'Mint', color: 'bg-blue-500/20' },
+  { key: 'price_psa_10', label: 'CBGI 10', grade: 'Gem Mint', color: 'bg-primary/20' },
 ];
 
 export const CardPriceEstimates = ({ 

@@ -124,7 +124,7 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
               {psaRange && (
                 <Badge variant="outline" className="text-xs font-medium">
                   <TrendingUp className="w-3 h-3 mr-1" />
-                  Est. {psaRange}
+                  Est. CBGI {psaRange.replace(/PSA\s*/gi, '')}
                 </Badge>
               )}
               <Badge 
@@ -159,11 +159,6 @@ export function CBGIResultCard({ order }: CBGIResultCardProps) {
                     <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
                       #{order.card_number}
                     </span>
-                  )}
-                  {order.category && (
-                    <Badge variant="outline" className="text-xs h-5 capitalize">
-                      {order.category.replace(/-/g, ' ')}
-                    </Badge>
                   )}
                   {order.rarity && (
                     <Badge variant="secondary" className="text-xs h-5">

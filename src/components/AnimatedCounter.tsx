@@ -77,16 +77,14 @@ export const AnimatedCounter = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center transition-all duration-300',
+        'inline-flex items-center tabular-nums transition-all duration-300',
         isAnimating && direction === 'up' && 'text-gain',
         isAnimating && direction === 'down' && 'text-loss',
+        isAnimating && 'animate-[price-update_0.5s_ease-out]',
         className
       )}
     >
-      <span className={cn(
-        'relative',
-        isAnimating && 'animate-pulse'
-      )}>
+      <span className="relative">
         {prefix}{formattedValue}{suffix}
       </span>
     </span>

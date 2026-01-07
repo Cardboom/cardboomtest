@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface PriceChangeCellProps {
@@ -21,23 +20,16 @@ export const PriceChangeCell = ({
     <AnimatePresence mode="wait">
       <motion.div
         key={`${value}-${isUpdated}`}
-        initial={isUpdated ? { scale: 1.2, opacity: 0 } : false}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        initial={isUpdated ? { y: isPositive ? 10 : -10, opacity: 0 } : false}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className={cn(
-          "flex items-center gap-1 font-medium",
+          "font-medium tabular-nums",
           isPositive ? "text-gain" : "text-loss",
-          isUpdated && "animate-pulse",
+          isUpdated && "animate-[price-update_0.5s_ease-out]",
           className
         )}
       >
-        {showIcon && (
-          isPositive ? (
-            <TrendingUp className="w-3 h-3" />
-          ) : (
-            <TrendingDown className="w-3 h-3" />
-          )
-        )}
         <span>
           {isPositive ? '+' : ''}{value.toFixed(2)}%
         </span>
