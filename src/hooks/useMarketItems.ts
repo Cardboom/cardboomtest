@@ -328,33 +328,57 @@ export const useListings = (options: { sellerId?: string; status?: 'active' | 's
         }]) || []);
       }
       
-      // Fetch grading orders for listings that have grading_order_id
+      // Fetch grading orders - both by direct ID and by matching seller+title
       const gradingOrderIds = (data || [])
         .filter((l: any) => l.grading_order_id)
         .map((l: any) => l.grading_order_id);
       
       let gradingMap = new Map<string, { status: string; cbgi_score: number | null }>();
+      let gradingBySellerTitle = new Map<string, { status: string; cbgi_score: number | null }>();
       
-      if (gradingOrderIds.length > 0) {
+      // Fetch all grading orders for these sellers to match by title
+      if (sellerIds.length > 0) {
         const { data: gradingOrders } = await supabase
           .from('grading_orders')
-          .select('id, status, cbgi_score_0_100')
-          .in('id', gradingOrderIds);
+          .select('id, user_id, card_name, status, cbgi_score_0_100')
+          .in('user_id', sellerIds);
         
-        gradingMap = new Map(gradingOrders?.map(g => [g.id, { 
-          status: g.status, 
-          cbgi_score: g.cbgi_score_0_100 
-        }]) || []);
+        // Map by ID for direct lookup
+        gradingOrders?.forEach(g => {
+          gradingMap.set(g.id, { 
+            status: g.status, 
+            cbgi_score: g.cbgi_score_0_100 
+          });
+          // Also map by seller+title for fallback matching
+          if (g.card_name) {
+            const key = `${g.user_id}:${g.card_name.toLowerCase()}`;
+            // Only keep the most recent/completed one
+            const existing = gradingBySellerTitle.get(key);
+            if (!existing || g.status === 'completed') {
+              gradingBySellerTitle.set(key, {
+                status: g.status,
+                cbgi_score: g.cbgi_score_0_100
+              });
+            }
+          }
+        });
       }
       
       // Transform to include seller info and grading data at top level
       const listingsWithData = (data || []).map((listing: any) => {
         const profile = profileMap.get(listing.seller_id);
-        const grading = listing.grading_order_id ? gradingMap.get(listing.grading_order_id) : null;
+        
+        // Try direct grading_order_id first, then fallback to seller+title match
+        let grading = listing.grading_order_id ? gradingMap.get(listing.grading_order_id) : null;
+        
+        if (!grading && listing.seller_id && listing.title) {
+          const fallbackKey = `${listing.seller_id}:${listing.title.toLowerCase()}`;
+          grading = gradingBySellerTitle.get(fallbackKey);
+        }
         
         // Determine grading display
-        let gradingCompany = listing.grading_company;
-        let grade = listing.grade;
+        let gradingCompany = null;
+        let grade = null;
         
         if (grading) {
           if (grading.status === 'completed' && grading.cbgi_score !== null) {
