@@ -26,13 +26,14 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold text-foreground mb-4">{t.footer.marketplace}</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link to="/explorer?category=basketball" className="hover:text-foreground transition-colors">{t.footer.nbaCards}</Link></li>
-              <li><Link to="/explorer?category=football" className="hover:text-foreground transition-colors">{t.footer.footballCards}</Link></li>
-              <li><Link to="/explorer?category=pokemon" className="hover:text-foreground transition-colors">{t.footer.tcg}</Link></li>
-              <li><Link to="/explorer?category=figures" className="hover:text-foreground transition-colors">{t.footer.figures}</Link></li>
+              <li><Link to="/markets?category=pokemon" className="hover:text-foreground transition-colors">Pokémon TCG</Link></li>
+              <li><Link to="/markets?category=mtg" className="hover:text-foreground transition-colors">Magic: The Gathering</Link></li>
+              <li><Link to="/markets?category=yugioh" className="hover:text-foreground transition-colors">Yu-Gi-Oh!</Link></li>
+              <li><Link to="/markets?category=one-piece" className="hover:text-foreground transition-colors">One Piece TCG</Link></li>
+              <li><Link to="/markets?category=lorcana" className="hover:text-foreground transition-colors">Disney Lorcana</Link></li>
+              <li><Link to="/markets?category=sports-nba" className="hover:text-foreground transition-colors">{t.footer.nbaCards}</Link></li>
+              <li><Link to="/markets?category=figures" className="hover:text-foreground transition-colors">{t.footer.figures}</Link></li>
               <li><Link to="/trades" className="hover:text-foreground transition-colors">{t.nav.tradesOffers}</Link></li>
-              {/* Collective link temporarily disabled */}
-              <li><Link to="/reels" className="hover:text-foreground transition-colors">{t.nav.reels}</Link></li>
             </ul>
           </div>
 
@@ -63,7 +64,14 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border/50">
+        {/* Trademark Disclaimer */}
+        <div className="mb-6 pt-6 border-t border-border/30">
+          <p className="text-xs text-muted-foreground/70 leading-relaxed max-w-4xl">
+            All Pokémon trademarks, logos, and images are owned by The Pokémon Company. Magic: The Gathering and MTG are trademarks of Wizards of the Coast LLC. Yu-Gi-Oh! is a trademark of Konami Holdings Corporation. One Piece is a trademark of Shueisha Inc. and Toei Animation. Disney Lorcana is a trademark of Disney. CardBoom is an independent marketplace for authentic collectible cards; scanned images are used solely for identification purposes. We are not affiliated with, endorsed by, or sponsored by any of these companies or their related entities.
+          </p>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center justify-between pt-6 border-t border-border/50">
           <div className="mb-4 md:mb-0 text-center md:text-left">
             <p className="text-sm font-medium text-foreground">
               Brainbaby Bilişim A.Ş.
