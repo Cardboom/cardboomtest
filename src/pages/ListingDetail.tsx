@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ChevronLeft, Vault, Truck, ArrowLeftRight, MessageCircle, 
   ShoppingCart, TrendingUp, TrendingDown, Send, Trash2, User,
-  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText
+  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -39,6 +39,9 @@ interface Listing {
   cvi_key?: string | null;
   ai_confidence?: number | null;
   market_item_id?: string | null;
+  // Certification
+  certification_status?: string | null;
+  grading_order_id?: string | null;
 }
 
 interface GradingInfo {
@@ -454,6 +457,11 @@ const ListingDetail = () => {
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30 text-xs font-medium text-accent-foreground">
                   <Award className="w-3.5 h-3.5" />
                   CardBoom Index: {gradingInfo.final_grade.toFixed(1)}
+                </div>
+              ) : listing.certification_status === 'pending' ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400">
+                  <Clock className="w-3.5 h-3.5 animate-pulse" />
+                  Grading in Progress
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-medium text-muted-foreground">

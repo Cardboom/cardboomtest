@@ -3819,6 +3819,7 @@ export type Database = {
           boost_tier: string | null
           card_number: string | null
           category: string
+          certification_status: string | null
           condition: string
           created_at: string
           cvi_key: string | null
@@ -3826,6 +3827,7 @@ export type Database = {
           external_id: string | null
           external_price: number | null
           external_price_cents: number | null
+          grading_order_id: string | null
           id: string
           image_url: string | null
           is_auction: boolean
@@ -3857,6 +3859,7 @@ export type Database = {
           boost_tier?: string | null
           card_number?: string | null
           category: string
+          certification_status?: string | null
           condition?: string
           created_at?: string
           cvi_key?: string | null
@@ -3864,6 +3867,7 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
+          grading_order_id?: string | null
           id?: string
           image_url?: string | null
           is_auction?: boolean
@@ -3895,6 +3899,7 @@ export type Database = {
           boost_tier?: string | null
           card_number?: string | null
           category?: string
+          certification_status?: string | null
           condition?: string
           created_at?: string
           cvi_key?: string | null
@@ -3902,6 +3907,7 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
+          grading_order_id?: string | null
           id?: string
           image_url?: string | null
           is_auction?: boolean
@@ -3919,6 +3925,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "listings_grading_order_id_fkey"
+            columns: ["grading_order_id"]
+            isOneToOne: false
+            referencedRelation: "grading_orders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listings_market_item_id_fkey"
             columns: ["market_item_id"]
