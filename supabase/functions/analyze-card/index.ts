@@ -711,13 +711,116 @@ async function enrichWithMarketData(
   };
 }
 
+// Helper function to process a single card object from Ximilar response
+async function processCardObject(
+  cardObject: XimilarObject,
+  slabLabelObject: XimilarObject | undefined,
+  recordId: string,
+  supabase: any
+): Promise<SingleCardResult> {
+  const bestMatch = cardObject._identification?.best_match;
+  
+  // Extract pricing data from Ximilar
+  let ximilarPricing: Array<{ price: number; currency: string; source: string; link: string }> | null = null;
+  if (bestMatch?.pricing?.list && bestMatch.pricing.list.length > 0) {
+    ximilarPricing = bestMatch.pricing.list.map(p => ({
+      price: p.price,
+      currency: p.currency,
+      source: p.source,
+      link: p.item_link,
+    }));
+  }
+
+  // Extract slab/grading info if present
+  let isGraded = false;
+  let gradingCompany: string | null = null;
+  let grade: string | null = null;
+  let certificateNumber: string | null = null;
+
+  if (slabLabelObject) {
+    isGraded = slabLabelObject._tags?.Graded?.[0]?.name === 'yes';
+    gradingCompany = slabLabelObject._tags?.Company?.[0]?.name || null;
+    grade = slabLabelObject._tags?.Grade?.[0]?.name || null;
+    
+    if (slabLabelObject._identification?.best_match) {
+      const slabMatch = slabLabelObject._identification.best_match;
+      certificateNumber = slabMatch.certificate_number || null;
+      if (slabMatch.grade) grade = slabMatch.grade;
+    }
+  }
+
+  const alphabet = cardObject._tags?.Alphabet?.[0]?.name || 'latin';
+  const isFoil = cardObject._tags_simple?.includes('Foil/Holo') || false;
+  const subcategory = bestMatch?.subcategory || cardObject._tags?.Subcategory?.[0]?.name || null;
+  const confidence = cardObject.prob || 0;
+
+  const ximilarResult = {
+    cardName: bestMatch?.full_name || bestMatch?.name || null,
+    cardNameEnglish: bestMatch?.name || null,
+    setName: bestMatch?.set || null,
+    setCode: bestMatch?.set_code || null,
+    cardNumber: bestMatch?.card_number || null,
+    rarity: bestMatch?.rarity || null,
+    language: alphabet === 'latin' ? 'English' : alphabet,
+    subcategory,
+    confidence,
+    ximilarId: cardObject.id || recordId || null,
+    notes: bestMatch ? `Ximilar match confidence: ${(confidence * 100).toFixed(1)}%` : 'Card detected but not identified',
+    isGraded,
+    gradingCompany,
+    grade,
+    certificateNumber,
+    isFoil,
+    year: bestMatch?.year || null,
+    series: bestMatch?.series || null,
+    ximilarPricing,
+  };
+
+  return await enrichWithMarketData(supabase, ximilarResult);
+}
+
+// Helper to call Ximilar and get raw response
+async function callXimilarAPI(imageBase64: string, ximilarToken: string): Promise<XimilarTCGResponse | null> {
+  try {
+    console.log('Calling Ximilar TCG Identification API at:', XIMILAR_TCG_ENDPOINT);
+    
+    const requestBody = {
+      records: [{ _base64: imageBase64 }],
+      slab_grade: true,
+      slab_id: true,
+      pricing: true,
+      lang: true,
+    };
+    
+    const response = await fetch(XIMILAR_TCG_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${ximilarToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Ximilar API error:', response.status, errorText);
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Ximilar API call error:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { imageUrl, imageBase64 } = await req.json();
+    const { imageUrl, imageBase64, batchMode } = await req.json();
 
     if (!imageUrl && !imageBase64) {
       return new Response(
@@ -760,34 +863,163 @@ serve(async (req) => {
 
     console.log('Analyzing card with Ximilar TCG Identification...');
     console.log('Base64 image length:', base64Image?.length || 0);
+    console.log('Batch mode:', batchMode);
     
-    // Analyze with Ximilar TCG Identification API
-    const ximilarResult = await analyzeWithXimilar(base64Image, ximilarToken);
-    console.log('Ximilar result summary:', {
-      cardName: ximilarResult.cardName,
-      setCode: ximilarResult.setCode,
-      cardNumber: ximilarResult.cardNumber,
-      confidence: ximilarResult.confidence,
-      isGraded: ximilarResult.isGraded,
-    });
+    // Get raw Ximilar response
+    const ximilarData = await callXimilarAPI(base64Image, ximilarToken);
+    
+    if (!ximilarData || !ximilarData.records || ximilarData.records.length === 0) {
+      const emptyResult = {
+        detected: false,
+        cardName: null,
+        cardNameEnglish: null,
+        setName: null,
+        setCode: null,
+        cardNumber: null,
+        rarity: null,
+        cardType: null,
+        estimatedCondition: null,
+        category: null,
+        language: null,
+        cviKey: null,
+        confidence: 0,
+        needsReview: true,
+        notes: 'No card detected by Ximilar',
+        ocrText: [],
+        isGraded: false,
+        gradingCompany: null,
+        grade: null,
+        certificateNumber: null,
+        pricing: null,
+        matchedMarketItem: null,
+        ximilarId: null,
+        ximilarPricing: null,
+      };
+      
+      if (batchMode) {
+        return new Response(
+          JSON.stringify({ cards: [], totalDetected: 0 }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      return new Response(
+        JSON.stringify(emptyResult),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    // Enrich with market data
+    const record = ximilarData.records[0];
+    console.log('Number of objects detected:', record._objects?.length || 0);
+    
+    // Get all card objects from the image
+    const cardObjects = record._objects?.filter(obj => obj.name === 'Card') || [];
+    const slabLabelObject = record._objects?.find(obj => obj.name === 'Slab Label');
+    
+    console.log('Card objects found:', cardObjects.length);
+
+    // BATCH MODE: Return all detected cards
+    if (batchMode) {
+      if (cardObjects.length === 0) {
+        return new Response(
+          JSON.stringify({ cards: [], totalDetected: 0 }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Process all card objects
+      const results: SingleCardResult[] = [];
+      for (const cardObject of cardObjects) {
+        try {
+          const result = await processCardObject(cardObject, slabLabelObject, record._id, supabase);
+          results.push(result);
+        } catch (err) {
+          console.error('Error processing card object:', err);
+          // Add a placeholder for failed cards
+          results.push({
+            detected: false,
+            cardName: null,
+            cardNameEnglish: null,
+            setName: null,
+            setCode: null,
+            cardNumber: null,
+            rarity: null,
+            cardType: null,
+            estimatedCondition: null,
+            category: 'tcg',
+            language: null,
+            cviKey: null,
+            confidence: 0,
+            needsReview: true,
+            notes: 'Failed to process card',
+            ocrText: [],
+            isGraded: false,
+            gradingCompany: null,
+            grade: null,
+            certificateNumber: null,
+            pricing: null,
+            matchedMarketItem: null,
+            ximilarId: null,
+            ximilarPricing: null,
+          });
+        }
+      }
+
+      console.log(`Batch mode: Returning ${results.length} cards`);
+      return new Response(
+        JSON.stringify({ 
+          cards: results, 
+          totalDetected: results.length,
+          imageWidth: record._width,
+          imageHeight: record._height,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // SINGLE MODE: Return first card only (original behavior)
+    if (cardObjects.length === 0) {
+      const emptyResult = {
+        detected: false,
+        cardName: null,
+        cardNameEnglish: null,
+        setName: null,
+        setCode: null,
+        cardNumber: null,
+        rarity: null,
+        cardType: null,
+        estimatedCondition: null,
+        category: null,
+        language: null,
+        cviKey: null,
+        confidence: 0,
+        needsReview: true,
+        notes: 'No Card object detected',
+        ocrText: [],
+        isGraded: false,
+        gradingCompany: null,
+        grade: null,
+        certificateNumber: null,
+        pricing: null,
+        matchedMarketItem: null,
+        ximilarId: record._id || null,
+        ximilarPricing: null,
+      };
+      return new Response(
+        JSON.stringify(emptyResult),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Process first card for single mode (backward compatible)
+    const ximilarResult = await analyzeWithXimilar(base64Image, ximilarToken);
     const result = await enrichWithMarketData(supabase, ximilarResult);
 
     console.log('Final analysis result:', { 
       detected: result.detected, 
       cardName: result.cardName,
-      cardNameEnglish: result.cardNameEnglish,
       category: result.category,
-      setCode: result.setCode,
-      cardNumber: result.cardNumber,
-      cviKey: result.cviKey,
       confidence: result.confidence,
       needsReview: result.needsReview,
-      hasMatch: !!result.matchedMarketItem,
-      isGraded: result.isGraded,
-      grade: result.grade,
-      ximilarId: result.ximilarId,
     });
 
     return new Response(

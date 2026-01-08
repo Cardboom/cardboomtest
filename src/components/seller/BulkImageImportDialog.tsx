@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Camera, Upload, Loader2, CheckCircle2, XCircle, Sparkles, Trash2, Edit2, Layers } from 'lucide-react';
+import { Camera, Upload, Loader2, CheckCircle2, XCircle, Sparkles, Trash2, Edit2, Layers, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { MultiCardReviewTabs } from './MultiCardReviewTabs';
 
 interface DetectedCard {
   id: string;
@@ -27,6 +28,13 @@ interface DetectedCard {
   matchedItemId?: string;
   uploadedImageUrl?: string;
   sourceImageId?: string; // Links to parent batch image
+  // Extended fields for batch review
+  setName?: string;
+  setCode?: string;
+  cardNumber?: string;
+  rarity?: string;
+  isConfirmed?: boolean;
+  needsReview?: boolean;
 }
 
 interface BatchImage {
@@ -35,6 +43,11 @@ interface BatchImage {
   previewUrl: string;
   status: 'pending' | 'analyzing' | 'done' | 'error';
   detectedCount: number;
+}
+
+// For batch mode: store detected cards per image
+interface BatchImageWithCards extends BatchImage {
+  detectedCards: DetectedCard[];
 }
 
 interface BulkImageImportDialogProps {
@@ -57,12 +70,13 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
   const { formatPrice } = useCurrency();
   const [isOpen, setIsOpen] = useState(false);
   const [cards, setCards] = useState<DetectedCard[]>([]);
-  const [batchImages, setBatchImages] = useState<BatchImage[]>([]);
+  const [batchImages, setBatchImages] = useState<BatchImageWithCards[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
   const [editingCardId, setEditingCardId] = useState<string | null>(null);
   const [batchMode, setBatchMode] = useState(false); // Toggle: multiple cards per image
+  const [reviewingBatchId, setReviewingBatchId] = useState<string | null>(null); // Current batch being reviewed
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFilesSelected = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +85,7 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
 
     if (batchMode) {
       // Batch mode: each image may contain multiple cards
-      const newBatchImages: BatchImage[] = [];
+      const newBatchImages: BatchImageWithCards[] = [];
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -84,6 +98,7 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
           previewUrl,
           status: 'pending',
           detectedCount: 0,
+          detectedCards: [],
         });
       }
 
@@ -123,7 +138,7 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
   }, [batchMode]);
 
   // Analyze batch images (multiple cards per image)
-  const analyzeBatchImages = async (imagesToAnalyze: BatchImage[]) => {
+  const analyzeBatchImages = async (imagesToAnalyze: BatchImageWithCards[]) => {
     setIsAnalyzing(true);
 
     for (const image of imagesToAnalyze) {
@@ -150,10 +165,10 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
 
         if (error) throw error;
 
-        const detectedCards = data.cards || [];
+        const detectedCardsData = data.cards || [];
         
-        // Create card entries for each detected card
-        const newCards: DetectedCard[] = detectedCards.map((cardData: any) => ({
+        // Create card entries for each detected card with extended info for review
+        const newCards: DetectedCard[] = detectedCardsData.map((cardData: any) => ({
           id: crypto.randomUUID(),
           file: image.file,
           previewUrl: image.previewUrl,
@@ -165,16 +180,31 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
           confidence: cardData.confidence || 0,
           matchedItemId: cardData.matchedMarketItem?.id,
           sourceImageId: image.id,
+          // Extended fields
+          setName: cardData.setName || null,
+          setCode: cardData.setCode || null,
+          cardNumber: cardData.cardNumber || null,
+          rarity: cardData.rarity || null,
+          isConfirmed: false,
+          needsReview: cardData.needsReview || cardData.confidence < 0.7,
         }));
 
-        setCards(prev => [...prev, ...newCards]);
-        
+        // Store cards in the batch image for tabbed review
         setBatchImages(prev => prev.map(img => 
-          img.id === image.id ? { ...img, status: 'done', detectedCount: detectedCards.length } : img
+          img.id === image.id 
+            ? { ...img, status: 'done', detectedCount: detectedCardsData.length, detectedCards: newCards } 
+            : img
         ));
 
-        if (detectedCards.length > 0) {
-          toast.success(`Detected ${detectedCards.length} card(s) in image`);
+        // Also add to the main cards array for import
+        setCards(prev => [...prev, ...newCards]);
+
+        if (detectedCardsData.length > 0) {
+          toast.success(`Detected ${detectedCardsData.length} card(s) in image`);
+          // Auto-open review for first batch image with multiple cards
+          if (detectedCardsData.length > 1) {
+            setReviewingBatchId(image.id);
+          }
         } else {
           toast.info('No cards detected in image');
         }
@@ -182,7 +212,7 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
       } catch (err) {
         console.error('Batch analysis error:', err);
         setBatchImages(prev => prev.map(img => 
-          img.id === image.id ? { ...img, status: 'error' } : img
+          img.id === image.id ? { ...img, status: 'error', detectedCards: [] } : img
         ));
         toast.error('Failed to analyze image');
       }
@@ -377,10 +407,40 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
     setBatchImages([]);
     setImportProgress(0);
     setEditingCardId(null);
+    setReviewingBatchId(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  // Handler for updating a card in batch review
+  const handleBatchCardUpdate = (cardId: string, updates: any) => {
+    setCards(prev => prev.map(c => 
+      c.id === cardId ? { ...c, ...updates, title: updates.cardName || c.title } : c
+    ));
+    setBatchImages(prev => prev.map(img => ({
+      ...img,
+      detectedCards: img.detectedCards.map(c => 
+        c.id === cardId ? { ...c, ...updates, title: updates.cardName || c.title } : c
+      )
+    })));
+  };
+
+  // Handler for confirming a card in batch review
+  const handleBatchCardConfirm = (cardId: string) => {
+    setCards(prev => prev.map(c => 
+      c.id === cardId ? { ...c, isConfirmed: true } : c
+    ));
+    setBatchImages(prev => prev.map(img => ({
+      ...img,
+      detectedCards: img.detectedCards.map(c => 
+        c.id === cardId ? { ...c, isConfirmed: true } : c
+      )
+    })));
+  };
+
+  // Get the current batch being reviewed
+  const reviewingBatch = batchImages.find(img => img.id === reviewingBatchId);
 
   const pendingCount = cards.filter(c => ['pending', 'analyzing', 'detected'].includes(c.status)).length;
   const readyCount = cards.filter(c => c.status === 'detected' && c.title && c.suggestedPrice > 0).length;
@@ -410,26 +470,66 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col gap-4">
-          {/* Batch Mode Toggle */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
-              <div>
-                <Label htmlFor="batch-mode" className="text-sm font-medium cursor-pointer">
-                  Multiple cards per image
-                </Label>
-                <p className="text-xs text-muted-foreground">
-                  Enable if one photo contains several cards
-                </p>
-              </div>
+          {/* Batch Review Mode - Tabbed Interface */}
+          {reviewingBatch && reviewingBatch.detectedCards.length > 1 && (
+            <div className="space-y-3">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setReviewingBatchId(null)}
+                className="gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to all images
+              </Button>
+              <MultiCardReviewTabs
+                imagePreviewUrl={reviewingBatch.previewUrl}
+                detectedCards={reviewingBatch.detectedCards.map(c => ({
+                  id: c.id,
+                  cardName: c.title,
+                  cardNameEnglish: c.title,
+                  setName: c.setName || null,
+                  setCode: c.setCode || null,
+                  cardNumber: c.cardNumber || null,
+                  rarity: c.rarity || null,
+                  category: c.category,
+                  condition: c.condition,
+                  confidence: c.confidence,
+                  suggestedPrice: c.suggestedPrice,
+                  isConfirmed: c.isConfirmed || false,
+                  needsReview: c.needsReview || false,
+                }))}
+                onCardUpdate={handleBatchCardUpdate}
+                onCardConfirm={handleBatchCardConfirm}
+                onAllConfirmed={() => setReviewingBatchId(null)}
+                isProcessing={isImporting}
+              />
             </div>
-            <Switch
-              id="batch-mode"
-              checked={batchMode}
-              onCheckedChange={setBatchMode}
-              disabled={cards.length > 0 || batchImages.length > 0}
-            />
-          </div>
+          )}
+
+          {/* Standard View (when not in batch review) */}
+          {!reviewingBatch && (
+            <>
+              {/* Batch Mode Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-primary" />
+                  <div>
+                    <Label htmlFor="batch-mode" className="text-sm font-medium cursor-pointer">
+                      Multiple cards per image
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Enable if one photo contains several cards
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="batch-mode"
+                  checked={batchMode}
+                  onCheckedChange={setBatchMode}
+                  disabled={cards.length > 0 || batchImages.length > 0}
+                />
+              </div>
 
           {/* Upload Area */}
           <div 
@@ -632,6 +732,8 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
                 Importing listings... {importProgress}%
               </p>
             </div>
+          )}
+            </>
           )}
         </div>
 
