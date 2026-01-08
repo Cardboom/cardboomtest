@@ -6775,6 +6775,149 @@ export type Database = {
           },
         ]
       }
+      swap_listings: {
+        Row: {
+          accept_cash_offers: boolean | null
+          card_instance_id: string | null
+          category: string
+          condition: string | null
+          created_at: string
+          description: string | null
+          estimated_value: number | null
+          grade: string | null
+          grading_company: string | null
+          id: string
+          image_url: string | null
+          looking_for: string | null
+          min_cash_addon: number | null
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          views_count: number | null
+        }
+        Insert: {
+          accept_cash_offers?: boolean | null
+          card_instance_id?: string | null
+          category: string
+          condition?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_value?: number | null
+          grade?: string | null
+          grading_company?: string | null
+          id?: string
+          image_url?: string | null
+          looking_for?: string | null
+          min_cash_addon?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          views_count?: number | null
+        }
+        Update: {
+          accept_cash_offers?: boolean | null
+          card_instance_id?: string | null
+          category?: string
+          condition?: string | null
+          created_at?: string
+          description?: string | null
+          estimated_value?: number | null
+          grade?: string | null
+          grading_company?: string | null
+          id?: string
+          image_url?: string | null
+          looking_for?: string | null
+          min_cash_addon?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swap_listings_card_instance_id_fkey"
+            columns: ["card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swap_offers: {
+        Row: {
+          cash_addon: number | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          message: string | null
+          offered_card_category: string | null
+          offered_card_condition: string | null
+          offered_card_estimated_value: number | null
+          offered_card_grade: string | null
+          offered_card_image: string | null
+          offered_card_instance_id: string | null
+          offered_card_title: string
+          offerer_id: string
+          status: string | null
+          swap_listing_id: string
+          updated_at: string
+        }
+        Insert: {
+          cash_addon?: number | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          message?: string | null
+          offered_card_category?: string | null
+          offered_card_condition?: string | null
+          offered_card_estimated_value?: number | null
+          offered_card_grade?: string | null
+          offered_card_image?: string | null
+          offered_card_instance_id?: string | null
+          offered_card_title: string
+          offerer_id: string
+          status?: string | null
+          swap_listing_id: string
+          updated_at?: string
+        }
+        Update: {
+          cash_addon?: number | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          message?: string | null
+          offered_card_category?: string | null
+          offered_card_condition?: string | null
+          offered_card_estimated_value?: number | null
+          offered_card_grade?: string | null
+          offered_card_image?: string | null
+          offered_card_instance_id?: string | null
+          offered_card_title?: string
+          offerer_id?: string
+          status?: string | null
+          swap_listing_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swap_offers_offered_card_instance_id_fkey"
+            columns: ["offered_card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swap_offers_swap_listing_id_fkey"
+            columns: ["swap_listing_id"]
+            isOneToOne: false
+            referencedRelation: "swap_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_entries: {
         Row: {
           cards_sold: number
