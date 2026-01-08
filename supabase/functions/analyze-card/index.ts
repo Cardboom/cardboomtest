@@ -440,6 +440,61 @@ async function enrichWithMarketData(
     cviKey = `${ximilarResult.subcategory}|${ximilarResult.setCode}|${ximilarResult.cardNumber}|${language}`;
   }
 
+  // ============================================================
+  // PRIORITY 1: Check card_price_estimates for verified pricing FIRST
+  // This is the most reliable source as it's been manually verified
+  // ============================================================
+  if (nameToSearch) {
+    const searchTerms = nameToSearch.split(' ').filter((t: string) => t.length > 2);
+    const primaryTerm = searchTerms[0] || nameToSearch;
+    
+    console.log('Checking card_price_estimates for:', primaryTerm, 'Set:', ximilarResult.setName);
+    
+    const { data: priceEstimates } = await supabase
+      .from('card_price_estimates')
+      .select('*')
+      .ilike('card_name', `%${primaryTerm}%`)
+      .order('updated_at', { ascending: false })
+      .limit(10);
+    
+    if (priceEstimates && priceEstimates.length > 0) {
+      // Try to find exact set match first
+      const setName = ximilarResult.setName || '';
+      const setCode = ximilarResult.setCode || '';
+      
+      let bestMatch = priceEstimates.find((pe: any) => {
+        if (!pe.set_name) return false;
+        const peSetLower = pe.set_name.toLowerCase();
+        const setNameLower = setName.toLowerCase();
+        // Match by set name or set code
+        return peSetLower.includes(setNameLower.split(' ')[0]) || 
+               peSetLower.includes(setCode.toLowerCase()) ||
+               setNameLower.includes(peSetLower.split(' ')[0]);
+      });
+      
+      // Fall back to first result if no set match
+      if (!bestMatch) bestMatch = priceEstimates[0];
+      
+      if (bestMatch && (bestMatch.price_ungraded > 0 || bestMatch.price_psa_10 > 0)) {
+        const ungraded = bestMatch.price_ungraded || (bestMatch.price_psa_10 ? bestMatch.price_psa_10 * 0.15 : 0);
+        console.log('✓ Using VERIFIED card_price_estimates:', bestMatch.card_name, bestMatch.set_name, 'Ungraded:', ungraded);
+        
+        pricing = {
+          lowestActive: ungraded,
+          medianSold: ungraded,
+          trend7d: 0,
+          trendDirection: 'stable' as const,
+          quickSellPrice: Math.round(ungraded * 0.85 * 100) / 100,
+          maxProfitPrice: Math.round(ungraded * 1.10 * 100) / 100,
+          priceConfidence: bestMatch.confidence_score >= 0.8 ? 'high' as const : 
+                          bestMatch.confidence_score >= 0.5 ? 'medium' as const : 'low' as const,
+          salesCount: 10,
+          listingsCount: 20,
+        };
+      }
+    }
+  }
+
   if (nameToSearch) {
     const searchName = nameToSearch
       .replace(/[^\w\s]/g, ' ')
@@ -559,42 +614,8 @@ async function enrichWithMarketData(
     }
   }
 
-  // Priority 1: Check our card_price_estimates table for verified pricing
-  if (!pricing && nameToSearch) {
-    const { data: priceEstimate } = await supabase
-      .from('card_price_estimates')
-      .select('*')
-      .ilike('card_name', `%${nameToSearch.split(' ')[0]}%`)
-      .order('updated_at', { ascending: false })
-      .limit(5);
-    
-    if (priceEstimate && priceEstimate.length > 0) {
-      // Try to find an exact set match first
-      const setName = ximilarResult.setName || matchedItem?.set_name || '';
-      let bestMatch = priceEstimate.find((pe: any) => 
-        pe.set_name && setName && 
-        pe.set_name.toLowerCase().includes(setName.toLowerCase().split(' ')[0])
-      ) || priceEstimate[0];
-      
-      if (bestMatch && (bestMatch.price_ungraded || bestMatch.price_psa_10)) {
-        const ungraded = bestMatch.price_ungraded || 0;
-        console.log('Using verified card_price_estimates:', bestMatch.card_name, bestMatch.set_name, 'Ungraded:', ungraded);
-        
-        pricing = {
-          lowestActive: ungraded,
-          medianSold: ungraded,
-          trend7d: 0,
-          trendDirection: 'stable' as const,
-          quickSellPrice: Math.round(ungraded * 0.85 * 100) / 100,
-          maxProfitPrice: Math.round(ungraded * 1.10 * 100) / 100,
-          priceConfidence: bestMatch.confidence_score >= 0.8 ? 'high' as const : 
-                          bestMatch.confidence_score >= 0.5 ? 'medium' as const : 'low' as const,
-          salesCount: 5,
-          listingsCount: 10,
-        };
-      }
-    }
-  }
+  // NOTE: card_price_estimates is now checked FIRST at the top of this function (Priority 1)
+  // This section is removed to avoid duplicate checks
 
   // Priority 2: If we have Ximilar pricing but no internal pricing, use Ximilar's
   // BUT filter out graded card prices and alternate art variants for ungraded cards

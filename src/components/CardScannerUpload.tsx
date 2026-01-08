@@ -575,11 +575,11 @@ export function CardScannerUpload({
                 </div>
               )}
 
-              {/* Action buttons based on detection status */}
-              <div className="flex gap-3 pt-2">
+              {/* Action buttons based on detection status - Mobile optimized */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <Button 
                   variant="outline" 
-                  className="flex-1" 
+                  className="flex-1 min-h-[48px] text-base" 
                   onClick={handleRetryWithNewImage}
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
@@ -589,7 +589,7 @@ export function CardScannerUpload({
                 {/* For confirmed: simple "Use this card" */}
                 {analysis.detectionStatus === 'detected_confirmed' && (
                   <Button 
-                    className="flex-1" 
+                    className="flex-1 min-h-[48px] text-base font-semibold" 
                     onClick={handleConfirmScan}
                   >
                     <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -600,7 +600,7 @@ export function CardScannerUpload({
                 {/* For needs confirmation: "Confirm card details" */}
                 {analysis.detectionStatus === 'detected_needs_confirmation' && (
                   <Button 
-                    className="flex-1" 
+                    className="flex-1 min-h-[48px] text-base font-semibold" 
                     onClick={handleConfirmScan}
                   >
                     <Edit3 className="w-4 h-4 mr-2" />
@@ -612,7 +612,7 @@ export function CardScannerUpload({
                 {analysis.detectionStatus === 'not_detected' && (
                   <Button 
                     variant="secondary"
-                    className="flex-1" 
+                    className="flex-1 min-h-[48px] text-base" 
                     onClick={onSkip}
                   >
                     Enter details manually
