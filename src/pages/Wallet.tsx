@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
 import { WireTransferDialog } from '@/components/WireTransferDialog';
+import { WithdrawalDialog } from '@/components/WithdrawalDialog';
 import { PaymentSuccessDialog } from '@/components/PaymentSuccessDialog';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
 import { toast } from 'sonner';
@@ -33,6 +34,7 @@ const WalletPage = () => {
   const [loading, setLoading] = useState(true);
   const [showCardTopUp, setShowCardTopUp] = useState(false);
   const [showWireTransfer, setShowWireTransfer] = useState(false);
+  const [showWithdrawal, setShowWithdrawal] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [successAmount, setSuccessAmount] = useState(0);
   const [successPaymentId, setSuccessPaymentId] = useState<string | undefined>();
@@ -236,6 +238,25 @@ const WalletPage = () => {
             </CardContent>
           </Card>
 
+          {/* Withdraw Funds */}
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <h3 className="font-display font-semibold text-foreground mb-4">Withdraw Funds</h3>
+              <button
+                onClick={() => setShowWithdrawal(true)}
+                className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-gain/30 hover:bg-gain/5 transition-all text-left w-full"
+              >
+                <div className="w-12 h-12 rounded-xl bg-gain/10 flex items-center justify-center">
+                  <ArrowDownLeft className="h-6 w-6 text-gain" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground">Withdraw to Bank Account</p>
+                  <p className="text-sm text-muted-foreground">IBAN Transfer • 1-3 business days</p>
+                </div>
+              </button>
+            </CardContent>
+          </Card>
+
           {/* Transactions */}
           <Card>
             <CardHeader className="border-b border-border/30">
@@ -314,6 +335,13 @@ const WalletPage = () => {
       <WireTransferDialog
         open={showWireTransfer}
         onOpenChange={setShowWireTransfer}
+      />
+
+      <WithdrawalDialog
+        open={showWithdrawal}
+        onOpenChange={setShowWithdrawal}
+        currentBalance={balance}
+        onSuccess={() => user && fetchWalletData(user.id)}
       />
 
       <PaymentSuccessDialog

@@ -70,7 +70,7 @@ const navGroups: NavGroup[] = [
     items: [
       { id: "orders", label: "Order Management", icon: ShoppingCart },
       { id: "wire-transfers", label: "Wire Transfers", icon: Banknote },
-      { id: "payouts", label: "Payout Queue", icon: CreditCard },
+      { id: "payouts", label: "Withdrawals", icon: CreditCard },
       { id: "disputes", label: "Disputes", icon: AlertTriangle },
     ],
   },
