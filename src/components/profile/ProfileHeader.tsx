@@ -139,9 +139,21 @@ export const ProfileHeader = ({
         onChange={handleIdUpload}
       />
 
-      {/* Background */}
+      {/* Background - Full Profile */}
       <div
-        className="h-48 md:h-64"
+        className="absolute inset-0 -z-10"
+        style={{
+          background: backgroundStyle,
+          backgroundSize: isAnimated ? '400% 400%' : undefined,
+          animation: isAnimated ? 'gradient-shift 8s ease infinite' : undefined
+        }}
+      />
+      {/* Overlay for text readability on dark/light backgrounds */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent via-background/30 to-background" />
+      
+      {/* Header section with background visible */}
+      <div
+        className="h-48 md:h-64 relative"
         style={{
           background: backgroundStyle,
           backgroundSize: isAnimated ? '400% 400%' : undefined,
