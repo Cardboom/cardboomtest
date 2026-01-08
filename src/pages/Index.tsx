@@ -39,6 +39,7 @@ import { TopListingsChart } from '@/components/TopListingsChart';
 import { LiveMarketPanel } from '@/components/home/LiveMarketPanel';
 import { PersonalizedInsightsPanel } from '@/components/home/PersonalizedInsightsPanel';
 import { NewsPanel } from '@/components/home/NewsPanel';
+import { BountiesPanel } from '@/components/home/BountiesPanel';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -289,14 +290,17 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Live Market Panel + Personalized Insights + News - for logged in users */}
+        {/* Live Market Panel + Personalized Insights + Bounties + News - for logged in users */}
         {user && (
           <div className="container mx-auto px-4 pt-6 space-y-3">
             <div className="grid md:grid-cols-2 gap-3">
               <LiveMarketPanel />
               <PersonalizedInsightsPanel userId={user.id} />
             </div>
-            <NewsPanel />
+            <div className="grid md:grid-cols-2 gap-3">
+              <NewsPanel />
+              <BountiesPanel userId={user.id} />
+            </div>
           </div>
         )}
         

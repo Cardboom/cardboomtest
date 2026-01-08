@@ -802,6 +802,107 @@ export type Database = {
           },
         ]
       }
+      bounties: {
+        Row: {
+          auto_generated: boolean | null
+          bounty_type: string
+          created_at: string
+          created_by: string | null
+          description: string
+          ends_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          is_featured: boolean | null
+          period_type: string
+          reward_gems: number
+          starts_at: string
+          target_count: number
+          title: string
+        }
+        Insert: {
+          auto_generated?: boolean | null
+          bounty_type: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          ends_at: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean | null
+          period_type?: string
+          reward_gems?: number
+          starts_at?: string
+          target_count?: number
+          title: string
+        }
+        Update: {
+          auto_generated?: boolean | null
+          bounty_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          ends_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean | null
+          period_type?: string
+          reward_gems?: number
+          starts_at?: string
+          target_count?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      bounty_progress: {
+        Row: {
+          bounty_id: string
+          completed_at: string | null
+          created_at: string
+          current_count: number
+          id: string
+          is_completed: boolean | null
+          reward_claimed: boolean | null
+          reward_claimed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bounty_id: string
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number
+          id?: string
+          is_completed?: boolean | null
+          reward_claimed?: boolean | null
+          reward_claimed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bounty_id?: string
+          completed_at?: string | null
+          created_at?: string
+          current_count?: number
+          id?: string
+          is_completed?: boolean | null
+          reward_claimed?: boolean | null
+          reward_claimed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bounty_progress_bounty_id_fkey"
+            columns: ["bounty_id"]
+            isOneToOne: false
+            referencedRelation: "bounties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buy_order_fills: {
         Row: {
           buy_order_id: string
@@ -6177,6 +6278,73 @@ export type Database = {
           },
         ]
       }
+      referral_gradings: {
+        Row: {
+          created_at: string
+          grading_order_id: string | null
+          id: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          grading_order_id?: string | null
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          grading_order_id?: string | null
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_gradings_grading_order_id_fkey"
+            columns: ["grading_order_id"]
+            isOneToOne: false
+            referencedRelation: "grading_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_sales: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string | null
+          referred_user_id: string
+          referrer_id: string
+          sale_amount: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referred_user_id: string
+          referrer_id: string
+          sale_amount?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          referred_user_id?: string
+          referrer_id?: string
+          sale_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_sales_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referrals: {
         Row: {
           commission_earned: number | null
@@ -8134,6 +8302,7 @@ export type Database = {
         Returns: Json
       }
       check_inventory_integrity: { Args: never; Returns: Json }
+      claim_bounty_reward: { Args: { p_bounty_id: string }; Returns: Json }
       claim_gift_card: { Args: { gift_code: string }; Returns: Json }
       complete_sale_transfer: {
         Args: {
