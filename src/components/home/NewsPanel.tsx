@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { Newspaper, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Newspaper } from 'lucide-react';
 
 interface NewsItem {
   id: string;
@@ -17,7 +17,6 @@ interface NewsItem {
 export const NewsPanel = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,16 +41,6 @@ export const NewsPanel = () => {
     }
   };
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = 280;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-    }
-  };
-
   const getCategoryColor = (category: string | null) => {
     switch (category?.toLowerCase()) {
       case 'pokemon': return 'bg-yellow-500/20 text-yellow-400';
@@ -71,13 +60,16 @@ export const NewsPanel = () => {
 
   if (news.length === 0) return null;
 
+  // Double news for seamless loop
+  const loopedNews = [...news, ...news];
+
   return (
     <div 
       className={cn(
         "relative overflow-hidden rounded-[18px]",
         "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
         "border border-white/5",
-        "h-[100px] md:h-[140px]",
+        "h-[120px] md:h-[160px]",
         "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
       )}
       style={{ backdropFilter: 'blur(22px)' }}
@@ -100,42 +92,30 @@ export const NewsPanel = () => {
         </span>
       </div>
 
-      {/* Scroll buttons */}
-      <button
-        onClick={() => scroll('left')}
-        className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-black/50 border border-white/10 flex items-center justify-center hover:bg-black/70 transition-colors"
-      >
-        <ChevronLeft className="w-3 h-3 text-white/70" />
-      </button>
-      <button
-        onClick={() => scroll('right')}
-        className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-6 h-6 rounded-full bg-black/50 border border-white/10 flex items-center justify-center hover:bg-black/70 transition-colors"
-      >
-        <ChevronRight className="w-3 h-3 text-white/70" />
-      </button>
-
-      {/* Horizontal scroll container */}
-      <div 
-        ref={scrollRef}
-        className="absolute inset-x-0 top-8 bottom-1 overflow-x-auto scrollbar-hide px-3"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        <div className="flex gap-3 h-full">
-          {news.map((item) => (
+      {/* Auto-scrolling horizontal container */}
+      <div className="absolute inset-x-0 top-8 bottom-2 overflow-hidden">
+        <div 
+          className="flex gap-3 h-full px-3"
+          style={{ 
+            animation: 'newsMarquee 60s linear infinite',
+            width: 'max-content'
+          }}
+        >
+          {loopedNews.map((item, idx) => (
             <div
-              key={item.id}
+              key={`${item.id}-${idx}`}
               onClick={() => navigate(`/news/${item.slug}`)}
               className={cn(
-                "flex-shrink-0 w-[200px] md:w-[260px] h-full",
+                "flex-shrink-0 w-[220px] md:w-[280px] h-full",
                 "rounded-lg bg-white/[0.03] border border-white/5",
                 "overflow-hidden cursor-pointer group",
                 "hover:bg-white/[0.06] hover:border-white/10 transition-all duration-200"
               )}
             >
-              <div className="flex h-full">
+              <div className="flex h-full items-center">
                 {/* Image */}
                 {item.image_url && (
-                  <div className="w-16 md:w-20 h-full flex-shrink-0 overflow-hidden">
+                  <div className="w-20 md:w-24 h-[80%] flex-shrink-0 overflow-hidden rounded-l-lg ml-1">
                     <img 
                       src={item.image_url} 
                       alt={item.title}
@@ -145,20 +125,18 @@ export const NewsPanel = () => {
                 )}
                 
                 {/* Content */}
-                <div className="flex-1 p-2 flex flex-col justify-between min-w-0">
-                  <div>
-                    {item.category && (
-                      <span className={cn(
-                        "inline-block px-1.5 py-0.5 rounded text-[7px] font-mono uppercase mb-1",
-                        getCategoryColor(item.category)
-                      )}>
-                        {item.category}
-                      </span>
-                    )}
-                    <h3 className="font-mono text-[9px] md:text-[10px] text-white/90 leading-tight line-clamp-2 group-hover:text-white transition-colors">
-                      {item.title}
-                    </h3>
-                  </div>
+                <div className="flex-1 px-2 py-1 flex flex-col justify-center min-w-0">
+                  {item.category && (
+                    <span className={cn(
+                      "inline-block w-fit px-1.5 py-0.5 rounded text-[7px] font-mono uppercase mb-1",
+                      getCategoryColor(item.category)
+                    )}>
+                      {item.category}
+                    </span>
+                  )}
+                  <h3 className="font-mono text-[9px] md:text-[10px] text-white/90 leading-tight line-clamp-2 group-hover:text-white transition-colors">
+                    {item.title}
+                  </h3>
                   <p className="font-mono text-[7px] text-gray-500 mt-1">
                     {new Date(item.created_at).toLocaleDateString()}
                   </p>
@@ -168,6 +146,13 @@ export const NewsPanel = () => {
           ))}
         </div>
       </div>
+
+      <style>{`
+        @keyframes newsMarquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
 };
