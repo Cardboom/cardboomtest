@@ -57,26 +57,8 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
       if (!aiError && aiSummary) {
         const summary = aiSummary as AIMarketSummary;
         
-        // Add CardBoom Index insight
-        newInsights.push({
-          id: 'cb-index',
-          icon: summary.cardBoomIndex >= 0 ? '📈' : '📉',
-          message: 'CardBoom Index',
-          metric: `${summary.cardBoomIndex >= 0 ? '+' : ''}${summary.cardBoomIndex.toFixed(2)}%`,
-          isPositive: summary.cardBoomIndex >= 0,
-        });
-
-        // Add Platform Grading Average
-        if (summary.platformGradingAvg > 0) {
-          newInsights.push({
-            id: 'grading-avg',
-            icon: '🏆',
-            message: 'Platform Grading Avg',
-            metric: `${summary.platformGradingAvg.toFixed(1)}/10`,
-            isPositive: summary.platformGradingAvg >= 8.5,
-          });
-        }
-
+        // Only add AI-generated long-form insights (no metrics)
+        
         // Add Community Buzz (AI-generated)
         if (summary.communityBuzz) {
           newInsights.push({
@@ -104,17 +86,6 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
             icon: '👀',
             message: summary.sleeper,
             isLongForm: true,
-          });
-        }
-
-        // Add weekly volume
-        if (summary.weeklyVolume > 0) {
-          newInsights.push({
-            id: 'volume',
-            icon: '⚡',
-            message: 'Weekly trades',
-            metric: summary.weeklyVolume.toLocaleString(),
-            isPositive: true,
           });
         }
       }
@@ -184,15 +155,11 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
               className="text-center max-w-full"
             >
               {currentInsight.isLongForm ? (
-                // Long-form AI insight (community buzz, hot take, sleeper)
-                <>
-                  <div className="flex items-center justify-center gap-2 mb-1.5">
-                    <span className="text-lg md:text-xl">{currentInsight.icon}</span>
-                  </div>
-                  <p className="font-sans font-bold text-[11px] md:text-sm text-white/90 tracking-wide leading-relaxed max-w-[300px] md:max-w-[380px] mx-auto line-clamp-3">
-                    {currentInsight.message}
-                  </p>
-                </>
+                // Long-form AI insight - emoji inline for better centering
+                <p className="font-sans font-bold text-[12px] md:text-sm text-white/90 tracking-wide leading-relaxed max-w-[320px] md:max-w-[400px] mx-auto line-clamp-3">
+                  <span className="mr-1.5">{currentInsight.icon}</span>
+                  {currentInsight.message}
+                </p>
               ) : (
                 // Standard metric insight
                 <>

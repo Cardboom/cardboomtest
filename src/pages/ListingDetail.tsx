@@ -19,6 +19,7 @@ import { CardPriceEstimates } from '@/components/CardPriceEstimates';
 import { ListingOffersPanel } from '@/components/listing/ListingOffersPanel';
 import { GradingDonationPanel } from '@/components/listing/GradingDonationPanel';
 import { StartConversationDialog } from '@/components/messaging/StartConversationDialog';
+import { ListThisCardDialog } from '@/components/item/ListThisCardDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Listing {
@@ -624,6 +625,13 @@ const ListingDetail = () => {
                   <MessageCircle className="w-4 h-4" />
                   Message Seller
                 </Button>
+                <ListThisCardDialog
+                  cardName={listing.title}
+                  category={listing.category}
+                  setName={listing.set_name}
+                  marketItemId={listing.market_item_id}
+                  user={user}
+                />
               </div>
             )}
             
@@ -653,6 +661,13 @@ const ListingDetail = () => {
                   <MessageCircle className="w-4 h-4" />
                   Message Seller
                 </Button>
+                <ListThisCardDialog
+                  cardName={listing.title}
+                  category={listing.category}
+                  setName={listing.set_name}
+                  marketItemId={listing.market_item_id}
+                  user={user}
+                />
               </div>
             )}
 
