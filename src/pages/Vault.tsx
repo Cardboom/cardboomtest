@@ -59,11 +59,11 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
 
 const WAREHOUSE_ADDRESS = {
   name: 'BRAINBABY BİLİŞİM ANONİM ŞİRKETİ',
-  address: 'Atatürk Mah. Turgut Özal Blv.',
-  building: 'Gardenya Plaza 2, No: 16/47',
-  district: 'Eryaman, Etimesgut',
+  address: 'İran Caddesi 55/9',
+  building: '',
+  district: 'Gaziosmanpaşa Mahallesi, Çankaya',
   city: 'Ankara, Türkiye',
-  postalCode: '06790',
+  postalCode: '06700',
 };
 
 const VaultPage = () => {

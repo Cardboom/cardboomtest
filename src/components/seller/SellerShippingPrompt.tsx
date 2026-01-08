@@ -138,10 +138,9 @@ export const SellerShippingPrompt = ({
                 </div>
                 <p className="font-medium text-foreground">BRAINBABY BİLİŞİM ANONİM ŞİRKETİ</p>
                 <Separator />
-                <p className="text-sm text-muted-foreground">Atatürk Mah. Turgut Özal Blv.</p>
-                <p className="text-sm text-muted-foreground">Gardenya Plaza 2, No: 16/47</p>
-                <p className="text-sm text-muted-foreground">Eryaman, Etimesgut</p>
-                <p className="text-sm text-muted-foreground">Ankara, Türkiye 06790</p>
+                <p className="text-sm text-muted-foreground">İran Caddesi 55/9</p>
+                <p className="text-sm text-muted-foreground">Gaziosmanpaşa Mahallesi</p>
+                <p className="text-sm text-muted-foreground">Çankaya, Ankara, Türkiye 06700</p>
               </div>
             </div>
           ) : order.shippingAddress ? (
