@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkles, TrendingUp, Star, Smartphone } from 'lucide-react';
+import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkles, TrendingUp, Star, Smartphone, Mail } from 'lucide-react';
+import { PhoneInputWithCountry } from '@/components/ui/phone-input';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
@@ -43,11 +44,15 @@ const Auth = () => {
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [resetMethod, setResetMethod] = useState<'email' | 'phone'>('email');
+  const [resetEmail, setResetEmail] = useState('');
   const [resetPhone, setResetPhone] = useState('');
+  const [resetCountryCode, setResetCountryCode] = useState('+90');
   const [resetOtp, setResetOtp] = useState('');
   const [resetOtpSent, setResetOtpSent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [resetVerified, setResetVerified] = useState(false);
+  const [loginCountryCode, setLoginCountryCode] = useState('+90');
   const [errors, setErrors] = useState<{ 
     email?: string; 
     password?: string; 
@@ -58,6 +63,7 @@ const Auth = () => {
     loginPhone?: string;
     otp?: string;
     resetPhone?: string;
+    resetEmail?: string;
     resetOtp?: string;
     newPassword?: string;
   }>({});
@@ -282,11 +288,38 @@ const Auth = () => {
     setLoading(false);
   };
 
-  // Forgot password handlers
+  // Forgot password handlers - Email method
+  const handleSendResetEmail = async () => {
+    const emailResult = emailSchema.safeParse(resetEmail);
+    if (!emailResult.success) {
+      setErrors({ resetEmail: emailResult.error.errors[0].message });
+      return;
+    }
+    setErrors({});
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Password reset link sent to your email!');
+        setForgotPasswordMode(false);
+        setResetEmail('');
+      }
+    } catch (err) {
+      toast.error('Failed to send reset email');
+    }
+    setLoading(false);
+  };
+
+  // Forgot password handlers - Phone method
   const handleSendResetOtp = async () => {
-    const phoneResult = phoneSchema.safeParse(resetPhone);
-    if (!phoneResult.success) {
-      setErrors({ resetPhone: phoneResult.error.errors[0].message });
+    if (!resetPhone || resetPhone.length < 10) {
+      setErrors({ resetPhone: 'Please enter a valid phone number' });
       return;
     }
     setErrors({});
@@ -559,25 +592,75 @@ const Auth = () => {
                       <div className="space-y-4">
                         <div className="text-center mb-4">
                           <h3 className="text-lg font-semibold text-foreground">Reset Password</h3>
-                          <p className="text-sm text-muted-foreground">We'll send a verification code to your phone</p>
+                          <p className="text-sm text-muted-foreground">Choose how you'd like to reset your password</p>
                         </div>
-                        
-                        {!resetOtpSent ? (
+
+                        {/* Method Toggle */}
+                        <div className="flex gap-2 p-1 bg-secondary/50 rounded-xl">
+                          <button
+                            type="button"
+                            onClick={() => { setResetMethod('email'); setResetOtpSent(false); }}
+                            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                              resetMethod === 'email' 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Mail className="w-4 h-4" />
+                            Email
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setResetMethod('phone'); setResetOtpSent(false); }}
+                            className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                              resetMethod === 'phone' 
+                                ? 'bg-primary text-primary-foreground' 
+                                : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                          >
+                            <Phone className="w-4 h-4" />
+                            Phone
+                          </button>
+                        </div>
+
+                        {resetMethod === 'email' ? (
+                          /* Email Reset */
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label htmlFor="reset-phone" className="text-foreground font-medium flex items-center gap-2">
-                                <Phone className="w-4 h-4" />
-                                Phone Number
-                              </Label>
+                              <Label htmlFor="reset-email" className="text-foreground font-medium">Email Address</Label>
                               <Input
-                                id="reset-phone"
-                                type="tel"
-                                placeholder="05XX XXX XX XX"
-                                value={resetPhone}
-                                onChange={(e) => setResetPhone(formatPhone(e.target.value))}
+                                id="reset-email"
+                                type="email"
+                                placeholder="your@email.com"
+                                value={resetEmail}
+                                onChange={(e) => setResetEmail(e.target.value)}
                                 className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
                               />
-                              {errors.resetPhone && <p className="text-destructive text-sm">{errors.resetPhone}</p>}
+                              {errors.resetEmail && <p className="text-destructive text-sm">{errors.resetEmail}</p>}
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={handleSendResetEmail}
+                              disabled={loading || !resetEmail}
+                              className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 font-semibold rounded-xl"
+                            >
+                              {loading ? 'Sending...' : 'Send Reset Link'}
+                            </Button>
+                          </div>
+                        ) : !resetOtpSent ? (
+                          /* Phone Reset - Enter Number */
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label className="text-foreground font-medium">Phone Number</Label>
+                              <PhoneInputWithCountry
+                                value={resetPhone}
+                                onChange={(fullNumber, countryCode) => {
+                                  setResetPhone(fullNumber);
+                                  setResetCountryCode(countryCode);
+                                }}
+                                placeholder="5XX XXX XX XX"
+                                error={errors.resetPhone}
+                              />
                             </div>
                             <Button
                               type="button"
@@ -589,6 +672,7 @@ const Auth = () => {
                             </Button>
                           </div>
                         ) : !resetVerified ? (
+                          /* Phone Reset - Enter OTP */
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <Label htmlFor="reset-otp" className="text-foreground font-medium">Enter Verification Code</Label>
@@ -612,8 +696,16 @@ const Auth = () => {
                             >
                               {loading ? 'Verifying...' : 'Verify Code'}
                             </Button>
+                            <button
+                              type="button"
+                              onClick={() => setResetOtpSent(false)}
+                              className="w-full text-muted-foreground hover:text-foreground text-sm"
+                            >
+                              Change phone number
+                            </button>
                           </div>
                         ) : (
+                          /* Phone Reset - Verified */
                           <form onSubmit={handleResetPassword} className="space-y-4">
                             <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
                               <p className="text-green-500 text-sm font-medium">✓ Phone verified successfully</p>
@@ -635,6 +727,7 @@ const Auth = () => {
                           type="button"
                           onClick={() => {
                             setForgotPasswordMode(false);
+                            setResetEmail('');
                             setResetPhone('');
                             setResetOtp('');
                             setResetOtpSent(false);

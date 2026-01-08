@@ -35,17 +35,25 @@ serve(async (req) => {
 
     // Format phone number to E.164 format
     let formattedPhone = phone.trim();
-    if (formattedPhone.startsWith("0")) {
-      formattedPhone = "+90" + formattedPhone.slice(1);
-    } else if (!formattedPhone.startsWith("+")) {
-      formattedPhone = "+90" + formattedPhone;
+    
+    // Ensure the phone starts with +
+    if (!formattedPhone.startsWith("+")) {
+      // If starts with 0, assume Turkish number
+      if (formattedPhone.startsWith("0")) {
+        formattedPhone = "+90" + formattedPhone.slice(1);
+      } else {
+        // Default to adding + if it looks like an international number
+        formattedPhone = "+" + formattedPhone;
+      }
     }
 
-    // Validate Turkish phone number format
-    const phoneRegex = /^\+90[5][0-9]{9}$/;
+    // Basic E.164 validation: must start with + followed by digits
+    const phoneRegex = /^\+[1-9][0-9]{7,14}$/;
     if (!phoneRegex.test(formattedPhone)) {
-      throw new Error("Invalid Turkish phone number format");
+      throw new Error("Invalid phone number format. Please include country code (e.g., +90 for Turkey)");
     }
+
+    console.log("Sending SMS to:", formattedPhone);
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
