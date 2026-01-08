@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PurchaseDialog } from '@/components/purchase/PurchaseDialog';
 import { CardPriceEstimates } from '@/components/CardPriceEstimates';
+import { ListingOffersPanel } from '@/components/listing/ListingOffersPanel';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Listing {
@@ -25,6 +26,7 @@ interface Listing {
   category: string;
   condition: string;
   price: number;
+  currency?: string;
   status: string;
   allows_vault: boolean;
   allows_trade: boolean;
@@ -674,6 +676,23 @@ const ListingDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Offers Section */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              Offers from Buyers
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ListingOffersPanel
+              listingId={listing.id}
+              sellerId={listing.seller_id}
+              isOwner={user?.id === listing.seller_id}
+            />
+          </CardContent>
+        </Card>
 
         {/* Price Prediction Voting */}
         <Card className="mb-8">
