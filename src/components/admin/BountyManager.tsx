@@ -48,6 +48,7 @@ const BOUNTY_TYPES = [
   { value: 'referral_grading', label: 'Referral Gradings', icon: '👥' },
   { value: 'referral_sales', label: 'Referral Sales', icon: '💰' },
   { value: 'sale_count', label: 'Sell Cards', icon: '🏷️' },
+  { value: 'sale_commission', label: 'Commission Cashback (15%)', icon: '💵' },
   { value: 'listing_count', label: 'List Cards', icon: '📋' },
 ];
 
@@ -61,7 +62,7 @@ export const BountyManager = () => {
     description: '',
     bounty_type: 'grading_count',
     target_count: 5,
-    reward_gems: 2500, // $25 in cents
+    reward_gems: 2000, // $20 in cents
     period_type: 'monthly',
     is_featured: false,
     icon: '🎯',
@@ -201,13 +202,13 @@ export const BountyManager = () => {
       }
 
       const templates = period === 'weekly' ? [
-        { title: 'Weekly Grader', description: 'Grade 3 cards this week', bounty_type: 'grading_count', target_count: 3, reward_gems: 1000, icon: '🧠' },
-        { title: 'Weekly Seller', description: 'Sell 2 cards this week', bounty_type: 'sale_count', target_count: 2, reward_gems: 500, icon: '🏷️' },
+        { title: 'Grade 5 Cards', description: 'Grade 5 cards this week to earn gems', bounty_type: 'grading_count', target_count: 5, reward_gems: 2000, icon: '🧠' },
+        { title: 'Sell 10 Cards', description: 'Sell 10 cards - earn 15% of commission back', bounty_type: 'sale_count', target_count: 10, reward_gems: 1500, icon: '🏷️' },
       ] : [
-        { title: 'Monthly Grading Master', description: 'Grade 10 cards this month', bounty_type: 'grading_count', target_count: 10, reward_gems: 5000, icon: '🏆', is_featured: true },
-        { title: 'Referral Champion', description: 'Get 25 referral gradings this month', bounty_type: 'referral_grading', target_count: 25, reward_gems: 10000, icon: '👥' },
-        { title: 'Sales Network', description: 'Get 10 referral sales this month', bounty_type: 'referral_sales', target_count: 10, reward_gems: 2500, icon: '💰' },
-        { title: 'Top Seller', description: 'Sell 15 cards this month', bounty_type: 'sale_count', target_count: 15, reward_gems: 3000, icon: '⭐' },
+        { title: 'Grading Champion', description: 'Grade 15 cards this month', bounty_type: 'grading_count', target_count: 15, reward_gems: 4000, icon: '🏆', is_featured: true },
+        { title: 'Refer & Grade', description: 'Refer 5 friends - if 2 grade cards, earn reward', bounty_type: 'referral_grading', target_count: 2, reward_gems: 500, icon: '👥' },
+        { title: 'Sales Commission Bonus', description: 'Sell 20 cards - earn 15% commission back', bounty_type: 'sale_count', target_count: 20, reward_gems: 2500, icon: '💰' },
+        { title: 'Listing Sprint', description: 'List 25 cards this month', bounty_type: 'listing_count', target_count: 25, reward_gems: 1000, icon: '📋' },
       ];
 
       for (const template of templates) {
@@ -239,9 +240,9 @@ export const BountyManager = () => {
         <div>
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Target className="w-5 h-5 text-amber-500" />
-            Bounty Manager
+            Boom Challenges
           </h2>
-          <p className="text-sm text-muted-foreground">Create and manage user bounties/quests</p>
+          <p className="text-sm text-muted-foreground">Create and manage user challenges - first come, first served</p>
         </div>
         <div className="flex gap-2">
           <Button

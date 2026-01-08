@@ -52,7 +52,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
         .gt('ends_at', new Date().toISOString())
         .order('is_featured', { ascending: false })
         .order('ends_at', { ascending: true })
-        .limit(4);
+        .limit(6);
 
       if (bountiesError) throw bountiesError;
       setBounties(bountiesData || []);
@@ -119,6 +119,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       case 'referral_grading': return 'Referral gradings';
       case 'referral_sales': return 'Referral sales';
       case 'sale_count': return 'Sell cards';
+      case 'sale_commission': return 'Commission cashback';
       case 'listing_count': return 'List cards';
       default: return type;
     }
@@ -138,7 +139,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
         "relative overflow-hidden rounded-[18px]",
         "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
         "border border-white/5",
-        "h-[120px] md:h-[160px]",
+        "h-[140px] md:h-[180px]",
         "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
       )}
       style={{ backdropFilter: 'blur(22px)' }}
@@ -152,18 +153,20 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       />
 
       {/* Accent line */}
-      <div className="absolute top-0 left-0 w-0.5 h-full bg-gradient-to-b from-amber-500 via-amber-500/50 to-transparent" />
+      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-500 via-amber-500/50 to-transparent" />
 
-      {/* Header */}
-      <div className="absolute top-2 left-3 flex items-center gap-1.5 z-10">
-        <div className="w-4 h-4 rounded bg-amber-500/20 flex items-center justify-center">
-          <Target className="w-2.5 h-2.5 text-amber-400" />
+      {/* Header with explanation */}
+      <div className="absolute top-2 left-3 flex items-center gap-3 z-10">
+        <div className="flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center">
+            <Target className="w-3 h-3 text-amber-400" />
+          </div>
+          <span className="font-mono text-[9px] text-amber-400 uppercase tracking-widest font-bold">
+            BOOM CHALLENGES
+          </span>
         </div>
-        <span className="font-mono text-[8px] text-gray-400 uppercase tracking-widest">
-          BOUNTIES
-        </span>
-        <span className="font-mono text-[7px] text-amber-400/70 ml-1">
-          +GEMS
+        <span className="hidden md:inline text-[8px] text-gray-500 font-mono">
+          Complete tasks, earn gems. First come, first served!
         </span>
       </div>
 
@@ -175,10 +178,10 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
         ALL <ChevronRight className="w-2.5 h-2.5" />
       </button>
 
-      {/* Bounties grid */}
-      <div className="absolute inset-x-0 top-8 bottom-2 px-3 overflow-hidden">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 h-full">
-          {bounties.slice(0, 4).map((bounty) => {
+      {/* Bounties grid - full width */}
+      <div className="absolute inset-x-0 top-10 bottom-2 px-3 overflow-hidden">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 h-full">
+          {bounties.slice(0, 6).map((bounty) => {
             const prog = progress[bounty.id];
             const currentCount = prog?.current_count || 0;
             const percentage = Math.min((currentCount / bounty.target_count) * 100, 100);
