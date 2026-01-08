@@ -189,7 +189,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-8 mb-4"
+              className="mt-8"
             >
               <HeroNewsTicker />
             </motion.div>
@@ -199,7 +199,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
         {/* Stats Grid - NYSE Terminal Style - Single Row with Dividers */}
         <div 
           className={cn(
-            "relative overflow-hidden rounded-[18px]",
+            "relative overflow-hidden rounded-[18px] mt-4",
             "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
             "border border-white/5",
             "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
