@@ -68,15 +68,31 @@ export const RevenueDashboard = () => {
     }
   });
 
-  // Fetch wire transfers
-  const { data: wireTransfers } = useQuery({
-    queryKey: ['admin-wire-transfers', period],
+  // Fetch all top-ups (credit card deposits)
+  const { data: topUpsData } = useQuery({
+    queryKey: ['admin-topups', period],
     queryFn: async () => {
       const startDate = getDateRange();
       const { data, error } = await supabase
         .from('transactions')
-        .select('amount, type, created_at')
+        .select('amount, type, created_at, description')
         .eq('type', 'topup')
+        .gte('created_at', startDate.toISOString());
+
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Fetch wire transfers (confirmed)
+  const { data: wireTransfersData } = useQuery({
+    queryKey: ['admin-wire-transfers', period],
+    queryFn: async () => {
+      const startDate = getDateRange();
+      const { data, error } = await supabase
+        .from('wire_transfers')
+        .select('amount, net_amount, status, created_at')
+        .eq('status', 'confirmed')
         .gte('created_at', startDate.toISOString());
 
       if (error) throw error;
@@ -121,7 +137,17 @@ export const RevenueDashboard = () => {
   const totalSellerFees = ordersData?.reduce((sum, o) => sum + Number(o.seller_fee || 0), 0) || 0;
   const totalPlatformFees = totalBuyerFees + totalSellerFees;
   const subscriptionRevenue = subscriptionsData?.reduce((sum, s) => sum + Number(s.price_monthly || 0), 0) || 0;
-  const totalDeposits = wireTransfers?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+  
+  // Credit card top-up profit (0.4% of all top-ups)
+  const totalTopUps = topUpsData?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+  const topUpProfit = totalTopUps * 0.004; // 0.4% profit margin
+  
+  // Wire transfer deposits
+  const totalWireDeposits = wireTransfersData?.reduce((sum, t) => sum + Number(t.net_amount || t.amount || 0), 0) || 0;
+  
+  // Total platform revenue
+  const totalRevenue = totalPlatformFees + subscriptionRevenue + topUpProfit;
+  
   const takeRate = totalGMV > 0 ? (totalPlatformFees / totalGMV * 100) : 0;
   const avgOrderValue = ordersData?.length ? totalGMV / ordersData.length : 0;
 
@@ -182,7 +208,7 @@ export const RevenueDashboard = () => {
         </Select>
       </div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - Row 1: Volume Metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardContent className="p-4">
@@ -193,6 +219,69 @@ export const RevenueDashboard = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Total GMV</p>
                 <p className="text-2xl font-bold">{formatPrice(totalGMV)}</p>
+                <p className="text-xs text-muted-foreground">{ordersData?.length || 0} orders</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border-cyan-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-cyan-500/20">
+                <CreditCard className="w-5 h-5 text-cyan-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Top-ups</p>
+                <p className="text-2xl font-bold text-cyan-500">{formatPrice(totalTopUps)}</p>
+                <p className="text-xs text-muted-foreground">{topUpsData?.length || 0} deposits</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-violet-500/10 to-violet-500/5 border-violet-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-violet-500/20">
+                <TrendingUp className="w-5 h-5 text-violet-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Wire Deposits</p>
+                <p className="text-2xl font-bold text-violet-500">{formatPrice(totalWireDeposits)}</p>
+                <p className="text-xs text-muted-foreground">{wireTransfersData?.length || 0} confirmed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/20">
+                <ShoppingCart className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Avg Order Value</p>
+                <p className="text-2xl font-bold text-amber-500">{formatPrice(avgOrderValue)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Summary Cards - Row 2: PROFIT Metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border-emerald-500/20 ring-2 ring-emerald-500/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/20">
+                <DollarSign className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground font-medium">💰 Total Revenue</p>
+                <p className="text-2xl font-bold text-emerald-500">{formatPrice(totalRevenue)}</p>
+                <p className="text-xs text-muted-foreground">All profit sources</p>
               </div>
             </div>
           </CardContent>
@@ -213,31 +302,31 @@ export const RevenueDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+        <Card className="bg-gradient-to-br from-pink-500/10 to-pink-500/5 border-pink-500/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/20">
-                <CreditCard className="w-5 h-5 text-blue-500" />
+              <div className="p-2 rounded-lg bg-pink-500/20">
+                <CreditCard className="w-5 h-5 text-pink-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Subscriptions</p>
-                <p className="text-2xl font-bold text-blue-500">{formatPrice(subscriptionRevenue)}/mo</p>
-                <p className="text-xs text-muted-foreground">{subscriptionsData?.length || 0} active</p>
+                <p className="text-sm text-muted-foreground">CC Top-up Profit</p>
+                <p className="text-2xl font-bold text-pink-500">{formatPrice(topUpProfit)}</p>
+                <p className="text-xs text-muted-foreground">0.4% of {formatPrice(totalTopUps)}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/20">
-                <ShoppingCart className="w-5 h-5 text-amber-500" />
+              <div className="p-2 rounded-lg bg-blue-500/20">
+                <Users className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Avg Order Value</p>
-                <p className="text-2xl font-bold text-amber-500">{formatPrice(avgOrderValue)}</p>
-                <p className="text-xs text-muted-foreground">{ordersData?.length || 0} orders</p>
+                <p className="text-sm text-muted-foreground">Subscriptions</p>
+                <p className="text-2xl font-bold text-blue-500">{formatPrice(subscriptionRevenue)}/mo</p>
+                <p className="text-xs text-muted-foreground">{subscriptionsData?.length || 0} active</p>
               </div>
             </div>
           </CardContent>
