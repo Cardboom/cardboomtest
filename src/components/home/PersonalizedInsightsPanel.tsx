@@ -166,7 +166,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
           <Sparkles className="w-2.5 h-2.5 text-primary" />
         </div>
-        <span className="font-mono text-[10px] md:text-[11px] text-gray-400 uppercase tracking-widest">
+        <span className="font-sans text-[10px] md:text-[11px] text-gray-400 uppercase tracking-widest font-bold">
           AI INSIGHT
         </span>
       </div>
@@ -189,7 +189,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
                   <div className="flex items-center justify-center gap-2 mb-1.5">
                     <span className="text-lg md:text-xl">{currentInsight.icon}</span>
                   </div>
-                  <p className="font-mono text-[11px] md:text-sm text-white/90 tracking-wide leading-relaxed max-w-[300px] md:max-w-[380px] mx-auto line-clamp-3">
+                  <p className="font-sans font-bold text-[11px] md:text-sm text-white/90 tracking-wide leading-relaxed max-w-[300px] md:max-w-[380px] mx-auto line-clamp-3">
                     {currentInsight.message}
                   </p>
                 </>
@@ -199,12 +199,12 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <span className="text-lg md:text-2xl">{currentInsight.icon}</span>
                   </div>
-                  <p className="font-mono text-[11px] md:text-sm text-white/80 tracking-wide mb-0.5">
+                  <p className="font-sans font-bold text-[11px] md:text-sm text-white/80 tracking-wide mb-0.5">
                     {currentInsight.message}
                   </p>
                   {currentInsight.metric && (
                     <p className={cn(
-                      "font-mono text-lg md:text-2xl font-bold tracking-wider",
+                      "font-sans font-bold text-lg md:text-2xl tracking-wider",
                       currentInsight.isPositive ? "text-emerald-400" : "text-red-400"
                     )}>
                       {currentInsight.metric}
@@ -233,7 +233,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
       </div>
 
       <div className="absolute bottom-1 right-3">
-        <span className="font-mono text-[7px] text-gray-600 uppercase tracking-widest">
+        <span className="font-sans font-bold text-[8px] text-gray-600 uppercase tracking-widest">
           TRADING DESK
         </span>
       </div>

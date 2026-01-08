@@ -90,7 +90,7 @@ export const NewsPanel = () => {
         <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
           <Newspaper className="w-2.5 h-2.5 text-primary" />
         </div>
-        <span className="font-mono text-[8px] text-primary uppercase tracking-widest font-bold">
+        <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
           CARDBOOM NEWS
         </span>
       </div>
@@ -100,7 +100,7 @@ export const NewsPanel = () => {
         <div 
           className="flex gap-3 h-full px-3"
           style={{ 
-            animation: 'newsMarquee 60s linear infinite',
+            animation: 'newsMarquee 120s linear infinite',
             width: 'max-content'
           }}
         >
@@ -131,16 +131,16 @@ export const NewsPanel = () => {
                 <div className="flex-1 px-2 py-1 flex flex-col justify-center min-w-0">
                   {item.category && (
                     <span className={cn(
-                      "inline-block w-fit px-1.5 py-0.5 rounded text-[7px] font-mono uppercase mb-1",
+                      "inline-block w-fit px-1.5 py-0.5 rounded text-[8px] font-sans font-bold uppercase mb-1",
                       getCategoryColor(item.category)
                     )}>
                       {item.category}
                     </span>
                   )}
-                  <h3 className="font-mono text-[9px] md:text-[10px] text-white/90 leading-tight line-clamp-2 group-hover:text-white transition-colors">
+                  <h3 className="font-sans font-bold text-[10px] md:text-[11px] text-white/90 leading-tight line-clamp-2 group-hover:text-white transition-colors">
                     {item.title}
                   </h3>
-                  <p className="font-mono text-[7px] text-gray-500 mt-1">
+                  <p className="font-sans text-[8px] text-gray-500 mt-1">
                     {new Date(item.created_at).toLocaleDateString()}
                   </p>
                 </div>

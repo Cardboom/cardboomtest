@@ -207,14 +207,14 @@ export const LiveMarketPanel = () => {
         >
           {marketTicks.map((tick, i) => (
             <div key={i} className="flex items-center gap-1 px-2 md:px-3">
-              <span className="font-mono text-[10px] md:text-[11px] text-gray-500 uppercase tracking-wide">
+              <span className="font-sans font-bold text-[10px] md:text-[11px] text-gray-500 uppercase tracking-wide">
                 {tick.symbol}
               </span>
-              <span className="font-mono text-[10px] md:text-[11px] text-white/80 font-medium">
+              <span className="font-sans font-bold text-[10px] md:text-[11px] text-white/80">
                 ${tick.price.toLocaleString()}
               </span>
               <span className={cn(
-                "font-mono text-[10px] md:text-[11px] font-medium",
+                "font-sans font-bold text-[10px] md:text-[11px]",
                 tick.change >= 0 ? "text-emerald-400" : "text-red-400"
               )}>
                 {tick.change >= 0 ? '+' : ''}{tick.change.toFixed(1)}%
@@ -237,7 +237,7 @@ export const LiveMarketPanel = () => {
               className="flex items-center justify-center gap-2 text-center"
             >
               <span className="text-lg md:text-2xl">{currentEvent.icon}</span>
-              <span className="font-mono text-[11px] md:text-sm text-white/90 tracking-wide">
+              <span className="font-sans font-bold text-[11px] md:text-sm text-white/90 tracking-wide">
                 {currentEvent.message}
               </span>
             </motion.div>
@@ -255,7 +255,7 @@ export const LiveMarketPanel = () => {
             <div 
               key={i}
               className={cn(
-                "font-mono text-[8px] font-bold py-0.5 text-center",
+                "font-sans font-bold text-[9px] py-0.5 text-center",
                 tick.isPositive ? "text-emerald-400" : "text-red-400"
               )}
             >
@@ -271,11 +271,11 @@ export const LiveMarketPanel = () => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-1 w-1 bg-emerald-500"></span>
         </span>
-        <span className="font-mono text-[7px] text-gray-500 uppercase tracking-widest">LIVE</span>
+        <span className="font-sans font-bold text-[8px] text-gray-500 uppercase tracking-widest">LIVE</span>
       </div>
 
       <div className="absolute bottom-1 right-2 md:right-16">
-        <span className="font-mono text-[7px] text-gray-600 uppercase tracking-widest">TERMINAL</span>
+        <span className="font-sans font-bold text-[8px] text-gray-600 uppercase tracking-widest">TERMINAL</span>
       </div>
 
       <style>{`

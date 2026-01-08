@@ -161,11 +161,11 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
           <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
             <Target className="w-3 h-3 text-primary" />
           </div>
-          <span className="font-mono text-[11px] md:text-xs text-primary uppercase tracking-widest font-bold">
+          <span className="font-sans text-[11px] md:text-xs text-primary uppercase tracking-widest font-bold">
             BOOM CHALLENGES
           </span>
         </div>
-        <span className="hidden md:inline text-[10px] text-gray-500 font-mono">
+        <span className="hidden md:inline text-[10px] text-gray-500 font-sans font-medium">
           Complete tasks, earn gems. First come, first served!
         </span>
       </div>
@@ -173,7 +173,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       {/* View all button */}
       <button
         onClick={() => navigate('/rewards')}
-        className="absolute top-2 right-3 flex items-center gap-0.5 text-[8px] text-gray-500 hover:text-gray-300 transition-colors font-mono"
+        className="absolute top-2 right-3 flex items-center gap-0.5 text-[9px] text-gray-500 hover:text-gray-300 transition-colors font-sans font-bold"
       >
         ALL <ChevronRight className="w-2.5 h-2.5" />
       </button>
@@ -203,22 +203,22 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                     <span className="text-base">{bounty.icon}</span>
                     <div className="flex items-center gap-1">
                       <Clock className="w-2 h-2 text-gray-500" />
-                      <span className="text-[7px] text-gray-500 font-mono">
+                      <span className="text-[8px] text-gray-500 font-sans font-medium">
                         {formatTimeLeft(bounty.ends_at)}
                       </span>
                     </div>
                   </div>
-                  <p className="text-[11px] md:text-xs text-white/80 leading-tight line-clamp-2 font-mono">
+                  <p className="text-[11px] md:text-xs text-white/80 leading-tight line-clamp-2 font-sans font-bold">
                     {bounty.title}
                   </p>
                 </div>
 
                 <div className="mt-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] md:text-[10px] text-gray-500 font-mono">
+                    <span className="text-[9px] md:text-[10px] text-gray-500 font-sans font-medium">
                       {currentCount}/{bounty.target_count}
                     </span>
-                    <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-mono">
+                    <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-sans">
                       ${(bounty.reward_gems / 100).toFixed(0)}
                     </span>
                   </div>
@@ -240,7 +240,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                       )}
                     </Button>
                   ) : isClaimed ? (
-                    <div className="w-full h-5 flex items-center justify-center gap-1 text-[8px] text-emerald-400 font-mono">
+                    <div className="w-full h-5 flex items-center justify-center gap-1 text-[9px] text-emerald-400 font-sans font-bold">
                       <Check className="w-2.5 h-2.5" />
                       CLAIMED
                     </div>
