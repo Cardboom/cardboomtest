@@ -122,8 +122,8 @@ export function CardReviewModal({ open, onClose, onConfirm, analysis, imagePrevi
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85dvh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               {isLowConfidence ? (
@@ -145,137 +145,139 @@ export function CardReviewModal({ open, onClose, onConfirm, analysis, imagePrevi
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6 py-4">
-          {/* Image Preview */}
-          {imagePreview && (
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground uppercase">Card Image</Label>
-              <div className="relative aspect-[3/4] rounded-lg overflow-hidden border bg-muted">
-                <img src={imagePreview} alt="Card preview" className="w-full h-full object-contain" />
-                <div className="absolute top-2 right-2">
-                  <Badge variant={isLowConfidence ? "outline" : "default"} className="gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    AI {confidencePercent}%
-                  </Badge>
+        <div className="flex-1 overflow-y-auto min-h-0 -mx-6 px-6">
+          <div className="grid md:grid-cols-2 gap-6 py-4">
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground uppercase">Card Image</Label>
+                <div className="relative aspect-[3/4] rounded-lg overflow-hidden border bg-muted">
+                  <img src={imagePreview} alt="Card preview" className="w-full h-full object-contain" />
+                  <div className="absolute top-2 right-2">
+                    <Badge variant={isLowConfidence ? "outline" : "default"} className="gap-1">
+                      <Sparkles className="h-3 w-3" />
+                      AI {confidencePercent}%
+                    </Badge>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Form Fields */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="cardName">Card Name (Original)</Label>
-              <Input
-                id="cardName"
-                value={formData.cardName}
-                onChange={(e) => handleChange('cardName', e.target.value)}
-                placeholder="Enter card name"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cardNameEnglish">Card Name (English)</Label>
-              <Input
-                id="cardNameEnglish"
-                value={formData.cardNameEnglish}
-                onChange={(e) => handleChange('cardNameEnglish', e.target.value)}
-                placeholder="English name if different"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="category">Game/Category</Label>
-                <Select value={formData.category} onValueChange={(v) => handleChange('category', v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select game" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select value={formData.language} onValueChange={(v) => handleChange('language', v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select language" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LANGUAGES.map(lang => (
-                      <SelectItem key={lang} value={lang}>{lang}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="setName">Set Name</Label>
-              <Input
-                id="setName"
-                value={formData.setName}
-                onChange={(e) => handleChange('setName', e.target.value)}
-                placeholder="e.g. Scarlet & Violet"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="setCode">Set Code</Label>
-                <Input
-                  id="setCode"
-                  value={formData.setCode}
-                  onChange={(e) => handleChange('setCode', e.target.value)}
-                  placeholder="e.g. SV01"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <Input
-                  id="cardNumber"
-                  value={formData.cardNumber}
-                  onChange={(e) => handleChange('cardNumber', e.target.value)}
-                  placeholder="e.g. 025/198"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="rarity">Rarity</Label>
-              <Select value={formData.rarity} onValueChange={(v) => handleChange('rarity', v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select rarity" />
-                </SelectTrigger>
-                <SelectContent>
-                  {RARITIES.map(r => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.cviKey && (
-              <div className="p-3 rounded-lg bg-muted/50 border">
-                <Label className="text-xs font-medium text-muted-foreground">CVI Key (Auto-generated)</Label>
-                <p className="text-sm font-mono mt-1 break-all">{formData.cviKey}</p>
-              </div>
             )}
+
+            {/* Form Fields */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="cardName">Card Name (Original)</Label>
+                <Input
+                  id="cardName"
+                  value={formData.cardName}
+                  onChange={(e) => handleChange('cardName', e.target.value)}
+                  placeholder="Enter card name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cardNameEnglish">Card Name (English)</Label>
+                <Input
+                  id="cardNameEnglish"
+                  value={formData.cardNameEnglish}
+                  onChange={(e) => handleChange('cardNameEnglish', e.target.value)}
+                  placeholder="English name if different"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Game/Category</Label>
+                  <Select value={formData.category} onValueChange={(v) => handleChange('category', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select game" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map(cat => (
+                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="language">Language</Label>
+                  <Select value={formData.language} onValueChange={(v) => handleChange('language', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGES.map(lang => (
+                        <SelectItem key={lang} value={lang}>{lang}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="setName">Set Name</Label>
+                <Input
+                  id="setName"
+                  value={formData.setName}
+                  onChange={(e) => handleChange('setName', e.target.value)}
+                  placeholder="e.g. Scarlet & Violet"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="setCode">Set Code</Label>
+                  <Input
+                    id="setCode"
+                    value={formData.setCode}
+                    onChange={(e) => handleChange('setCode', e.target.value)}
+                    placeholder="e.g. SV01"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cardNumber">Card Number</Label>
+                  <Input
+                    id="cardNumber"
+                    value={formData.cardNumber}
+                    onChange={(e) => handleChange('cardNumber', e.target.value)}
+                    placeholder="e.g. 025/198"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="rarity">Rarity</Label>
+                <Select value={formData.rarity} onValueChange={(v) => handleChange('rarity', v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select rarity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RARITIES.map(r => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.cviKey && (
+                <div className="p-3 rounded-lg bg-muted/50 border">
+                  <Label className="text-xs font-medium text-muted-foreground">CVI Key (Auto-generated)</Label>
+                  <p className="text-sm font-mono mt-1 break-all">{formData.cviKey}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <DialogFooter className="flex-col gap-3 sm:flex-row sm:gap-0">
+        <DialogFooter className="flex-shrink-0 border-t pt-4 mt-2 flex-col gap-3 sm:flex-row sm:gap-0">
           <p className="text-xs text-muted-foreground mr-auto hidden sm:block">
             You can edit these details in the listing form after confirmation
           </p>
           <div className="flex gap-2 w-full sm:w-auto">
             <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">Cancel</Button>
-            <Button onClick={handleConfirm} className="gap-2 flex-1 sm:flex-none">
+            <Button onClick={handleConfirm} className="gap-2 flex-1 sm:flex-none min-h-[44px]">
               <CheckCircle2 className="h-4 w-4" />
               Confirm & Fill Form
             </Button>

@@ -6,12 +6,21 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+interface GradePriceEstimate {
+  grade: string;
+  price: number | null;
+}
+
 interface GradeAndFlipToggleProps {
   enabled: boolean;
   onEnabledChange: (enabled: boolean) => void;
   suggestedPrice?: number;
   customPrice?: number;
   onCustomPriceChange?: (price: number) => void;
+  /** Base ungraded price for calculating grade estimates */
+  ungradedPrice?: number;
+  /** Pre-calculated grade estimates from API */
+  gradeEstimates?: GradePriceEstimate[];
 }
 
 export const GradeAndFlipToggle: React.FC<GradeAndFlipToggleProps> = ({
@@ -20,7 +29,16 @@ export const GradeAndFlipToggle: React.FC<GradeAndFlipToggleProps> = ({
   suggestedPrice,
   customPrice,
   onCustomPriceChange,
+  ungradedPrice,
+  gradeEstimates,
 }) => {
+  // Calculate grade estimates if not provided
+  const estimates = gradeEstimates || (ungradedPrice ? [
+    { grade: 'CBGI 8', price: Math.round(ungradedPrice * 1.5) },
+    { grade: 'CBGI 9', price: Math.round(ungradedPrice * 2.0) },
+    { grade: 'CBGI 10', price: Math.round(ungradedPrice * 3.5) },
+  ] : []);
+
   return (
     <motion.div
       className={`p-4 rounded-xl border-2 transition-all ${
@@ -70,7 +88,35 @@ export const GradeAndFlipToggle: React.FC<GradeAndFlipToggleProps> = ({
             <span>Your card will be listed automatically once graded</span>
           </div>
 
-          {suggestedPrice && suggestedPrice > 0 && (
+          {/* Grade-specific price estimates */}
+          {estimates.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Estimated listing price by grade:</p>
+              <div className="grid grid-cols-3 gap-2">
+                {estimates.map(({ grade, price }) => (
+                  <div 
+                    key={grade} 
+                    className={`text-center p-2 rounded-lg border ${
+                      grade === 'CBGI 10' 
+                        ? 'bg-green-500/10 border-green-500/30' 
+                        : grade === 'CBGI 9'
+                          ? 'bg-blue-500/10 border-blue-500/30'
+                          : 'bg-amber-500/10 border-amber-500/30'
+                    }`}
+                  >
+                    <p className="text-[10px] font-medium text-muted-foreground">{grade}</p>
+                    <p className={`text-sm font-bold ${
+                      grade === 'CBGI 10' ? 'text-green-500' : grade === 'CBGI 9' ? 'text-blue-500' : 'text-amber-500'
+                    }`}>
+                      {price ? `$${price.toLocaleString()}` : '—'}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {suggestedPrice && suggestedPrice > 0 && !estimates.length && (
             <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/30">
               <div className="flex items-center justify-between">
                 <span className="text-sm">AI Suggested Price:</span>
