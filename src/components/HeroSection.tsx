@@ -16,20 +16,21 @@ export const HeroSection = () => {
     queryKey: ['hero-stats'],
     queryFn: async () => {
       const now = new Date();
-      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      const [listingsRes, profilesRes, ordersRes, orders24hRes] = await Promise.all([
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      const [listingsRes, profilesRes, ordersRes, monthOrdersRes] = await Promise.all([
         supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('orders').select('price'),
-        supabase.from('orders').select('price').gte('created_at', twentyFourHoursAgo.toISOString())
+        supabase.from('orders').select('id').gte('created_at', monthStart.toISOString())
       ]);
       
       const totalVolume = ordersRes.data?.reduce((sum, order) => sum + Number(order.price), 0) || 0;
-      const soldToday = orders24hRes.data?.length || 0;
+      const soldThisMonth = monthOrdersRes.data?.length || 0;
       
       return {
         totalVolume,
-        soldToday,
+        soldThisMonth,
         activeListings: listingsRes.count || 0,
         traders: profilesRes.count || 0
       };
@@ -70,8 +71,8 @@ export const HeroSection = () => {
       iconColor: 'text-blue-600 dark:text-blue-400'
     },
     { 
-      label: 'Cards Sold Today', 
-      rawValue: realStats?.soldToday || 0, 
+      label: 'Cards Sold This Month', 
+      rawValue: realStats?.soldThisMonth || 0, 
       formatFn: formatNumber,
       icon: ShoppingCart,
       bgColor: 'bg-amber-50 dark:bg-amber-950/30',
@@ -79,9 +80,9 @@ export const HeroSection = () => {
       iconColor: 'text-amber-600 dark:text-amber-400'
     },
     { 
-      label: 'Live Listings', 
-      rawValue: realStats?.activeListings || 0, 
-      formatFn: formatNumber,
+      label: 'Total Volume', 
+      rawValue: realStats?.totalVolume || 0, 
+      formatFn: formatCurrency,
       icon: TrendingUp,
       bgColor: 'bg-violet-50 dark:bg-violet-950/30',
       iconBg: 'bg-violet-100 dark:bg-violet-900/50',

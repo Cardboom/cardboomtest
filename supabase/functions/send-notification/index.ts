@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface NotificationPayload {
   user_id: string;
-  type: 'price_alert' | 'new_offer' | 'message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee';
+  type: 'price_alert' | 'new_offer' | 'message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee' | 'sale' | 'daily_xp' | 'donation_complete' | 'donation_refund';
   title: string;
   body: string;
   data?: Record<string, unknown>;
@@ -23,6 +23,7 @@ function getNotificationUrl(type: string, data?: Record<string, unknown>): strin
     case 'message':
       return data?.conversation_id ? `/messages?id=${data.conversation_id}` : '/messages';
     case 'order_update':
+    case 'sale':
       return data?.listing_id ? `/listing/${data.listing_id}` : (data?.order_id ? `/orders/${data.order_id}` : '/portfolio');
     case 'grading_complete':
       return data?.listing_id ? `/listing/${data.listing_id}` : (data?.grading_order_id ? `/grading/orders/${data.grading_order_id}` : '/grading/orders');
@@ -35,6 +36,11 @@ function getNotificationUrl(type: string, data?: Record<string, unknown>): strin
       return '/vault';
     case 'follower':
       return data?.follower_id ? `/user/${data.follower_id}` : '/';
+    case 'daily_xp':
+      return '/rewards';
+    case 'donation_complete':
+    case 'donation_refund':
+      return data?.listing_id ? `/listing/${data.listing_id}` : '/portfolio';
     default:
       return '/';
   }

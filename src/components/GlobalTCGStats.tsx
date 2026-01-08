@@ -10,8 +10,8 @@ import { HeroNewsTicker } from './HeroNewsTicker';
 interface GlobalStats {
   totalVolume: number;
   totalUsers: number;
-  cardsSoldToday: number;
-  activeListings: number;
+  cardsSoldMonth: number;
+  totalVolumeTraded: number;
 }
 
 interface GlobalTCGStatsProps {
@@ -25,35 +25,31 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
   const { data: stats, isLoading } = useQuery<GlobalStats>({
     queryKey: ['global-tcg-stats'],
     queryFn: async () => {
-      // Get real data from market_items table for accurate stats
-      const [marketItemsResult, usersResult, listingsResult, ordersResult] = await Promise.all([
+      // Get start of current month
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+
+      const [marketItemsResult, usersResult, ordersResult, monthOrdersResult] = await Promise.all([
         supabase.from('market_items').select('current_price', { count: 'exact' }).gt('current_price', 0),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('listings').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-        supabase.from('orders').select('price').eq('status', 'completed'),
+        supabase.from('orders').select('price'),
+        supabase.from('orders').select('id, price').gte('created_at', monthStart.toISOString()),
       ]);
 
       // Calculate total market value from all items with prices
       const totalMarketValue = marketItemsResult.data?.reduce((sum, item) => sum + (item.current_price || 0), 0) || 0;
-      const totalOrders = ordersResult.data?.reduce((sum, order) => sum + (order.price || 0), 0) || 0;
-      
-      // Get today's sales
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const { count: soldToday } = await supabase
-        .from('orders')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', today.toISOString());
+      const totalOrdersVolume = ordersResult.data?.reduce((sum, order) => sum + (order.price || 0), 0) || 0;
+      const monthSalesCount = monthOrdersResult.data?.length || 0;
 
       return {
-        // Total market value from tracked items + any completed orders
-        totalVolume: totalMarketValue + totalOrders,
+        totalVolume: totalMarketValue,
         totalUsers: usersResult.count || 0,
-        cardsSoldToday: soldToday || 0,
-        activeListings: (listingsResult.count || 0) + (marketItemsResult.count || 0),
+        cardsSoldMonth: monthSalesCount,
+        totalVolumeTraded: totalOrdersVolume,
       };
     },
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
     staleTime: 15000,
   });
 
@@ -88,16 +84,16 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
     },
     { 
       icon: ShoppingCart, 
-      value: formatNumber(stats?.cardsSoldToday || 0), 
-      label: 'Cards Sold Today',
+      value: formatNumber(stats?.cardsSoldMonth || 0), 
+      label: 'Cards Sold This Month',
       gradient: 'from-amber-500/20 to-amber-600/5',
       iconBg: 'bg-amber-500/10',
       iconColor: 'text-amber-500',
     },
     { 
       icon: TrendingUp, 
-      value: formatNumber(stats?.activeListings || 0), 
-      label: 'Live Listings',
+      value: formatVolume(stats?.totalVolumeTraded || 0), 
+      label: 'Total Volume',
       gradient: 'from-purple-500/20 to-purple-600/5',
       iconBg: 'bg-purple-500/10',
       iconColor: 'text-purple-500',

@@ -4240,6 +4240,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_auction: boolean
+          is_open_to_offers: boolean | null
           language: string | null
           market_item_id: string | null
           price: number
@@ -4283,6 +4284,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_auction?: boolean
+          is_open_to_offers?: boolean | null
           language?: string | null
           market_item_id?: string | null
           price: number
@@ -4326,6 +4328,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_auction?: boolean
+          is_open_to_offers?: boolean | null
           language?: string | null
           market_item_id?: string | null
           price?: number
