@@ -37,6 +37,10 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const checkAndAwardAchievement = useCallback(async (achievementKey: string, userId: string): Promise<boolean> => {
     try {
+      // Get the current logged-in user to ensure we only show notifications to them
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const isCurrentUser = currentUser?.id === userId;
+
       // Get the achievement by key
       const { data: achievement, error: achievementError } = await supabase
         .from('achievements')
@@ -89,15 +93,17 @@ export const AchievementProvider: React.FC<{ children: React.ReactNode }> = ({ c
           .eq('id', userId);
       }
 
-      // Show the notification
-      showAchievementUnlock({
-        id: achievement.id,
-        name: achievement.name,
-        description: achievement.description,
-        icon: achievement.icon,
-        tier: achievement.tier as 'bronze' | 'silver' | 'gold' | 'platinum',
-        xp_reward: achievement.xp_reward
-      });
+      // Only show notification if this achievement is for the currently logged-in user
+      if (isCurrentUser) {
+        showAchievementUnlock({
+          id: achievement.id,
+          name: achievement.name,
+          description: achievement.description,
+          icon: achievement.icon,
+          tier: achievement.tier as 'bronze' | 'silver' | 'gold' | 'platinum',
+          xp_reward: achievement.xp_reward
+        });
+      }
 
       return true;
     } catch (error) {
