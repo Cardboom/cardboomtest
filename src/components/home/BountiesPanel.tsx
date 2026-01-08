@@ -161,11 +161,11 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
           <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
             <Target className="w-3 h-3 text-primary" />
           </div>
-          <span className="font-mono text-[9px] text-primary uppercase tracking-widest font-bold">
+          <span className="font-mono text-[11px] md:text-xs text-primary uppercase tracking-widest font-bold">
             BOOM CHALLENGES
           </span>
         </div>
-        <span className="hidden md:inline text-[8px] text-gray-500 font-mono">
+        <span className="hidden md:inline text-[10px] text-gray-500 font-mono">
           Complete tasks, earn gems. First come, first served!
         </span>
       </div>
@@ -208,17 +208,17 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                       </span>
                     </div>
                   </div>
-                  <p className="text-[9px] text-white/80 leading-tight line-clamp-2 font-mono">
+                  <p className="text-[11px] md:text-xs text-white/80 leading-tight line-clamp-2 font-mono">
                     {bounty.title}
                   </p>
                 </div>
 
                 <div className="mt-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[7px] text-gray-500 font-mono">
+                    <span className="text-[9px] md:text-[10px] text-gray-500 font-mono">
                       {currentCount}/{bounty.target_count}
                     </span>
-                    <span className="text-[8px] text-amber-400 font-bold font-mono">
+                    <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-mono">
                       ${(bounty.reward_gems / 100).toFixed(0)}
                     </span>
                   </div>
