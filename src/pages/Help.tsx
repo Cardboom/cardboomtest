@@ -43,7 +43,7 @@ const Help = () => {
       { q: 'How long does shipping take?', a: 'Standard shipping within Turkey is 3-5 business days. International shipping varies by destination. Vault items can be traded instantly.' },
     ],
     'payments': [
-      { q: 'How do I add money to my wallet?', a: 'Go to Wallet, click "Top Up", choose credit card or bank transfer. For wire transfers, use your unique transfer code in the description.' },
+      { q: 'How do I add money to my wallet?', a: 'Go to Wallet, click "Top Up", choose credit card or bank transfer. For wire transfers, include your National Identification Number (TC Kimlik No) in the transfer description.' },
       { q: 'How do withdrawals work?', a: 'Add your verified IBAN, request withdrawal from your wallet. Processing takes 1-3 business days after KYC verification.' },
       { q: 'What currencies are supported?', a: 'We support TRY, USD, and EUR. Currency conversion is automatic based on live exchange rates.' },
       { q: 'Are my payment details secure?', a: 'All payments are processed through licensed providers with 3D Secure. We never store full card numbers.' },

@@ -43,7 +43,10 @@ export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
           <div className="space-y-2">
             <p className="text-platinum font-bold text-base">⚠️ IMPORTANT - READ CAREFULLY</p>
             <p className="text-platinum font-medium">
-              After creating a custom name in your profile, you must write your <span className="text-gold font-bold">username</span> in the transfer description/reference so the balance can be credited correctly.
+              You must write your <span className="text-gold font-bold">National Identification Number (TC Kimlik No)</span> in the transfer description/reference so the balance can be credited correctly.
+            </p>
+            <p className="text-platinum/70 text-sm">
+              Your National ID must match the one registered in your profile. Transfers without a valid National ID will NOT be processed.
             </p>
           </div>
         </div>
@@ -115,14 +118,15 @@ export const WireTransferInfo = ({ onClose }: WireTransferInfoProps) => {
           <Clock className="w-5 h-5 text-blue-400" />
           <span className="text-blue-400 font-medium">Processing Time</span>
         </div>
-        <p className="text-platinum/60 text-sm">1-2 business days after username verification</p>
+        <p className="text-platinum/60 text-sm">1-2 business days after National ID verification</p>
       </div>
 
       {/* Balance Will NOT Be Credited */}
       <div className="bg-loss/10 border border-loss/30 rounded-lg p-4">
         <p className="text-loss font-semibold mb-2">❌ Balance will NOT be credited if:</p>
         <ul className="text-platinum/70 text-sm space-y-1">
-          <li>• Transfer reference does not include your username</li>
+          <li>• Transfer reference does not include your <span className="font-semibold">National Identification Number</span></li>
+          <li>• National ID does not match your registered profile</li>
           <li>• Transfer is sent in a non-TRY currency</li>
           <li>• Transfer is international (non-TR domestic)</li>
         </ul>
