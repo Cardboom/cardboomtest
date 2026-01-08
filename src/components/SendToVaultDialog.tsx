@@ -23,8 +23,9 @@ const WAREHOUSE_ADDRESS = {
   name: 'CardBoom Vault',
   address: 'İran Caddesi 55/9',
   district: 'Gaziosmanpaşa Mahallesi',
-  city: 'Ankara',
+  city: 'Çankaya, Ankara',
   country: 'Türkiye',
+  postalCode: '06700',
   phone: '+90 312 XXX XX XX',
 };
 

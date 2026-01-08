@@ -569,14 +569,66 @@ const ListingDetail = () => {
               )}
             </div>
 
-            {/* Actions */}
-            {user?.id !== listing.seller_id && listing.status === 'active' && (
+            {/* Actions - Show Buy Now for everyone except the seller */}
+            {listing.status === 'active' && user?.id !== listing.seller_id && (
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="gap-2" onClick={() => setPurchaseDialogOpen(true)}>
+                <Button 
+                  size="lg" 
+                  className="gap-2" 
+                  onClick={() => {
+                    if (!user) {
+                      toast.info('Sign in to purchase this card');
+                      navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
+                      return;
+                    }
+                    setPurchaseDialogOpen(true);
+                  }}
+                >
                   <ShoppingCart className="w-4 h-4" />
                   Buy Now
                 </Button>
-                <Button variant="outline" size="lg" className="gap-2">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="gap-2"
+                  onClick={() => {
+                    if (!user) {
+                      toast.info('Sign in to message the seller');
+                      navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
+                      return;
+                    }
+                    // TODO: Open message dialog
+                  }}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Message Seller
+                </Button>
+              </div>
+            )}
+            
+            {/* Show Buy Now for non-logged-in users too */}
+            {listing.status === 'active' && !user && (
+              <div className="flex flex-wrap gap-3">
+                <Button 
+                  size="lg" 
+                  className="gap-2" 
+                  onClick={() => {
+                    toast.info('Sign in to purchase this card');
+                    navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
+                  }}
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Buy Now
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="gap-2"
+                  onClick={() => {
+                    toast.info('Sign in to message the seller');
+                    navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
+                  }}
+                >
                   <MessageCircle className="w-4 h-4" />
                   Message Seller
                 </Button>

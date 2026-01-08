@@ -29,14 +29,14 @@ export const useGeliverShipping = () => {
   const [loading, setLoading] = useState(false);
   const [offers, setOffers] = useState<ShippingOffer[]>([]);
 
-  // CardBoom warehouse address in Turkey
+  // CardBoom warehouse address in Ankara
   const senderAddress: ShippingAddress = {
     name: 'BRAINBABY BİLİŞİM ANONİM ŞİRKETİ',
     phone: '+905001234567', // Replace with actual phone
-    address: 'Esentepe Mah. Büyükdere Cad.',
-    city: 'İstanbul',
-    district: 'Şişli',
-    postalCode: '34394',
+    address: 'İran Caddesi 55/9, Gaziosmanpaşa Mahallesi',
+    city: 'Ankara',
+    district: 'Çankaya',
+    postalCode: '06700',
   };
 
   const getShippingPrices = async (receiverAddress: ShippingAddress, packageWeight: number = 0.5) => {
