@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HeroNewsTicker } from './HeroNewsTicker';
+import { useState, useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
 
 interface GlobalStats {
   totalVolume: number;
@@ -17,6 +19,69 @@ interface GlobalStats {
 interface GlobalTCGStatsProps {
   hideHero?: boolean;
 }
+
+// Animated counter component for NYSE-style number scrolling
+const AnimatedCounter = ({ 
+  value, 
+  prefix = '', 
+  suffix = '',
+  duration = 1500 
+}: { 
+  value: number; 
+  prefix?: string; 
+  suffix?: string;
+  duration?: number;
+}) => {
+  const [displayValue, setDisplayValue] = useState(0);
+  const previousValue = useRef(0);
+  const animationRef = useRef<number>();
+
+  useEffect(() => {
+    const startValue = previousValue.current;
+    const endValue = value;
+    const startTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function for smooth deceleration
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const currentValue = startValue + (endValue - startValue) * easeOut;
+      
+      setDisplayValue(currentValue);
+
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        previousValue.current = endValue;
+      }
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [value, duration]);
+
+  const formatDisplay = () => {
+    if (displayValue >= 1_000_000_000) {
+      return `${prefix}${(displayValue / 1_000_000_000).toFixed(2)}B${suffix}`;
+    }
+    if (displayValue >= 1_000_000) {
+      return `${prefix}${(displayValue / 1_000_000).toFixed(1)}M${suffix}`;
+    }
+    if (displayValue >= 1_000) {
+      return `${prefix}${(displayValue / 1_000).toFixed(1)}K${suffix}`;
+    }
+    return `${prefix}${Math.round(displayValue).toLocaleString()}${suffix}`;
+  };
+
+  return <span className="tabular-nums">{formatDisplay()}</span>;
+};
 
 export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
   const navigate = useNavigate();
@@ -53,50 +118,26 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
     staleTime: 15000,
   });
 
-  const formatNumber = (num: number) => {
-    if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-    if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
-    return num.toLocaleString();
-  };
-
-  const formatVolume = (num: number) => {
-    if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
-    if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
-    return `$${num.toLocaleString()}`;
-  };
-
   const statItems = [
     { 
-      icon: DollarSign, 
-      value: formatVolume(stats?.totalVolume || 0), 
+      value: stats?.totalVolume || 0,
+      prefix: '$',
       label: 'Market Value',
-      gradient: 'from-emerald-500/20 to-emerald-600/5',
-      iconBg: 'bg-emerald-500/10',
-      iconColor: 'text-emerald-500',
     },
     { 
-      icon: Users, 
-      value: formatNumber(stats?.totalUsers || 0), 
+      value: stats?.totalUsers || 0,
+      prefix: '',
       label: 'Active Traders',
-      gradient: 'from-blue-500/20 to-blue-600/5',
-      iconBg: 'bg-blue-500/10',
-      iconColor: 'text-blue-500',
     },
     { 
-      icon: ShoppingCart, 
-      value: formatNumber(stats?.cardsSoldMonth || 0), 
+      value: stats?.cardsSoldMonth || 0,
+      prefix: '',
       label: 'Cards Sold This Month',
-      gradient: 'from-amber-500/20 to-amber-600/5',
-      iconBg: 'bg-amber-500/10',
-      iconColor: 'text-amber-500',
     },
     { 
-      icon: TrendingUp, 
-      value: formatVolume(stats?.totalVolumeTraded || 0), 
+      value: stats?.totalVolumeTraded || 0,
+      prefix: '$',
       label: 'Total Volume',
-      gradient: 'from-purple-500/20 to-purple-600/5',
-      iconBg: 'bg-purple-500/10',
-      iconColor: 'text-purple-500',
     },
   ];
 
@@ -163,52 +204,48 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
           </div>
         )}
 
-        {/* Stats Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="relative rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden max-w-4xl mx-auto"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.03),transparent_50%)]" />
-          
-          <div className="relative grid grid-cols-2 md:grid-cols-4">
-            {statItems.map((item, i) => (
-              <motion.div
-                key={item.label}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
-                className={`relative p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center text-center
-                  ${i < 2 ? 'border-b border-border/30 md:border-b-0' : ''}
-                  ${i % 2 === 0 ? 'border-r border-border/30' : ''}
-                  ${i < 2 ? 'md:border-r md:border-border/30' : i === 2 ? 'md:border-r md:border-border/30' : ''}
-                `}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-50`} />
-                
-                <div className="relative z-10 flex flex-col items-center gap-2 sm:gap-3">
-                  <div className={`p-2 sm:p-3 rounded-xl ${item.iconBg}`}>
-                    <item.icon className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${item.iconColor}`} />
-                  </div>
-                  
-                  <div className="space-y-0.5 sm:space-y-1">
-                    <div className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
-                      {isLoading ? (
-                        <span className="inline-block w-16 sm:w-20 h-6 sm:h-8 bg-muted/50 rounded animate-pulse" />
-                      ) : (
-                        item.value
-                      )}
-                    </div>
-                    <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground font-medium">
-                      {item.label}
-                    </div>
-                  </div>
+        {/* Stats Grid - NYSE Terminal Style */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
+          {statItems.map((item, i) => (
+            <div
+              key={item.label}
+              className={cn(
+                "relative overflow-hidden rounded-[18px]",
+                "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
+                "border border-white/5",
+                "h-[100px] md:h-[120px]",
+                "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]",
+                "flex flex-col items-center justify-center text-center p-4"
+              )}
+              style={{ backdropFilter: 'blur(22px)' }}
+            >
+              {/* Noise texture */}
+              <div 
+                className="absolute inset-0 opacity-[0.03] pointer-events-none"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+                }}
+              />
+
+              {/* Top glow */}
+              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none" />
+
+              {/* Content */}
+              <div className="relative z-10 flex flex-col items-center justify-center gap-1">
+                <div className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight">
+                  {isLoading ? (
+                    <span className="inline-block w-16 h-7 bg-white/10 rounded animate-pulse" />
+                  ) : (
+                    <AnimatedCounter value={item.value} prefix={item.prefix} />
+                  )}
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                <div className="font-mono text-[9px] sm:text-[10px] md:text-xs text-gray-400 uppercase tracking-widest">
+                  {item.label}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
