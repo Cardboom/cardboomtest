@@ -122,7 +122,7 @@ export function CardReviewModal({ open, onClose, onConfirm, analysis, imagePrevi
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[85dvh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[90dvh] sm:max-h-[85dvh] flex flex-col overflow-hidden p-4 sm:p-6">
         <DialogHeader className="flex-shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
@@ -271,13 +271,13 @@ export function CardReviewModal({ open, onClose, onConfirm, analysis, imagePrevi
           </div>
         </div>
 
-        <DialogFooter className="flex-shrink-0 border-t pt-4 mt-2 flex-col gap-3 sm:flex-row sm:gap-0">
+        <DialogFooter className="flex-shrink-0 border-t pt-4 mt-2 flex-col gap-3 sm:flex-row sm:gap-0 sticky bottom-0 bg-background pb-safe">
           <p className="text-xs text-muted-foreground mr-auto hidden sm:block">
             You can edit these details in the listing form after confirmation
           </p>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">Cancel</Button>
-            <Button onClick={handleConfirm} className="gap-2 flex-1 sm:flex-none min-h-[44px]">
+            <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none min-h-[48px] text-base">Cancel</Button>
+            <Button onClick={handleConfirm} className="gap-2 flex-1 sm:flex-none min-h-[48px] text-base font-semibold">
               <CheckCircle2 className="h-4 w-4" />
               Confirm & Fill Form
             </Button>
