@@ -134,7 +134,10 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
   ];
 
   return (
-    <section className="py-8 sm:py-12 md:py-20 relative overflow-hidden">
+    <section className={cn(
+      "relative overflow-hidden",
+      hideHero ? "py-3" : "py-8 sm:py-12 md:py-20"
+    )}>
       {/* Background gradients - ensure pointer-events-none */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)] pointer-events-none" />
       
