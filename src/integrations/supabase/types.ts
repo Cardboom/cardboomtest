@@ -1050,6 +1050,7 @@ export type Database = {
       }
       card_instances: {
         Row: {
+          accepts_grading_donations: boolean | null
           acquisition_date: string | null
           acquisition_price: number | null
           category: string
@@ -1057,6 +1058,7 @@ export type Database = {
           created_at: string
           current_value: number
           deleted_at: string | null
+          donation_goal_cents: number | null
           grade: string | null
           grading_company: string | null
           id: string
@@ -1076,6 +1078,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepts_grading_donations?: boolean | null
           acquisition_date?: string | null
           acquisition_price?: number | null
           category: string
@@ -1083,6 +1086,7 @@ export type Database = {
           created_at?: string
           current_value?: number
           deleted_at?: string | null
+          donation_goal_cents?: number | null
           grade?: string | null
           grading_company?: string | null
           id?: string
@@ -1102,6 +1106,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepts_grading_donations?: boolean | null
           acquisition_date?: string | null
           acquisition_price?: number | null
           category?: string
@@ -1109,6 +1114,7 @@ export type Database = {
           created_at?: string
           current_value?: number
           deleted_at?: string | null
+          donation_goal_cents?: number | null
           grade?: string | null
           grading_company?: string | null
           id?: string
@@ -3452,6 +3458,7 @@ export type Database = {
           credits_remaining: number
           first_deposit_credit_claimed: boolean | null
           first_subscribe_credit_claimed: boolean | null
+          gifted_by: string | null
           id: string
           last_monthly_credit_at: string | null
           updated_at: string
@@ -3462,6 +3469,7 @@ export type Database = {
           credits_remaining?: number
           first_deposit_credit_claimed?: boolean | null
           first_subscribe_credit_claimed?: boolean | null
+          gifted_by?: string | null
           id?: string
           last_monthly_credit_at?: string | null
           updated_at?: string
@@ -3472,12 +3480,77 @@ export type Database = {
           credits_remaining?: number
           first_deposit_credit_claimed?: boolean | null
           first_subscribe_credit_claimed?: boolean | null
+          gifted_by?: string | null
           id?: string
           last_monthly_credit_at?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      grading_donations: {
+        Row: {
+          amount_cents: number
+          applied_at: string | null
+          card_instance_id: string | null
+          created_at: string
+          donor_user_id: string
+          id: string
+          listing_id: string | null
+          market_item_id: string | null
+          message: string | null
+          owner_user_id: string
+          status: string
+        }
+        Insert: {
+          amount_cents?: number
+          applied_at?: string | null
+          card_instance_id?: string | null
+          created_at?: string
+          donor_user_id: string
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          message?: string | null
+          owner_user_id: string
+          status?: string
+        }
+        Update: {
+          amount_cents?: number
+          applied_at?: string | null
+          card_instance_id?: string | null
+          created_at?: string
+          donor_user_id?: string
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          message?: string | null
+          owner_user_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grading_donations_card_instance_id_fkey"
+            columns: ["card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grading_donations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grading_donations_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       grading_feedback: {
         Row: {
@@ -4138,6 +4211,7 @@ export type Database = {
       }
       listings: {
         Row: {
+          accepts_grading_donations: boolean | null
           ai_analysis: Json | null
           ai_checked_at: string | null
           ai_confidence: number | null
@@ -4157,6 +4231,7 @@ export type Database = {
           created_at: string
           cvi_key: string | null
           description: string | null
+          donation_goal_cents: number | null
           external_id: string | null
           external_price: number | null
           external_price_cents: number | null
@@ -4178,6 +4253,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepts_grading_donations?: boolean | null
           ai_analysis?: Json | null
           ai_checked_at?: string | null
           ai_confidence?: number | null
@@ -4197,6 +4273,7 @@ export type Database = {
           created_at?: string
           cvi_key?: string | null
           description?: string | null
+          donation_goal_cents?: number | null
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
@@ -4218,6 +4295,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepts_grading_donations?: boolean | null
           ai_analysis?: Json | null
           ai_checked_at?: string | null
           ai_confidence?: number | null
@@ -4237,6 +4315,7 @@ export type Database = {
           created_at?: string
           cvi_key?: string | null
           description?: string | null
+          donation_goal_cents?: number | null
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
@@ -8171,6 +8250,41 @@ export type Database = {
       }
     }
     Views: {
+      card_donation_totals: {
+        Row: {
+          card_instance_id: string | null
+          listing_id: string | null
+          market_item_id: string | null
+          owner_user_id: string | null
+          pending_count: number | null
+          target_id: string | null
+          total_applied_cents: number | null
+          total_pending_cents: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grading_donations_card_instance_id_fkey"
+            columns: ["card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grading_donations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grading_donations_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"] | null
@@ -8317,6 +8431,15 @@ export type Database = {
           p_card_instance_id: string
           p_card_value: number
           p_seller_id: string
+        }
+        Returns: Json
+      }
+      donate_for_grading: {
+        Args: {
+          p_amount_cents: number
+          p_message?: string
+          p_target_id: string
+          p_target_type: string
         }
         Returns: Json
       }

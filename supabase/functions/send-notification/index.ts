@@ -69,6 +69,7 @@ serve(async (req) => {
       'follower': 'follower_activity',
       'review': 'new_offers',
       'referral': 'new_offers',
+      'daily_xp': 'new_offers', // Use existing pref field
     };
 
     const prefField = prefMap[payload.type];

@@ -361,6 +361,7 @@ export const CreateSwapModal = ({ open, onOpenChange, onSuccess }: CreateSwapMod
             className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
           >
             <option value="">Not Graded</option>
+            <option value="CBG">CBG (CardBoom)</option>
             <option value="PSA">PSA</option>
             <option value="BGS">BGS</option>
             <option value="CGC">CGC</option>
