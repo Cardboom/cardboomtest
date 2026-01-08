@@ -301,45 +301,70 @@ export default function GradingNew() {
                       </div>
                     )}
 
-                    {/* Estimated Value Preview - Using REAL data from market analysis */}
+                    {/* Estimated Value Preview - Ungraded + Graded Potential */}
                     {cardAnalysis?.detected && (
                       <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Market Value</p>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center p-3 rounded-lg bg-background border border-border">
-                            <p className="text-xs text-muted-foreground mb-1">Raw (Ungraded)</p>
-                            <p className="text-xl font-bold text-foreground">
-                              {cardAnalysis.pricing?.medianSold 
-                                ? `$${cardAnalysis.pricing.medianSold.toLocaleString()}`
-                                : cardAnalysis.matchedMarketItem?.current_price
-                                  ? `$${cardAnalysis.matchedMarketItem.current_price.toLocaleString()}`
-                                  : 'No data'
-                              }
-                            </p>
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Market Value Estimates</p>
+                        
+                        {/* Ungraded (Raw) Price */}
+                        <div className="p-3 rounded-lg bg-background border border-border">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground">Raw (Ungraded)</span>
                             {cardAnalysis.pricing?.priceConfidence && (
-                              <Badge variant="outline" className="mt-1 text-[10px]">
-                                {cardAnalysis.pricing.priceConfidence} confidence
+                              <Badge variant="outline" className="text-[10px] h-5">
+                                {cardAnalysis.pricing.priceConfidence}
                               </Badge>
                             )}
                           </div>
-                          <div className="text-center p-3 rounded-lg bg-gain/10 border border-gain/20">
-                            <p className="text-xs text-gain mb-1">Graded (Est. PSA 9+)</p>
-                            <p className="text-xl font-bold text-gain">
-                              {cardAnalysis.pricing?.maxProfitPrice 
-                                ? `$${Math.round(cardAnalysis.pricing.maxProfitPrice * 2.5).toLocaleString()}`
+                          <p className="text-2xl font-bold text-foreground mt-1">
+                            {cardAnalysis.pricing?.lowestActive 
+                              ? `$${cardAnalysis.pricing.lowestActive.toLocaleString()}`
+                              : cardAnalysis.pricing?.medianSold
+                                ? `$${cardAnalysis.pricing.medianSold.toLocaleString()}`
                                 : cardAnalysis.matchedMarketItem?.current_price
-                                  ? `$${Math.round(cardAnalysis.matchedMarketItem.current_price * 2.5).toLocaleString()}`
-                                  : 'No data'
-                              }
-                            </p>
-                            <p className="text-[10px] text-gain/70 mt-1">2-3x raw value typical</p>
+                                  ? `$${cardAnalysis.matchedMarketItem.current_price.toLocaleString()}`
+                                  : 'Insufficient data'
+                            }
+                          </p>
+                        </div>
+
+                        {/* Graded Potential Prices */}
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-muted-foreground">After Grading (Estimated)</p>
+                          <div className="grid grid-cols-3 gap-2">
+                            {(() => {
+                              const basePrice = cardAnalysis.pricing?.medianSold 
+                                || cardAnalysis.pricing?.lowestActive 
+                                || cardAnalysis.matchedMarketItem?.current_price 
+                                || 0;
+                              
+                              // Grade multipliers based on market data patterns
+                              const gradeEstimates = [
+                                { grade: 'CBGI 8', multiplier: 1.5, color: 'bg-amber-500/10 border-amber-500/20 text-amber-600' },
+                                { grade: 'CBGI 9', multiplier: 2.0, color: 'bg-blue-500/10 border-blue-500/20 text-blue-600' },
+                                { grade: 'CBGI 10', multiplier: 3.5, color: 'bg-gain/10 border-gain/20 text-gain' },
+                              ];
+                              
+                              return gradeEstimates.map(({ grade, multiplier, color }) => (
+                                <div key={grade} className={`text-center p-2 rounded-lg border ${color}`}>
+                                  <p className="text-[10px] font-medium opacity-80">{grade}</p>
+                                  <p className="text-sm font-bold">
+                                    {basePrice > 0 
+                                      ? `$${Math.round(basePrice * multiplier).toLocaleString()}`
+                                      : '—'
+                                    }
+                                  </p>
+                                </div>
+                              ));
+                            })()}
                           </div>
                         </div>
+
                         <div className="flex items-center justify-between text-[10px] text-muted-foreground px-1">
                           <span>
                             {cardAnalysis.pricing?.salesCount 
-                              ? `Based on ${cardAnalysis.pricing.salesCount} sales`
-                              : 'Live market data'
+                              ? `Based on ${cardAnalysis.pricing.salesCount} recent sales`
+                              : 'Market estimates'
                             }
                           </span>
                           {cardAnalysis.pricing?.trend7d !== undefined && cardAnalysis.pricing.trend7d !== 0 && (
