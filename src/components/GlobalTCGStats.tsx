@@ -202,8 +202,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
             "relative overflow-hidden rounded-[18px]",
             "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
             "border border-white/5",
-            "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]",
-            "max-w-4xl mx-auto"
+            "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
           )}
           style={{ backdropFilter: 'blur(22px)' }}
         >
