@@ -141,7 +141,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
       <div className="container mx-auto px-4 relative z-10">
         {/* Hero headline + Stats combined - only show if not hidden */}
         {!hideHero && (
-          <div className="text-center mb-8 sm:mb-10 md:mb-14">
+          <div className="text-center">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
