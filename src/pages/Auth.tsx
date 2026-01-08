@@ -42,6 +42,12 @@ const Auth = () => {
   const [loginPhone, setLoginPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [resetPhone, setResetPhone] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [resetOtpSent, setResetOtpSent] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [resetVerified, setResetVerified] = useState(false);
   const [errors, setErrors] = useState<{ 
     email?: string; 
     password?: string; 
@@ -51,6 +57,9 @@ const Auth = () => {
     fees?: string;
     loginPhone?: string;
     otp?: string;
+    resetPhone?: string;
+    resetOtp?: string;
+    newPassword?: string;
   }>({});
 
   useEffect(() => {
@@ -176,23 +185,19 @@ const Auth = () => {
     setErrors({});
     
     setLoading(true);
-    // Format phone to international format
-    let formattedPhone = loginPhone;
-    if (loginPhone.startsWith('0')) {
-      formattedPhone = '+90' + loginPhone.slice(1);
-    } else if (!loginPhone.startsWith('+')) {
-      formattedPhone = '+90' + loginPhone;
-    }
+    try {
+      const response = await supabase.functions.invoke('send-sms', {
+        body: { phone: loginPhone, type: 'login_otp' }
+      });
 
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
-    });
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      setOtpSent(true);
-      toast.success('OTP sent to your phone!');
+      if (response.error || !response.data?.success) {
+        toast.error(response.data?.error || 'Failed to send OTP');
+      } else {
+        setOtpSent(true);
+        toast.success('Verification code sent from CARDBOOM!');
+      }
+    } catch (err) {
+      toast.error('Failed to send verification code');
     }
     setLoading(false);
   };
@@ -207,23 +212,39 @@ const Auth = () => {
     setErrors({});
 
     setLoading(true);
-    let formattedPhone = loginPhone;
-    if (loginPhone.startsWith('0')) {
-      formattedPhone = '+90' + loginPhone.slice(1);
-    } else if (!loginPhone.startsWith('+')) {
-      formattedPhone = '+90' + loginPhone;
-    }
+    try {
+      // Verify OTP via our edge function
+      const verifyResponse = await supabase.functions.invoke('verify-sms-otp', {
+        body: { phone: loginPhone, otp, type: 'login_otp' }
+      });
 
-    const { error } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
-      token: otp,
-      type: 'sms',
-    });
+      if (verifyResponse.error || !verifyResponse.data?.success) {
+        toast.error(verifyResponse.data?.error || 'Invalid verification code');
+        setLoading(false);
+        return;
+      }
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Welcome back!');
+      // Format phone for Supabase auth
+      let formattedPhone = loginPhone;
+      if (loginPhone.startsWith('0')) {
+        formattedPhone = '+90' + loginPhone.slice(1);
+      } else if (!loginPhone.startsWith('+')) {
+        formattedPhone = '+90' + loginPhone;
+      }
+
+      // Sign in with phone using Supabase
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+        options: { shouldCreateUser: true }
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Welcome to CardBoom!');
+      }
+    } catch (err) {
+      toast.error('Verification failed');
     }
     setLoading(false);
   };
@@ -257,6 +278,113 @@ const Auth = () => {
       }
     } else {
       toast.success('Account created successfully! Welcome to Cardboom!');
+    }
+    setLoading(false);
+  };
+
+  // Forgot password handlers
+  const handleSendResetOtp = async () => {
+    const phoneResult = phoneSchema.safeParse(resetPhone);
+    if (!phoneResult.success) {
+      setErrors({ resetPhone: phoneResult.error.errors[0].message });
+      return;
+    }
+    setErrors({});
+    
+    setLoading(true);
+    try {
+      const response = await supabase.functions.invoke('send-sms', {
+        body: { phone: resetPhone, type: 'password_reset' }
+      });
+
+      if (response.error || !response.data?.success) {
+        toast.error(response.data?.error || 'Failed to send verification code');
+      } else {
+        setResetOtpSent(true);
+        toast.success('Reset code sent from CARDBOOM!');
+      }
+    } catch (err) {
+      toast.error('Failed to send verification code');
+    }
+    setLoading(false);
+  };
+
+  const handleVerifyResetOtp = async () => {
+    const otpResult = otpSchema.safeParse(resetOtp);
+    if (!otpResult.success) {
+      setErrors({ resetOtp: otpResult.error.errors[0].message });
+      return;
+    }
+    setErrors({});
+
+    setLoading(true);
+    try {
+      const verifyResponse = await supabase.functions.invoke('verify-sms-otp', {
+        body: { phone: resetPhone, otp: resetOtp, type: 'password_reset' }
+      });
+
+      if (verifyResponse.error || !verifyResponse.data?.success) {
+        toast.error(verifyResponse.data?.error || 'Invalid verification code');
+      } else {
+        setResetVerified(true);
+        toast.success('Phone verified! Enter your new password.');
+      }
+    } catch (err) {
+      toast.error('Verification failed');
+    }
+    setLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const passwordResult = passwordSchema.safeParse(newPassword);
+    if (!passwordResult.success) {
+      setErrors({ newPassword: passwordResult.error.errors[0].message });
+      return;
+    }
+    setErrors({});
+
+    setLoading(true);
+    try {
+      // Format phone for lookup
+      let formattedPhone = resetPhone;
+      if (resetPhone.startsWith('0')) {
+        formattedPhone = '+90' + resetPhone.slice(1);
+      } else if (!resetPhone.startsWith('+')) {
+        formattedPhone = '+90' + resetPhone;
+      }
+
+      // Find user by phone number
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, email')
+        .eq('phone', formattedPhone)
+        .single();
+
+      if (!profile?.email) {
+        toast.error('No account found with this phone number');
+        setLoading(false);
+        return;
+      }
+
+      // Use Supabase admin to update password (requires email flow)
+      const { error } = await supabase.auth.resetPasswordForEmail(profile.email, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Password reset link sent to your email!');
+        setForgotPasswordMode(false);
+        setResetPhone('');
+        setResetOtp('');
+        setResetOtpSent(false);
+        setResetVerified(false);
+        setNewPassword('');
+      }
+    } catch (err) {
+      toast.error('Password reset failed');
     }
     setLoading(false);
   };
@@ -426,6 +554,100 @@ const Auth = () => {
                 {/* Login Tab */}
                 <TabsContent value="login">
                   <div className="space-y-5">
+                    {forgotPasswordMode ? (
+                      /* Forgot Password Flow */
+                      <div className="space-y-4">
+                        <div className="text-center mb-4">
+                          <h3 className="text-lg font-semibold text-foreground">Reset Password</h3>
+                          <p className="text-sm text-muted-foreground">We'll send a verification code to your phone</p>
+                        </div>
+                        
+                        {!resetOtpSent ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="reset-phone" className="text-foreground font-medium flex items-center gap-2">
+                                <Phone className="w-4 h-4" />
+                                Phone Number
+                              </Label>
+                              <Input
+                                id="reset-phone"
+                                type="tel"
+                                placeholder="05XX XXX XX XX"
+                                value={resetPhone}
+                                onChange={(e) => setResetPhone(formatPhone(e.target.value))}
+                                className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                              />
+                              {errors.resetPhone && <p className="text-destructive text-sm">{errors.resetPhone}</p>}
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={handleSendResetOtp}
+                              disabled={loading || !resetPhone}
+                              className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 font-semibold rounded-xl"
+                            >
+                              {loading ? 'Sending...' : 'Send Verification Code'}
+                            </Button>
+                          </div>
+                        ) : !resetVerified ? (
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="reset-otp" className="text-foreground font-medium">Enter Verification Code</Label>
+                              <p className="text-muted-foreground text-sm">We sent a 6-digit code to {resetPhone}</p>
+                              <Input
+                                id="reset-otp"
+                                type="text"
+                                placeholder="000000"
+                                value={resetOtp}
+                                onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                className="h-12 bg-secondary/50 border-border/50 rounded-xl text-center text-2xl tracking-widest"
+                                maxLength={6}
+                              />
+                              {errors.resetOtp && <p className="text-destructive text-sm">{errors.resetOtp}</p>}
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={handleVerifyResetOtp}
+                              disabled={loading || resetOtp.length !== 6}
+                              className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 font-semibold rounded-xl"
+                            >
+                              {loading ? 'Verifying...' : 'Verify Code'}
+                            </Button>
+                          </div>
+                        ) : (
+                          <form onSubmit={handleResetPassword} className="space-y-4">
+                            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-center">
+                              <p className="text-green-500 text-sm font-medium">✓ Phone verified successfully</p>
+                            </div>
+                            <p className="text-muted-foreground text-sm text-center">
+                              A password reset link will be sent to the email associated with this phone number.
+                            </p>
+                            <Button
+                              type="submit"
+                              disabled={loading}
+                              className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 font-semibold rounded-xl"
+                            >
+                              {loading ? 'Sending...' : 'Send Reset Link'}
+                            </Button>
+                          </form>
+                        )}
+                        
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setForgotPasswordMode(false);
+                            setResetPhone('');
+                            setResetOtp('');
+                            setResetOtpSent(false);
+                            setResetVerified(false);
+                          }}
+                          className="w-full text-muted-foreground hover:text-foreground text-sm"
+                        >
+                          ← Back to login
+                        </button>
+                      </div>
+                    ) : (
+                      /* Normal Login Flow */
+                      <>
                     {/* Google Sign In */}
                     <Button
                       type="button"
@@ -576,6 +798,19 @@ const Auth = () => {
                           </form>
                         )}
                       </div>
+                    )}
+                    
+                    {/* Forgot Password Link */}
+                    {!forgotPasswordMode && loginMethod === 'email' && (
+                      <button
+                        type="button"
+                        onClick={() => setForgotPasswordMode(true)}
+                        className="w-full text-muted-foreground hover:text-primary text-sm transition-colors"
+                      >
+                        Forgot your password?
+                      </button>
+                    )}
+                    </>
                     )}
                   </div>
                 </TabsContent>
