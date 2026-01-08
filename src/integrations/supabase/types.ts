@@ -5438,6 +5438,7 @@ export type Database = {
           paused_until: string | null
           phone: string | null
           phone_verified: boolean | null
+          phone_verified_at: string | null
           premium_trial_expires_at: string | null
           profile_background: string | null
           profile_color_primary: string | null
@@ -5502,6 +5503,7 @@ export type Database = {
           paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          phone_verified_at?: string | null
           premium_trial_expires_at?: string | null
           profile_background?: string | null
           profile_color_primary?: string | null
@@ -5566,6 +5568,7 @@ export type Database = {
           paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
+          phone_verified_at?: string | null
           premium_trial_expires_at?: string | null
           profile_background?: string | null
           profile_color_primary?: string | null
@@ -6646,6 +6649,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sms_otps: {
+        Row: {
+          attempts: number | null
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string
+          phone: string
+          type: string
+          user_id: string | null
+          verified: boolean | null
+          verified_at: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          otp_code: string
+          phone: string
+          type: string
+          user_id?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string
+          phone?: string
+          type?: string
+          user_id?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+        }
+        Relationships: []
       }
       support_tickets: {
         Row: {
