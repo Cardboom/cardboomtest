@@ -119,112 +119,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         }
       }
 
-      // Fetch user-specific data
-      const { data: portfolioItems } = await supabase
-        .from('portfolio_items')
-        .select('*, market_item:market_items(current_price, change_7d, name)')
-        .eq('user_id', userId);
-
-      const { data: cardInstances } = await supabase
-        .from('card_instances')
-        .select('id, current_value, acquisition_price, title')
-        .eq('owner_user_id', userId)
-        .eq('is_active', true);
-
-      const { data: listings } = await supabase
-        .from('listings')
-        .select('id, title, price, created_at')
-        .eq('seller_id', userId)
-        .eq('status', 'active');
-
-      const { data: indexData } = await supabase
-        .from('market_items')
-        .select('change_7d')
-        .not('change_7d', 'is', null)
-        .limit(100);
-
-      const indexChange = indexData 
-        ? indexData.reduce((sum, i) => sum + (i.change_7d || 0), 0) / indexData.length
-        : 0;
-
-      const portfolioValue = (cardInstances?.reduce((sum, c) => sum + (c.current_value || 0), 0) || 0) +
-        (listings?.reduce((sum, l) => sum + (l.price || 0), 0) || 0);
-      
-      const portfolioCost = cardInstances?.reduce((sum, c) => sum + (c.acquisition_price || 0), 0) || 0;
-      const portfolioChange = portfolioCost > 0 ? ((portfolioValue - portfolioCost) / portfolioCost) * 100 : 0;
-      const outperformance = portfolioChange - indexChange;
-
-      if (outperformance > 0 && portfolioValue > 0) {
-        newInsights.push({
-          id: 'outperform',
-          icon: '📊',
-          message: `Your vault outperformed index by`,
-          metric: `+${outperformance.toFixed(1)}%`,
-          isPositive: true,
-        });
-      } else if (portfolioValue > 0) {
-        newInsights.push({
-          id: 'performance',
-          icon: '📊',
-          message: `Portfolio tracking index`,
-          metric: `${portfolioChange >= 0 ? '+' : ''}${portfolioChange.toFixed(1)}%`,
-          isPositive: portfolioChange >= 0,
-        });
-      }
-
-      const trendingCards = portfolioItems?.filter(
-        p => (p.market_item as any)?.change_7d > 5
-      ) || [];
-
-      if (trendingCards.length > 0) {
-        const topTrending = trendingCards.sort(
-          (a, b) => ((b.market_item as any)?.change_7d || 0) - ((a.market_item as any)?.change_7d || 0)
-        )[0];
-        newInsights.push({
-          id: 'trending',
-          icon: '📈',
-          message: `${(topTrending.market_item as any)?.name?.substring(0, 20) || 'Card'} trending`,
-          metric: `+${((topTrending.market_item as any)?.change_7d || 0).toFixed(1)}%`,
-          isPositive: true,
-        });
-      }
-
-      // User's personal grading average
-      const { data: gradingOrders } = await supabase
-        .from('grading_orders')
-        .select('id, final_grade')
-        .eq('user_id', userId)
-        .eq('status', 'completed')
-        .not('final_grade', 'is', null)
-        .limit(10);
-
-      if (gradingOrders && gradingOrders.length > 0) {
-        const avgGrade = gradingOrders.reduce((sum, g) => {
-          const grade = parseFloat(String(g.final_grade || '0'));
-          return sum + (isNaN(grade) ? 0 : grade);
-        }, 0) / gradingOrders.length;
-
-        if (avgGrade >= 8) {
-          newInsights.push({
-            id: 'your-grading',
-            icon: '🧠',
-            message: `Your avg grade`,
-            metric: `${avgGrade.toFixed(1)}`,
-            isPositive: avgGrade >= 9,
-          });
-        }
-      }
-
-      if (listings && listings.length > 0) {
-        const totalListingValue = listings.reduce((sum, l) => sum + (l.price || 0), 0);
-        newInsights.push({
-          id: 'listings',
-          icon: '🏷️',
-          message: `${listings.length} active listings`,
-          metric: `$${totalListingValue.toLocaleString()}`,
-          isPositive: true,
-        });
-      }
+      // AI insights only - no user-specific portfolio/grading/listing data
 
       if (newInsights.length === 0) {
         newInsights.push(
@@ -271,7 +166,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
           <Sparkles className="w-2.5 h-2.5 text-primary" />
         </div>
-        <span className="font-mono text-[8px] text-gray-400 uppercase tracking-widest">
+        <span className="font-mono text-[10px] md:text-[11px] text-gray-400 uppercase tracking-widest">
           AI INSIGHT
         </span>
       </div>
@@ -294,7 +189,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
                   <div className="flex items-center justify-center gap-2 mb-1.5">
                     <span className="text-lg md:text-xl">{currentInsight.icon}</span>
                   </div>
-                  <p className="font-mono text-[9px] md:text-[11px] text-white/90 tracking-wide leading-relaxed max-w-[280px] md:max-w-[340px] mx-auto line-clamp-3">
+                  <p className="font-mono text-[11px] md:text-sm text-white/90 tracking-wide leading-relaxed max-w-[300px] md:max-w-[380px] mx-auto line-clamp-3">
                     {currentInsight.message}
                   </p>
                 </>
@@ -304,12 +199,12 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
                   <div className="flex items-center justify-center gap-2 mb-1">
                     <span className="text-lg md:text-2xl">{currentInsight.icon}</span>
                   </div>
-                  <p className="font-mono text-[10px] md:text-xs text-white/80 tracking-wide mb-0.5">
+                  <p className="font-mono text-[11px] md:text-sm text-white/80 tracking-wide mb-0.5">
                     {currentInsight.message}
                   </p>
                   {currentInsight.metric && (
                     <p className={cn(
-                      "font-mono text-base md:text-xl font-bold tracking-wider",
+                      "font-mono text-lg md:text-2xl font-bold tracking-wider",
                       currentInsight.isPositive ? "text-emerald-400" : "text-red-400"
                     )}>
                       {currentInsight.metric}

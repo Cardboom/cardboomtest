@@ -207,14 +207,14 @@ export const LiveMarketPanel = () => {
         >
           {marketTicks.map((tick, i) => (
             <div key={i} className="flex items-center gap-1 px-2 md:px-3">
-              <span className="font-mono text-[8px] md:text-[9px] text-gray-500 uppercase tracking-wide">
+              <span className="font-mono text-[10px] md:text-[11px] text-gray-500 uppercase tracking-wide">
                 {tick.symbol}
               </span>
-              <span className="font-mono text-[8px] md:text-[9px] text-white/80 font-medium">
+              <span className="font-mono text-[10px] md:text-[11px] text-white/80 font-medium">
                 ${tick.price.toLocaleString()}
               </span>
               <span className={cn(
-                "font-mono text-[8px] md:text-[9px] font-medium",
+                "font-mono text-[10px] md:text-[11px] font-medium",
                 tick.change >= 0 ? "text-emerald-400" : "text-red-400"
               )}>
                 {tick.change >= 0 ? '+' : ''}{tick.change.toFixed(1)}%
@@ -236,8 +236,8 @@ export const LiveMarketPanel = () => {
               transition={{ duration: 0.5 }}
               className="flex items-center justify-center gap-2 text-center"
             >
-              <span className="text-base md:text-xl">{currentEvent.icon}</span>
-              <span className="font-mono text-[10px] md:text-xs text-white/90 tracking-wide">
+              <span className="text-lg md:text-2xl">{currentEvent.icon}</span>
+              <span className="font-mono text-[11px] md:text-sm text-white/90 tracking-wide">
                 {currentEvent.message}
               </span>
             </motion.div>
