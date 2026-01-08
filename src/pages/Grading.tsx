@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
-import { Award, Clock, Shield, ChevronRight, Zap, CheckCircle, ArrowRight, Camera, CreditCard, BarChart3, Sparkles, Target, Eye, Layers, Star, TrendingUp, Users, FileCheck, Lock, Cpu, Globe } from 'lucide-react';
+import { Award, Clock, Shield, ChevronRight, Zap, CheckCircle, ArrowRight, Camera, CreditCard, BarChart3, Sparkles, Target, Eye, Layers, Star, TrendingUp, Users, FileCheck, Lock, Cpu, Globe, Fingerprint, History, QrCode, Link } from 'lucide-react';
 import { GRADING_PRICE_USD } from '@/hooks/useGrading';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
@@ -541,7 +541,180 @@ export default function Grading() {
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Card Passport Section */}
+        <section className="py-16 md:py-24 relative overflow-hidden">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-premium/5" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-premium/10 rounded-full blur-3xl" />
+          
+          <div className="container mx-auto px-4 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12 md:mb-16"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-premium/10 text-premium mb-4">
+                <Fingerprint className="w-4 h-4" />
+                <span className="text-sm font-semibold">Digital Certificate</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-black mb-4">
+                CardBoom <span className="text-gradient bg-gradient-to-r from-primary to-premium bg-clip-text text-transparent">Card Passport</span>
+              </h2>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+                Every card graded or sold through CardBoom receives a unique digital passport — 
+                an immutable record that travels with the card forever.
+              </p>
+            </motion.div>
+
+            {/* Passport Visual */}
+            <div className="max-w-5xl mx-auto">
+              <div className="grid lg:grid-cols-2 gap-8 items-center">
+                {/* Left - Passport Preview */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="relative"
+                >
+                  <div className="relative p-6 md:p-8 rounded-2xl md:rounded-3xl bg-gradient-to-br from-card via-card to-muted border border-border shadow-2xl">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-premium flex items-center justify-center">
+                          <Fingerprint className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-lg">Card Passport</h4>
+                          <p className="text-xs text-muted-foreground">CB-2025-XXXX-XXXX</p>
+                        </div>
+                      </div>
+                      <QrCode className="w-16 h-16 text-muted-foreground/30" />
+                    </div>
+
+                    {/* Card Preview */}
+                    <div className="flex gap-4 mb-6">
+                      <div className="w-24 h-32 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-4xl shadow-lg">
+                        🔥
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-bold mb-1">Charizard VMAX</h5>
+                        <p className="text-sm text-muted-foreground mb-2">Pokémon • 2021 • Shining Fates</p>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 text-xs font-bold rounded-md">
+                            CBGI 9.5
+                          </span>
+                          <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md">
+                            Verified Authentic
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="space-y-3 border-t border-border pt-4">
+                      <h6 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Ownership History</h6>
+                      
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary" />
+                        <div className="flex-1 text-sm">
+                          <span className="font-medium">Graded by CardBoom</span>
+                          <span className="text-muted-foreground ml-2">Jan 2025</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <div className="flex-1 text-sm">
+                          <span className="font-medium">Sold on CardBoom</span>
+                          <span className="text-muted-foreground ml-2">Jan 2025</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                        <div className="flex-1 text-sm text-muted-foreground">
+                          Future transactions logged here...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Decorative elements */}
+                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-2xl" />
+                  <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-tr from-premium/20 to-transparent rounded-full blur-2xl" />
+                </motion.div>
+
+                {/* Right - Features */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="space-y-6"
+                >
+                  <div className="space-y-4">
+                    {[
+                      {
+                        icon: Fingerprint,
+                        title: 'Unique CardBoom ID',
+                        description: 'Every card gets a permanent, unforgeable digital identity that can be verified anytime.',
+                        color: 'text-primary bg-primary/10'
+                      },
+                      {
+                        icon: Camera,
+                        title: 'High-Resolution Images',
+                        description: 'Original grading photos preserved forever — front, back, and detail shots.',
+                        color: 'text-blue-500 bg-blue-500/10'
+                      },
+                      {
+                        icon: History,
+                        title: 'Complete Grade History',
+                        description: 'Every grading event recorded — initial grade, regrades, and professional submissions.',
+                        color: 'text-emerald-500 bg-emerald-500/10'
+                      },
+                      {
+                        icon: Link,
+                        title: 'Ownership Trail',
+                        description: 'Track every sale and transfer through CardBoom\'s ecosystem.',
+                        color: 'text-purple-500 bg-purple-500/10'
+                      },
+                      {
+                        icon: Shield,
+                        title: 'Tamper-Proof Record',
+                        description: 'Immutable digital certificate that travels with the card — even if it resells.',
+                        color: 'text-amber-500 bg-amber-500/10'
+                      },
+                    ].map((feature, i) => (
+                      <motion.div
+                        key={feature.title}
+                        initial={{ opacity: 0, x: 20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1 }}
+                        className="flex gap-4 p-4 rounded-xl bg-card/50 border border-border/50 hover:border-primary/30 transition-colors"
+                      >
+                        <div className={`p-2.5 rounded-lg ${feature.color} flex-shrink-0`}>
+                          <feature.icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h5 className="font-semibold mb-1">{feature.title}</h5>
+                          <p className="text-sm text-muted-foreground">{feature.description}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-primary/10 to-premium/10 border border-primary/20">
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-semibold text-foreground">Coming Soon:</span> Scan any CardBoom-verified card's 
+                      QR code to instantly view its complete passport history.
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="py-10 md:py-16 bg-muted/30 border-y border-border/50">
           <div className="container mx-auto px-4">
             <motion.div

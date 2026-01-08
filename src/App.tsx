@@ -72,6 +72,7 @@ import CardWars from "./pages/CardWars";
 import CardBoomPass from "./pages/CardBoomPass";
 import BuyOrders from "./pages/BuyOrders";
 import StorefrontPage from "./pages/StorefrontPage";
+import Cardswap from "./pages/Cardswap";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,7 @@ const AppContent = () => {
           <Route path="/messages" element={<Messages />} />
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/trades" element={<Trades />} />
+          <Route path="/cardswap" element={<Cardswap />} />
           <Route path="/deals" element={<Deals />} />
           <Route path="/referrals" element={<Referrals />} />
           <Route path="/profile" element={<Profile />} />
