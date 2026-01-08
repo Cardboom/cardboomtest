@@ -68,15 +68,7 @@ const AnimatedCounter = ({
   }, [value, duration]);
 
   const formatDisplay = () => {
-    if (displayValue >= 1_000_000_000) {
-      return `${prefix}${(displayValue / 1_000_000_000).toFixed(2)}B${suffix}`;
-    }
-    if (displayValue >= 1_000_000) {
-      return `${prefix}${(displayValue / 1_000_000).toFixed(1)}M${suffix}`;
-    }
-    if (displayValue >= 1_000) {
-      return `${prefix}${(displayValue / 1_000).toFixed(1)}K${suffix}`;
-    }
+    // Always show full numbers with commas
     return `${prefix}${Math.round(displayValue).toLocaleString()}${suffix}`;
   };
 
@@ -204,47 +196,57 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
           </div>
         )}
 
-        {/* Stats Grid - NYSE Terminal Style */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-4xl mx-auto">
-          {statItems.map((item, i) => (
-            <div
-              key={item.label}
-              className={cn(
-                "relative overflow-hidden rounded-[18px]",
-                "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
-                "border border-white/5",
-                "h-[100px] md:h-[120px]",
-                "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]",
-                "flex flex-col items-center justify-center text-center p-4"
-              )}
-              style={{ backdropFilter: 'blur(22px)' }}
-            >
-              {/* Noise texture */}
-              <div 
-                className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-                }}
-              />
+        {/* Stats Grid - NYSE Terminal Style - Single Row with Dividers */}
+        <div 
+          className={cn(
+            "relative overflow-hidden rounded-[18px]",
+            "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
+            "border border-white/5",
+            "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]",
+            "max-w-4xl mx-auto"
+          )}
+          style={{ backdropFilter: 'blur(22px)' }}
+        >
+          {/* Noise texture */}
+          <div 
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            }}
+          />
 
-              {/* Top glow */}
-              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none" />
+          {/* Top glow */}
+          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none" />
 
-              {/* Content */}
-              <div className="relative z-10 flex flex-col items-center justify-center gap-1">
-                <div className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight">
+          {/* Stats Row */}
+          <div className="relative z-10 grid grid-cols-2 md:grid-cols-4">
+            {statItems.map((item, i) => (
+              <div
+                key={item.label}
+                className={cn(
+                  "flex flex-col items-center justify-center text-center py-5 px-3 md:py-6 md:px-4",
+                  // Vertical dividers between columns
+                  i < statItems.length - 1 && "md:border-r md:border-white/10",
+                  // On mobile: right border for left column, bottom border for top row
+                  i % 2 === 0 && "border-r border-white/10 md:border-r-0",
+                  i < 2 && "border-b border-white/10 md:border-b-0",
+                  // Re-add md border-r
+                  i < 3 && "md:border-r md:border-white/10"
+                )}
+              >
+                <div className="font-mono text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
                   {isLoading ? (
-                    <span className="inline-block w-16 h-7 bg-white/10 rounded animate-pulse" />
+                    <span className="inline-block w-20 h-6 bg-white/10 rounded animate-pulse" />
                   ) : (
                     <AnimatedCounter value={item.value} prefix={item.prefix} />
                   )}
                 </div>
-                <div className="font-mono text-[9px] sm:text-[10px] md:text-xs text-gray-400 uppercase tracking-widest">
+                <div className="font-mono text-[8px] sm:text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest mt-1">
                   {item.label}
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </section>
