@@ -213,13 +213,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/explorer" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                          <Link to="/cardswap" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
                             <div className="w-8 h-8 rounded-md bg-blue-500/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                              <Search className="w-3.5 h-3.5 text-blue-500" />
+                              <ArrowLeftRight className="w-3.5 h-3.5 text-blue-500" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">{t.nav.explorer}</div>
-                              <div className="text-[10px] text-muted-foreground">{t.nav.explorerDesc}</div>
+                              <div className="font-medium text-xs">Cardswap</div>
+                              <div className="text-[10px] text-muted-foreground">Trade cards directly</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -575,9 +575,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <TrendingUp className="w-5 h-5 text-primary" />
                   <span>{t.nav.markets}</span>
                 </Link>
-                <Link to="/explorer" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                  <Search className="w-5 h-5 text-blue-500" />
-                  <span>{t.nav.explorer}</span>
+                <Link to="/cardswap" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <ArrowLeftRight className="w-5 h-5 text-blue-500" />
+                  <span>Cardswap</span>
                 </Link>
                 <Link to="/deals" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Sparkles className="w-5 h-5 text-amber-500" />
