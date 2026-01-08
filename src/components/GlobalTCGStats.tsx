@@ -136,7 +136,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
   return (
     <section className={cn(
       "relative overflow-hidden",
-      hideHero ? "py-3" : "py-8 sm:py-12 md:py-20"
+      hideHero ? "pt-0 pb-6" : "py-8 sm:py-12 md:py-20"
     )}>
       {/* Background gradients - ensure pointer-events-none */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)] pointer-events-none" />
@@ -202,7 +202,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
         {/* Stats Grid - NYSE Terminal Style - Single Row with Dividers */}
         <div 
           className={cn(
-            "relative overflow-hidden rounded-[18px] mt-4",
+            "relative overflow-hidden rounded-[18px] mt-3",
             "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
             "border border-white/5",
             "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
