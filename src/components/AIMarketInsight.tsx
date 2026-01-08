@@ -184,10 +184,10 @@ export const AIMarketInsight = () => {
   };
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/20">
-      <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
-      <span className="text-xs font-medium text-muted-foreground">AI Insight:</span>
-      <span className="text-xs text-foreground font-medium truncate max-w-[200px] md:max-w-[400px] transition-all duration-300">
+    <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/20 w-full max-w-2xl mx-auto">
+      <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse flex-shrink-0" />
+      <span className="text-xs font-medium text-muted-foreground flex-shrink-0">AI Insight:</span>
+      <span className="text-xs text-foreground font-medium truncate max-w-[200px] md:max-w-[400px] transition-all duration-300 text-center">
         {currentInsight.text}
       </span>
       {getIcon()}
