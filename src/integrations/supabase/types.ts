@@ -8512,6 +8512,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      refund_grading_donations: {
+        Args: { p_target_id: string; p_target_type: string }
+        Returns: Json
+      }
       spend_cardboom_points: {
         Args: {
           p_amount: number

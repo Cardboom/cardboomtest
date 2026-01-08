@@ -19,7 +19,9 @@ interface GradingDonationPanelProps {
   acceptsDonations: boolean;
   goalCents: number;
   isOwner: boolean;
+  cardTitle?: string;
   onToggleDonations?: (enabled: boolean) => void;
+  onRefundAndDelist?: () => void;
 }
 
 interface Donation {
@@ -38,7 +40,9 @@ export const GradingDonationPanel = ({
   acceptsDonations,
   goalCents,
   isOwner,
-  onToggleDonations
+  cardTitle,
+  onToggleDonations,
+  onRefundAndDelist
 }: GradingDonationPanelProps) => {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [totalCents, setTotalCents] = useState(0);
@@ -46,6 +50,7 @@ export const GradingDonationPanel = ({
   const [donateAmount, setDonateAmount] = useState('5');
   const [donateMessage, setDonateMessage] = useState('');
   const [isDonating, setIsDonating] = useState(false);
+  const [isRefunding, setIsRefunding] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { formatPrice } = useCurrency();
 
@@ -98,7 +103,7 @@ export const GradingDonationPanel = ({
 
       if (error) throw error;
 
-      const result = data as { success: boolean; error?: string };
+      const result = data as { success: boolean; error?: string; goal_reached?: boolean; new_total?: number };
       if (!result.success) {
         throw new Error(result.error || 'Donation failed');
       }
@@ -106,6 +111,23 @@ export const GradingDonationPanel = ({
       toast.success('Thank you for your donation!', {
         description: `You donated ${formatPrice(amountCents / 100)} towards grading`
       });
+      
+      // If goal was reached, trigger notifications
+      if (result.goal_reached) {
+        toast.success('🎉 Grading goal reached!', {
+          description: 'The owner will receive a free grading credit!'
+        });
+        
+        // Trigger notification edge function
+        await supabase.functions.invoke('donation-notifications', {
+          body: {
+            action: 'goal_reached',
+            target_type: targetType,
+            target_id: targetId,
+            owner_id: ownerId
+          }
+        });
+      }
       
       setDonateOpen(false);
       setDonateAmount('5');
@@ -115,6 +137,46 @@ export const GradingDonationPanel = ({
       toast.error('Donation failed', { description: error.message });
     } finally {
       setIsDonating(false);
+    }
+  };
+
+  const handleRefundAndDelist = async () => {
+    if (!isOwner || totalCents === 0) return;
+    
+    setIsRefunding(true);
+    try {
+      const { data, error } = await supabase.rpc('refund_grading_donations', {
+        p_target_type: targetType,
+        p_target_id: targetId
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; error?: string; refunded_count?: number; total_refunded_cents?: number };
+      if (!result.success) {
+        throw new Error(result.error || 'Refund failed');
+      }
+
+      // Notify donors about refund
+      await supabase.functions.invoke('donation-notifications', {
+        body: {
+          action: 'refunded',
+          target_type: targetType,
+          target_id: targetId,
+          owner_id: ownerId,
+          card_title: cardTitle
+        }
+      });
+
+      toast.success('Donations refunded', {
+        description: `${result.refunded_count} donors have been refunded ${formatPrice((result.total_refunded_cents || 0) / 100)}`
+      });
+
+      onRefundAndDelist?.();
+    } catch (error: any) {
+      toast.error('Refund failed', { description: error.message });
+    } finally {
+      setIsRefunding(false);
     }
   };
 
@@ -139,15 +201,30 @@ export const GradingDonationPanel = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {isOwner && (
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-            <span className="text-sm">Accept donations for grading</span>
-            <Button
-              variant={acceptsDonations ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => onToggleDonations?.(!acceptsDonations)}
-            >
-              {acceptsDonations ? 'Enabled' : 'Disabled'}
-            </Button>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span className="text-sm">Accept donations for grading</span>
+              <Button
+                variant={acceptsDonations ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => onToggleDonations?.(!acceptsDonations)}
+              >
+                {acceptsDonations ? 'Enabled' : 'Disabled'}
+              </Button>
+            </div>
+            
+            {/* Refund and Delist option for owner if there are donations */}
+            {acceptsDonations && totalCents > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-loss border-loss/30 hover:bg-loss/10"
+                onClick={handleRefundAndDelist}
+                disabled={isRefunding}
+              >
+                {isRefunding ? 'Refunding...' : `Refund All Donations & Delist (${formatPrice(totalCents / 100)})`}
+              </Button>
+            )}
           </div>
         )}
 
