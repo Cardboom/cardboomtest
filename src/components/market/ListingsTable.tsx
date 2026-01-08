@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, Award, Info, Users } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, Award, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
@@ -132,16 +131,15 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         };
       });
 
-      // Sort: Real user listings first (no external source), then external
-      enrichedListings.sort((a, b) => {
-        const aIsReal = !a.source || a.source === 'user';
-        const bIsReal = !b.source || b.source === 'user';
-        if (aIsReal && !bIsReal) return -1;
-        if (!aIsReal && bIsReal) return 1;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
+      // ONLY show real user listings - filter out external/placeholder listings
+      const userOnlyListings = enrichedListings.filter(l => !l.source || l.source === 'user');
       
-      setListings(enrichedListings);
+      // Sort by newest first
+      userOnlyListings.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      setListings(userOnlyListings);
     } catch (error) {
       console.error('Error fetching listings:', error);
       toast.error('Failed to load listings');
@@ -186,22 +184,8 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         </Badge>
       );
     }
-    // External/info only card
-    if (listing.source && listing.source !== 'user') {
-      return (
-        <Badge variant="outline" className="text-muted-foreground gap-1">
-          <Info className="h-3 w-3" />
-          Info Only
-        </Badge>
-      );
-    }
     // Regular ungraded
-    return <span className="text-xs text-muted-foreground">N/A</span>;
-  };
-
-  // Check if listing has real sellers
-  const isRealListing = (listing: Listing) => {
-    return !listing.source || listing.source === 'user';
+    return <span className="text-xs text-muted-foreground">Ungraded</span>;
   };
 
   if (loading) {
@@ -243,17 +227,11 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
 
       {/* Table Body */}
       <div className="divide-y divide-border/30">
-        {listings.map((listing, index) => {
-          const isReal = isRealListing(listing);
-          
-          return (
+        {listings.map((listing, index) => (
             <div
               key={listing.id}
               onClick={() => navigate(`/listing/${listing.id}`)}
-              className={cn(
-                "grid grid-cols-12 gap-4 p-3 items-center hover:bg-secondary/30 transition-colors cursor-pointer",
-                !isReal && "opacity-75"
-              )}
+              className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-secondary/30 transition-colors cursor-pointer"
             >
               {/* Rank */}
               <div className="col-span-1 text-muted-foreground text-sm font-medium">
@@ -270,12 +248,10 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
                       <ShoppingCart className="w-6 h-6" />
                     </div>
                   )}
-                  {/* Real seller indicator */}
-                  {isReal && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
-                      <Users className="w-2.5 h-2.5 text-white" />
-                    </div>
-                  )}
+                  {/* Verified seller indicator */}
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <Users className="w-2.5 h-2.5 text-white" />
+                  </div>
                 </div>
                 <div className="min-w-0">
                   <p className="text-foreground font-medium text-sm truncate">{listing.title}</p>
@@ -285,19 +261,10 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
                     </p>
                   )}
                   <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                    {isReal ? (
-                      <>
-                        <span className="text-base leading-none" title={listing.seller_country_code}>
-                          {getCountryFlag(listing.seller_country_code || 'TR')}
-                        </span>
-                        <span>{listing.seller_name}</span>
-                      </>
-                    ) : (
-                      <span className="text-amber-500 flex items-center gap-1">
-                        <Info className="w-3 h-3" />
-                        No Sellers
-                      </span>
-                    )}
+                    <span className="text-base leading-none" title={listing.seller_country_code}>
+                      {getCountryFlag(listing.seller_country_code || 'TR')}
+                    </span>
+                    <span>{listing.seller_name}</span>
                     <span>•</span>
                     <span>Listed {new Date(listing.created_at).toLocaleDateString()}</span>
                   </div>
@@ -347,7 +314,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
 
               {/* Actions */}
               <div className="hidden lg:flex col-span-1 justify-end gap-1">
-                {isReal && currentUserId !== listing.seller_id && (
+                {currentUserId !== listing.seller_id && (
                   <>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <MessageCircle className="w-4 h-4" />
@@ -357,12 +324,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
                     </Button>
                   </>
                 )}
-                {!isReal && (
-                  <Badge variant="outline" className="text-amber-500 border-amber-500/30">
-                    Info Only
-                  </Badge>
-                )}
-                {isReal && currentUserId === listing.seller_id && (
+                {currentUserId === listing.seller_id && (
                   <Badge className="bg-primary/20 text-primary">Your listing</Badge>
                 )}
               </div>
@@ -377,14 +339,13 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-foreground font-bold">{formatPrice(listing.price)}</span>
-                  {isReal && currentUserId !== listing.seller_id && (
+                  {currentUserId !== listing.seller_id && (
                     <Button variant="default" size="sm">Buy</Button>
                   )}
                 </div>
               </div>
             </div>
-          );
-        })}
+          ))}
       </div>
     </div>
   );
