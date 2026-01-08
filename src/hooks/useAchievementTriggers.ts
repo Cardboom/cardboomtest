@@ -156,13 +156,13 @@ export const useAchievementTriggers = () => {
 
     const totalSpent = orders?.reduce((sum, order) => sum + Number(order.price), 0) || 0;
 
-    if (totalSpent >= 100) await checkAndAwardAchievement('spent_100', userId);
-    if (totalSpent >= 500) await checkAndAwardAchievement('spent_500', userId);
-    if (totalSpent >= 1000) await checkAndAwardAchievement('spent_1000', userId);
-    if (totalSpent >= 5000) await checkAndAwardAchievement('spent_5000', userId);
-    if (totalSpent >= 10000) await checkAndAwardAchievement('spent_10000', userId);
-    if (totalSpent >= 50000) await checkAndAwardAchievement('spent_50000', userId);
-    if (totalSpent >= 100000) await checkAndAwardAchievement('spent_100000', userId);
+    // Match database achievement keys
+    if (totalSpent >= 100) await checkAndAwardAchievement('big_spender', userId);
+    if (totalSpent >= 1000) await checkAndAwardAchievement('whale_spender', userId);
+    if (totalSpent >= 5000) await checkAndAwardAchievement('mega_spender', userId);
+    if (totalSpent >= 10000) await checkAndAwardAchievement('ultra_spender', userId);
+    if (totalSpent >= 50000) await checkAndAwardAchievement('legendary_spender', userId);
+    if (totalSpent >= 100000) await checkAndAwardAchievement('mythic_spender', userId);
   }, [checkAndAwardAchievement]);
 
   // Check earnings achievements
@@ -172,14 +172,15 @@ export const useAchievementTriggers = () => {
       .select('price, seller_fee')
       .eq('seller_id', userId);
 
-    const totalEarned = orders?.reduce((sum, order) => sum + (Number(order.price) - Number(order.seller_fee)), 0) || 0;
+    const totalEarned = orders?.reduce((sum, order) => sum + (Number(order.price) - Number(order.seller_fee || 0)), 0) || 0;
 
-    if (totalEarned >= 100) await checkAndAwardAchievement('earned_100', userId);
-    if (totalEarned >= 500) await checkAndAwardAchievement('earned_500', userId);
-    if (totalEarned >= 1000) await checkAndAwardAchievement('earned_1000', userId);
-    if (totalEarned >= 5000) await checkAndAwardAchievement('earned_5000', userId);
-    if (totalEarned >= 10000) await checkAndAwardAchievement('earned_10000', userId);
-    if (totalEarned >= 50000) await checkAndAwardAchievement('earned_50000', userId);
+    // Match database achievement keys
+    if (totalEarned >= 100) await checkAndAwardAchievement('small_earner', userId);
+    if (totalEarned >= 500) await checkAndAwardAchievement('steady_earner', userId);
+    if (totalEarned >= 1000) await checkAndAwardAchievement('big_earner', userId);
+    if (totalEarned >= 5000) await checkAndAwardAchievement('major_earner', userId);
+    if (totalEarned >= 10000) await checkAndAwardAchievement('top_earner', userId);
+    if (totalEarned >= 50000) await checkAndAwardAchievement('legendary_earner', userId);
   }, [checkAndAwardAchievement]);
 
   return {
