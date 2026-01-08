@@ -98,6 +98,7 @@ const SellPage = () => {
     category: 'nba',
     condition: 'Near Mint',
     price: '',
+    currency: 'USD' as 'USD' | 'EUR' | 'TRY',
     setName: '',
     setCode: '',
     cardNumber: '',
@@ -298,6 +299,7 @@ const SellPage = () => {
         cardData,
         imageUrl: imageUrl || undefined,
         price,
+        currency: formData.currency,
         condition: formData.condition,
         description: formData.description,
         allowsVault: formData.allowsVault,
@@ -335,6 +337,7 @@ const SellPage = () => {
         category: 'nba',
         condition: 'Near Mint',
         price: '',
+        currency: 'USD',
         setName: '',
         setCode: '',
         cardNumber: '',
@@ -559,6 +562,7 @@ const SellPage = () => {
         category: 'nba',
         condition: 'Near Mint',
         price: '',
+        currency: 'USD',
         setName: '',
         setCode: '',
         cardNumber: '',
@@ -796,20 +800,40 @@ const SellPage = () => {
                       </div>
 
                       <div>
-                        <Label htmlFor="price">Your Price (USD) *</Label>
-                        <div className="relative mt-1.5">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                          <Input
-                            id="price"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            placeholder="0.00"
-                            value={formData.price}
-                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                            className="pl-7"
-                          />
+                        <Label htmlFor="price">Your Price *</Label>
+                        <div className="flex gap-2 mt-1.5">
+                          <Select
+                            value={formData.currency}
+                            onValueChange={(value: 'USD' | 'EUR' | 'TRY') => setFormData({ ...formData, currency: value })}
+                          >
+                            <SelectTrigger className="w-24">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="USD">$ USD</SelectItem>
+                              <SelectItem value="EUR">€ EUR</SelectItem>
+                              <SelectItem value="TRY">₺ TRY</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                              {formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : '₺'}
+                            </span>
+                            <Input
+                              id="price"
+                              type="number"
+                              min="0.01"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={formData.price}
+                              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                              className="pl-7"
+                            />
+                          </div>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Seller receives payment in their wallet currency. Buyers see the price converted to their preferred currency.
+                        </p>
                       </div>
 
                       {/* Smart Price Suggestions */}

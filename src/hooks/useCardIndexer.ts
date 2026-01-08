@@ -14,6 +14,7 @@ interface CreateListingParams {
   cardData: ReviewedCardData;
   imageUrl: string | null;
   price: number;
+  currency?: 'USD' | 'EUR' | 'TRY';
   condition: string;
   description?: string;
   allowsVault?: boolean;
@@ -107,6 +108,7 @@ export function useCardIndexer() {
     cardData,
     imageUrl,
     price,
+    currency = 'USD',
     condition,
     description,
     allowsVault = true,
@@ -123,7 +125,7 @@ export function useCardIndexer() {
         currentPrice: price,
       });
 
-      // Create the listing (initially without grading)
+      // Create the listing with currency
       const listingData: Record<string, unknown> = {
         seller_id: userId,
         title: cardData.cardNameEnglish || cardData.cardName,
@@ -131,6 +133,7 @@ export function useCardIndexer() {
         category: cardData.category,
         condition,
         price,
+        currency, // Store the listing currency
         image_url: imageUrl,
         market_item_id: marketItem.id,
         set_name: cardData.setName,

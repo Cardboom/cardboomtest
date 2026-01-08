@@ -4229,6 +4229,7 @@ export type Database = {
           certification_status: string | null
           condition: string
           created_at: string
+          currency: string
           cvi_key: string | null
           description: string | null
           donation_goal_cents: number | null
@@ -4271,6 +4272,7 @@ export type Database = {
           certification_status?: string | null
           condition?: string
           created_at?: string
+          currency?: string
           cvi_key?: string | null
           description?: string | null
           donation_goal_cents?: number | null
@@ -4313,6 +4315,7 @@ export type Database = {
           certification_status?: string | null
           condition?: string
           created_at?: string
+          currency?: string
           cvi_key?: string | null
           description?: string | null
           donation_goal_cents?: number | null
@@ -4931,6 +4934,7 @@ export type Database = {
         Row: {
           admin_escalated_at: string | null
           buyer_confirmed_at: string | null
+          buyer_currency: string | null
           buyer_fee: number
           buyer_fee_cents: number | null
           buyer_id: string
@@ -4944,17 +4948,22 @@ export type Database = {
           escrow_released_at: string | null
           escrow_status: string | null
           escrow_transaction_id: string | null
+          exchange_rate_used: number | null
           id: string
           inventory_locked_at: string | null
+          listing_currency: string | null
           listing_id: string
           payout_status: string | null
           price: number
           price_cents: number | null
+          price_in_listing_currency: number | null
           sale_lane: Database["public"]["Enums"]["sale_lane"] | null
           seller_confirmed_at: string | null
+          seller_currency: string | null
           seller_fee: number
           seller_fee_cents: number | null
           seller_id: string
+          seller_payout_in_seller_currency: number | null
           ship_by_deadline: string | null
           shipping_address: Json | null
           status: Database["public"]["Enums"]["order_status"]
@@ -4965,6 +4974,7 @@ export type Database = {
         Insert: {
           admin_escalated_at?: string | null
           buyer_confirmed_at?: string | null
+          buyer_currency?: string | null
           buyer_fee: number
           buyer_fee_cents?: number | null
           buyer_id: string
@@ -4978,17 +4988,22 @@ export type Database = {
           escrow_released_at?: string | null
           escrow_status?: string | null
           escrow_transaction_id?: string | null
+          exchange_rate_used?: number | null
           id?: string
           inventory_locked_at?: string | null
+          listing_currency?: string | null
           listing_id: string
           payout_status?: string | null
           price: number
           price_cents?: number | null
+          price_in_listing_currency?: number | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
           seller_confirmed_at?: string | null
+          seller_currency?: string | null
           seller_fee: number
           seller_fee_cents?: number | null
           seller_id: string
+          seller_payout_in_seller_currency?: number | null
           ship_by_deadline?: string | null
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -4999,6 +5014,7 @@ export type Database = {
         Update: {
           admin_escalated_at?: string | null
           buyer_confirmed_at?: string | null
+          buyer_currency?: string | null
           buyer_fee?: number
           buyer_fee_cents?: number | null
           buyer_id?: string
@@ -5012,17 +5028,22 @@ export type Database = {
           escrow_released_at?: string | null
           escrow_status?: string | null
           escrow_transaction_id?: string | null
+          exchange_rate_used?: number | null
           id?: string
           inventory_locked_at?: string | null
+          listing_currency?: string | null
           listing_id?: string
           payout_status?: string | null
           price?: number
           price_cents?: number | null
+          price_in_listing_currency?: number | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
           seller_confirmed_at?: string | null
+          seller_currency?: string | null
           seller_fee?: number
           seller_fee_cents?: number | null
           seller_id?: string
+          seller_payout_in_seller_currency?: number | null
           ship_by_deadline?: string | null
           shipping_address?: Json | null
           status?: Database["public"]["Enums"]["order_status"]

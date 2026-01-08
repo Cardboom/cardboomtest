@@ -23,6 +23,7 @@ interface PurchaseDialogProps {
     id: string;
     title: string;
     price: number;
+    currency?: string;
     seller_id: string;
     allows_vault: boolean;
     allows_shipping: boolean;
@@ -83,6 +84,7 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
       listingId: listing.id,
       sellerId: listing.seller_id,
       price: listing.price,
+      listingCurrency: (listing.currency as 'USD' | 'EUR' | 'TRY') || 'USD',
       deliveryOption,
       title: listing.title,
       category: listing.category,
