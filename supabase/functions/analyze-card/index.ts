@@ -491,25 +491,53 @@ async function enrichWithMarketData(
 
       const { data: matches } = await query
         .order('current_price', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (matches && matches.length > 0) {
         matchedItem = matches[0];
-        console.log('Found name match:', matchedItem.name);
+        console.log('Found name match:', matchedItem.name, 'Total matches:', matches.length);
 
-        const prices = matches.map((item: any) => item.current_price).filter((p: number) => p > 0);
+        // Get all prices and apply MAD outlier filtering
+        let prices = matches.map((item: any) => item.current_price).filter((p: number) => p > 0);
+        
+        if (prices.length >= 3) {
+          // Calculate median
+          const sortedForMedian = [...prices].sort((a, b) => a - b);
+          const median = sortedForMedian[Math.floor(sortedForMedian.length / 2)];
+          
+          // Calculate MAD (Median Absolute Deviation)
+          const deviations = prices.map((p: number) => Math.abs(p - median));
+          const sortedDeviations = [...deviations].sort((a, b) => a - b);
+          const mad = sortedDeviations[Math.floor(sortedDeviations.length / 2)];
+          
+          // Filter outliers: keep prices within median ± 3*MAD (or 50% of median if MAD is too small)
+          const threshold = Math.max(mad * 3, median * 0.5);
+          const filteredPrices = prices.filter((p: number) => Math.abs(p - median) <= threshold);
+          
+          if (filteredPrices.length >= 2) {
+            prices = filteredPrices;
+            console.log('MAD filtering: median=', median, 'mad=', mad, 'kept', filteredPrices.length, 'of', matches.length);
+          }
+        }
+        
         const sortedPrices = [...prices].sort((a, b) => a - b);
         
         if (sortedPrices.length > 0) {
           const lowestActive = sortedPrices[0];
-          const medianSold = sortedPrices[Math.floor(sortedPrices.length / 2)];
+          // Use trimmed mean: exclude top/bottom 10% for more robust average
+          const trimCount = Math.floor(sortedPrices.length * 0.1);
+          const trimmedPrices = sortedPrices.slice(trimCount, sortedPrices.length - trimCount || sortedPrices.length);
+          const medianSold = trimmedPrices.length > 0 
+            ? trimmedPrices[Math.floor(trimmedPrices.length / 2)]
+            : sortedPrices[Math.floor(sortedPrices.length / 2)];
+          
           const trend7d = matchedItem.change_7d || 0;
           const quickSellPrice = Math.round(medianSold * 0.85 * 100) / 100;
           const maxProfitPrice = Math.round(medianSold * 1.10 * 100) / 100;
 
           let priceConfidence: 'high' | 'medium' | 'low' = 'low';
-          if (matches.length >= 5) priceConfidence = 'high';
-          else if (matches.length >= 3) priceConfidence = 'medium';
+          if (prices.length >= 5) priceConfidence = 'high';
+          else if (prices.length >= 3) priceConfidence = 'medium';
           
           const trendDirection: 'up' | 'down' | 'stable' = trend7d > 2 ? 'up' : trend7d < -2 ? 'down' : 'stable';
 
@@ -521,9 +549,11 @@ async function enrichWithMarketData(
             quickSellPrice,
             maxProfitPrice,
             priceConfidence,
-            salesCount: matches.length,
+            salesCount: prices.length,
             listingsCount: matches.length,
           };
+          
+          console.log('Calculated pricing:', { lowestActive, medianSold, sampleSize: prices.length });
         }
       }
     }
