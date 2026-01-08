@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePlatformStats, formatStatValue } from '@/hooks/usePlatformStats';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
@@ -29,6 +30,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { t } = useLanguage();
+  const platformStats = usePlatformStats();
   const isDark = theme === 'dark';
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -532,9 +534,9 @@ const Auth = () => {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4">
                 {[
-                  { label: 'Active Traders', value: '50K+' },
-                  { label: 'Items Listed', value: '2.1M' },
-                  { label: 'Daily Volume', value: '$5.2M' },
+                  { label: 'Total Card Value', value: platformStats.isLoading ? '...' : formatStatValue(platformStats.totalCardValue, '$') },
+                  { label: 'Items Listed', value: platformStats.isLoading ? '...' : formatStatValue(platformStats.itemsListed) },
+                  { label: 'Total Volume', value: platformStats.isLoading ? '...' : formatStatValue(platformStats.totalVolume, '$') },
                 ].map((stat, i) => (
                   <motion.div 
                     key={stat.label}
