@@ -11,11 +11,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare, Send, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface StartConversationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   listingId: string;
+  sellerId: string;
   sellerName: string;
 }
 
@@ -23,10 +25,12 @@ export const StartConversationDialog = ({
   open,
   onOpenChange,
   listingId,
+  sellerId,
   sellerName,
 }: StartConversationDialogProps) => {
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSend = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -40,6 +44,14 @@ export const StartConversationDialog = ({
       return;
     }
 
+    const currentUserId = session.user.id;
+
+    // Can't message yourself
+    if (currentUserId === sellerId) {
+      toast.error('You cannot message yourself');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -50,16 +62,77 @@ export const StartConversationDialog = ({
 
       if (filterError) throw filterError;
 
-      if (filterResult.isFiltered) {
+      if (filterResult?.isFiltered) {
         toast.error('Message contains prohibited content (phone numbers, emails, external links)');
         setIsLoading(false);
         return;
       }
 
-      // In production, create conversation and send message
+      // Check if conversation already exists
+      const { data: existingConv } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`and(participant_1.eq.${currentUserId},participant_2.eq.${sellerId}),and(participant_1.eq.${sellerId},participant_2.eq.${currentUserId})`)
+        .eq('listing_id', listingId)
+        .maybeSingle();
+
+      let conversationId = existingConv?.id;
+
+      if (!conversationId) {
+        // Create new conversation
+        const { data: newConv, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            participant_1: currentUserId,
+            participant_2: sellerId,
+            listing_id: listingId,
+            last_message_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+
+        if (convError) throw convError;
+        conversationId = newConv.id;
+      }
+
+      // Insert the message
+      const { error: msgError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: currentUserId,
+          content: message.trim(),
+        });
+
+      if (msgError) throw msgError;
+
+      // Update last_message_at
+      await supabase
+        .from('conversations')
+        .update({ last_message_at: new Date().toISOString() })
+        .eq('id', conversationId);
+
+      // Send notification to seller
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            user_id: sellerId,
+            type: 'new_message',
+            title: 'New Message',
+            body: `You have a new message from a buyer`,
+            data: { conversation_id: conversationId, listing_id: listingId },
+          },
+        });
+      } catch (notifErr) {
+        console.error('Failed to send notification:', notifErr);
+      }
+
       toast.success('Message sent to ' + sellerName);
       setMessage('');
       onOpenChange(false);
+      
+      // Navigate to messages
+      navigate('/messages');
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
