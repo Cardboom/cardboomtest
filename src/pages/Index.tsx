@@ -290,17 +290,20 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Live Market Panel + Personalized Insights + Bounties + News - for logged in users */}
+        {/* Boom Challenges - Full width at top */}
         {user && (
           <div className="container mx-auto px-4 pt-6 space-y-3">
+            {/* Full-width Bounties Panel with explanation */}
+            <BountiesPanel userId={user.id} />
+            
+            {/* Two column layout for market panels */}
             <div className="grid md:grid-cols-2 gap-3">
               <LiveMarketPanel />
               <PersonalizedInsightsPanel userId={user.id} />
             </div>
-            <div className="grid md:grid-cols-2 gap-3">
-              <NewsPanel />
-              <BountiesPanel userId={user.id} />
-            </div>
+            
+            {/* Full-width News Panel */}
+            <NewsPanel />
           </div>
         )}
         
