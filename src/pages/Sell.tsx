@@ -107,6 +107,7 @@ const SellPage = () => {
     allowsVault: true,
     allowsTrade: true,
     allowsShipping: true,
+    isOpenToOffers: false,
     enableFractional: false,
     totalShares: 100,
     minShares: 10,
@@ -247,8 +248,9 @@ const SellPage = () => {
     }
 
     const price = parseFloat(formData.price);
-    if (!price || price <= 0) {
-      toast.error('Please enter a valid price');
+    // Only require price if not open to offers only
+    if (!formData.isOpenToOffers && (!price || price <= 0)) {
+      toast.error('Please enter a valid price or enable "Open to Offers"');
       return;
     }
 
@@ -305,6 +307,7 @@ const SellPage = () => {
         allowsVault: formData.allowsVault,
         allowsTrade: formData.allowsTrade,
         allowsShipping: formData.allowsShipping,
+        isOpenToOffers: formData.isOpenToOffers,
         certificationEnabled: formData.certificationEnabled,
         certificationTier: formData.certificationTier,
       });
@@ -346,6 +349,7 @@ const SellPage = () => {
         allowsVault: true,
         allowsTrade: true,
         allowsShipping: true,
+        isOpenToOffers: false,
         enableFractional: false,
         totalShares: 100,
         minShares: 10,
@@ -571,6 +575,7 @@ const SellPage = () => {
         allowsVault: true,
         allowsTrade: true,
         allowsShipping: true,
+        isOpenToOffers: false,
         enableFractional: false,
         totalShares: 100,
         minShares: 10,
@@ -834,6 +839,29 @@ const SellPage = () => {
                         <p className="text-xs text-muted-foreground mt-1">
                           Seller receives payment in their wallet currency. Buyers see the price converted to their preferred currency.
                         </p>
+                      </div>
+
+                      {/* Open to Offers Toggle */}
+                      <div className="sm:col-span-2">
+                        <label
+                          className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-colors ${
+                            formData.isOpenToOffers ? 'border-primary bg-primary/5' : 'border-border'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <DollarSign className="h-5 w-5 text-primary" />
+                            <div>
+                              <span className="font-medium">Open to Offers</span>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Allow buyers to make offers on this listing. {!formData.price && formData.isOpenToOffers ? 'Listing will be offers-only.' : ''}
+                              </p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={formData.isOpenToOffers}
+                            onCheckedChange={(checked) => setFormData({ ...formData, isOpenToOffers: checked })}
+                          />
+                        </label>
                       </div>
 
                       {/* Smart Price Suggestions */}

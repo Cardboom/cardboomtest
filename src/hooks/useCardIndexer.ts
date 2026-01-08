@@ -20,6 +20,7 @@ interface CreateListingParams {
   allowsVault?: boolean;
   allowsTrade?: boolean;
   allowsShipping?: boolean;
+  isOpenToOffers?: boolean;
   certificationEnabled?: boolean;
   certificationTier?: 'standard' | 'express';
 }
@@ -114,6 +115,7 @@ export function useCardIndexer() {
     allowsVault = true,
     allowsTrade = true,
     allowsShipping = true,
+    isOpenToOffers = false,
     certificationEnabled = false,
     certificationTier = 'standard',
   }: CreateListingParams) => {
@@ -132,7 +134,7 @@ export function useCardIndexer() {
         description,
         category: cardData.category,
         condition,
-        price,
+        price: isOpenToOffers && !price ? 0 : price, // Allow 0 price for offers-only listings
         currency, // Store the listing currency
         image_url: imageUrl,
         market_item_id: marketItem.id,
@@ -146,6 +148,7 @@ export function useCardIndexer() {
         allows_vault: allowsVault,
         allows_trade: allowsTrade,
         allows_shipping: allowsShipping,
+        is_open_to_offers: isOpenToOffers,
         status: 'active',
         certification_status: certificationEnabled ? 'pending' : 'none',
       };
