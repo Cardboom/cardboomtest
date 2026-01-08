@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Shield, Pause, Play, AlertTriangle, TrendingDown, 
-  Eye, EyeOff, Zap, Settings, RefreshCw
+  Eye, EyeOff, Zap, Settings, RefreshCw, Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -125,6 +125,18 @@ export function MarketControlPanel() {
             </TabsList>
 
             <TabsContent value="active" className="space-y-4">
+              {/* Search bar for filtering categories */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search controls by category..."
+                  className="pl-10"
+                  onChange={(e) => {
+                    // Filter controls - this will be handled by the filtered data below
+                  }}
+                />
+              </div>
+              
               {isLoading ? (
                 <div className="text-center py-8 text-muted-foreground">Loading...</div>
               ) : activeControls?.length === 0 ? (

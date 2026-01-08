@@ -89,7 +89,7 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
       return;
     }
 
-    // Check duration
+    // Check duration and auto-generate thumbnail from first frame
     const video = document.createElement('video');
     video.preload = 'metadata';
     video.src = URL.createObjectURL(file);
@@ -105,6 +105,27 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
       setVideoFile(file);
       setVideoPreview(video.src);
       setError(null);
+      
+      // Auto-generate cover picture from video frame at 1 second
+      video.currentTime = Math.min(1, video.duration / 2);
+    };
+
+    video.onseeked = () => {
+      // Create canvas to capture frame as thumbnail
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const thumbnailFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
+            setThumbnailFile(thumbnailFile);
+            setThumbnailPreview(URL.createObjectURL(blob));
+          }
+        }, 'image/jpeg', 0.85);
+      }
       setStep('details');
     };
   };

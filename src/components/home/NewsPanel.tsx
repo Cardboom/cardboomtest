@@ -82,12 +82,15 @@ export const NewsPanel = () => {
         }}
       />
 
-      {/* Header */}
+      {/* Accent line - Tiffany brand color */}
+      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+
+      {/* Header - Tiffany branding */}
       <div className="absolute top-2 left-3 flex items-center gap-1.5 z-10">
-        <div className="w-4 h-4 rounded bg-white/10 flex items-center justify-center">
-          <Newspaper className="w-2.5 h-2.5 text-white/70" />
+        <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
+          <Newspaper className="w-2.5 h-2.5 text-primary" />
         </div>
-        <span className="font-mono text-[8px] text-gray-400 uppercase tracking-widest">
+        <span className="font-mono text-[8px] text-primary uppercase tracking-widest font-bold">
           CARDBOOM NEWS
         </span>
       </div>

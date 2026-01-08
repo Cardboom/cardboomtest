@@ -152,16 +152,16 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
         }}
       />
 
-      {/* Accent line */}
-      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-500 via-amber-500/50 to-transparent" />
+      {/* Accent line - Tiffany brand color */}
+      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
 
-      {/* Header with explanation */}
+      {/* Header with explanation - Tiffany branding */}
       <div className="absolute top-2 left-3 flex items-center gap-3 z-10">
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded bg-amber-500/20 flex items-center justify-center">
-            <Target className="w-3 h-3 text-amber-400" />
+          <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
+            <Target className="w-3 h-3 text-primary" />
           </div>
-          <span className="font-mono text-[9px] text-amber-400 uppercase tracking-widest font-bold">
+          <span className="font-mono text-[9px] text-primary uppercase tracking-widest font-bold">
             BOOM CHALLENGES
           </span>
         </div>
