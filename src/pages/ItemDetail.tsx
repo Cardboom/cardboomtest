@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   TrendingUp, TrendingDown, Eye, Heart, 
   Clock, Users, ChevronLeft, Plus, Loader2, ImagePlus,
@@ -28,6 +29,9 @@ import { ItemBids } from '@/components/item/ItemBids';
 import { CollectiveCard, CreateCollectiveDialog } from '@/components/collective';
 import { CardSocialProof } from '@/components/CardSocialProof';
 import { generateCardUrl } from '@/lib/seoSlug';
+import { ListThisCardDialog } from '@/components/item/ListThisCardDialog';
+import { RelatedListings } from '@/components/item/RelatedListings';
+import { ItemOffersTab } from '@/components/item/ItemOffersTab';
 
 const ItemDetail = () => {
   const { id } = useParams();
@@ -325,15 +329,25 @@ const ItemDetail = () => {
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">
-        {/* Back Button */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)}
-          className="mb-4 gap-2"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          Back
-        </Button>
+        {/* Top Bar: Back Button + List This Card */}
+        <div className="flex items-center justify-between mb-4">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </Button>
+          
+          <ListThisCardDialog
+            cardName={item.name}
+            category={item.category}
+            setName={item.set_name}
+            marketItemId={item.id}
+            user={user}
+          />
+        </div>
 
         {/* Item Header */}
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
@@ -531,20 +545,57 @@ const ItemDetail = () => {
           />
         </section>
 
-        {/* Sales History & Grade Comparison - Side by Side */}
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          <section aria-labelledby="sales-history-heading">
-            <ItemSalesHistory itemId={id || ''} />
-          </section>
-          
-          <section aria-labelledby="grade-comparison-heading">
-            <ItemGradeComparison 
-              itemId={id || ''} 
-              selectedGrade={selectedGrade}
-              onGradeChange={setSelectedGrade}
-            />
-          </section>
-        </div>
+        {/* Tabbed Section: Sellers, Offers, History, Grades */}
+        <section className="mb-8">
+          <Tabs defaultValue="sellers" className="w-full">
+            <TabsList className="w-full justify-start mb-4 bg-secondary/50">
+              <TabsTrigger value="sellers" className="gap-2">
+                <Users className="w-4 h-4" />
+                Other Sellers
+              </TabsTrigger>
+              <TabsTrigger value="offers" className="gap-2">
+                <DollarSign className="w-4 h-4" />
+                Offers
+              </TabsTrigger>
+              <TabsTrigger value="history" className="gap-2">
+                <Clock className="w-4 h-4" />
+                Sales History
+              </TabsTrigger>
+              <TabsTrigger value="grades" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Grade Comparison
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="sellers">
+              <RelatedListings 
+                marketItemId={item.id}
+                cardName={item.name}
+                category={item.category}
+              />
+            </TabsContent>
+            
+            <TabsContent value="offers">
+              <ItemOffersTab 
+                marketItemId={item.id}
+                cardName={item.name}
+                currentPrice={item.current_price}
+              />
+            </TabsContent>
+            
+            <TabsContent value="history">
+              <ItemSalesHistory itemId={id || ''} />
+            </TabsContent>
+            
+            <TabsContent value="grades">
+              <ItemGradeComparison 
+                itemId={id || ''} 
+                selectedGrade={selectedGrade}
+                onGradeChange={setSelectedGrade}
+              />
+            </TabsContent>
+          </Tabs>
+        </section>
 
         {/* Active Listings - Full Width */}
         <section className="mb-8" aria-labelledby="active-listings-heading">
