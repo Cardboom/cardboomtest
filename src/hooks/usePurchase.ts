@@ -4,10 +4,13 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useAchievementTriggers } from './useAchievementTriggers';
 
+type Currency = 'USD' | 'EUR' | 'TRY';
+
 interface PurchaseParams {
   listingId: string;
   sellerId: string;
   price: number;
+  listingCurrency: Currency;
   deliveryOption: 'vault' | 'trade' | 'ship';
   title: string;
   category: string;
@@ -22,6 +25,57 @@ interface PurchaseParams {
     postalCode: string;
   };
 }
+
+interface ExchangeRates {
+  USD_TRY: number;
+  USD_EUR: number;
+  EUR_TRY: number;
+}
+
+const DEFAULT_RATES: ExchangeRates = {
+  USD_TRY: 42.62,
+  USD_EUR: 0.92,
+  EUR_TRY: 46.32,
+};
+
+// Fetch current exchange rates from database
+const fetchExchangeRates = async (): Promise<ExchangeRates> => {
+  try {
+    const { data, error } = await supabase
+      .from('currency_rates')
+      .select('from_currency, to_currency, rate');
+
+    if (!error && data) {
+      const rates = { ...DEFAULT_RATES };
+      data.forEach((row: { from_currency: string; to_currency: string; rate: number }) => {
+        const key = `${row.from_currency}_${row.to_currency}` as keyof ExchangeRates;
+        if (key in rates) {
+          rates[key] = Number(row.rate);
+        }
+      });
+      return rates;
+    }
+  } catch (error) {
+    console.log('Using default exchange rates');
+  }
+  return DEFAULT_RATES;
+};
+
+// Convert any currency to USD
+const convertToUSD = (amount: number, fromCurrency: Currency, rates: ExchangeRates): number => {
+  if (fromCurrency === 'USD') return amount;
+  if (fromCurrency === 'TRY') return amount / rates.USD_TRY;
+  if (fromCurrency === 'EUR') return amount / rates.USD_EUR;
+  return amount;
+};
+
+// Convert USD to any currency
+const convertFromUSD = (amountUSD: number, toCurrency: Currency, rates: ExchangeRates): number => {
+  if (toCurrency === 'USD') return amountUSD;
+  if (toCurrency === 'TRY') return amountUSD * rates.USD_TRY;
+  if (toCurrency === 'EUR') return amountUSD * rates.USD_EUR;
+  return amountUSD;
+};
 
 export const usePurchase = () => {
   const [loading, setLoading] = useState(false);
@@ -97,6 +151,9 @@ export const usePurchase = () => {
         return { success: false };
       }
 
+      // Fetch current exchange rates
+      const exchangeRates = await fetchExchangeRates();
+
       // 2. Get buyer's wallet
       const { data: buyerWallet, error: buyerWalletError } = await supabase
         .from('wallets')
@@ -110,17 +167,7 @@ export const usePurchase = () => {
         return { success: false };
       }
 
-      // 3. Calculate fees (with Pro subscription check)
-      const fees = await calculateFees(params.price, buyerId, params.sellerId);
-
-      // 4. Check buyer has sufficient balance
-      if (Number(buyerWallet.balance) < fees.totalBuyerPays) {
-        toast.error(`Insufficient balance. You need $${fees.totalBuyerPays.toFixed(2)} (including fees)`);
-        navigate('/wallet');
-        return { success: false };
-      }
-
-      // 5. Get seller's wallet
+      // 3. Get seller's wallet
       const { data: sellerWallet, error: sellerWalletError } = await supabase
         .from('wallets')
         .select('*')
@@ -130,6 +177,27 @@ export const usePurchase = () => {
       if (sellerWalletError) throw sellerWalletError;
       if (!sellerWallet) {
         toast.error('Seller wallet not found');
+        return { success: false };
+      }
+
+      const buyerCurrency = (buyerWallet.currency || 'USD') as Currency;
+      const sellerCurrency = (sellerWallet.currency || 'USD') as Currency;
+      const listingCurrency = params.listingCurrency || 'USD';
+
+      // CRITICAL: Convert listing price to USD first (our base currency for all calculations)
+      const priceInUSD = convertToUSD(params.price, listingCurrency, exchangeRates);
+
+      // 4. Calculate fees based on USD price
+      const fees = await calculateFees(priceInUSD, buyerId, params.sellerId);
+
+      // Convert buyer's total to their wallet currency for balance check
+      const buyerTotalInWalletCurrency = convertFromUSD(fees.totalBuyerPays, buyerCurrency, exchangeRates);
+
+      // 5. Check buyer has sufficient balance in their currency
+      if (Number(buyerWallet.balance) < buyerTotalInWalletCurrency) {
+        const currencySymbol = buyerCurrency === 'USD' ? '$' : buyerCurrency === 'EUR' ? '€' : '₺';
+        toast.error(`Insufficient balance. You need ${currencySymbol}${buyerTotalInWalletCurrency.toFixed(2)} (including fees)`);
+        navigate('/wallet');
         return { success: false };
       }
 
@@ -145,18 +213,27 @@ export const usePurchase = () => {
         return { success: false };
       }
 
-      // 7. Create order
+      // Calculate seller payout in their wallet currency
+      const sellerPayoutInWalletCurrency = convertFromUSD(fees.sellerReceives, sellerCurrency, exchangeRates);
+
+      // 7. Create order with currency tracking
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           listing_id: params.listingId,
           buyer_id: buyerId,
           seller_id: params.sellerId,
-          price: params.price,
+          price: priceInUSD, // Store in USD
           buyer_fee: fees.buyerFee,
           seller_fee: fees.sellerFee,
           delivery_option: params.deliveryOption,
           status: 'paid',
+          listing_currency: listingCurrency,
+          buyer_currency: buyerCurrency,
+          seller_currency: sellerCurrency,
+          exchange_rate_used: exchangeRates.USD_TRY, // Store for audit
+          price_in_listing_currency: params.price,
+          seller_payout_in_seller_currency: sellerPayoutInWalletCurrency,
         })
         .select()
         .single();
@@ -171,8 +248,8 @@ export const usePurchase = () => {
 
       if (updateListingError) throw updateListingError;
 
-      // 9. Deduct from buyer's wallet
-      const newBuyerBalance = Number(buyerWallet.balance) - fees.totalBuyerPays;
+      // 9. Deduct from buyer's wallet (in their currency)
+      const newBuyerBalance = Number(buyerWallet.balance) - buyerTotalInWalletCurrency;
       const { error: buyerUpdateError } = await supabase
         .from('wallets')
         .update({ balance: newBuyerBalance })
@@ -180,20 +257,20 @@ export const usePurchase = () => {
 
       if (buyerUpdateError) throw buyerUpdateError;
 
-      // 10. Create buyer transaction record
+      // 10. Create buyer transaction record (in their currency)
       await supabase
         .from('transactions')
         .insert({
           wallet_id: buyerWallet.id,
           type: 'purchase',
-          amount: -fees.totalBuyerPays,
-          fee: fees.buyerFee,
+          amount: -buyerTotalInWalletCurrency,
+          fee: convertFromUSD(fees.buyerFee, buyerCurrency, exchangeRates),
           description: `Purchase: ${params.title}`,
           reference_id: order.id,
         });
 
-      // 11. Credit seller's wallet
-      const newSellerBalance = Number(sellerWallet.balance) + fees.sellerReceives;
+      // 11. Credit seller's wallet (in their currency)
+      const newSellerBalance = Number(sellerWallet.balance) + sellerPayoutInWalletCurrency;
       const { error: sellerUpdateError } = await supabase
         .from('wallets')
         .update({ balance: newSellerBalance })
@@ -201,14 +278,14 @@ export const usePurchase = () => {
 
       if (sellerUpdateError) throw sellerUpdateError;
 
-      // 12. Create seller transaction record
+      // 12. Create seller transaction record (in their currency)
       await supabase
         .from('transactions')
         .insert({
           wallet_id: sellerWallet.id,
           type: 'sale',
-          amount: fees.sellerReceives,
-          fee: fees.sellerFee,
+          amount: sellerPayoutInWalletCurrency,
+          fee: convertFromUSD(fees.sellerFee, sellerCurrency, exchangeRates),
           description: `Sale: ${params.title}`,
           reference_id: order.id,
         });
@@ -219,7 +296,7 @@ export const usePurchase = () => {
         .insert({
           user_id: buyerId,
           custom_name: params.title,
-          purchase_price: params.price,
+          purchase_price: priceInUSD, // Store in USD for consistency
           purchase_date: new Date().toISOString().split('T')[0],
           image_url: params.imageUrl,
           in_vault: params.deliveryOption === 'vault',
@@ -241,7 +318,7 @@ export const usePurchase = () => {
             title: params.title,
             category: params.category,
             condition: params.condition,
-            estimated_value: params.price,
+            estimated_value: priceInUSD,
             listing_id: params.listingId,
             order_id: order.id,
             image_url: params.imageUrl,
@@ -269,7 +346,7 @@ export const usePurchase = () => {
         state: {
           orderId: order.id,
           title: params.title,
-          price: params.price,
+          price: priceInUSD,
           fees: fees,
           deliveryOption: params.deliveryOption,
           imageUrl: params.imageUrl,
