@@ -31,7 +31,6 @@ export const LiveMarketPanel = () => {
   useEffect(() => {
     fetchMarketData();
     
-    // Realtime subscriptions
     const ordersChannel = supabase
       .channel('market-orders')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, fetchMarketData)
@@ -48,39 +47,35 @@ export const LiveMarketPanel = () => {
     };
   }, []);
 
-  // Rotate events
+  // Rotate events - SLOWER: 6 seconds instead of 3
   useEffect(() => {
     if (events.length === 0) return;
     const interval = setInterval(() => {
       setCurrentEventIndex((prev) => (prev + 1) % events.length);
-    }, 3000);
+    }, 6000);
     return () => clearInterval(interval);
   }, [events.length]);
 
   const fetchMarketData = async () => {
-    // Fetch market items for ticker
     const { data: marketItems } = await supabase
       .from('market_items')
       .select('name, current_price, change_7d, category')
       .not('current_price', 'is', null)
       .gt('current_price', 0)
       .order('views_7d', { ascending: false })
-      .limit(20);
+      .limit(30);
 
     if (marketItems) {
       const ticks: MarketTick[] = marketItems.map(item => ({
-        symbol: item.name.length > 15 ? item.name.substring(0, 15) + '...' : item.name,
+        symbol: item.name.length > 12 ? item.name.substring(0, 12) + '..' : item.name,
         price: item.current_price || 0,
         change: item.change_7d || 0,
       }));
-      // Double for seamless loop
       setMarketTicks([...ticks, ...ticks]);
     }
 
-    // Fetch recent events
     const newEvents: EventItem[] = [];
 
-    // Recent sales
     const { data: orders } = await supabase
       .from('orders')
       .select('id, price_cents, listing:listings(title)')
@@ -93,12 +88,11 @@ export const LiveMarketPanel = () => {
       newEvents.push({
         id: `sale-${order.id}`,
         icon: '🔥',
-        message: `${title.substring(0, 25)}${title.length > 25 ? '...' : ''} sold for $${((order.price_cents || 0) / 100).toLocaleString()}`,
+        message: `${title.substring(0, 20)}${title.length > 20 ? '..' : ''} sold $${((order.price_cents || 0) / 100).toLocaleString()}`,
         type: 'sale',
       });
     });
 
-    // Recent grading
     const { data: grading } = await supabase
       .from('grading_orders')
       .select('id, card_name, final_grade')
@@ -111,12 +105,11 @@ export const LiveMarketPanel = () => {
       newEvents.push({
         id: `grade-${g.id}`,
         icon: '🧠',
-        message: `AI Graded: ${g.card_name.substring(0, 20)}${g.card_name.length > 20 ? '...' : ''} → ${g.final_grade}`,
+        message: `AI Grade: ${g.card_name.substring(0, 16)}${g.card_name.length > 16 ? '..' : ''} → ${g.final_grade}`,
         type: 'grading',
       });
     });
 
-    // Recent listings
     const { data: listings } = await supabase
       .from('listings')
       .select('id, title, price')
@@ -128,12 +121,11 @@ export const LiveMarketPanel = () => {
       newEvents.push({
         id: `list-${l.id}`,
         icon: '📋',
-        message: `New: ${l.title.substring(0, 25)}${l.title.length > 25 ? '...' : ''} — $${l.price?.toLocaleString()}`,
+        message: `New: ${l.title.substring(0, 18)}${l.title.length > 18 ? '..' : ''} $${l.price?.toLocaleString()}`,
         type: 'listing',
       });
     });
 
-    // Card Wars
     const { data: wars } = await supabase
       .from('card_wars')
       .select('id, card_a_name, card_b_name, winner')
@@ -147,25 +139,23 @@ export const LiveMarketPanel = () => {
       newEvents.push({
         id: `war-${w.id}`,
         icon: '🏆',
-        message: `Card Wars: ${winner.substring(0, 20)}${winner.length > 20 ? '...' : ''} wins`,
+        message: `Card Wars: ${winner.substring(0, 16)}${winner.length > 16 ? '..' : ''} wins`,
         type: 'cardwar',
       });
     });
 
-    // Fallback demo data if empty
     if (newEvents.length === 0) {
       newEvents.push(
         { id: 'demo-1', icon: '📈', message: 'CardBoom Index +2.4% today', type: 'price' },
-        { id: 'demo-2', icon: '🔥', message: 'Charizard Base Set sold for $12,500', type: 'sale' },
-        { id: 'demo-3', icon: '🧠', message: 'AI Grading: Luffy OP-01 → 9.5 Gem Mint', type: 'grading' },
+        { id: 'demo-2', icon: '🔥', message: 'Charizard Base sold $12,500', type: 'sale' },
+        { id: 'demo-3', icon: '🧠', message: 'AI Grade: Luffy OP-01 → 9.5', type: 'grading' },
       );
     }
 
     setEvents(newEvents.sort(() => Math.random() - 0.5));
 
-    // Micro ticks
     const micros: MicroTick[] = [];
-    marketItems?.slice(0, 10).forEach(item => {
+    marketItems?.slice(0, 15).forEach(item => {
       if (item.change_7d) {
         micros.push({
           value: `${item.change_7d > 0 ? '+' : ''}${item.change_7d.toFixed(1)}%`,
@@ -179,126 +169,113 @@ export const LiveMarketPanel = () => {
         { value: '+3.2%', isPositive: true },
         { value: '-1.8%', isPositive: false },
         { value: '+5.1%', isPositive: true },
-        { value: '+0.7%', isPositive: true },
-        { value: '-2.4%', isPositive: false },
       );
     }
     
-    // Triple for seamless vertical loop
     setMicroTicks([...micros, ...micros, ...micros]);
   };
 
   const currentEvent = events[currentEventIndex];
 
   return (
-    <div className="w-full mb-6">
+    <div 
+      className={cn(
+        "relative overflow-hidden rounded-[18px]",
+        "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
+        "border border-white/5",
+        "h-[100px] md:h-[140px]",
+        "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+      )}
+      style={{ backdropFilter: 'blur(22px)' }}
+    >
+      {/* Noise texture */}
       <div 
-        className={cn(
-          "relative overflow-hidden rounded-[18px]",
-          "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
-          "border border-white/5",
-          "h-[120px] md:h-[180px]",
-          "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
-        )}
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
-          backdropFilter: 'blur(22px)',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
         }}
-      >
-        {/* Noise texture overlay */}
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none" />
+
+      {/* Top: Horizontal Ticker - SMALLER text, SLOWER animation */}
+      <div className="absolute top-0 left-0 right-0 h-6 md:h-7 border-b border-white/5 overflow-hidden">
         <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          }}
-        />
-
-        {/* Inner glow */}
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none" />
-
-        {/* Top Layer: Fast Horizontal Ticker */}
-        <div className="absolute top-0 left-0 right-0 h-8 md:h-10 border-b border-white/5 overflow-hidden">
-          <div 
-            ref={tickerRef}
-            className="flex items-center h-full animate-marquee-fast whitespace-nowrap"
-            style={{
-              animation: 'marquee 30s linear infinite',
-            }}
-          >
-            {marketTicks.map((tick, i) => (
-              <div key={i} className="flex items-center gap-2 px-4">
-                <span className="font-mono text-[10px] md:text-xs text-gray-400 uppercase tracking-wider">
-                  {tick.symbol}
-                </span>
-                <span className="font-mono text-[10px] md:text-xs text-white font-medium">
-                  ${tick.price.toLocaleString()}
-                </span>
-                <span className={cn(
-                  "font-mono text-[10px] md:text-xs font-medium",
-                  tick.change >= 0 ? "text-emerald-400" : "text-red-400"
-                )}>
-                  {tick.change >= 0 ? '+' : ''}{tick.change.toFixed(1)}%
-                </span>
-              </div>
-            ))}
-          </div>
+          ref={tickerRef}
+          className="flex items-center h-full whitespace-nowrap"
+          style={{ animation: 'marquee 60s linear infinite' }}
+        >
+          {marketTicks.map((tick, i) => (
+            <div key={i} className="flex items-center gap-1 px-2 md:px-3">
+              <span className="font-mono text-[8px] md:text-[9px] text-gray-500 uppercase tracking-wide">
+                {tick.symbol}
+              </span>
+              <span className="font-mono text-[8px] md:text-[9px] text-white/80 font-medium">
+                ${tick.price.toLocaleString()}
+              </span>
+              <span className={cn(
+                "font-mono text-[8px] md:text-[9px] font-medium",
+                tick.change >= 0 ? "text-emerald-400" : "text-red-400"
+              )}>
+                {tick.change >= 0 ? '+' : ''}{tick.change.toFixed(1)}%
+              </span>
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Center Layer: Event Pulse */}
-        <div className="absolute inset-x-0 top-8 md:top-10 bottom-0 flex items-center px-4 md:px-8 pr-16 md:pr-24">
-          <AnimatePresence mode="wait">
-            {currentEvent && (
-              <motion.div
-                key={currentEvent.id}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
-                transition={{ duration: 0.4 }}
-                className="flex items-center gap-3"
-              >
-                <span className="text-xl md:text-3xl">{currentEvent.icon}</span>
-                <span className="font-mono text-sm md:text-lg text-white/90 tracking-wide">
-                  {currentEvent.message}
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+      {/* Center: Event Pulse - SMALLER text */}
+      <div className="absolute inset-x-0 top-6 md:top-7 bottom-0 flex items-center px-3 md:px-6 pr-14 md:pr-20">
+        <AnimatePresence mode="wait">
+          {currentEvent && (
+            <motion.div
+              key={currentEvent.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center gap-2"
+            >
+              <span className="text-base md:text-xl">{currentEvent.icon}</span>
+              <span className="font-mono text-[10px] md:text-xs text-white/90 tracking-wide">
+                {currentEvent.message}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-        {/* Right Layer: Vertical Micro Ticker */}
-        <div className="absolute right-4 md:right-6 top-10 md:top-12 bottom-2 w-12 md:w-16 overflow-hidden hidden md:block">
-          <div 
-            className="flex flex-col animate-scroll-vertical"
-            style={{
-              animation: 'scrollVertical 10s linear infinite',
-            }}
-          >
-            {microTicks.map((tick, i) => (
-              <div 
-                key={i}
-                className={cn(
-                  "font-mono text-[10px] md:text-xs font-bold py-1 text-center",
-                  tick.isPositive ? "text-emerald-400" : "text-red-400"
-                )}
-              >
-                {tick.value}
-              </div>
-            ))}
-          </div>
+      {/* Right: Vertical Micro Ticker - SLOWER */}
+      <div className="absolute right-2 md:right-4 top-8 md:top-9 bottom-1 w-10 md:w-12 overflow-hidden hidden md:block">
+        <div 
+          className="flex flex-col"
+          style={{ animation: 'scrollVertical 20s linear infinite' }}
+        >
+          {microTicks.map((tick, i) => (
+            <div 
+              key={i}
+              className={cn(
+                "font-mono text-[8px] font-bold py-0.5 text-center",
+                tick.isPositive ? "text-emerald-400" : "text-red-400"
+              )}
+            >
+              {tick.value}
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Live indicator */}
-        <div className="absolute bottom-2 left-4 flex items-center gap-1.5">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-          </span>
-          <span className="font-mono text-[9px] text-gray-500 uppercase tracking-widest">LIVE</span>
-        </div>
+      {/* Live indicator */}
+      <div className="absolute bottom-1 left-2 md:left-3 flex items-center gap-1">
+        <span className="relative flex h-1 w-1">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-1 w-1 bg-emerald-500"></span>
+        </span>
+        <span className="font-mono text-[7px] text-gray-500 uppercase tracking-widest">LIVE</span>
+      </div>
 
-        {/* CardBoom branding */}
-        <div className="absolute bottom-2 right-4 md:right-24">
-          <span className="font-mono text-[9px] text-gray-600 uppercase tracking-widest">CARDBOOM TERMINAL</span>
-        </div>
+      <div className="absolute bottom-1 right-2 md:right-16">
+        <span className="font-mono text-[7px] text-gray-600 uppercase tracking-widest">TERMINAL</span>
       </div>
 
       <style>{`
