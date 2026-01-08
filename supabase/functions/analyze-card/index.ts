@@ -529,9 +529,69 @@ async function enrichWithMarketData(
     }
   }
 
-  // If we have Ximilar pricing but no internal pricing, use Ximilar's
+  // Priority 1: Check our card_price_estimates table for verified pricing
+  if (!pricing && nameToSearch) {
+    const { data: priceEstimate } = await supabase
+      .from('card_price_estimates')
+      .select('*')
+      .ilike('card_name', `%${nameToSearch.split(' ')[0]}%`)
+      .order('updated_at', { ascending: false })
+      .limit(5);
+    
+    if (priceEstimate && priceEstimate.length > 0) {
+      // Try to find an exact set match first
+      const setName = ximilarResult.setName || matchedItem?.set_name || '';
+      let bestMatch = priceEstimate.find((pe: any) => 
+        pe.set_name && setName && 
+        pe.set_name.toLowerCase().includes(setName.toLowerCase().split(' ')[0])
+      ) || priceEstimate[0];
+      
+      if (bestMatch && (bestMatch.price_ungraded || bestMatch.price_psa_10)) {
+        const ungraded = bestMatch.price_ungraded || 0;
+        console.log('Using verified card_price_estimates:', bestMatch.card_name, bestMatch.set_name, 'Ungraded:', ungraded);
+        
+        pricing = {
+          lowestActive: ungraded,
+          medianSold: ungraded,
+          trend7d: 0,
+          trendDirection: 'stable' as const,
+          quickSellPrice: Math.round(ungraded * 0.85 * 100) / 100,
+          maxProfitPrice: Math.round(ungraded * 1.10 * 100) / 100,
+          priceConfidence: bestMatch.confidence_score >= 0.8 ? 'high' as const : 
+                          bestMatch.confidence_score >= 0.5 ? 'medium' as const : 'low' as const,
+          salesCount: 5,
+          listingsCount: 10,
+        };
+      }
+    }
+  }
+
+  // Priority 2: If we have Ximilar pricing but no internal pricing, use Ximilar's
+  // BUT filter out graded card prices and alternate art variants for ungraded cards
   if (!pricing && ximilarResult.ximilarPricing && ximilarResult.ximilarPricing.length > 0) {
-    const prices = ximilarResult.ximilarPricing.map(p => p.price).filter(p => p > 0);
+    // Filter Ximilar prices: exclude graded cards if we're analyzing an ungraded card
+    const filteredPricing = ximilarResult.ximilarPricing.filter((p: any) => {
+      // If card is not graded, filter out PSA/BGS/CGC listings
+      if (!ximilarResult.isGraded) {
+        const itemName = (p.name || '').toUpperCase();
+        const hasGrade = itemName.includes('PSA') || itemName.includes('BGS') || 
+                        itemName.includes('CGC') || itemName.includes('SGC') ||
+                        p.grade_company || p.grade;
+        if (hasGrade) {
+          console.log('Filtering out graded listing:', p.name, 'price:', p.price);
+          return false;
+        }
+        
+        // Filter out alternate art if not specifically detected
+        if (itemName.includes('ALTERNATE ART') || itemName.includes('ALT ART')) {
+          console.log('Filtering out alternate art listing:', p.name, 'price:', p.price);
+          return false;
+        }
+      }
+      return p.price > 0;
+    });
+
+    const prices = filteredPricing.map((p: any) => p.price);
     if (prices.length > 0) {
       const sortedPrices = [...prices].sort((a, b) => a - b);
       const lowestActive = sortedPrices[0];
@@ -548,6 +608,9 @@ async function enrichWithMarketData(
         salesCount: prices.length,
         listingsCount: prices.length,
       };
+      console.log('Using filtered Ximilar pricing:', { lowestActive, medianSold, filteredCount: prices.length });
+    } else {
+      console.log('All Ximilar prices filtered out - will show insufficient data');
     }
   }
 
