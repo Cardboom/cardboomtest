@@ -10,13 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   ChevronLeft, Vault, Truck, ArrowLeftRight, MessageCircle, 
   ShoppingCart, TrendingUp, TrendingDown, Send, Trash2, User,
-  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText, Clock
+  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText, Clock, Heart
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { PurchaseDialog } from '@/components/purchase/PurchaseDialog';
 import { CardPriceEstimates } from '@/components/CardPriceEstimates';
 import { ListingOffersPanel } from '@/components/listing/ListingOffersPanel';
+import { GradingDonationPanel } from '@/components/listing/GradingDonationPanel';
+import { StartConversationDialog } from '@/components/messaging/StartConversationDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Listing {
@@ -46,6 +48,9 @@ interface Listing {
   // Certification
   certification_status?: string | null;
   grading_order_id?: string | null;
+  // Donations
+  accepts_grading_donations?: boolean;
+  donation_goal_cents?: number;
 }
 
 interface GradingInfo {
@@ -113,6 +118,8 @@ const ListingDetail = () => {
   const [votes, setVotes] = useState<VoteCounts>({ up: 0, down: 0, userVote: null });
   const [voting, setVoting] = useState(false);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [sellerName, setSellerName] = useState('Seller');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -138,6 +145,18 @@ const ListingDetail = () => {
 
       if (error) throw error;
       setListing(data);
+
+      // Fetch seller name
+      if (data?.seller_id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', data.seller_id)
+          .single();
+        if (profile?.display_name) {
+          setSellerName(profile.display_name);
+        }
+      }
       
       // Check for CardBoom grading - multiple strategies
       let gradingData = null;
@@ -599,7 +618,7 @@ const ListingDetail = () => {
                       navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
                       return;
                     }
-                    // TODO: Open message dialog
+                    setMessageDialogOpen(true);
                   }}
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -644,6 +663,15 @@ const ListingDetail = () => {
               listing={listing}
             />
 
+            {/* Message Dialog */}
+            <StartConversationDialog
+              open={messageDialogOpen}
+              onOpenChange={setMessageDialogOpen}
+              listingId={listing.id}
+              sellerId={listing.seller_id}
+              sellerName={sellerName}
+            />
+
             {user?.id === listing.seller_id && (
               <div className="flex items-center gap-3">
                 <Badge className="bg-primary/20 text-primary">This is your listing</Badge>
@@ -676,6 +704,43 @@ const ListingDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Grading Donation Section - Only for ungraded cards */}
+        {!gradingInfo?.final_grade && listing.certification_status !== 'completed' && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Heart className="w-5 h-5 text-primary" />
+                Community Grading
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GradingDonationPanel
+                targetType="listing"
+                targetId={listing.id}
+                ownerId={listing.seller_id}
+                acceptsDonations={listing.accepts_grading_donations || false}
+                goalCents={listing.donation_goal_cents || 2000}
+                isOwner={user?.id === listing.seller_id}
+                cardTitle={listing.title}
+                onToggleDonations={async (enabled) => {
+                  const { error } = await supabase
+                    .from('listings')
+                    .update({ accepts_grading_donations: enabled })
+                    .eq('id', listing.id);
+                  if (!error) {
+                    setListing(prev => prev ? { ...prev, accepts_grading_donations: enabled } : null);
+                    toast.success(enabled ? 'Donations enabled' : 'Donations disabled');
+                  }
+                }}
+                onRefundAndDelist={async () => {
+                  // Refund logic handled in panel
+                  fetchListing();
+                }}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Offers Section */}
         <Card className="mb-8">

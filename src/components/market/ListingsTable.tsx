@@ -167,8 +167,8 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
 
   // Render grade badge
   const renderGradeBadge = (listing: Listing) => {
-    // CardBoom graded
-    if (listing.certification_status === 'completed' && listing.grade) {
+    // CardBoom graded - show if we have a grade (regardless of certification_status)
+    if (listing.grade) {
       return (
         <Badge className="bg-primary text-primary-foreground gap-1">
           <Award className="h-3 w-3" />

@@ -339,6 +339,19 @@ export const usePurchase = () => {
         console.error('Error checking achievements:', achievementError);
       }
 
+      // Award XP for both buyer and seller (1 XP per $1)
+      try {
+        const xpAmount = Math.floor(priceInUSD);
+        if (xpAmount > 0) {
+          // Buyer XP
+          await supabase.rpc('add_pass_xp', { p_user_id: buyerId, p_xp_amount: xpAmount, p_source: 'purchase' });
+          // Seller XP
+          await supabase.rpc('add_pass_xp', { p_user_id: params.sellerId, p_xp_amount: xpAmount, p_source: 'sale' });
+        }
+      } catch (xpError) {
+        console.error('Error awarding XP:', xpError);
+      }
+
       toast.success('Purchase successful!');
       
       // Navigate to success page with order details

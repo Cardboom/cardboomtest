@@ -238,6 +238,7 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
         open={showMessageDialog}
         onOpenChange={setShowMessageDialog}
         listingId={selectedListing || ''}
+        sellerId={currentListing?.seller_id || ''}
         sellerName={currentListing?.seller_name || ''}
       />
     </>
