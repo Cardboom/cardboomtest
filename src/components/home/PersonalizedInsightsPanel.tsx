@@ -10,6 +10,17 @@ interface Insight {
   message: string;
   metric?: string;
   isPositive?: boolean;
+  isLongForm?: boolean; // For AI buzz text
+}
+
+interface AIMarketSummary {
+  communityBuzz: string;
+  hotTake: string;
+  sleeper: string;
+  sentiment: 'bullish' | 'bearish' | 'mixed';
+  cardBoomIndex: number;
+  platformGradingAvg: number;
+  weeklyVolume: number;
 }
 
 interface PersonalizedInsightsPanelProps {
@@ -38,6 +49,77 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
     const newInsights: Insight[] = [];
 
     try {
+      // Fetch AI-generated market summary
+      const { data: aiSummary, error: aiError } = await supabase.functions.invoke('ai-market-summary', {
+        body: { userId }
+      });
+
+      if (!aiError && aiSummary) {
+        const summary = aiSummary as AIMarketSummary;
+        
+        // Add CardBoom Index insight
+        newInsights.push({
+          id: 'cb-index',
+          icon: summary.cardBoomIndex >= 0 ? '📈' : '📉',
+          message: 'CardBoom Index',
+          metric: `${summary.cardBoomIndex >= 0 ? '+' : ''}${summary.cardBoomIndex.toFixed(2)}%`,
+          isPositive: summary.cardBoomIndex >= 0,
+        });
+
+        // Add Platform Grading Average
+        if (summary.platformGradingAvg > 0) {
+          newInsights.push({
+            id: 'grading-avg',
+            icon: '🏆',
+            message: 'Platform Grading Avg',
+            metric: `${summary.platformGradingAvg.toFixed(1)}/10`,
+            isPositive: summary.platformGradingAvg >= 8.5,
+          });
+        }
+
+        // Add Community Buzz (AI-generated)
+        if (summary.communityBuzz) {
+          newInsights.push({
+            id: 'buzz',
+            icon: summary.sentiment === 'bullish' ? '🔥' : summary.sentiment === 'bearish' ? '❄️' : '💬',
+            message: summary.communityBuzz,
+            isLongForm: true,
+          });
+        }
+
+        // Add Hot Take (AI-generated)
+        if (summary.hotTake) {
+          newInsights.push({
+            id: 'hot-take',
+            icon: '🎯',
+            message: summary.hotTake,
+            isLongForm: true,
+          });
+        }
+
+        // Add Sleeper pick (AI-generated)
+        if (summary.sleeper) {
+          newInsights.push({
+            id: 'sleeper',
+            icon: '👀',
+            message: summary.sleeper,
+            isLongForm: true,
+          });
+        }
+
+        // Add weekly volume
+        if (summary.weeklyVolume > 0) {
+          newInsights.push({
+            id: 'volume',
+            icon: '⚡',
+            message: 'Weekly trades',
+            metric: summary.weeklyVolume.toLocaleString(),
+            isPositive: true,
+          });
+        }
+      }
+
+      // Fetch user-specific data
       const { data: portfolioItems } = await supabase
         .from('portfolio_items')
         .select('*, market_item:market_items(current_price, change_7d, name)')
@@ -76,7 +158,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         newInsights.push({
           id: 'outperform',
           icon: '📊',
-          message: `Vault outperformed CardBoom Index by`,
+          message: `Your vault outperformed index by`,
           metric: `+${outperformance.toFixed(1)}%`,
           isPositive: true,
         });
@@ -84,7 +166,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         newInsights.push({
           id: 'performance',
           icon: '📊',
-          message: `Portfolio tracking CardBoom Index`,
+          message: `Portfolio tracking index`,
           metric: `${portfolioChange >= 0 ? '+' : ''}${portfolioChange.toFixed(1)}%`,
           isPositive: portfolioChange >= 0,
         });
@@ -107,6 +189,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         });
       }
 
+      // User's personal grading average
       const { data: gradingOrders } = await supabase
         .from('grading_orders')
         .select('id, final_grade')
@@ -123,9 +206,9 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
 
         if (avgGrade >= 8) {
           newInsights.push({
-            id: 'grading',
+            id: 'your-grading',
             icon: '🧠',
-            message: `Avg CardBoom grade`,
+            message: `Your avg grade`,
             metric: `${avgGrade.toFixed(1)}`,
             isPositive: avgGrade >= 9,
           });
@@ -146,7 +229,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
       if (newInsights.length === 0) {
         newInsights.push(
           { id: 'welcome', icon: '👋', message: 'Build portfolio for insights', metric: '', isPositive: true },
-          { id: 'tip-1', icon: '💡', message: 'AI analyzes trends', metric: '24/7', isPositive: true },
+          { id: 'tip-1', icon: '💡', message: 'AI analyzes market trends', metric: '24/7', isPositive: true },
           { id: 'tip-2', icon: '🔔', message: 'Set price alerts', metric: '', isPositive: true },
         );
       }
@@ -193,7 +276,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         </span>
       </div>
 
-      {/* Main content - SMALLER text */}
+      {/* Main content */}
       <div className="absolute inset-x-0 top-8 md:top-9 bottom-0 flex items-center justify-center px-4 md:px-8">
         <AnimatePresence mode="wait">
           {currentInsight && (
@@ -203,21 +286,36 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.6 }}
-              className="text-center"
+              className="text-center max-w-full"
             >
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <span className="text-lg md:text-2xl">{currentInsight.icon}</span>
-              </div>
-              <p className="font-mono text-[10px] md:text-xs text-white/80 tracking-wide mb-0.5">
-                {currentInsight.message}
-              </p>
-              {currentInsight.metric && (
-                <p className={cn(
-                  "font-mono text-base md:text-xl font-bold tracking-wider",
-                  currentInsight.isPositive ? "text-emerald-400" : "text-red-400"
-                )}>
-                  {currentInsight.metric}
-                </p>
+              {currentInsight.isLongForm ? (
+                // Long-form AI insight (community buzz, hot take, sleeper)
+                <>
+                  <div className="flex items-center justify-center gap-2 mb-1.5">
+                    <span className="text-lg md:text-xl">{currentInsight.icon}</span>
+                  </div>
+                  <p className="font-mono text-[9px] md:text-[11px] text-white/90 tracking-wide leading-relaxed max-w-[280px] md:max-w-[340px] mx-auto line-clamp-3">
+                    {currentInsight.message}
+                  </p>
+                </>
+              ) : (
+                // Standard metric insight
+                <>
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <span className="text-lg md:text-2xl">{currentInsight.icon}</span>
+                  </div>
+                  <p className="font-mono text-[10px] md:text-xs text-white/80 tracking-wide mb-0.5">
+                    {currentInsight.message}
+                  </p>
+                  {currentInsight.metric && (
+                    <p className={cn(
+                      "font-mono text-base md:text-xl font-bold tracking-wider",
+                      currentInsight.isPositive ? "text-emerald-400" : "text-red-400"
+                    )}>
+                      {currentInsight.metric}
+                    </p>
+                  )}
+                </>
               )}
             </motion.div>
           )}
@@ -226,12 +324,12 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
 
       {/* Progress dots */}
       <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1">
-        {insights.slice(0, 5).map((_, i) => (
+        {insights.slice(0, 8).map((_, i) => (
           <div
             key={i}
             className={cn(
               "w-1 h-1 rounded-full transition-all duration-300",
-              i === currentIndex % Math.min(5, insights.length)
+              i === currentIndex % Math.min(8, insights.length)
                 ? "bg-primary w-3"
                 : "bg-gray-600"
             )}
