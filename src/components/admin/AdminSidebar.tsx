@@ -114,6 +114,7 @@ const navGroups: NavGroup[] = [
     icon: Coins,
     items: [
       { id: "points", label: "Points Manager", icon: Coins },
+      { id: "bounties", label: "Bounties", icon: Coins },
       { id: "promos", label: "Promos", icon: Tag },
     ],
   },

@@ -56,6 +56,7 @@ import { DigitalProductsManager } from '@/components/admin/DigitalProductsManage
 import { EscalationManagement } from '@/components/admin/EscalationManagement';
 import { LaunchCheckDashboard } from '@/components/admin/LaunchCheckDashboard';
 import { SystemStatusDashboard } from '@/components/admin/SystemStatusDashboard';
+import { BountyManager } from '@/components/admin/BountyManager';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -286,6 +287,8 @@ const Admin = () => {
         return <LaunchCheckDashboard />;
       case 'system-status':
         return <SystemStatusDashboard />;
+      case 'bounties':
+        return <BountyManager />;
       default:
         return <RevenueDashboard />;
     }
