@@ -224,17 +224,17 @@ export const LiveMarketPanel = () => {
         </div>
       </div>
 
-      {/* Center: Event Pulse - SMALLER text */}
-      <div className="absolute inset-x-0 top-6 md:top-7 bottom-0 flex items-center px-3 md:px-6 pr-14 md:pr-20">
+      {/* Center: Event Pulse - CENTERED */}
+      <div className="absolute inset-x-0 top-6 md:top-7 bottom-0 flex items-center justify-center px-3 md:px-6">
         <AnimatePresence mode="wait">
           {currentEvent && (
             <motion.div
               key={currentEvent.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.5 }}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 text-center"
             >
               <span className="text-base md:text-xl">{currentEvent.icon}</span>
               <span className="font-mono text-[10px] md:text-xs text-white/90 tracking-wide">
