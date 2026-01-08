@@ -36,7 +36,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
 import { CardWarsSection } from '@/components/CardWarsSection';
 import { TopListingsChart } from '@/components/TopListingsChart';
-import { LiveActivityTicker } from '@/components/home/LiveActivityTicker';
+import { LiveMarketPanel } from '@/components/home/LiveMarketPanel';
+import { PersonalizedInsightsPanel } from '@/components/home/PersonalizedInsightsPanel';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -287,10 +288,13 @@ const Index = () => {
       <MarketTicker />
       
       <main>
-        {/* Live Activity Ticker - for logged in users */}
+        {/* Live Market Panel + Personalized Insights - for logged in users */}
         {user && (
           <div className="container mx-auto px-4 pt-6">
-            <LiveActivityTicker />
+            <div className="grid md:grid-cols-2 gap-4">
+              <LiveMarketPanel />
+              <PersonalizedInsightsPanel userId={user.id} />
+            </div>
           </div>
         )}
         
