@@ -321,6 +321,24 @@ const ListingDetail = () => {
         });
 
       if (error) throw error;
+      
+      // Send notification to listing owner (if not commenting on own listing)
+      if (listing && listing.seller_id !== user.id) {
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              user_id: listing.seller_id,
+              type: 'message',
+              title: 'New comment on your listing',
+              body: `Someone commented on "${listing.title}"`,
+              data: { listing_id: id }
+            }
+          });
+        } catch (notifError) {
+          // Don't fail the comment if notification fails
+        }
+      }
+      
       toast.success('Comment added');
       setNewComment('');
       fetchComments();
