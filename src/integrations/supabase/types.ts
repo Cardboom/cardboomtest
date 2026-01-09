@@ -806,6 +806,7 @@ export type Database = {
         Row: {
           auto_generated: boolean | null
           bounty_type: string
+          claimed_by_user_id: string | null
           created_at: string
           created_by: string | null
           description: string
@@ -825,6 +826,7 @@ export type Database = {
         Insert: {
           auto_generated?: boolean | null
           bounty_type: string
+          claimed_by_user_id?: string | null
           created_at?: string
           created_by?: string | null
           description: string
@@ -844,6 +846,7 @@ export type Database = {
         Update: {
           auto_generated?: boolean | null
           bounty_type?: string
+          claimed_by_user_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string

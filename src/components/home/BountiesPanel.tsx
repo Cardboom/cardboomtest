@@ -20,6 +20,8 @@ interface Bounty {
   is_featured: boolean;
   max_claims: number;
   total_claimed: number;
+  claimed_by_user_id: string | null;
+  claimed_by_name?: string;
 }
 
 interface BountyProgress {
@@ -57,7 +59,30 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
         .limit(6);
 
       if (bountiesError) throw bountiesError;
-      setBounties(bountiesData || []);
+      
+      // Fetch claimer names for exhausted bounties
+      const claimerIds = (bountiesData || [])
+        .filter(b => b.claimed_by_user_id)
+        .map(b => b.claimed_by_user_id);
+      
+      let claimerNames: Record<string, string> = {};
+      if (claimerIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .in('id', claimerIds);
+        
+        profiles?.forEach(p => {
+          claimerNames[p.id] = p.display_name || 'User';
+        });
+      }
+      
+      // Map claimer name to bounty
+      const bountiesWithClaimer = (bountiesData || []).map(b => ({
+        ...b,
+        claimed_by_name: b.claimed_by_user_id ? claimerNames[b.claimed_by_user_id] : null
+      }));
+      setBounties(bountiesWithClaimer);
 
       // Fetch user progress
       if (bountiesData && bountiesData.length > 0) {
@@ -95,6 +120,9 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       if (result?.success) {
         toast.success(`🎉 Claimed ${((result.gems_awarded || 0) / 100).toFixed(0)} gems!`);
         fetchBounties();
+        
+        // Dispatch event to refresh gems balance in header
+        window.dispatchEvent(new CustomEvent('gems-balance-updated'));
       } else {
         toast.error(result?.error || 'Failed to claim reward');
       }
@@ -231,9 +259,16 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                   </div>
                   
                   {isGloballyExhausted ? (
-                    <div className="w-full h-5 flex items-center justify-center gap-1 text-[9px] text-gray-500 font-sans font-bold">
-                      <Check className="w-2.5 h-2.5" />
-                      TAKEN
+                    <div className="w-full h-5 flex flex-col items-center justify-center text-[8px] text-gray-500 font-sans">
+                      <div className="flex items-center gap-1 font-bold">
+                        <Check className="w-2.5 h-2.5" />
+                        TAKEN
+                      </div>
+                      {bounty.claimed_by_name && (
+                        <span className="text-[7px] text-gray-600 truncate max-w-full">
+                          by {bounty.claimed_by_name}
+                        </span>
+                      )}
                     </div>
                   ) : isCompleted && !isClaimed ? (
                     <Button
