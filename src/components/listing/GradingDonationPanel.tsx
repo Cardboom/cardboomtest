@@ -180,8 +180,9 @@ export const GradingDonationPanel = ({
     }
   };
 
-  const progress = Math.min((totalCents / goalCents) * 100, 100);
-  const isFunded = totalCents >= goalCents;
+  const effectiveGoalCents = goalCents || 1000; // Default $10 goal
+  const progress = Math.min((totalCents / effectiveGoalCents) * 100, 100);
+  const isFunded = totalCents >= effectiveGoalCents;
 
   if (!acceptsDonations && !isOwner) return null;
 
@@ -235,7 +236,7 @@ export const GradingDonationPanel = ({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Progress</span>
                 <span className="font-medium">
-                  {formatPrice(totalCents / 100)} / {formatPrice(goalCents / 100)}
+                  {formatPrice(totalCents / 100)} / {formatPrice(effectiveGoalCents / 100)}
                 </span>
               </div>
               <div className="relative">
