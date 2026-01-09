@@ -23,6 +23,7 @@ export const ar: Translations = {
     myProfile: "ملفي الشخصي",
     myVault: "الخزنة",
     myListings: "إعلاناتي",
+    myPurchases: "مشترياتي",
     referrals: "الإحالات و XP",
     verifiedSeller: "بائع موثق",
     trading: "التداول",

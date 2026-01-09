@@ -22,6 +22,7 @@ export const en = {
     myProfile: "My Profile",
     myVault: "Vault",
     myListings: "My Listings",
+    myPurchases: "My Purchases",
     referrals: "Referrals & XP",
     verifiedSeller: "Verified Seller",
     trading: "Trading",

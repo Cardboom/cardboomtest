@@ -25,8 +25,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { Navbar } from '@/components/Navbar';
+import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { useState as useCartState } from 'react';
 
 interface OrderAction {
   id: string;
@@ -137,16 +138,16 @@ export default function OrderDetail() {
 
       if (error) throw error;
 
-      // Fetch profiles separately using custom_name as username
+      // Fetch profiles separately using display_name as username
       const [buyerProfile, sellerProfile] = await Promise.all([
-        supabase.from('profiles').select('custom_name, avatar_url').eq('id', data.buyer_id).single(),
-        supabase.from('profiles').select('custom_name, avatar_url, is_verified_seller').eq('id', data.seller_id).single(),
+        supabase.from('profiles').select('display_name, avatar_url').eq('id', data.buyer_id).single(),
+        supabase.from('profiles').select('display_name, avatar_url, instant_sale_eligible').eq('id', data.seller_id).single(),
       ]);
 
       return {
         ...data,
-        buyer_profile: buyerProfile.data ? { username: buyerProfile.data.custom_name, avatar_url: buyerProfile.data.avatar_url } : null,
-        seller_profile: sellerProfile.data ? { username: sellerProfile.data.custom_name, avatar_url: sellerProfile.data.avatar_url, is_verified_seller: sellerProfile.data.is_verified_seller } : null,
+        buyer_profile: buyerProfile.data ? { username: buyerProfile.data.display_name, avatar_url: buyerProfile.data.avatar_url } : null,
+        seller_profile: sellerProfile.data ? { username: sellerProfile.data.display_name, avatar_url: sellerProfile.data.avatar_url, is_verified_seller: sellerProfile.data.instant_sale_eligible } : null,
       } as Order;
     },
     enabled: !!orderId,
@@ -276,10 +277,12 @@ export default function OrderDetail() {
     },
   });
 
+  const [cartCount] = useCartState(0);
+
   if (orderLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
+        <Header cartCount={cartCount} onCartClick={() => {}} />
         <div className="flex items-center justify-center py-24">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
@@ -291,7 +294,7 @@ export default function OrderDetail() {
   if (!order) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
+        <Header cartCount={cartCount} onCartClick={() => {}} />
         <div className="container mx-auto px-4 py-12 text-center">
           <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
           <p className="text-muted-foreground mb-6">This order doesn't exist or you don't have access to view it.</p>
@@ -309,7 +312,7 @@ export default function OrderDetail() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Header cartCount={cartCount} onCartClick={() => {}} />
       
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}

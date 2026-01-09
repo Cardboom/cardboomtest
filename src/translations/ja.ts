@@ -24,6 +24,7 @@ export const ja: Translations = {
     myProfile: "マイプロフィール",
     myVault: "ボールト",
     myListings: "マイリスティング",
+    myPurchases: "購入履歴",
     referrals: "紹介＆XP",
     verifiedSeller: "認証セラー",
     trading: "トレーディング",

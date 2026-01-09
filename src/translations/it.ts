@@ -23,6 +23,7 @@ export const it: Translations = {
     myProfile: "Il Mio Profilo",
     myVault: "Vault",
     myListings: "I Miei Annunci",
+    myPurchases: "I Miei Acquisti",
     referrals: "Referral & XP",
     verifiedSeller: "Venditore Verificato",
     trading: "Trading",
