@@ -137,15 +137,24 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
           .limit(1)
           .maybeSingle();
 
-        // Add to portfolio
-        const { error } = await supabase.from('portfolio_items').insert({
+        // Add to portfolio - safely handle grade transformation
+        const rawGrade = card.grade 
+          ? card.grade.toLowerCase().replace(/\s+/g, '').replace(/\./g, '_') 
+          : 'raw';
+        
+        // Validate grade is a valid enum value
+        type CardCondition = 'raw' | 'psa1' | 'psa2' | 'psa3' | 'psa4' | 'psa5' | 'psa6' | 'psa7' | 'psa8' | 'psa9' | 'psa10' | 'bgs9' | 'bgs9_5' | 'bgs10' | 'cgc9' | 'cgc9_5' | 'cgc10';
+        const validGrades: CardCondition[] = ['raw', 'psa1', 'psa2', 'psa3', 'psa4', 'psa5', 'psa6', 'psa7', 'psa8', 'psa9', 'psa10', 'bgs9', 'bgs9_5', 'bgs10', 'cgc9', 'cgc9_5', 'cgc10'];
+        const normalizedGrade: CardCondition = validGrades.includes(rawGrade as CardCondition) ? rawGrade as CardCondition : 'raw';
+        
+        const { error } = await supabase.from('portfolio_items').insert([{
           user_id: user.id,
-          market_item_id: marketItem?.id || null,
+          market_item_id: marketItem?.id ?? null,
           custom_name: marketItem ? null : card.name,
-          grade: card.grade?.toLowerCase().replace(/\s+/g, '') as any || 'raw',
-          purchase_price: card.purchasePrice || marketItem?.current_price || null,
-          quantity: card.quantity || 1,
-        });
+          grade: normalizedGrade,
+          purchase_price: card.purchasePrice ?? marketItem?.current_price ?? null,
+          quantity: card.quantity ?? 1,
+        }]);
 
         if (error) throw error;
 

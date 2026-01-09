@@ -75,7 +75,7 @@ export const CreatorStorefront = ({ slug: propSlug }: CreatorStorefrontProps) =>
           *,
           market_item:market_items(id, name, image_url, current_price, category)
         `)
-        .eq('seller_id', storefront!.user_id)
+        .eq('seller_id', storefront?.user_id ?? '')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(20);
@@ -93,7 +93,7 @@ export const CreatorStorefront = ({ slug: propSlug }: CreatorStorefrontProps) =>
       const { data, error } = await supabase
         .from('card_reels')
         .select('*')
-        .eq('user_id', storefront!.user_id)
+        .eq('user_id', storefront?.user_id ?? '')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(12);

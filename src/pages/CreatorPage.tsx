@@ -65,7 +65,7 @@ const CreatorPage = () => {
             id, name, current_price, change_24h, image_url, category, liquidity
           )
         `)
-        .eq('creator_id', creator!.id)
+        .eq('creator_id', creator?.id ?? '')
         .eq('is_public', true)
         .order('created_at', { ascending: false });
 
@@ -93,7 +93,7 @@ const CreatorPage = () => {
             is_active
           )
         `)
-        .eq('creator_id', creator!.id)
+        .eq('creator_id', creator?.id ?? '')
         .eq('is_public', true)
         .order('created_at', { ascending: false });
 
@@ -110,7 +110,7 @@ const CreatorPage = () => {
       const { count, error } = await supabase
         .from('creator_followers')
         .select('*', { count: 'exact', head: true })
-        .eq('creator_id', creator!.id);
+        .eq('creator_id', creator?.id ?? '');
 
       if (error) throw error;
       return count || 0;

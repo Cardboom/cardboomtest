@@ -152,27 +152,33 @@ export const SellerShippingPrompt = ({
                 <Badge variant="outline" className="ml-auto">Direct Shipping</Badge>
               </div>
               
-              <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Shipping Address</span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-6 px-2"
-                    onClick={() => copyAddress(
-                      `${order.shippingAddress!.name}\n${order.shippingAddress!.address}\n${order.shippingAddress!.city} ${order.shippingAddress!.postalCode}`
-                    )}
-                  >
-                    <Copy className="w-3 h-3 mr-1" />
-                    Copy All
-                  </Button>
+              {order.shippingAddress ? (
+                <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Shipping Address</span>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-6 px-2"
+                      onClick={() => copyAddress(
+                        `${order.shippingAddress?.name || ''}\n${order.shippingAddress?.address || ''}\n${order.shippingAddress?.city || ''} ${order.shippingAddress?.postalCode || ''}`
+                      )}
+                    >
+                      <Copy className="w-3 h-3 mr-1" />
+                      Copy All
+                    </Button>
+                  </div>
+                  <p className="font-medium text-foreground">{order.shippingAddress.name}</p>
+                  <p className="text-sm text-muted-foreground">{order.shippingAddress.address}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {order.shippingAddress.city} {order.shippingAddress.postalCode}
+                  </p>
                 </div>
-                <p className="font-medium text-foreground">{order.shippingAddress.name}</p>
-                <p className="text-sm text-muted-foreground">{order.shippingAddress.address}</p>
-                <p className="text-sm text-muted-foreground">
-                  {order.shippingAddress.city} {order.shippingAddress.postalCode}
-                </p>
-              </div>
+              ) : (
+                <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/30 text-center">
+                  <p className="text-sm text-destructive">Shipping address not available</p>
+                </div>
+              )}
             </div>
           ) : null}
 
