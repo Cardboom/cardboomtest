@@ -35,10 +35,15 @@ export const CreatePriceAlertDialog = ({
   const [targetPrice, setTargetPrice] = useState(currentPrice.toString());
   const [alertType, setAlertType] = useState<'above' | 'below'>('below');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [priceError, setPriceError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     const price = parseFloat(targetPrice);
-    if (isNaN(price) || price <= 0) return;
+    if (isNaN(price) || price <= 0) {
+      setPriceError('Please enter a valid price greater than $0');
+      return;
+    }
+    setPriceError(null);
 
     setIsSubmitting(true);
     const success = await createAlert(itemId, price, alertType);
@@ -119,10 +124,19 @@ export const CreatePriceAlertDialog = ({
               min="0"
               step="0.01"
               value={targetPrice}
-              onChange={(e) => setTargetPrice(e.target.value)}
-              className="text-lg font-semibold"
+              onChange={(e) => {
+                setTargetPrice(e.target.value);
+                setPriceError(null);
+              }}
+              className={cn("text-lg font-semibold", priceError && "border-destructive")}
             />
-            {targetNum > 0 && (
+            {priceError && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                {priceError}
+              </p>
+            )}
+            {targetNum > 0 && !priceError && (
               <p className={cn(
                 "text-sm",
                 priceDiff >= 0 ? "text-loss" : "text-gain"

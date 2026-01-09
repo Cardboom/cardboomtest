@@ -7,6 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { 
   ChevronLeft, Vault, Truck, ArrowLeftRight, MessageCircle, 
   ShoppingCart, TrendingUp, TrendingDown, Send, Trash2, User,
@@ -708,31 +719,50 @@ const ListingDetail = () => {
             {user?.id === listing.seller_id && (
               <div className="flex items-center gap-3">
                 <Badge className="bg-primary/20 text-primary">This is your listing</Badge>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="gap-2"
-                  onClick={async () => {
-                    if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) return;
-                    try {
-                      const { error } = await supabase
-                        .from('listings')
-                        .delete()
-                        .eq('id', listing.id)
-                        .eq('seller_id', user.id);
-                      
-                      if (error) throw error;
-                      toast.success('Listing deleted successfully');
-                      navigate('/profile');
-                    } catch (err) {
-                      console.error('Error deleting listing:', err);
-                      toast.error('Failed to delete listing');
-                    }
-                  }}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Listing
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete Listing
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this listing?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. The listing will be permanently removed and cannot be recovered.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={async () => {
+                          try {
+                            const { error } = await supabase
+                              .from('listings')
+                              .delete()
+                              .eq('id', listing.id)
+                              .eq('seller_id', user.id);
+                            
+                            if (error) throw error;
+                            toast.success('Listing deleted successfully');
+                            navigate('/profile');
+                          } catch (err) {
+                            console.error('Error deleting listing:', err);
+                            toast.error('Failed to delete listing');
+                          }
+                        }}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             )}
           </div>
