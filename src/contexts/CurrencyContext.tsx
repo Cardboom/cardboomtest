@@ -39,8 +39,12 @@ const DEFAULT_RATES: ExchangeRates = {
 
 export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currency, setCurrencyState] = useState<Currency>(() => {
-    const saved = localStorage.getItem('preferred-currency');
-    return (saved as Currency) || 'USD';
+    try {
+      const saved = localStorage.getItem('preferred-currency');
+      return (saved as Currency) || 'USD';
+    } catch {
+      return 'USD';
+    }
   });
   const [exchangeRates, setExchangeRates] = useState<ExchangeRates>(DEFAULT_RATES);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,7 +97,11 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const setCurrency = (newCurrency: Currency) => {
     setCurrencyState(newCurrency);
-    localStorage.setItem('preferred-currency', newCurrency);
+    try {
+      localStorage.setItem('preferred-currency', newCurrency);
+    } catch {
+      // Silent fail for private browsing
+    }
   };
 
   // Convert any currency to USD

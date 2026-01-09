@@ -3,23 +3,40 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Reel } from './useReels';
 
+// Safe storage helpers for private browsing mode
+function safeGetSessionStorage(key: string, defaultValue: string | null = null): string | null {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return defaultValue;
+  }
+}
+
+function safeSetSessionStorage(key: string, value: string): void {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // Silent fail for private browsing
+  }
+}
+
 // Session-persistent mute preference
 export function useMutePreference() {
   const [isMuted, setIsMuted] = useState(() => {
-    const stored = sessionStorage.getItem('reels-muted');
+    const stored = safeGetSessionStorage('reels-muted');
     return stored === null ? true : stored === 'true';
   });
 
   const toggleMute = useCallback(() => {
     setIsMuted(prev => {
       const newValue = !prev;
-      sessionStorage.setItem('reels-muted', String(newValue));
+      safeSetSessionStorage('reels-muted', String(newValue));
       return newValue;
     });
   }, []);
 
   const setMuted = useCallback((value: boolean) => {
-    sessionStorage.setItem('reels-muted', String(value));
+    safeSetSessionStorage('reels-muted', String(value));
     setIsMuted(value);
   }, []);
 

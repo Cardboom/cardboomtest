@@ -7,22 +7,31 @@ const REQUEST_COUNTER_KEY = 'cb_request_counter';
 
 // Get or create session ID (persists across page loads)
 export function getSessionId(): string {
-  let sessionId = sessionStorage.getItem(SESSION_KEY);
-  if (!sessionId) {
-    sessionId = `sess_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem(SESSION_KEY, sessionId);
+  try {
+    let sessionId = sessionStorage.getItem(SESSION_KEY);
+    if (!sessionId) {
+      sessionId = `sess_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
+      sessionStorage.setItem(SESSION_KEY, sessionId);
+    }
+    return sessionId;
+  } catch {
+    // Fallback for private browsing mode
+    return `sess_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 9)}`;
   }
-  return sessionId;
 }
 
 // Generate request-specific correlation ID
 export function generateRequestCorrelationId(): string {
   const sessionId = getSessionId();
-  let counter = parseInt(sessionStorage.getItem(REQUEST_COUNTER_KEY) || '0', 10);
-  counter++;
-  sessionStorage.setItem(REQUEST_COUNTER_KEY, counter.toString());
-  
-  return `${sessionId}_req${counter}_${Date.now().toString(36)}`;
+  try {
+    let counter = parseInt(sessionStorage.getItem(REQUEST_COUNTER_KEY) || '0', 10);
+    counter++;
+    sessionStorage.setItem(REQUEST_COUNTER_KEY, counter.toString());
+    return `${sessionId}_req${counter}_${Date.now().toString(36)}`;
+  } catch {
+    // Fallback for private browsing mode
+    return `${sessionId}_req${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  }
 }
 
 // Create headers with correlation ID

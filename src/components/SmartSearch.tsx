@@ -38,9 +38,13 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
 
   // Load recent searches from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('cardboom_recent_searches');
-    if (saved) {
-      setRecentSearches(JSON.parse(saved).slice(0, 5));
+    try {
+      const saved = localStorage.getItem('cardboom_recent_searches');
+      if (saved) {
+        setRecentSearches(JSON.parse(saved).slice(0, 5));
+      }
+    } catch {
+      // Silent fail for private browsing or invalid JSON
     }
   }, []);
 
@@ -48,7 +52,11 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
   const saveRecentSearch = (term: string) => {
     const updated = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5);
     setRecentSearches(updated);
-    localStorage.setItem('cardboom_recent_searches', JSON.stringify(updated));
+    try {
+      localStorage.setItem('cardboom_recent_searches', JSON.stringify(updated));
+    } catch {
+      // Silent fail for private browsing
+    }
   };
 
   // Debounced search
