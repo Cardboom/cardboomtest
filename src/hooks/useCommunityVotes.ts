@@ -104,42 +104,48 @@ export const useCommunityVotes = (userId?: string) => {
       return false;
     }
 
-    const voteWeight = isPro ? 2 : 1; // Pro votes count double
+    try {
+      const voteWeight = isPro ? 2 : 1; // Pro votes count double
 
-    const { error } = await supabase.from('community_vote_entries').insert({
-      poll_id: todaysPoll.id,
-      user_id: userId,
-      vote_for: voteFor,
-      vote_weight: voteWeight,
-      is_pro_vote: isPro,
-    });
+      const { error } = await supabase.from('community_vote_entries').insert({
+        poll_id: todaysPoll.id,
+        user_id: userId,
+        vote_for: voteFor,
+        vote_weight: voteWeight,
+        is_pro_vote: isPro,
+      });
 
-    if (error) {
-      console.error('Vote error:', error);
-      toast.error('Failed to vote');
+      if (error) {
+        console.error('Vote error:', error);
+        toast.error('Failed to vote');
+        return false;
+      }
+
+      // Award XP immediately - use daily_login action type as it's the closest match
+      await supabase.from('xp_history').insert({
+        user_id: userId,
+        action: 'daily_login',
+        xp_earned: todaysPoll.xp_reward,
+        description: `Voted in daily card battle: ${todaysPoll.card_a_name} vs ${todaysPoll.card_b_name}`,
+      });
+
+      // Update profile XP
+      await supabase.rpc('update_reputation', {
+        p_user_id: userId,
+        p_event_type: 'community_vote',
+        p_points: 5,
+      });
+
+      toast.success(`Vote cast! +${todaysPoll.xp_reward} XP earned!`);
+      setHasVotedToday(true);
+      fetchTodaysPoll();
+      fetchUserVote();
+      return true;
+    } catch (error) {
+      console.error('Error casting vote:', error);
+      toast.error('Failed to cast vote');
       return false;
     }
-
-    // Award XP immediately - use daily_login action type as it's the closest match
-    await supabase.from('xp_history').insert({
-      user_id: userId,
-      action: 'daily_login',
-      xp_earned: todaysPoll.xp_reward,
-      description: `Voted in daily card battle: ${todaysPoll.card_a_name} vs ${todaysPoll.card_b_name}`,
-    });
-
-    // Update profile XP
-    await supabase.rpc('update_reputation', {
-      p_user_id: userId,
-      p_event_type: 'community_vote',
-      p_points: 5,
-    });
-
-    toast.success(`Vote cast! +${todaysPoll.xp_reward} XP earned!`);
-    setHasVotedToday(true);
-    fetchTodaysPoll();
-    fetchUserVote();
-    return true;
   };
 
   return {
@@ -237,12 +243,14 @@ export const useCommunityVotesAdmin = () => {
       const priceGroups: MarketItemForPoll[][] = [];
       let currentGroup: MarketItemForPoll[] = [];
       
-      for (const item of items as MarketItemForPoll[]) {
+      const safeItems = items as MarketItemForPoll[];
+      for (const item of safeItems) {
         if (currentGroup.length === 0) {
           currentGroup.push(item);
         } else {
           const avgPrice = currentGroup.reduce((sum, i) => sum + i.current_price, 0) / currentGroup.length;
-          const priceDiff = Math.abs(item.current_price - avgPrice) / avgPrice;
+          // Guard against division by zero
+          const priceDiff = avgPrice > 0 ? Math.abs(item.current_price - avgPrice) / avgPrice : 1;
           
           if (priceDiff <= 0.3) {
             currentGroup.push(item);
@@ -267,10 +275,15 @@ export const useCommunityVotesAdmin = () => {
 
       const randomGroup = validGroups[Math.floor(Math.random() * validGroups.length)];
       
-      // Pick two random cards from the group
-      const shuffled = randomGroup.sort(() => Math.random() - 0.5);
+      // Pick two random cards from the group (safely)
+      const shuffled = [...randomGroup].sort(() => Math.random() - 0.5);
       const cardA = shuffled[0];
       const cardB = shuffled[1];
+
+      if (!cardA || !cardB) {
+        toast.error('Failed to select cards for poll');
+        return false;
+      }
 
       // Create the poll
       const success = await createPoll(

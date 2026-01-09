@@ -46,28 +46,46 @@ export const TradeDetailDialog = ({ open, onOpenChange, tradeId }: TradeDetailDi
   };
 
   const handleAccept = async () => {
+    if (isLoading) return; // Prevent double-click
     setIsLoading(true);
     try {
+      // TODO: Implement actual trade acceptance logic
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
       toast.success('Trade accepted! Upload photos to proceed.');
+    } catch (error) {
+      console.error('Trade accept error:', error);
+      toast.error('Failed to accept trade');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDecline = async () => {
+    if (isLoading) return; // Prevent double-click
     setIsLoading(true);
     try {
+      // TODO: Implement actual trade decline logic
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
       toast.success('Trade declined');
       onOpenChange(false);
+    } catch (error) {
+      console.error('Trade decline error:', error);
+      toast.error('Failed to decline trade');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleConfirm = async () => {
+    if (isLoading) return; // Prevent double-click
     setIsLoading(true);
     try {
+      // TODO: Implement actual trade confirm logic
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
       toast.success('Trade confirmed! Waiting for partner.');
+    } catch (error) {
+      console.error('Trade confirm error:', error);
+      toast.error('Failed to confirm trade');
     } finally {
       setIsLoading(false);
     }

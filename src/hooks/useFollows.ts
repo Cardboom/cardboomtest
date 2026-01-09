@@ -27,7 +27,10 @@ export const useFollows = (targetUserId?: string) => {
   };
 
   const checkFollowStatus = async () => {
-    if (!targetUserId) return;
+    if (!targetUserId) {
+      setLoading(false);
+      return;
+    }
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -37,28 +40,40 @@ export const useFollows = (targetUserId?: string) => {
       }
 
       // Check if current user follows target
-      const { data: followData } = await supabase
+      const { data: followData, error: followError } = await supabase
         .from('follows')
         .select('id')
         .eq('follower_id', user.id)
         .eq('following_id', targetUserId)
         .maybeSingle();
 
+      if (followError) {
+        console.error('Error checking follow data:', followError);
+      }
+
       setIsFollowing(!!followData);
 
       // Get followers count
-      const { count: followers } = await supabase
+      const { count: followers, error: followersError } = await supabase
         .from('follows')
         .select('*', { count: 'exact', head: true })
         .eq('following_id', targetUserId);
 
+      if (followersError) {
+        console.error('Error getting followers count:', followersError);
+      }
+
       setFollowersCount(followers || 0);
 
       // Get following count
-      const { count: following } = await supabase
+      const { count: following, error: followingError } = await supabase
         .from('follows')
         .select('*', { count: 'exact', head: true })
         .eq('follower_id', targetUserId);
+
+      if (followingError) {
+        console.error('Error getting following count:', followingError);
+      }
 
       setFollowingCount(following || 0);
     } catch (error) {

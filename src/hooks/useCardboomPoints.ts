@@ -77,6 +77,7 @@ export const useCardboomPoints = (userId?: string) => {
   useEffect(() => {
     if (!userId) return;
 
+    let isMounted = true;
     const channel = supabase
       .channel('cardboom_points_updates')
       .on(
@@ -88,12 +89,15 @@ export const useCardboomPoints = (userId?: string) => {
           filter: `user_id=eq.${userId}`,
         },
         () => {
-          fetchPoints();
+          if (isMounted) {
+            fetchPoints();
+          }
         }
       )
       .subscribe();
 
     return () => {
+      isMounted = false;
       supabase.removeChannel(channel);
     };
   }, [userId, fetchPoints]);

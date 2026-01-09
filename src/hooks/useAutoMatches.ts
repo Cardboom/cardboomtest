@@ -204,25 +204,38 @@ export const useAutoMatches = (role: 'buyer' | 'seller' | 'all' = 'all') => {
 
   // Subscribe to realtime updates
   useEffect(() => {
-    fetchMatches();
+    let isMounted = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const channel = supabase
-      .channel('auto_match_updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'auto_match_queue',
-        },
-        () => {
-          fetchMatches();
-        }
-      )
-      .subscribe();
+    const initChannel = async () => {
+      if (!isMounted) return;
+      await fetchMatches();
+
+      channel = supabase
+        .channel('auto_match_updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'auto_match_queue',
+          },
+          () => {
+            if (isMounted) {
+              fetchMatches();
+            }
+          }
+        )
+        .subscribe();
+    };
+
+    initChannel();
 
     return () => {
-      supabase.removeChannel(channel);
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [fetchMatches]);
 

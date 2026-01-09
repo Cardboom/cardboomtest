@@ -52,29 +52,60 @@ export const useWatchlist = () => {
 
   useEffect(() => { fetchWatchlist(); }, [fetchWatchlist]);
 
-  const addToWatchlist = async (marketItemId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { toast.error('Please sign in'); return false; }
-
-    const { error } = await supabase.from('watchlist').insert({ user_id: user.id, market_item_id: marketItemId });
-    if (error) { toast.error('Failed to add'); return false; }
+  const addToWatchlist = async (marketItemId: string): Promise<boolean> => {
+    if (!marketItemId) {
+      toast.error('Invalid item');
+      return false;
+    }
     
-    toast.success('Added to watchlist');
-    fetchWatchlist();
-    return true;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast.error('Please sign in'); return false; }
+
+      const { error } = await supabase.from('watchlist').insert({ user_id: user.id, market_item_id: marketItemId });
+      if (error) { 
+        console.error('Watchlist add error:', error);
+        toast.error('Failed to add'); 
+        return false; 
+      }
+      
+      toast.success('Added to watchlist');
+      fetchWatchlist();
+      return true;
+    } catch (err) {
+      console.error('Watchlist add error:', err);
+      toast.error('Failed to add');
+      return false;
+    }
   };
 
-  const removeFromWatchlist = async (marketItemId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-
-    const { error } = await supabase.from('watchlist').delete().eq('user_id', user.id).eq('market_item_id', marketItemId);
-    if (error) { toast.error('Failed to remove'); return false; }
+  const removeFromWatchlist = async (marketItemId: string): Promise<boolean> => {
+    if (!marketItemId) return false;
     
-    toast.success('Removed from watchlist');
-    setItems(prev => prev.filter(i => i.market_item_id !== marketItemId));
-    setItemIds(prev => { prev.delete(marketItemId); return new Set(prev); });
-    return true;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { error } = await supabase.from('watchlist').delete().eq('user_id', user.id).eq('market_item_id', marketItemId);
+      if (error) { 
+        console.error('Watchlist remove error:', error);
+        toast.error('Failed to remove'); 
+        return false; 
+      }
+      
+      toast.success('Removed from watchlist');
+      setItems(prev => prev.filter(i => i.market_item_id !== marketItemId));
+      setItemIds(prev => { 
+        const newSet = new Set(prev);
+        newSet.delete(marketItemId); 
+        return newSet; 
+      });
+      return true;
+    } catch (err) {
+      console.error('Watchlist remove error:', err);
+      toast.error('Failed to remove');
+      return false;
+    }
   };
 
   const isInWatchlist = (marketItemId: string) => itemIds.has(marketItemId);

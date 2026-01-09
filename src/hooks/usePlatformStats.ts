@@ -17,6 +17,8 @@ export const usePlatformStats = (): PlatformStats => {
   });
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchStats = async () => {
       try {
         // Fetch active listings count and total value
@@ -31,12 +33,17 @@ export const usePlatformStats = (): PlatformStats => {
           .select('price_cents')
           .eq('status', 'completed');
 
+        if (!isMounted) return;
+
         if (listingsError) console.error('Listings fetch error:', listingsError);
         if (ordersError) console.error('Orders fetch error:', ordersError);
 
-        const itemsListed = listingsData?.length || 0;
-        const totalCardValue = listingsData?.reduce((sum, l) => sum + (l.price_cents || 0), 0) || 0;
-        const totalVolume = ordersData?.reduce((sum, o) => sum + (o.price_cents || 0), 0) || 0;
+        const safeListingsData = Array.isArray(listingsData) ? listingsData : [];
+        const safeOrdersData = Array.isArray(ordersData) ? ordersData : [];
+
+        const itemsListed = safeListingsData.length;
+        const totalCardValue = safeListingsData.reduce((sum, l) => sum + (l.price_cents || 0), 0);
+        const totalVolume = safeOrdersData.reduce((sum, o) => sum + (o.price_cents || 0), 0);
 
         setStats({
           totalCardValue: totalCardValue / 100, // Convert cents to dollars
@@ -46,11 +53,17 @@ export const usePlatformStats = (): PlatformStats => {
         });
       } catch (error) {
         console.error('Error fetching platform stats:', error);
-        setStats(prev => ({ ...prev, isLoading: false }));
+        if (isMounted) {
+          setStats(prev => ({ ...prev, isLoading: false }));
+        }
       }
     };
 
     fetchStats();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return stats;
