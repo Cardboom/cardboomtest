@@ -81,34 +81,48 @@ export const useNotifications = () => {
   };
 
   useEffect(() => {
-    fetchNotifications();
+    let isMounted = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    // Subscribe to real-time notifications
-    const channel = supabase
-      .channel('notifications-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification;
-          setNotifications(prev => [newNotification, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          
-          // Show toast for new notification
-          toast({
-            title: newNotification.title,
-            description: newNotification.body,
-          });
-        }
-      )
-      .subscribe();
+    const init = async () => {
+      await fetchNotifications();
+      
+      if (!isMounted) return;
+
+      // Subscribe to real-time notifications
+      channel = supabase
+        .channel('notifications-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+          },
+          (payload) => {
+            if (!isMounted) return;
+            
+            const newNotification = payload.new as Notification;
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
+            
+            // Show toast for new notification
+            toast({
+              title: newNotification.title,
+              description: newNotification.body,
+            });
+          }
+        )
+        .subscribe();
+    };
+
+    init();
 
     return () => {
-      supabase.removeChannel(channel);
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [toast]);
 

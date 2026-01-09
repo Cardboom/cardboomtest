@@ -60,7 +60,8 @@ export function ReelCard({ reel, isActive, onOpenComments, onLikeChange, onSaveC
       }
       setIsPlaying(!isPlaying);
       setShowPlayIcon(true);
-      setTimeout(() => setShowPlayIcon(false), 500);
+      const timeoutId = setTimeout(() => setShowPlayIcon(false), 500);
+      return () => clearTimeout(timeoutId);
     }
   };
 
@@ -91,7 +92,8 @@ export function ReelCard({ reel, isActive, onOpenComments, onLikeChange, onSaveC
       handleLike();
     }
     setDoubleTapAnimation(true);
-    setTimeout(() => setDoubleTapAnimation(false), 800);
+    const timeoutId = setTimeout(() => setDoubleTapAnimation(false), 800);
+    return () => clearTimeout(timeoutId);
   };
 
   const handleSave = async () => {

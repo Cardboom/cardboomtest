@@ -96,20 +96,30 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initLocale = async () => {
-      // Check localStorage first
-      const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
-      
-      if (stored && translations[stored]) {
-        setLocaleState(stored);
-        setIsLoading(false);
-        return;
-      }
+      try {
+        // Check localStorage first
+        const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
+        
+        if (stored && translations[stored]) {
+          setLocaleState(stored);
+          setIsLoading(false);
+          return;
+        }
 
-      // Detect from browser language
-      const detected = detectLocaleFromBrowser();
-      setLocaleState(detected);
-      localStorage.setItem(LOCALE_STORAGE_KEY, detected);
-      setIsLoading(false);
+        // Detect from browser language
+        const detected = detectLocaleFromBrowser();
+        setLocaleState(detected);
+        try {
+          localStorage.setItem(LOCALE_STORAGE_KEY, detected);
+        } catch {
+          // Private browsing mode - ignore
+        }
+      } catch {
+        // Fallback to English on any error
+        setLocaleState("en");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     initLocale();
@@ -124,7 +134,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
-    localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
+    try {
+      localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
+    } catch {
+      // Private browsing mode - ignore
+    }
   };
 
   const isRTL = RTL_LOCALES.includes(locale);
