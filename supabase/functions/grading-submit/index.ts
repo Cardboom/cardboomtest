@@ -604,15 +604,16 @@ serve(async (req) => {
           console.error('Failed to send grading completion notification:', e);
         }
 
-        // Send grading completion email
+        // Send grading completion email and SMS
         try {
-          // Fetch user email
+          // Fetch user profile
           const { data: profile } = await supabase
             .from('profiles')
-            .select('email, username, full_name')
+            .select('email, phone, display_name, full_name')
             .eq('id', user.id)
             .single();
 
+          // Send email
           if (profile?.email) {
             await fetch(`${supabaseUrl}/functions/v1/send-email`, {
               method: 'POST',
@@ -625,7 +626,7 @@ serve(async (req) => {
                 template_key: 'grading_complete',
                 user_id: user.id,
                 variables: {
-                  user_name: profile.full_name || profile.username || 'Collector',
+                  user_name: profile.full_name || profile.display_name || 'Collector',
                   card_name: cbgiResult.card_name || 'Your Card',
                   grade: finalGrade.toFixed(1),
                   psa_range: cbgiResult.estimated_psa_range || 'N/A',
@@ -636,8 +637,29 @@ serve(async (req) => {
             });
             console.log('Grading completion email sent to:', profile.email);
           }
+
+          // Send SMS
+          if (profile?.phone) {
+            await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+              },
+              body: JSON.stringify({
+                phone: profile.phone,
+                type: 'grading_complete',
+                userId: user.id,
+                data: {
+                  grade: finalGrade.toFixed(1),
+                  psa_range: cbgiResult.estimated_psa_range || 'N/A',
+                },
+              }),
+            });
+            console.log('Grading completion SMS sent to:', profile.phone);
+          }
         } catch (emailError) {
-          console.error('Failed to send grading completion email:', emailError);
+          console.error('Failed to send grading completion notifications:', emailError);
           // Non-critical, continue
         }
       }

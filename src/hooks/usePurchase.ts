@@ -424,6 +424,65 @@ export const usePurchase = () => {
         console.error('Error awarding XP:', xpError);
       }
 
+      // 16. Send seller notification (in-app, email, SMS)
+      try {
+        // Fetch seller profile for notification
+        const { data: sellerProfile } = await supabase
+          .from('profiles')
+          .select('email, phone, display_name, full_name')
+          .eq('id', params.sellerId)
+          .single();
+
+        const sellerName = sellerProfile?.full_name || sellerProfile?.display_name || 'Seller';
+        const currencySymbol = listingCurrency === 'USD' ? '$' : listingCurrency === 'EUR' ? '€' : '₺';
+
+        // In-app notification
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            user_id: params.sellerId,
+            type: 'sale',
+            title: '🎉 Your item sold!',
+            body: `${params.title} sold for ${currencySymbol}${params.price.toFixed(2)}`,
+            data: { listing_id: params.listingId, order_id: order.id },
+          },
+        });
+
+        // Email notification
+        if (sellerProfile?.email) {
+          await supabase.functions.invoke('send-email', {
+            body: {
+              to: sellerProfile.email,
+              template_key: 'item_sold',
+              user_id: params.sellerId,
+              variables: {
+                user_name: sellerName,
+                item_title: params.title,
+                sale_price: `${currencySymbol}${params.price.toFixed(2)}`,
+                payout_amount: `${currencySymbol}${sellerPayoutInWalletCurrency.toFixed(2)}`,
+                order_id: order.id,
+              },
+            },
+          });
+        }
+
+        // SMS notification
+        if (sellerProfile?.phone) {
+          await supabase.functions.invoke('send-sms', {
+            body: {
+              phone: sellerProfile.phone,
+              type: 'item_sold',
+              data: {
+                item_title: params.title.slice(0, 30),
+                sale_price: `${currencySymbol}${params.price.toFixed(2)}`,
+              },
+            },
+          });
+        }
+      } catch (notifError) {
+        console.error('Error sending seller notifications:', notifError);
+        // Non-critical, don't fail the purchase
+      }
+
       toast.success('Purchase successful!');
       
       // Navigate to success page with order details
