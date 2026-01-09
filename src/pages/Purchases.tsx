@@ -68,12 +68,20 @@ export default function Purchases() {
           escrow_status,
           created_at,
           seller_id,
-          listing:listings(title, image_url)
+          listing_id
         `)
         .eq('buyer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Fetch listings separately
+      const listingIds = [...new Set(data.map(o => o.listing_id).filter(Boolean))];
+      const { data: listings } = listingIds.length > 0 
+        ? await supabase.from('listings').select('id, title, image_url').in('id', listingIds)
+        : { data: [] };
+      
+      const listingMap = new Map(listings?.map(l => [l.id, l] as const) || []);
 
       // Fetch seller profiles
       const sellerIds = [...new Set(data.map(o => o.seller_id))];
@@ -86,6 +94,7 @@ export default function Purchases() {
 
       return data.map(order => ({
         ...order,
+        listing: listingMap.get(order.listing_id) || null,
         seller_profile: profileMap.get(order.seller_id) || null,
       })) as Order[];
     },
