@@ -22,6 +22,7 @@ export interface AutoMatch {
     category: string;
     condition: string | null;
     grade: string | null;
+    filled_quantity?: number;
     buyer?: {
       id: string;
       display_name: string | null;
@@ -71,6 +72,7 @@ export const useAutoMatches = (role: 'buyer' | 'seller' | 'all' = 'all') => {
             category,
             condition,
             grade,
+            filled_quantity,
             buyer:profiles!buy_orders_buyer_id_fkey (
               id,
               display_name,
@@ -147,10 +149,11 @@ export const useAutoMatches = (role: 'buyer' | 'seller' | 'all' = 'all') => {
       if (fillError) throw fillError;
 
       // Update buy order status
+      const currentFilledQty = match.buy_order?.filled_quantity || 0;
       const { error: orderError } = await supabase
         .from('buy_orders')
         .update({
-          filled_quantity: (match.buy_order as any)?.filled_quantity + 1 || 1,
+          filled_quantity: currentFilledQty + 1,
           status: 'filled',
           updated_at: new Date().toISOString(),
         })

@@ -2,6 +2,22 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerShippingPrompt } from '@/components/seller/SellerShippingPrompt';
 
+// Helper to extract first item from Supabase relation (may return array or single object)
+const getRelation = <T,>(relation: T | T[] | null | undefined): T | null => {
+  if (!relation) return null;
+  if (Array.isArray(relation)) return relation[0] ?? null;
+  return relation;
+};
+
+interface OrderWithRelations {
+  id: string;
+  price: number;
+  delivery_option: string;
+  created_at?: string;
+  listing?: { title: string; image_url?: string } | { title: string; image_url?: string }[] | null;
+  buyer?: { display_name: string } | { display_name: string }[] | null;
+}
+
 interface OrderForShipping {
   id: string;
   title: string;
@@ -46,12 +62,14 @@ export const SellerShippingNotifier = () => {
         .limit(1);
 
       if (orders && orders.length > 0) {
-        const order = orders[0] as any;
+        const order = orders[0] as OrderWithRelations;
+        const listing = getRelation(order.listing);
+        const buyer = getRelation(order.buyer);
         setPendingOrder({
           id: order.id,
-          title: order.listing?.title || 'Item',
+          title: listing?.title || 'Item',
           price: order.price,
-          buyerName: order.buyer?.display_name,
+          buyerName: buyer?.display_name,
           deliveryOption: order.delivery_option,
           shippingAddress: null,
         });
@@ -92,12 +110,15 @@ export const SellerShippingNotifier = () => {
               .single();
 
             if (order) {
+              const typedOrder = order as OrderWithRelations;
+              const listing = getRelation(typedOrder.listing);
+              const buyer = getRelation(typedOrder.buyer);
               setPendingOrder({
-                id: order.id,
-                title: (order as any).listing?.title || 'Item',
-                price: order.price,
-                buyerName: (order as any).buyer?.display_name,
-                deliveryOption: order.delivery_option,
+                id: typedOrder.id,
+                title: listing?.title || 'Item',
+                price: typedOrder.price,
+                buyerName: buyer?.display_name,
+                deliveryOption: typedOrder.delivery_option,
                 shippingAddress: null,
               });
               setShowPrompt(true);

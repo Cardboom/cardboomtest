@@ -56,7 +56,7 @@ const Messages = () => {
     });
   }, []);
 
-  // Subscribe to new messages
+  // Subscribe to new messages with error handling
   useEffect(() => {
     if (!user || !selectedConversation) return;
 
@@ -72,11 +72,18 @@ const Messages = () => {
         },
         (payload) => {
           const newMsg = payload.new as Message;
-          setMessages((prev) => [...prev, newMsg]);
-          scrollToBottom();
+          // Prevent duplicate messages
+          setMessages((prev) => {
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR') {
+          // Silent retry - channel will auto-reconnect
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -93,6 +100,7 @@ const Messages = () => {
 
   const fetchConversations = async (userId: string) => {
     try {
+      // Fetch conversations
       const { data: convos, error } = await supabase
         .from('conversations')
         .select('*')
@@ -100,58 +108,73 @@ const Messages = () => {
         .order('last_message_at', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
+      if (!convos || convos.length === 0) {
+        setConversations([]);
+        return;
+      }
 
-      // Fetch additional info for each conversation
-      const enrichedConvos = await Promise.all(
-        (convos || []).map(async (conv) => {
-          const otherUserId = conv.participant_1 === userId ? conv.participant_2 : conv.participant_1;
-          
-          // Get other user's profile
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name')
-            .eq('id', otherUserId)
-            .single();
+      // Collect all unique user IDs and listing IDs for batch fetching
+      const otherUserIds = new Set<string>();
+      const listingIds = new Set<string>();
+      const convIds = convos.map(c => c.id);
 
-          const otherUserName = profile?.display_name || 'User';
+      for (const conv of convos) {
+        const otherId = conv.participant_1 === userId ? conv.participant_2 : conv.participant_1;
+        otherUserIds.add(otherId);
+        if (conv.listing_id) listingIds.add(conv.listing_id);
+      }
 
-          // Get listing title if exists
-          let listingTitle = '';
-          if (conv.listing_id) {
-            const { data: listing } = await supabase
-              .from('listings')
-              .select('title')
-              .eq('id', conv.listing_id)
-              .single();
-            listingTitle = listing?.title || '';
-          }
+      // Batch fetch profiles, listings, messages in parallel
+      const [profilesResult, listingsResult, lastMessagesResult, unreadResult] = await Promise.all([
+        supabase.from('profiles').select('id, display_name').in('id', Array.from(otherUserIds)),
+        listingIds.size > 0 
+          ? supabase.from('listings').select('id, title').in('id', Array.from(listingIds))
+          : { data: [] },
+        supabase.from('messages')
+          .select('conversation_id, content')
+          .in('conversation_id', convIds)
+          .order('created_at', { ascending: false }),
+        supabase.from('messages')
+          .select('conversation_id')
+          .in('conversation_id', convIds)
+          .eq('is_read', false)
+          .neq('sender_id', userId),
+      ]);
 
-          // Get last message
-          const { data: lastMsg } = await supabase
-            .from('messages')
-            .select('content')
-            .eq('conversation_id', conv.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
+      // Build lookup maps
+      const profileMap = new Map<string, string>();
+      for (const p of profilesResult.data || []) {
+        profileMap.set(p.id, p.display_name || 'User');
+      }
 
-          // Get unread count
-          const { count } = await supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .eq('is_read', false)
-            .neq('sender_id', userId);
+      const listingMap = new Map<string, string>();
+      for (const l of listingsResult.data || []) {
+        listingMap.set(l.id, l.title);
+      }
 
-          return {
-            ...conv,
-            other_user_name: otherUserName,
-            listing_title: listingTitle,
-            last_message: lastMsg?.content || '',
-            unread_count: count || 0,
-          };
-        })
-      );
+      const lastMessageMap = new Map<string, string>();
+      for (const msg of lastMessagesResult.data || []) {
+        if (!lastMessageMap.has(msg.conversation_id)) {
+          lastMessageMap.set(msg.conversation_id, msg.content);
+        }
+      }
+
+      const unreadCountMap = new Map<string, number>();
+      for (const msg of unreadResult.data || []) {
+        unreadCountMap.set(msg.conversation_id, (unreadCountMap.get(msg.conversation_id) || 0) + 1);
+      }
+
+      // Enrich conversations
+      const enrichedConvos = convos.map((conv) => {
+        const otherId = conv.participant_1 === userId ? conv.participant_2 : conv.participant_1;
+        return {
+          ...conv,
+          other_user_name: profileMap.get(otherId) || 'User',
+          listing_title: conv.listing_id ? listingMap.get(conv.listing_id) || '' : '',
+          last_message: lastMessageMap.get(conv.id) || '',
+          unread_count: unreadCountMap.get(conv.id) || 0,
+        };
+      });
 
       setConversations(enrichedConvos);
     } catch (error) {

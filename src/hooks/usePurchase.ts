@@ -55,8 +55,8 @@ const fetchExchangeRates = async (): Promise<ExchangeRates> => {
       });
       return rates;
     }
-  } catch (error) {
-    console.log('Using default exchange rates');
+  } catch {
+    // Fallback to default rates silently
   }
   return DEFAULT_RATES;
 };
