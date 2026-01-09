@@ -24,6 +24,7 @@ interface PurchaseParams {
     district: string;
     postalCode: string;
   };
+  gemsUsed?: number; // Number of gems to apply as discount (1 gem = $0.01)
 }
 
 interface ExchangeRates {
@@ -190,8 +191,13 @@ export const usePurchase = () => {
       // 4. Calculate fees based on USD price
       const fees = await calculateFees(priceInUSD, buyerId, params.sellerId);
 
+      // Calculate gem discount in USD (1 gem = $0.01)
+      const gemsUsed = params.gemsUsed || 0;
+      const gemDiscountUSD = gemsUsed / 100;
+      const adjustedTotalBuyerPays = Math.max(0, fees.totalBuyerPays - gemDiscountUSD);
+
       // Convert buyer's total to their wallet currency for balance check
-      const buyerTotalInWalletCurrency = convertFromUSD(fees.totalBuyerPays, buyerCurrency, exchangeRates);
+      const buyerTotalInWalletCurrency = convertFromUSD(adjustedTotalBuyerPays, buyerCurrency, exchangeRates);
 
       // 5. Check buyer has sufficient balance in their currency
       if (Number(buyerWallet.balance) < buyerTotalInWalletCurrency) {
@@ -199,6 +205,24 @@ export const usePurchase = () => {
         toast.error(`Insufficient balance. You need ${currencySymbol}${buyerTotalInWalletCurrency.toFixed(2)} (including fees)`);
         navigate('/wallet');
         return { success: false };
+      }
+
+      // 5b. If using gems, verify gem balance and deduct gems first
+      if (gemsUsed > 0) {
+        const { data: gemResult, error: gemError } = await supabase.rpc('spend_cardboom_points', {
+          p_user_id: buyerId,
+          p_amount: gemsUsed,
+          p_source: 'purchase',
+          p_description: `Used for purchase: ${params.title}`,
+          p_reference_id: params.listingId,
+        });
+
+        // The RPC returns a JSONB object with success field
+        const gemResultParsed = gemResult as unknown as { success: boolean; error?: string } | null;
+        if (gemError || (gemResultParsed && !gemResultParsed.success)) {
+          toast.error(gemResultParsed?.error || 'Failed to apply gems discount. Please try again.');
+          return { success: false };
+        }
       }
 
       // 6. Check listing is still active
