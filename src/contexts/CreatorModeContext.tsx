@@ -11,7 +11,11 @@ const CreatorModeContext = createContext<CreatorModeContextType | undefined>(und
 export const CreatorModeProvider = ({ children }: { children: ReactNode }) => {
   const [creatorMode, setCreatorMode] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('creatorMode') === 'true';
+      try {
+        return localStorage.getItem('creatorMode') === 'true';
+      } catch {
+        return false;
+      }
     }
     return false;
   });
@@ -19,7 +23,11 @@ export const CreatorModeProvider = ({ children }: { children: ReactNode }) => {
   const toggleCreatorMode = () => {
     const newValue = !creatorMode;
     setCreatorMode(newValue);
-    localStorage.setItem('creatorMode', String(newValue));
+    try {
+      localStorage.setItem('creatorMode', String(newValue));
+    } catch {
+      // Silent fail for private browsing
+    }
   };
 
   return (

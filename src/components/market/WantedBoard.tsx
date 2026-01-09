@@ -151,10 +151,23 @@ export const WantedBoard = () => {
   });
 
   const handleSubmit = () => {
-    if (!formData.item_name || !formData.bid_amount) {
-      toast.error('Please fill in item name and offer price');
+    if (!formData.item_name.trim()) {
+      toast.error('Please enter an item name');
       return;
     }
+    
+    const bidAmount = parseFloat(formData.bid_amount);
+    if (isNaN(bidAmount) || bidAmount <= 0) {
+      toast.error('Please enter a valid offer price greater than $0');
+      return;
+    }
+    
+    const maxBid = formData.max_bid ? parseFloat(formData.max_bid) : null;
+    if (maxBid !== null && (isNaN(maxBid) || maxBid < bidAmount)) {
+      toast.error('Max bid must be greater than or equal to offer price');
+      return;
+    }
+    
     createBid.mutate();
   };
 
