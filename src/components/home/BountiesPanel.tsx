@@ -84,7 +84,8 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
     setClaiming(bountyId);
     try {
       const { data, error } = await supabase.rpc('claim_bounty_reward', {
-        p_bounty_id: bountyId
+        p_bounty_id: bountyId,
+        p_user_id: userId
       });
 
       if (error) throw error;

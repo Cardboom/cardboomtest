@@ -8520,7 +8520,9 @@ export type Database = {
         Returns: Json
       }
       check_inventory_integrity: { Args: never; Returns: Json }
-      claim_bounty_reward: { Args: { p_bounty_id: string }; Returns: Json }
+      claim_bounty_reward:
+        | { Args: { p_bounty_id: string }; Returns: Json }
+        | { Args: { p_bounty_id: string; p_user_id?: string }; Returns: Json }
       claim_gift_card: { Args: { gift_code: string }; Returns: Json }
       complete_sale_transfer: {
         Args: {
