@@ -8252,9 +8252,13 @@ export type Database = {
           created_at: string
           iban_id: string | null
           id: string
+          is_enterprise_user: boolean | null
+          payout_error: string | null
+          payout_transaction_id: string | null
           processed_at: string | null
           processed_by: string | null
           rejection_reason: string | null
+          scheduled_payout_at: string | null
           status: string
           user_id: string
         }
@@ -8265,9 +8269,13 @@ export type Database = {
           created_at?: string
           iban_id?: string | null
           id?: string
+          is_enterprise_user?: boolean | null
+          payout_error?: string | null
+          payout_transaction_id?: string | null
           processed_at?: string | null
           processed_by?: string | null
           rejection_reason?: string | null
+          scheduled_payout_at?: string | null
           status?: string
           user_id: string
         }
@@ -8278,9 +8286,13 @@ export type Database = {
           created_at?: string
           iban_id?: string | null
           id?: string
+          is_enterprise_user?: boolean | null
+          payout_error?: string | null
+          payout_transaction_id?: string | null
           processed_at?: string | null
           processed_by?: string | null
           rejection_reason?: string | null
+          scheduled_payout_at?: string | null
           status?: string
           user_id?: string
         }
@@ -8505,6 +8517,10 @@ export type Database = {
         Returns: undefined
       }
       calculate_level: { Args: { xp_amount: number }; Returns: number }
+      calculate_payout_schedule: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       calculate_portfolio_heat: { Args: { p_user_id: string }; Returns: number }
       calculate_reel_trending_score: {
         Args: { reel_uuid: string }

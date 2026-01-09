@@ -21,7 +21,10 @@ import {
   CreditCard,
   AlertTriangle,
   User,
-  Building
+  Building,
+  Zap,
+  Crown,
+  Send
 } from "lucide-react";
 
 interface WithdrawalRequest {
@@ -36,6 +39,10 @@ interface WithdrawalRequest {
   admin_notes: string | null;
   batch_id: string | null;
   created_at: string;
+  scheduled_payout_at: string | null;
+  is_enterprise_user: boolean | null;
+  payout_transaction_id: string | null;
+  payout_error: string | null;
   user?: {
     display_name: string;
     email: string;
@@ -168,6 +175,28 @@ export function PayoutManager() {
     },
   });
 
+  // Trigger mass payout mutation
+  const triggerPayoutMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('process-mass-payout', {
+        body: {}
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-withdrawals"] });
+      if (data.processed_count > 0) {
+        toast.success(`Processed ${data.processed_count} payouts via iyzico`);
+      } else {
+        toast.info("No payouts ready for processing");
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to trigger payout: " + error.message);
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -189,12 +218,19 @@ export function PayoutManager() {
     statusFilter === "all" ? true : r.status === statusFilter
   );
 
+  // Calculate scheduled payout stats
+  const approvedForPayout = requests.filter((r) => r.status === "approved" && r.scheduled_payout_at);
+  const enterprisePayouts = approvedForPayout.filter((r) => r.is_enterprise_user);
+  const regularPayouts = approvedForPayout.filter((r) => !r.is_enterprise_user);
+
   const stats = {
     total: requests.length,
     pending: requests.filter((r) => r.status === "pending").length,
     pendingAmount: requests.filter((r) => r.status === "pending").reduce((sum, r) => sum + r.amount, 0),
     processing: requests.filter((r) => r.status === "processing").length,
     completed: requests.filter((r) => r.status === "completed").length,
+    approved: approvedForPayout.length,
+    approvedAmount: approvedForPayout.reduce((sum, r) => sum + r.amount, 0),
   };
 
   const toggleSelectAll = () => {
@@ -272,7 +308,7 @@ export function PayoutManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Payout Queue</h2>
-          <p className="text-muted-foreground">Process withdrawal requests</p>
+          <p className="text-muted-foreground">Process withdrawal requests (Enterprise: same-day, Regular: 2 days)</p>
         </div>
         <div className="flex gap-2">
           {selectedRequests.length > 0 && (
@@ -284,6 +320,14 @@ export function PayoutManager() {
               Approve Selected ({selectedRequests.length})
             </Button>
           )}
+          <Button 
+            variant="default"
+            onClick={() => triggerPayoutMutation.mutate()}
+            disabled={triggerPayoutMutation.isPending || stats.approved === 0}
+          >
+            <Send className="h-4 w-4 mr-2" />
+            {triggerPayoutMutation.isPending ? "Processing..." : `Send Payouts (${stats.approved})`}
+          </Button>
           <Button variant="outline" onClick={exportBatch}>
             <Download className="h-4 w-4 mr-2" />
             Export for Bank
@@ -292,7 +336,7 @@ export function PayoutManager() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -322,12 +366,25 @@ export function PayoutManager() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Zap className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.approved}</p>
+                <p className="text-sm text-muted-foreground">Ready for Payout</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Banknote className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">${stats.pendingAmount.toFixed(2)}</p>
-                <p className="text-sm text-muted-foreground">Pending Amount</p>
+                <p className="text-2xl font-bold">${stats.approvedAmount.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Approved Amount</p>
               </div>
             </div>
           </CardContent>
@@ -346,6 +403,39 @@ export function PayoutManager() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Scheduled Payout Info */}
+      {stats.approved > 0 && (
+        <Card className="border-blue-500/30 bg-blue-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <Zap className="h-6 w-6 text-blue-500" />
+              <div className="flex-1">
+                <p className="font-medium">Automatic Payouts Scheduled</p>
+                <p className="text-sm text-muted-foreground">
+                  {enterprisePayouts.length > 0 && (
+                    <span className="inline-flex items-center gap-1 mr-4">
+                      <Crown className="h-3 w-3 text-amber-500" />
+                      {enterprisePayouts.length} Enterprise (same-day)
+                    </span>
+                  )}
+                  {regularPayouts.length > 0 && (
+                    <span>{regularPayouts.length} Regular (2-day delay)</span>
+                  )}
+                </p>
+              </div>
+              <Button 
+                size="sm"
+                onClick={() => triggerPayoutMutation.mutate()}
+                disabled={triggerPayoutMutation.isPending}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Process Now
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters */}
       <div className="flex gap-4">
