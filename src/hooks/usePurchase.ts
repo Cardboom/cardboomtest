@@ -216,22 +216,34 @@ export const usePurchase = () => {
       // Calculate seller payout in their wallet currency
       const sellerPayoutInWalletCurrency = convertFromUSD(fees.sellerReceives, sellerCurrency, exchangeRates);
 
-      // 7. Create order with currency tracking
+      // Check if seller is verified for instant payout
+      const { data: sellerProfile } = await supabase
+        .from('profiles')
+        .select('is_verified_seller')
+        .eq('id', params.sellerId)
+        .single();
+
+      const isVerifiedSeller = sellerProfile?.is_verified_seller || false;
+
+      // 7. Create order with escrow tracking
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           listing_id: params.listingId,
           buyer_id: buyerId,
           seller_id: params.sellerId,
-          price: priceInUSD, // Store in USD
+          price: priceInUSD,
           buyer_fee: fees.buyerFee,
           seller_fee: fees.sellerFee,
           delivery_option: params.deliveryOption,
           status: 'paid',
+          escrow_status: isVerifiedSeller ? 'released' : 'pending', // Hold in escrow unless verified
+          escrow_held_amount: buyerTotalInWalletCurrency,
+          seller_is_verified: isVerifiedSeller,
           listing_currency: listingCurrency,
           buyer_currency: buyerCurrency,
           seller_currency: sellerCurrency,
-          exchange_rate_used: exchangeRates.USD_TRY, // Store for audit
+          exchange_rate_used: exchangeRates.USD_TRY,
           price_in_listing_currency: params.price,
           seller_payout_in_seller_currency: sellerPayoutInWalletCurrency,
         })
@@ -248,7 +260,7 @@ export const usePurchase = () => {
 
       if (updateListingError) throw updateListingError;
 
-      // 9. Deduct from buyer's wallet (in their currency)
+      // 9. Deduct from buyer's wallet (funds go to escrow)
       const newBuyerBalance = Number(buyerWallet.balance) - buyerTotalInWalletCurrency;
       const { error: buyerUpdateError } = await supabase
         .from('wallets')
@@ -257,7 +269,7 @@ export const usePurchase = () => {
 
       if (buyerUpdateError) throw buyerUpdateError;
 
-      // 10. Create buyer transaction record (in their currency)
+      // 10. Create buyer transaction record (funds held in escrow)
       await supabase
         .from('transactions')
         .insert({
@@ -265,30 +277,66 @@ export const usePurchase = () => {
           type: 'purchase',
           amount: -buyerTotalInWalletCurrency,
           fee: convertFromUSD(fees.buyerFee, buyerCurrency, exchangeRates),
-          description: `Purchase: ${params.title}`,
+          description: `Purchase: ${params.title}${isVerifiedSeller ? '' : ' (funds in escrow)'}`,
           reference_id: order.id,
         });
 
-      // 11. Credit seller's wallet (in their currency)
-      const newSellerBalance = Number(sellerWallet.balance) + sellerPayoutInWalletCurrency;
-      const { error: sellerUpdateError } = await supabase
-        .from('wallets')
-        .update({ balance: newSellerBalance })
-        .eq('id', sellerWallet.id);
-
-      if (sellerUpdateError) throw sellerUpdateError;
-
-      // 12. Create seller transaction record (in their currency)
-      await supabase
-        .from('transactions')
-        .insert({
-          wallet_id: sellerWallet.id,
-          type: 'sale',
-          amount: sellerPayoutInWalletCurrency,
-          fee: convertFromUSD(fees.sellerFee, sellerCurrency, exchangeRates),
-          description: `Sale: ${params.title}`,
-          reference_id: order.id,
+      // 11. Log order creation action
+      try {
+        await supabase.rpc('log_order_action', {
+          p_order_id: order.id,
+          p_action_type: 'created',
+          p_actor_id: buyerId,
+          p_actor_type: 'user',
+          p_details: { price: priceInUSD, is_verified_seller: isVerifiedSeller },
         });
+      } catch {
+        // Non-critical, continue
+      }
+
+      // 12. Handle seller payment based on verified status
+      if (isVerifiedSeller) {
+        // VERIFIED SELLER: Instant payout - credit immediately
+        const newSellerBalance = Number(sellerWallet.balance) + sellerPayoutInWalletCurrency;
+        const { error: sellerUpdateError } = await supabase
+          .from('wallets')
+          .update({ balance: newSellerBalance })
+          .eq('id', sellerWallet.id);
+
+        if (sellerUpdateError) throw sellerUpdateError;
+
+        // Create seller transaction record
+        await supabase
+          .from('transactions')
+          .insert({
+            wallet_id: sellerWallet.id,
+            type: 'sale',
+            amount: sellerPayoutInWalletCurrency,
+            fee: convertFromUSD(fees.sellerFee, sellerCurrency, exchangeRates),
+            description: `Sale: ${params.title} (verified seller - instant payout)`,
+            reference_id: order.id,
+          });
+
+        // Mark funds as released
+        await supabase
+          .from('orders')
+          .update({ funds_released_at: new Date().toISOString(), payout_status: 'paid' })
+          .eq('id', order.id);
+
+        // Log funds released
+        try {
+          await supabase.rpc('log_order_action', {
+            p_order_id: order.id,
+            p_action_type: 'funds_released',
+            p_actor_id: null,
+            p_actor_type: 'system',
+            p_details: { amount: sellerPayoutInWalletCurrency, reason: 'verified_seller_instant' },
+          });
+        } catch {
+          // Non-critical
+        }
+      }
+      // NON-VERIFIED SELLER: Funds held in escrow until both parties confirm
 
       // 13. Add item to buyer's portfolio
       await supabase
