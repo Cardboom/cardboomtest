@@ -4,21 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  BarChart3, DollarSign, AlertCircle, Info
+  BarChart3, DollarSign, AlertCircle, Info, AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { getPriceDisplay, hasGradePrice, type PriceStatus } from '@/utils/priceDisplay';
 
 interface PriceMarketPanelProps {
   itemId: string;
   productId?: string;
   itemName: string;
   category?: string;
-  currentPrice: number;
-  lastSalePrice?: number;
-  floorPrice?: number;
-  highestRecentSale?: number;
+  currentPrice: number | null;
+  lastSalePrice?: number | null;
+  floorPrice?: number | null;
+  highestRecentSale?: number | null;
   volume24h?: number;
   volume30d?: number;
   tcgplayerPrice?: number;
@@ -29,6 +30,11 @@ interface PriceMarketPanelProps {
   priceChange30d?: number;
   psa10Price?: number | null;
   rawPrice?: number | null;
+  // New pricing fields
+  priceStatus?: PriceStatus | string | null;
+  verifiedPrice?: number | null;
+  listingMedianPrice?: number | null;
+  listingSampleCount?: number;
 }
 
 export const PriceMarketPanel = ({
@@ -50,13 +56,27 @@ export const PriceMarketPanel = ({
   priceChange30d = 0,
   psa10Price,
   rawPrice,
+  priceStatus,
+  verifiedPrice,
+  listingMedianPrice,
+  listingSampleCount = 0,
 }: PriceMarketPanelProps) => {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y' | 'all'>('30d');
   
   // Categories that show graded prices
   const showGradedPrices = ['pokemon', 'one-piece', 'yugioh', 'mtg', 'sports', 'nba', 'nfl', 'mlb'].includes(category?.toLowerCase() || '');
 
-  const formatPrice = (price: number) => {
+  // Get price display info based on status
+  const priceInfo = getPriceDisplay(
+    currentPrice,
+    priceStatus,
+    verifiedPrice,
+    listingMedianPrice,
+    listingSampleCount
+  );
+
+  const formatPrice = (price: number | null | undefined): string => {
+    if (price === null || price === undefined || price === 0) return '—';
     if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
     if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
     return `$${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -96,10 +116,24 @@ export const PriceMarketPanel = ({
       </CardHeader>
       
       <CardContent className="space-y-6">
+        {/* Insufficient Data Warning */}
+        {!priceInfo.hasPrice && (
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <span className="font-semibold text-amber-400">Insufficient Market Data</span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              We don't have enough verified sales data to display an accurate market price for this item.
+              {listingSampleCount > 0 && ` There are ${listingSampleCount} active listing(s).`}
+            </p>
+          </div>
+        )}
+
         {/* CBGI 10 & Ungraded Price Display - For graded categories */}
-        {showGradedPrices && (psa10Price || rawPrice) && (
+        {showGradedPrices && (hasGradePrice(psa10Price) || hasGradePrice(rawPrice)) && (
           <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-primary/10 border border-amber-500/20">
-            {psa10Price && psa10Price > 0 && (
+            {hasGradePrice(psa10Price) && (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
                   <Badge className="bg-amber-500 text-white text-xs font-bold">CBGI 10</Badge>
@@ -108,7 +142,7 @@ export const PriceMarketPanel = ({
                 <p className="text-xs text-muted-foreground">Gem Mint</p>
               </div>
             )}
-            {rawPrice && rawPrice > 0 && (
+            {hasGradePrice(rawPrice) && (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1 mb-1">
                   <Badge variant="outline" className="text-xs">Ungraded</Badge>
@@ -120,28 +154,48 @@ export const PriceMarketPanel = ({
           </div>
         )}
 
-        {/* Live Price & Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <div className="glass rounded-lg p-3 text-center">
-            <p className="text-muted-foreground text-xs mb-1">Live Price</p>
-            <p className="font-display text-lg sm:text-xl font-bold text-foreground">{formatPrice(currentPrice)}</p>
+        {/* Live Price & Stats Grid - Only show if we have price data */}
+        {priceInfo.hasPrice && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+            <div className="glass rounded-lg p-3 text-center">
+              <p className="text-muted-foreground text-xs mb-1">{priceInfo.priceLabel}</p>
+              <p className="font-display text-lg sm:text-xl font-bold text-foreground">{formatPrice(priceInfo.displayPrice)}</p>
+              {priceInfo.confidence !== 'high' && (
+                <p className="text-[10px] text-amber-500 mt-0.5">Est.</p>
+              )}
+            </div>
+            
+            <div className="glass rounded-lg p-3 text-center">
+              <p className="text-muted-foreground text-xs mb-1">Last Sale</p>
+              <p className="font-semibold text-foreground text-sm sm:text-base">{formatPrice(lastSalePrice)}</p>
+            </div>
+            
+            <div className="glass rounded-lg p-3 text-center">
+              <p className="text-muted-foreground text-xs mb-1">Floor Price</p>
+              <p className="font-semibold text-foreground text-sm sm:text-base">{formatPrice(floorPrice)}</p>
+            </div>
+            
+            <div className="glass rounded-lg p-3 text-center">
+              <p className="text-muted-foreground text-xs mb-1">Recent High</p>
+              <p className="font-semibold text-foreground text-sm sm:text-base">{formatPrice(highestRecentSale)}</p>
+            </div>
           </div>
-          
-          <div className="glass rounded-lg p-3 text-center">
-            <p className="text-muted-foreground text-xs mb-1">Last Sale</p>
-            <p className="font-semibold text-foreground text-sm sm:text-base">{formatPrice(lastSalePrice || currentPrice * 0.98)}</p>
+        )}
+
+        {/* Listing Median - Show when we have listings but no verified price */}
+        {priceInfo.showListingMedian && listingSampleCount > 0 && listingMedianPrice && (
+          <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">
+                Listings Median ({listingSampleCount} listing{listingSampleCount !== 1 ? 's' : ''})
+              </span>
+              <span className="font-semibold">{formatPrice(listingMedianPrice)}</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Based on active user listings, not verified sales
+            </p>
           </div>
-          
-          <div className="glass rounded-lg p-3 text-center">
-            <p className="text-muted-foreground text-xs mb-1">Floor Price</p>
-            <p className="font-semibold text-foreground text-sm sm:text-base">{formatPrice(floorPrice || currentPrice * 0.85)}</p>
-          </div>
-          
-          <div className="glass rounded-lg p-3 text-center">
-            <p className="text-muted-foreground text-xs mb-1">Recent High</p>
-            <p className="font-semibold text-foreground text-sm sm:text-base">{formatPrice(highestRecentSale || currentPrice * 1.15)}</p>
-          </div>
-        </div>
+        )}
 
         {/* Price Changes */}
         <div className="flex justify-around py-3 border-y border-border/50">

@@ -6,7 +6,7 @@ export interface MarketItem {
   name: string;
   category: string;
   subcategory?: string | null;
-  current_price: number;
+  current_price: number | null;
   base_price: number;
   change_24h: number | null;
   change_7d: number | null;
@@ -23,6 +23,15 @@ export interface MarketItem {
   series: string | null;
   created_at: string;
   updated_at: string;
+  // New pricing fields
+  price_status: string | null;
+  verified_price: number | null;
+  verified_source: string | null;
+  listing_median_price: number | null;
+  listing_sample_count: number;
+  psa10_price: number | null;
+  psa9_price: number | null;
+  raw_price: number | null;
   // UI state for animations
   priceUpdated?: boolean;
   justListed?: boolean;

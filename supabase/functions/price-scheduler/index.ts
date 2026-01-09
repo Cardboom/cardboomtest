@@ -285,6 +285,10 @@ Deno.serve(async (req) => {
             const updateData: any = {
               price_24h_ago: item.current_price,
               current_price: newPrice,
+              verified_price: newPrice,
+              verified_source: source,
+              verified_at: new Date().toISOString(),
+              price_status: 'verified',
               change_24h: change24h,
               data_source: source,
               updated_at: new Date().toISOString(),
