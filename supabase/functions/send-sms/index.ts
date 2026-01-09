@@ -6,14 +6,24 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+type OTPType = "verification" | "password_reset" | "login_otp";
+type NotificationType = "item_sold" | "grading_complete";
+type SMSType = OTPType | NotificationType;
+
 interface SMSRequest {
   phone: string;
-  type: "verification" | "password_reset" | "login_otp";
+  type: SMSType;
   userId?: string;
+  data?: {
+    item_title?: string;
+    sale_price?: string;
+    grade?: string;
+    psa_range?: string;
+  };
 }
 
-// Language messages based on country code
-const messages: Record<string, Record<string, (otp: string) => string>> = {
+// OTP messages (require code parameter)
+const otpMessages: Record<string, Record<OTPType, (otp: string) => string>> = {
   tr: {
     verification: (otp) => `CardBoom: Doğrulama kodunuz ${otp}. 10 dakika geçerlidir. Bu kodu kimseyle paylaşmayın.`,
     password_reset: (otp) => `CardBoom: Şifre sıfırlama kodunuz ${otp}. 10 dakika geçerlidir. Bu talebi siz yapmadıysanız dikkate almayın.`,
@@ -56,6 +66,42 @@ const messages: Record<string, Record<string, (otp: string) => string>> = {
   },
 };
 
+// Notification messages (use data parameters)
+const notificationMessages: Record<string, Record<NotificationType, (data: SMSRequest['data']) => string>> = {
+  tr: {
+    item_sold: (data) => `CardBoom: 🎉 Ürününüz satıldı! "${data?.item_title || 'Ürün'}" ${data?.sale_price || ''} fiyatına satıldı. Detaylar için uygulamayı açın.`,
+    grading_complete: (data) => `CardBoom: Derecelendirme tamamlandı! Kartınız ${data?.grade || 'N/A'}/10 aldı (${data?.psa_range || 'N/A'}). Detaylar için uygulamayı açın.`,
+  },
+  en: {
+    item_sold: (data) => `CardBoom: 🎉 Your item sold! "${data?.item_title || 'Item'}" sold for ${data?.sale_price || ''}. Open the app for details.`,
+    grading_complete: (data) => `CardBoom: Grading complete! Your card received ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Open the app for details.`,
+  },
+  de: {
+    item_sold: (data) => `CardBoom: 🎉 Ihr Artikel wurde verkauft! "${data?.item_title || 'Artikel'}" für ${data?.sale_price || ''} verkauft. Öffnen Sie die App für Details.`,
+    grading_complete: (data) => `CardBoom: Bewertung abgeschlossen! Ihre Karte erhielt ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Öffnen Sie die App.`,
+  },
+  fr: {
+    item_sold: (data) => `CardBoom: 🎉 Votre article a été vendu! "${data?.item_title || 'Article'}" vendu pour ${data?.sale_price || ''}. Ouvrez l'app pour les détails.`,
+    grading_complete: (data) => `CardBoom: Notation terminée! Votre carte a reçu ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Ouvrez l'app.`,
+  },
+  es: {
+    item_sold: (data) => `CardBoom: 🎉 Tu artículo se vendió! "${data?.item_title || 'Artículo'}" vendido por ${data?.sale_price || ''}. Abre la app para detalles.`,
+    grading_complete: (data) => `CardBoom: Calificación completa! Tu carta recibió ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Abre la app.`,
+  },
+  ja: {
+    item_sold: (data) => `CardBoom: 🎉 商品が売れました！「${data?.item_title || '商品'}」が${data?.sale_price || ''}で売れました。アプリで詳細を確認。`,
+    grading_complete: (data) => `CardBoom: グレーディング完了！カードは${data?.grade || 'N/A'}/10（${data?.psa_range || 'N/A'}）を獲得。アプリで確認。`,
+  },
+  ko: {
+    item_sold: (data) => `CardBoom: 🎉 상품이 판매되었습니다! "${data?.item_title || '상품'}"이 ${data?.sale_price || ''}에 판매되었습니다. 앱에서 확인하세요.`,
+    grading_complete: (data) => `CardBoom: 그레이딩 완료! 카드가 ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'})을 받았습니다. 앱에서 확인.`,
+  },
+  zh: {
+    item_sold: (data) => `CardBoom: 🎉 您的商品已售出！"${data?.item_title || '商品'}"以${data?.sale_price || ''}售出。打开应用查看详情。`,
+    grading_complete: (data) => `CardBoom: 评级完成！您的卡片获得${data?.grade || 'N/A'}/10（${data?.psa_range || 'N/A'}）。打开应用查看。`,
+  },
+};
+
 // Map country codes to languages
 const countryCodeToLanguage: Record<string, string> = {
   "90": "tr",   // Turkey
@@ -77,10 +123,8 @@ const countryCodeToLanguage: Record<string, string> = {
 };
 
 function getLanguageFromPhone(phone: string): string {
-  // Remove the + prefix
   const cleanPhone = phone.replace("+", "");
   
-  // Check 3-digit codes first, then 2-digit, then 1-digit
   for (const digits of [3, 2, 1]) {
     const code = cleanPhone.substring(0, digits);
     if (countryCodeToLanguage[code]) {
@@ -88,11 +132,14 @@ function getLanguageFromPhone(phone: string): string {
     }
   }
   
-  return "en"; // Default to English
+  return "en";
+}
+
+function isOTPType(type: SMSType): type is OTPType {
+  return ["verification", "password_reset", "login_otp"].includes(type);
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -106,7 +153,7 @@ serve(async (req) => {
       throw new Error("Missing Twilio credentials");
     }
 
-    const { phone, type, userId }: SMSRequest = await req.json();
+    const { phone, type, userId, data }: SMSRequest = await req.json();
 
     if (!phone || !type) {
       throw new Error("Missing required fields: phone and type");
@@ -115,63 +162,62 @@ serve(async (req) => {
     // Format phone number to E.164 format
     let formattedPhone = phone.trim();
     
-    // Ensure the phone starts with +
     if (!formattedPhone.startsWith("+")) {
-      // If starts with 0, assume Turkish number
       if (formattedPhone.startsWith("0")) {
         formattedPhone = "+90" + formattedPhone.slice(1);
       } else {
-        // Default to adding + if it looks like an international number
         formattedPhone = "+" + formattedPhone;
       }
     }
 
-    // Basic E.164 validation: must start with + followed by digits
     const phoneRegex = /^\+[1-9][0-9]{7,14}$/;
     if (!phoneRegex.test(formattedPhone)) {
       throw new Error("Invalid phone number format. Please include country code (e.g., +90 for Turkey)");
     }
 
-    // Detect language from phone number
     const language = getLanguageFromPhone(formattedPhone);
-    console.log("Sending SMS to:", formattedPhone, "in language:", language);
+    console.log("Sending SMS to:", formattedPhone, "in language:", language, "type:", type);
 
-    // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiry
-
-    // Store OTP in database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Clean up expired OTPs first
-    await supabase
-      .from("sms_otps")
-      .delete()
-      .lt("expires_at", new Date().toISOString());
+    let message: string;
 
-    // Insert new OTP
-    const { error: insertError } = await supabase
-      .from("sms_otps")
-      .upsert({
-        phone: formattedPhone,
-        otp_code: otp,
-        type,
-        user_id: userId || null,
-        expires_at: expiresAt.toISOString(),
-        verified: false,
-        attempts: 0,
-      }, { onConflict: "phone,type" });
+    if (isOTPType(type)) {
+      // OTP flow: generate and store code
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    if (insertError) {
-      console.error("Error storing OTP:", insertError);
-      throw new Error("Failed to generate verification code");
+      await supabase
+        .from("sms_otps")
+        .delete()
+        .lt("expires_at", new Date().toISOString());
+
+      const { error: insertError } = await supabase
+        .from("sms_otps")
+        .upsert({
+          phone: formattedPhone,
+          otp_code: otp,
+          type,
+          user_id: userId || null,
+          expires_at: expiresAt.toISOString(),
+          verified: false,
+          attempts: 0,
+        }, { onConflict: "phone,type" });
+
+      if (insertError) {
+        console.error("Error storing OTP:", insertError);
+        throw new Error("Failed to generate verification code");
+      }
+
+      const langMessages = otpMessages[language] || otpMessages.en;
+      message = langMessages[type](otp);
+    } else {
+      // Notification flow: use data parameters
+      const langMessages = notificationMessages[language] || notificationMessages.en;
+      message = langMessages[type](data);
     }
-
-    // Get localized message
-    const langMessages = messages[language] || messages.en;
-    const message = langMessages[type](otp);
 
     // Send SMS via Twilio
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
@@ -202,8 +248,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Verification code sent",
-        expiresAt: expiresAt.toISOString(),
+        message: isOTPType(type) ? "Verification code sent" : "Notification sent",
       }),
       {
         status: 200,

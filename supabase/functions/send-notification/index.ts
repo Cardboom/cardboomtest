@@ -75,7 +75,15 @@ serve(async (req) => {
       'follower': 'follower_activity',
       'review': 'new_offers',
       'referral': 'new_offers',
-      'daily_xp': 'new_offers', // Use existing pref field
+      'daily_xp': 'new_offers',
+      'sale': 'order_updates',
+      'grading_complete': 'order_updates',
+      'listing_created': 'order_updates',
+      'outbid': 'new_offers',
+      'auction_won': 'order_updates',
+      'storage_fee': 'order_updates',
+      'donation_complete': 'order_updates',
+      'donation_refund': 'order_updates',
     };
 
     const prefField = prefMap[payload.type];
