@@ -67,8 +67,8 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           rates.EUR_USD = 1 / rates.USD_EUR;
           setExchangeRates(rates);
         }
-      } catch (error) {
-        console.log('Using default exchange rates');
+      } catch {
+        // Fallback to default rates silently
       } finally {
         setIsLoading(false);
       }

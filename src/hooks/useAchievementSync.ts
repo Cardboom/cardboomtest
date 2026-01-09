@@ -113,10 +113,11 @@ export const useAchievementSync = () => {
         .eq('buyer_id', userId);
 
       const totalSpent = buyOrders?.reduce((sum, order) => sum + Number(order.price), 0) || 0;
-      if (totalSpent >= 100) await checkAndAwardAchievement('spent_100', userId);
-      if (totalSpent >= 500) await checkAndAwardAchievement('spent_500', userId);
-      if (totalSpent >= 1000) await checkAndAwardAchievement('spent_1000', userId);
-      if (totalSpent >= 5000) await checkAndAwardAchievement('spent_5000', userId);
+      // Match database achievement keys (consistent with useAchievementTriggers)
+      if (totalSpent >= 100) await checkAndAwardAchievement('big_spender', userId);
+      if (totalSpent >= 1000) await checkAndAwardAchievement('whale_spender', userId);
+      if (totalSpent >= 5000) await checkAndAwardAchievement('mega_spender', userId);
+      if (totalSpent >= 10000) await checkAndAwardAchievement('ultra_spender', userId);
 
       // Check earnings achievements
       const { data: sellOrders } = await supabase
@@ -124,11 +125,12 @@ export const useAchievementSync = () => {
         .select('price, seller_fee')
         .eq('seller_id', userId);
 
-      const totalEarned = sellOrders?.reduce((sum, order) => sum + (Number(order.price) - Number(order.seller_fee)), 0) || 0;
-      if (totalEarned >= 100) await checkAndAwardAchievement('earned_100', userId);
-      if (totalEarned >= 500) await checkAndAwardAchievement('earned_500', userId);
-      if (totalEarned >= 1000) await checkAndAwardAchievement('earned_1000', userId);
-      if (totalEarned >= 5000) await checkAndAwardAchievement('earned_5000', userId);
+      const totalEarned = sellOrders?.reduce((sum, order) => sum + (Number(order.price) - Number(order.seller_fee || 0)), 0) || 0;
+      // Match database achievement keys (consistent with useAchievementTriggers)
+      if (totalEarned >= 100) await checkAndAwardAchievement('small_earner', userId);
+      if (totalEarned >= 500) await checkAndAwardAchievement('steady_earner', userId);
+      if (totalEarned >= 1000) await checkAndAwardAchievement('big_earner', userId);
+      if (totalEarned >= 5000) await checkAndAwardAchievement('major_earner', userId);
 
       // Check streak achievements from daily_logins
       const { data: streakData } = await supabase
@@ -145,7 +147,7 @@ export const useAchievementSync = () => {
       if (streak >= 14) await checkAndAwardAchievement('streak_14', userId);
       if (streak >= 30) await checkAndAwardAchievement('streak_30', userId);
 
-      console.log('Achievement sync completed for user:', userId);
+      // Achievement sync completed silently
     } catch (error) {
       console.error('Error syncing achievements:', error);
     }
