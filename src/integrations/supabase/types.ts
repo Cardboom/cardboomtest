@@ -8172,51 +8172,69 @@ export type Database = {
       wire_transfers: {
         Row: {
           amount: number
+          auto_verified: boolean | null
           commission_rate: number | null
           created_at: string
+          credited_at: string | null
           currency: string | null
           id: string
           matched_code: string | null
+          national_id_match: string | null
           net_amount: number | null
           notes: string | null
           processed_at: string | null
+          scheduled_credit_at: string | null
           sender_iban: string | null
           sender_name: string | null
           status: Database["public"]["Enums"]["wire_transfer_status"]
           transfer_description: string | null
           user_id: string | null
+          verified_at: string | null
+          wallet_transaction_id: string | null
         }
         Insert: {
           amount: number
+          auto_verified?: boolean | null
           commission_rate?: number | null
           created_at?: string
+          credited_at?: string | null
           currency?: string | null
           id?: string
           matched_code?: string | null
+          national_id_match?: string | null
           net_amount?: number | null
           notes?: string | null
           processed_at?: string | null
+          scheduled_credit_at?: string | null
           sender_iban?: string | null
           sender_name?: string | null
           status?: Database["public"]["Enums"]["wire_transfer_status"]
           transfer_description?: string | null
           user_id?: string | null
+          verified_at?: string | null
+          wallet_transaction_id?: string | null
         }
         Update: {
           amount?: number
+          auto_verified?: boolean | null
           commission_rate?: number | null
           created_at?: string
+          credited_at?: string | null
           currency?: string | null
           id?: string
           matched_code?: string | null
+          national_id_match?: string | null
           net_amount?: number | null
           notes?: string | null
           processed_at?: string | null
+          scheduled_credit_at?: string | null
           sender_iban?: string | null
           sender_name?: string | null
           status?: Database["public"]["Enums"]["wire_transfer_status"]
           transfer_description?: string | null
           user_id?: string | null
+          verified_at?: string | null
+          wallet_transaction_id?: string | null
         }
         Relationships: []
       }
@@ -8592,6 +8610,7 @@ export type Database = {
         }
         Returns: string
       }
+      process_pending_wire_transfers: { Args: never; Returns: number }
       purchase_pro_pass: { Args: { p_user_id: string }; Returns: boolean }
       record_idempotency: {
         Args: {
@@ -8650,6 +8669,17 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      verify_wire_transfer_by_national_id: {
+        Args: {
+          p_amount: number
+          p_description?: string
+          p_national_id: string
+          p_sender_iban?: string
+          p_sender_name?: string
+          p_transfer_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
@@ -8768,7 +8798,13 @@ export type Database = {
         | "admin_debit"
       verification_status: "pending" | "approved" | "rejected"
       waitlist_interest: "buyer" | "seller" | "both"
-      wire_transfer_status: "pending" | "matched" | "confirmed" | "rejected"
+      wire_transfer_status:
+        | "pending"
+        | "matched"
+        | "confirmed"
+        | "rejected"
+        | "verified"
+        | "credited"
       xp_action_type:
         | "purchase"
         | "sale"
@@ -9031,7 +9067,14 @@ export const Constants = {
       ],
       verification_status: ["pending", "approved", "rejected"],
       waitlist_interest: ["buyer", "seller", "both"],
-      wire_transfer_status: ["pending", "matched", "confirmed", "rejected"],
+      wire_transfer_status: [
+        "pending",
+        "matched",
+        "confirmed",
+        "rejected",
+        "verified",
+        "credited",
+      ],
       xp_action_type: [
         "purchase",
         "sale",
