@@ -22,22 +22,34 @@ export function ActivationUnlockDialog({ open, onOpenChange }: ActivationUnlockD
   const [isActivated, setIsActivated] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const checkActivation = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !isMounted) return;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('activation_unlocked')
-        .eq('id', user.id)
-        .single();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('activation_unlocked')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      setIsActivated(profile?.activation_unlocked || false);
+        if (isMounted) {
+          setIsActivated(profile?.activation_unlocked || false);
+        }
+      } catch (error) {
+        console.error('Error checking activation:', error);
+      }
     };
 
     if (open) {
       checkActivation();
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [open]);
 
   const handleTopUp = () => {

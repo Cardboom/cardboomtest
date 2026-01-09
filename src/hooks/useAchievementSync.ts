@@ -139,7 +139,7 @@ export const useAchievementSync = () => {
         .eq('user_id', userId)
         .order('login_date', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       const streak = streakData?.streak_count || 0;
       if (streak >= 3) await checkAndAwardAchievement('streak_3', userId);

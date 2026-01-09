@@ -542,9 +542,21 @@ export function useUploadReel() {
       video.preload = 'metadata';
       video.src = URL.createObjectURL(file);
       
-      const duration = await new Promise<number>((resolve) => {
+      const duration = await new Promise<number>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+          URL.revokeObjectURL(video.src);
+          resolve(30); // Default to 30 seconds if metadata loading times out
+        }, 5000);
+        
         video.onloadedmetadata = () => {
+          clearTimeout(timeoutId);
+          URL.revokeObjectURL(video.src);
           resolve(Math.round(video.duration));
+        };
+        video.onerror = () => {
+          clearTimeout(timeoutId);
+          URL.revokeObjectURL(video.src);
+          resolve(30); // Default on error
         };
       });
 

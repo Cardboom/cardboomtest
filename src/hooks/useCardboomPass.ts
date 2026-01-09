@@ -138,6 +138,8 @@ export const useCardboomPass = (userId?: string) => {
 
   const getCumulativeXpForTier = (tierNum: number) => {
     // Sum up all XP required for tiers 1 through tierNum
+    // Guard against empty tiers array
+    if (!tiers || tiers.length === 0) return 0;
     return tiers
       .filter(t => t.tier_number <= tierNum)
       .reduce((sum, t) => sum + t.xp_required, 0);
