@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,17 @@ export const ListThisCardDialog = ({
   const [price, setPrice] = useState('');
   const [condition, setCondition] = useState('near_mint');
   const [description, setDescription] = useState('');
+  const [displayCardName, setDisplayCardName] = useState(cardName);
+  const [displayCategory, setDisplayCategory] = useState(category);
+  const [displaySetName, setDisplaySetName] = useState(setName);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update display values when props change (fixes immediate fill issue)
+  useEffect(() => {
+    setDisplayCardName(cardName);
+    setDisplayCategory(category);
+    setDisplaySetName(setName);
+  }, [cardName, category, setName]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -81,13 +91,13 @@ export const ListThisCardDialog = ({
         .from('listing-images')
         .getPublicUrl(fileName);
 
-      // Create listing
+      // Create listing using display values (synced from props)
       const { data: listing, error: listingError } = await supabase
         .from('listings')
         .insert({
-          title: cardName,
-          category,
-          set_name: setName,
+          title: displayCardName,
+          category: displayCategory,
+          set_name: displaySetName,
           condition,
           price: parseFloat(price),
           description: description || null,
@@ -137,7 +147,7 @@ export const ListThisCardDialog = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>List Your {cardName}</DialogTitle>
+          <DialogTitle>List Your {displayCardName}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
@@ -175,7 +185,7 @@ export const ListThisCardDialog = ({
           {/* Card Name (pre-filled, readonly) */}
           <div className="space-y-2">
             <Label>Card Name</Label>
-            <Input value={cardName} disabled className="bg-muted" />
+            <Input value={displayCardName} disabled className="bg-muted" />
           </div>
 
           {/* Price */}
