@@ -220,7 +220,7 @@ export const CreateAuctionDialog = ({
         <div>
           <h3 className="text-lg font-semibold text-foreground">Auctions Require Upgrade</h3>
           <p className="text-muted-foreground text-sm mt-1">
-            Create live auctions like eBay by becoming a Verified Seller or upgrading to Enterprise.
+            Create live auctions by becoming a Verified Seller or upgrading to Enterprise.
           </p>
         </div>
       </div>
