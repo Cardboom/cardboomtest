@@ -98,6 +98,19 @@ export const useCardboomPoints = (userId?: string) => {
     };
   }, [userId, fetchPoints]);
 
+  // Listen for custom balance update events (e.g., from bounty claims)
+  useEffect(() => {
+    const handleBalanceUpdate = () => {
+      fetchPoints();
+      fetchHistory();
+    };
+
+    window.addEventListener('gems-balance-updated', handleBalanceUpdate);
+    return () => {
+      window.removeEventListener('gems-balance-updated', handleBalanceUpdate);
+    };
+  }, [fetchPoints, fetchHistory]);
+
   return {
     points,
     balance: points?.balance ?? 0,
