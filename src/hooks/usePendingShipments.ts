@@ -88,13 +88,16 @@ export const usePendingShipments = () => {
     fetchPendingShipments();
   }, [fetchPendingShipments]);
 
-  // Subscribe to new sales
+  // Subscribe to new sales - proper cleanup pattern
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let isMounted = true;
+
     const subscribeToSales = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session || !isMounted) return;
 
-      const channel = supabase
+      channel = supabase
         .channel('seller-sales')
         .on(
           'postgres_changes',
@@ -104,19 +107,24 @@ export const usePendingShipments = () => {
             table: 'orders',
             filter: `seller_id=eq.${session.user.id}`,
           },
-          (payload) => {
-            // New sale detected - refresh and show prompt
-            fetchPendingShipments();
+          () => {
+            if (isMounted) {
+              // New sale detected - refresh and show prompt
+              fetchPendingShipments();
+            }
           }
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     };
 
     subscribeToSales();
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, [fetchPendingShipments]);
 
   const dismissPrompt = () => {

@@ -140,14 +140,17 @@ export const useXP = () => {
   };
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let isMounted = true;
+
     fetchXPData();
 
-    // Subscribe to XP changes
+    // Subscribe to XP changes - proper cleanup pattern
     const setupSubscription = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || !isMounted) return;
 
-      const channel = supabase
+      channel = supabase
         .channel('xp-changes')
         .on(
           'postgres_changes',
@@ -158,6 +161,7 @@ export const useXP = () => {
             filter: `user_id=eq.${user.id}`
           },
           (payload) => {
+            if (!isMounted) return;
             const newXP = payload.new as XPHistoryItem;
             toast({
               title: `+${newXP.xp_earned} XP!`,
@@ -167,14 +171,17 @@ export const useXP = () => {
           }
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     };
 
     setupSubscription();
-  }, []);
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [toast]);
 
   return {
     ...stats,

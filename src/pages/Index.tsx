@@ -76,11 +76,15 @@ const Index = () => {
 
   // Scroll to market section if user is logged in
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
     if (user && marketRef.current) {
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         marketRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     }
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [user]);
   
 

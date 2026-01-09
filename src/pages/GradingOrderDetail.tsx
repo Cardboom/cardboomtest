@@ -27,14 +27,20 @@ export default function GradingOrderDetail() {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchOrder = async () => {
       if (!id) return;
       setIsLoading(true);
       const data = await getOrder(id);
-      setOrder(data);
-      setIsLoading(false);
+      if (isMounted) {
+        setOrder(data);
+        setIsLoading(false);
+      }
     };
     fetchOrder();
+    
+    return () => { isMounted = false; };
   }, [id, getOrder]);
 
   const category = order ? GRADING_CATEGORIES.find(c => c.id === order.category) : null;

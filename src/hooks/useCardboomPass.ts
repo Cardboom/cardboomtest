@@ -39,7 +39,7 @@ export const useCardboomPass = (userId?: string) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const fetchData = async () => {
+  const fetchData = async (isMountedCheck?: () => boolean) => {
     setLoading(true);
     try {
       // Fetch active season
@@ -48,6 +48,9 @@ export const useCardboomPass = (userId?: string) => {
         .select('*')
         .eq('is_active', true)
         .single();
+
+      // Check if still mounted before updating state
+      if (isMountedCheck && !isMountedCheck()) return;
 
       if (seasonData) {
         setSeason(seasonData);
@@ -58,6 +61,7 @@ export const useCardboomPass = (userId?: string) => {
           .select('*')
           .order('tier_number', { ascending: true });
 
+        if (isMountedCheck && !isMountedCheck()) return;
         setTiers(tiersData || []);
 
         // Fetch user progress if logged in
@@ -69,6 +73,7 @@ export const useCardboomPass = (userId?: string) => {
             .eq('season_id', seasonData.id)
             .single();
 
+          if (isMountedCheck && !isMountedCheck()) return;
           if (progressData) {
             setProgress(progressData);
           }
@@ -77,7 +82,9 @@ export const useCardboomPass = (userId?: string) => {
     } catch (error) {
       console.error('Error fetching pass data:', error);
     } finally {
-      setLoading(false);
+      if (!isMountedCheck || isMountedCheck()) {
+        setLoading(false);
+      }
     }
   };
 
@@ -193,7 +200,9 @@ export const useCardboomPass = (userId?: string) => {
   };
 
   useEffect(() => {
-    fetchData();
+    let isMounted = true;
+    fetchData(() => isMounted);
+    return () => { isMounted = false; };
   }, [userId]);
 
   // Subscribe to realtime updates

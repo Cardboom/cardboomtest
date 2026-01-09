@@ -25,6 +25,7 @@ export const AnimatedCounter = ({
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
   const prevValue = useRef(value);
   const animationRef = useRef<number>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (value !== prevValue.current) {
@@ -49,7 +50,7 @@ export const AnimatedCounter = ({
           animationRef.current = requestAnimationFrame(animate);
         } else {
           setDisplayValue(endValue);
-          setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             setIsAnimating(false);
             setDirection(null);
           }, 300);
@@ -63,6 +64,9 @@ export const AnimatedCounter = ({
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     };
   }, [value, duration]);
