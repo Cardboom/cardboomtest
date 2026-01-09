@@ -33,10 +33,13 @@ interface WithdrawalRequest {
   user_ibans: UserIban | null;
 }
 
-// Generate iyzico authorization header (HMAC-SHA256 V2)
-async function generateAuthHeader(apiKey: string, secretKey: string, payload: string): Promise<string> {
-  const randomKey = crypto.randomUUID().replace(/-/g, '').substring(0, 16);
-  const hashString = randomKey + payload;
+// Generate iyzico IYZWSv2 authorization header (HMAC-SHA256)
+// According to iyzico docs: https://docs.iyzico.com/en/getting-started/preliminaries/authentication/hmacsha256-auth
+async function generateAuthHeader(apiKey: string, secretKey: string, uriPath: string, requestBody: string): Promise<string> {
+  const randomKey = Date.now().toString() + Math.random().toString(36).substring(2, 10);
+  
+  // PKI String: randomKey + uriPath + requestBody
+  const pkiString = randomKey + uriPath + requestBody;
   
   // Create HMAC-SHA256 signature using Web Crypto API
   const encoder = new TextEncoder();
@@ -47,12 +50,13 @@ async function generateAuthHeader(apiKey: string, secretKey: string, payload: st
     false,
     ['sign']
   );
-  const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(hashString));
+  const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(pkiString));
   const signature = Array.from(new Uint8Array(signatureBuffer))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
   
-  const authorizationString = `${apiKey}&${randomKey}&${signature}`;
+  // Auth string format: apiKey:{apiKey}&randomKey:{randomKey}&signature:{signature}
+  const authorizationString = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signature}`;
   return base64Encode(authorizationString);
 }
 
@@ -149,22 +153,25 @@ serve(async (req) => {
     const payoutRequest = {
       externalId: batchId,
       conversationId: `conv-${batchId}`,
-      purpose: 'BONUS', // iyzico purpose type for payouts
+      purpose: 'GOODS', // iyzico purpose type for payouts (GOODS, BONUS, or REFUND)
       items: payoutItems
     };
 
     const payloadString = JSON.stringify(payoutRequest);
-    const authorization = await generateAuthHeader(iyzicoApiKey, iyzicoSecretKey, payloadString);
+    
+    // Correct endpoint: /v1/mass/payout/init (not /v2/masspayout)
+    const uriPath = '/v1/mass/payout/init';
+    const authorization = await generateAuthHeader(iyzicoApiKey, iyzicoSecretKey, uriPath, payloadString);
 
     console.log('[process-mass-payout] Sending mass payout request to iyzico...');
+    console.log('[process-mass-payout] Endpoint:', `${iyzicoBaseUrl}${uriPath}`);
 
     // Call iyzico Mass Payout API
-    const iyzicoResponse = await fetch(`${iyzicoBaseUrl}/v2/masspayout`, {
+    const iyzicoResponse = await fetch(`${iyzicoBaseUrl}${uriPath}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `IYZWS ${authorization}`,
-        'x-iyzi-rnd': crypto.randomUUID(),
+        'Authorization': `IYZWSv2 ${authorization}`,
       },
       body: payloadString
     });
