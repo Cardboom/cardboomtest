@@ -77,20 +77,23 @@ const PublicProfile = () => {
 
       if (error) throw error;
 
-      const totalValue = items?.reduce((sum, item) => {
-        const price = (item.market_items as any)?.current_price || item.purchase_price || 0;
+      const safeItems = Array.isArray(items) ? items : [];
+      
+      const totalValue = safeItems.reduce((sum, item) => {
+        const marketItem = item.market_items as { current_price?: number } | null;
+        const price = marketItem?.current_price ?? item.purchase_price ?? 0;
         return sum + (price * (item.quantity || 1));
-      }, 0) || 0;
+      }, 0);
 
-      const totalCost = items?.reduce((sum, item) => {
+      const totalCost = safeItems.reduce((sum, item) => {
         return sum + ((item.purchase_price || 0) * (item.quantity || 1));
-      }, 0) || 0;
+      }, 0);
 
       const pnl = totalValue - totalCost;
       const pnlPercent = totalCost > 0 ? ((pnl / totalCost) * 100) : 0;
 
       return {
-        totalItems: items?.length || 0,
+        totalItems: safeItems.length,
         totalValue,
         pnl,
         pnlPercent,

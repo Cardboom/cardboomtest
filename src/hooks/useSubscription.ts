@@ -96,9 +96,14 @@ export const useSubscription = (userId?: string) => {
         .from('wallets')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (walletError) throw walletError;
+      
+      if (!wallet) {
+        toast.error('Wallet not found. Please contact support.');
+        return false;
+      }
 
       if (Number(wallet.balance) < price) {
         toast.error(`Insufficient balance. You need $${price.toFixed(2)} for ${tierLabel} ${cycleLabel} subscription.`);

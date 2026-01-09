@@ -84,7 +84,7 @@ export const useReferralSystem = () => {
         .from('profiles')
         .select('referral_code')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       // Get all referrals
       const { data: referralData } = await supabase

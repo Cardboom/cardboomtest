@@ -70,7 +70,7 @@ export const useDailyStreakWithAchievements = () => {
         .select('streak_count')
         .eq('user_id', user.id)
         .eq('login_date', yesterdayStr)
-        .single();
+        .maybeSingle();
 
       const newStreak = yesterdayLogin ? (yesterdayLogin.streak_count || 0) + 1 : 1;
 

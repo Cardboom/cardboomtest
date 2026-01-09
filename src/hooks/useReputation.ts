@@ -31,7 +31,7 @@ export function useReputation() {
         .from('profiles')
         .select('reputation_score, reputation_tier')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profile) {
         const tier = (profile.reputation_tier || 'bronze') as keyof typeof TIER_BENEFITS;

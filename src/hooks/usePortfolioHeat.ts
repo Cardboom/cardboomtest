@@ -32,7 +32,7 @@ export function usePortfolioHeat() {
         .select('*')
         .eq('user_id', user.id)
         .eq('calculated_at', new Date().toISOString().split('T')[0])
-        .single();
+        .maybeSingle();
 
       // Get portfolio movement alerts
       const { data: portfolioItems } = await supabase
