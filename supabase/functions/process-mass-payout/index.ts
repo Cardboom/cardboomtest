@@ -169,7 +169,24 @@ serve(async (req) => {
       body: payloadString
     });
 
-    const iyzicoResult = await iyzicoResponse.json();
+    // Check for non-JSON responses (HTML error pages, etc.)
+    const responseText = await iyzicoResponse.text();
+    console.log('[process-mass-payout] iyzico HTTP status:', iyzicoResponse.status);
+    
+    let iyzicoResult: any;
+    try {
+      iyzicoResult = JSON.parse(responseText);
+    } catch (parseError) {
+      // Log first 500 chars of response for debugging
+      console.error('[process-mass-payout] Non-JSON response from iyzico:', responseText.substring(0, 500));
+      
+      // Check if it's a common error
+      if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
+        throw new Error(`iyzico returned HTML error page (HTTP ${iyzicoResponse.status}). This may indicate invalid API credentials or endpoint.`);
+      }
+      throw new Error(`Invalid response from iyzico: ${responseText.substring(0, 200)}`);
+    }
+    
     console.log('[process-mass-payout] iyzico response:', JSON.stringify(iyzicoResult));
 
     const results: any[] = [];
