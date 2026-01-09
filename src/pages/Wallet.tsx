@@ -251,7 +251,7 @@ const WalletPage = () => {
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">Withdraw to Bank Account</p>
-                  <p className="text-sm text-muted-foreground">IBAN Transfer • 1-3 business days</p>
+                  <p className="text-sm text-muted-foreground">Turkish IBAN only • TRY • ₺16 fee • 1-3 business days</p>
                 </div>
               </button>
             </CardContent>
