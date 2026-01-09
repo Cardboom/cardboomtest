@@ -11,7 +11,7 @@ import { CollectibleModal } from '@/components/CollectibleModal';
 import { CartDrawer } from '@/components/CartDrawer';
 import { LiveMarketTable } from '@/components/LiveMarketTable';
 import { Footer } from '@/components/Footer';
-import { WaitlistBanner } from '@/components/WaitlistBanner';
+
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { DailyQuestsPanel } from '@/components/DailyQuestsPanel';
 import { AIInsightsPanel } from '@/components/AIInsightsPanel';
@@ -46,7 +46,7 @@ import { User } from '@supabase/supabase-js';
 import { FAQSection } from '@/components/FAQSection';
 import { SEOFeaturesSection } from '@/components/SEOFeaturesSection';
 
-const WAITLIST_DISMISSED_KEY = 'cardboom_waitlist_dismissed';
+
 
 const Index = () => {
   const { t } = useLanguage();
@@ -57,7 +57,7 @@ const Index = () => {
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [selectedCollectible, setSelectedCollectible] = useState<Collectible | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [showWaitlist, setShowWaitlist] = useState(false);
+  
 
   // Check auth state
   useEffect(() => {
@@ -83,17 +83,6 @@ const Index = () => {
     }
   }, [user]);
   
-  useEffect(() => {
-    const dismissed = sessionStorage.getItem(WAITLIST_DISMISSED_KEY);
-    if (!dismissed) {
-      setShowWaitlist(true);
-    }
-  }, []);
-
-  const handleDismissWaitlist = () => {
-    sessionStorage.setItem(WAITLIST_DISMISSED_KEY, 'true');
-    setShowWaitlist(false);
-  };
 
   // Fetch items from database with real-time updates - prioritize items with images
   const { items: marketItems, isLoading: marketLoading, lastUpdated, updateCount } = useMarketItems({ 
@@ -282,7 +271,7 @@ const Index = () => {
         <meta property="og:url" content="https://cardboom.com/" />
         <meta property="og:type" content="website" />
       </Helmet>
-      {showWaitlist && !user && <WaitlistBanner onDismiss={handleDismissWaitlist} />}
+      
       <ActivityAnnouncementBanner />
       {user && <DailyXPClaimNotification />}
       {user && <DailyCardVotePopup />}
