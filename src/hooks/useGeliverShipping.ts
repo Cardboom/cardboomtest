@@ -57,8 +57,6 @@ export const useGeliverShipping = () => {
       });
 
       if (error) throw error;
-
-      console.log('Shipping prices:', data);
       
       // Parse offers from Geliver response
       const parsedOffers: ShippingOffer[] = (data?.offers || []).map((offer: any) => ({
@@ -72,8 +70,7 @@ export const useGeliverShipping = () => {
 
       setOffers(parsedOffers);
       return parsedOffers;
-    } catch (error: any) {
-      console.error('Error getting shipping prices:', error);
+    } catch (error) {
       toast.error('Failed to get shipping prices');
       return [];
     } finally {
@@ -107,11 +104,9 @@ export const useGeliverShipping = () => {
 
       if (error) throw error;
 
-      console.log('Shipment created:', data);
       toast.success('Shipping label created successfully');
       return data;
-    } catch (error: any) {
-      console.error('Error creating shipment:', error);
+    } catch (error) {
       toast.error('Failed to create shipment');
       return null;
     } finally {
@@ -131,10 +126,8 @@ export const useGeliverShipping = () => {
 
       if (error) throw error;
 
-      console.log('Tracking info:', data);
       return data;
-    } catch (error: any) {
-      console.error('Error tracking shipment:', error);
+    } catch (error) {
       return null;
     } finally {
       setLoading(false);
@@ -152,8 +145,7 @@ export const useGeliverShipping = () => {
 
       if (error) throw error;
       return data;
-    } catch (error: any) {
-      console.error('Error getting Geliver balance:', error);
+    } catch (error) {
       return null;
     }
   };

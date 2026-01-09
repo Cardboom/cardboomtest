@@ -47,8 +47,11 @@ export function logAction(
     ...data,
   };
   
-  // In production, this would send to analytics/logging service
-  console.log(`[CardBoom Action] ${action}:`, logEntry);
+  // In production, send to analytics/logging service
+  // Silent in production - logging handled server-side
+  if (import.meta.env.DEV) {
+    console.log(`[CardBoom Action] ${action}:`, logEntry);
+  }
 }
 
 // Critical action logger for important operations
@@ -70,10 +73,10 @@ export function logCriticalAction(
     ...details,
   };
   
-  // Always log critical actions
+  // Always log critical actions in dev, only failures in prod
   if (result === 'failed') {
     console.error(`[CardBoom CRITICAL] ${action} FAILED:`, logEntry);
-  } else {
+  } else if (import.meta.env.DEV) {
     console.log(`[CardBoom CRITICAL] ${action} ${result}:`, logEntry);
   }
 }

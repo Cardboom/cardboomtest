@@ -328,13 +328,17 @@ export async function getPriceHistory(
     const byDate = new Map<string, number[]>();
     data.forEach(item => {
       const date = new Date(item.recorded_at).toISOString().split('T')[0];
-      if (!byDate.has(date)) byDate.set(date, []);
-      byDate.get(date)!.push(item.price);
+      const existing = byDate.get(date);
+      if (existing) {
+        existing.push(item.price);
+      } else {
+        byDate.set(date, [item.price]);
+      }
     });
     
     return Array.from(byDate.entries()).map(([date, prices]) => ({
       date,
-      price: prices.reduce((a, b) => a + b, 0) / prices.length,
+      price: prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0,
     }));
   } catch (err) {
     errorReporter.logError('pricing', `Failed to fetch price history for ${productId}`, err);

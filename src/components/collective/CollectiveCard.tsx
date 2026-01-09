@@ -50,7 +50,7 @@ export function CollectiveCard({ listingId, marketItemId, isOwner }: CollectiveC
       const { data, error } = await supabase
         .from("fractional_ownership")
         .select("user_id, shares_owned")
-        .eq("fractional_listing_id", collectiveListing!.id);
+        .eq("fractional_listing_id", collectiveListing?.id ?? '');
 
       if (error) throw error;
       return data;
@@ -64,7 +64,7 @@ export function CollectiveCard({ listingId, marketItemId, isOwner }: CollectiveC
       const { data, error } = await supabase
         .from("fractional_verifications")
         .select("*")
-        .eq("fractional_listing_id", collectiveListing!.id)
+        .eq("fractional_listing_id", collectiveListing?.id ?? '')
         .order("verified_at", { ascending: false })
         .limit(5);
 

@@ -63,16 +63,21 @@ export const usePushNotifications = () => {
       await registerServiceWorker();
       const registration = await navigator.serviceWorker.ready;
 
+      // Get VAPID key from environment or use the configured key
+      const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      
+      if (!vapidPublicKey) {
+        console.warn('Push notifications: VAPID key not configured');
+        toast.error('Push notifications are not configured');
+        setIsLoading(false);
+        return false;
+      }
+      
       // Subscribe to push notifications
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(
-          // This is a placeholder VAPID key - in production, generate your own
-          'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U'
-        ) as BufferSource
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource
       });
-
-      console.log('Push subscription:', subscription);
 
       // Save subscription to database
       const { data: { user } } = await supabase.auth.getUser();
