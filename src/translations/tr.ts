@@ -23,6 +23,7 @@ export const tr: Translations = {
     myProfile: "Profilim",
     myVault: "Kasa",
     myListings: "İlanlarım",
+    myPurchases: "Satın Alımlarım",
     referrals: "Davetler & XP",
     verifiedSeller: "Onaylı Satıcı",
     trading: "Alım Satım",

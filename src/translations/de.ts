@@ -23,6 +23,7 @@ export const de: Translations = {
     myProfile: "Mein Profil",
     myVault: "Tresor",
     myListings: "Meine Angebote",
+    myPurchases: "Meine Käufe",
     referrals: "Empfehlungen & XP",
     verifiedSeller: "Verifizierter Verkäufer",
     trading: "Handel",

@@ -484,6 +484,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <TrendingUp className="w-4 h-4 mr-2" />
                     {t.nav.myListings}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/purchases')}>
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {t.nav.myPurchases || 'My Purchases'}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/referrals')}>
                     <Gift className="w-4 h-4 mr-2" />
                     {t.nav.referrals}

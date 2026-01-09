@@ -73,6 +73,8 @@ import CardBoomPass from "./pages/CardBoomPass";
 import BuyOrders from "./pages/BuyOrders";
 import StorefrontPage from "./pages/StorefrontPage";
 import Cardswap from "./pages/Cardswap";
+import OrderDetail from "./pages/OrderDetail";
+import Purchases from "./pages/Purchases";
 
 const queryClient = new QueryClient();
 
@@ -163,6 +165,9 @@ const AppContent = () => {
           <Route path="/store/:slug" element={<StorefrontPage />} />
           {/* Buy Orders */}
           <Route path="/buy-orders" element={<BuyOrders />} />
+          {/* Order & Purchases */}
+          <Route path="/order/:orderId" element={<OrderDetail />} />
+          <Route path="/purchases" element={<Purchases />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

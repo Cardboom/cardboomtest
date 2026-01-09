@@ -24,6 +24,7 @@ export const ko: Translations = {
     myProfile: "내 프로필",
     myVault: "보관함",
     myListings: "내 리스팅",
+    myPurchases: "내 구매",
     referrals: "추천 & XP",
     verifiedSeller: "인증 판매자",
     trading: "트레이딩",
