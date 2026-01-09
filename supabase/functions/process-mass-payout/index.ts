@@ -19,14 +19,18 @@ interface PayoutItem {
   recipientName: string;
 }
 
+interface UserIban {
+  iban: string;
+  holder_name: string;
+}
+
 interface WithdrawalRequest {
   id: string;
   user_id: string;
   amount: number;
-  iban: string;
-  account_holder_name: string;
   scheduled_payout_at: string;
   is_enterprise_user: boolean;
+  user_ibans: UserIban | null;
 }
 
 // Generate iyzico authorization header (HMAC-SHA256 V2)
@@ -68,11 +72,21 @@ serve(async (req) => {
 
     console.log('[process-mass-payout] Starting scheduled payout processing...');
 
-    // Get all approved withdrawals that are due for payout
+    // Get all approved withdrawals that are due for payout (join with user_ibans)
     const now = new Date().toISOString();
     const { data: pendingPayouts, error: fetchError } = await supabase
       .from('withdrawal_requests')
-      .select('id, user_id, amount, iban, account_holder_name, scheduled_payout_at, is_enterprise_user')
+      .select(`
+        id, 
+        user_id, 
+        amount, 
+        scheduled_payout_at, 
+        is_enterprise_user,
+        user_ibans (
+          iban,
+          holder_name
+        )
+      `)
       .eq('status', 'approved')
       .not('scheduled_payout_at', 'is', null)
       .lte('scheduled_payout_at', now)
@@ -96,17 +110,39 @@ serve(async (req) => {
       });
     }
 
+    // Filter out payouts without valid IBAN data and transform to typed objects
+    const validPayouts: WithdrawalRequest[] = pendingPayouts
+      .filter((p: any) => p.user_ibans && p.user_ibans.iban && p.user_ibans.holder_name)
+      .map((p: any) => ({
+        id: p.id,
+        user_id: p.user_id,
+        amount: p.amount,
+        scheduled_payout_at: p.scheduled_payout_at,
+        is_enterprise_user: p.is_enterprise_user,
+        user_ibans: p.user_ibans as UserIban
+      }));
+
+    if (validPayouts.length === 0) {
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'No payouts with valid IBAN data to process',
+        processed_count: 0
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Prepare iyzico mass payout request
-    const payoutItems: PayoutItem[] = pendingPayouts.map((payout: WithdrawalRequest) => ({
+    const payoutItems: PayoutItem[] = validPayouts.map((payout) => ({
       itemExternalId: payout.id,
       recipientType: 'IBAN',
-      recipientInfo: payout.iban,
+      recipientInfo: payout.user_ibans!.iban,
       amount: {
         value: Math.round(payout.amount * 100), // Convert to kuruş (cents)
         currency: 'TRY'
       },
       description: `CardBoom Withdrawal - ${payout.id.substring(0, 8)}`,
-      recipientName: payout.account_holder_name
+      recipientName: payout.user_ibans!.holder_name
     }));
 
     const batchId = `PAYOUT-${Date.now()}`;
@@ -140,7 +176,9 @@ serve(async (req) => {
 
     if (iyzicoResult.status === 'success') {
       // Mark all as processing with transaction ID
-      for (const payout of pendingPayouts) {
+      for (const payout of validPayouts) {
+        const ibanValue = payout.user_ibans?.iban || '';
+        
         const { error: updateError } = await supabase
           .from('withdrawal_requests')
           .update({
@@ -180,18 +218,18 @@ serve(async (req) => {
               details: {
                 withdrawal_id: payout.id,
                 batch_id: batchId,
-                iban: payout.iban.substring(0, 4) + '****' + payout.iban.slice(-4)
+                iban: ibanValue ? ibanValue.substring(0, 4) + '****' + ibanValue.slice(-4) : 'N/A'
               }
             });
           }
 
-          // Send notification
+          // Send notification (TRY currency)
           try {
             await supabase.functions.invoke('send-notification', {
               body: {
                 user_id: payout.user_id,
                 title: 'Withdrawal Processing',
-                body: `Your withdrawal of $${payout.amount.toFixed(2)} is being processed and will arrive in your bank account shortly.`,
+                body: `Your withdrawal of ₺${payout.amount.toFixed(2)} is being processed and will arrive in your bank account shortly.`,
                 type: 'wallet',
                 data: { withdrawal_id: payout.id }
               }
@@ -218,7 +256,7 @@ serve(async (req) => {
       // iyzico error - mark payouts with error
       const errorMessage = iyzicoResult.errorMessage || 'iyzico payout failed';
       
-      for (const payout of pendingPayouts) {
+      for (const payout of validPayouts) {
         await supabase
           .from('withdrawal_requests')
           .update({
