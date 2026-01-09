@@ -1792,6 +1792,39 @@ export type Database = {
           },
         ]
       }
+      content_engine_log: {
+        Row: {
+          article_slug: string
+          created_at: string
+          faq_schema: Json | null
+          game_vertical: string
+          id: string
+          primary_keyword: string
+          published_date: string
+          secondary_keywords: string[] | null
+        }
+        Insert: {
+          article_slug: string
+          created_at?: string
+          faq_schema?: Json | null
+          game_vertical: string
+          id?: string
+          primary_keyword: string
+          published_date?: string
+          secondary_keywords?: string[] | null
+        }
+        Update: {
+          article_slug?: string
+          created_at?: string
+          faq_schema?: Json | null
+          game_vertical?: string
+          id?: string
+          primary_keyword?: string
+          published_date?: string
+          secondary_keywords?: string[] | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
