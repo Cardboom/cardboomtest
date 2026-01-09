@@ -37,9 +37,12 @@ export const SellerShippingNotifier = () => {
   const [pendingOrder, setPendingOrder] = useState<OrderForShipping | null>(null);
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let isMounted = true;
+
     const checkForNewSales = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session || !isMounted) return;
 
       // Check for recent unshipped sales (last 5 minutes)
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -61,7 +64,7 @@ export const SellerShippingNotifier = () => {
         .order('created_at', { ascending: false })
         .limit(1);
 
-      if (orders && orders.length > 0) {
+      if (orders && orders.length > 0 && isMounted) {
         const order = orders[0] as OrderWithRelations;
         const listing = getRelation(order.listing);
         const buyer = getRelation(order.buyer);
@@ -77,15 +80,12 @@ export const SellerShippingNotifier = () => {
       }
     };
 
-    // Check on mount
-    checkForNewSales();
-
-    // Subscribe to new sales
+    // Subscribe to new sales - proper cleanup pattern
     const setupSubscription = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session || !isMounted) return;
 
-      const channel = supabase
+      channel = supabase
         .channel('seller-new-sales')
         .on(
           'postgres_changes',
@@ -96,6 +96,8 @@ export const SellerShippingNotifier = () => {
             filter: `seller_id=eq.${session.user.id}`,
           },
           async (payload) => {
+            if (!isMounted) return;
+            
             // Fetch full order details
             const { data: order } = await supabase
               .from('orders')
@@ -109,7 +111,7 @@ export const SellerShippingNotifier = () => {
               .eq('id', payload.new.id)
               .single();
 
-            if (order) {
+            if (order && isMounted) {
               const typedOrder = order as OrderWithRelations;
               const listing = getRelation(typedOrder.listing);
               const buyer = getRelation(typedOrder.buyer);
@@ -126,13 +128,18 @@ export const SellerShippingNotifier = () => {
           }
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     };
 
+    // Check on mount
+    checkForNewSales();
     setupSubscription();
+
+    return () => {
+      isMounted = false;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   return (

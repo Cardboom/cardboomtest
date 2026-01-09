@@ -21,6 +21,7 @@ export const AnimatedPrice = ({
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
   const prevValue = useRef(value);
   const animationRef = useRef<number>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (value !== prevValue.current && prevValue.current !== 0) {
@@ -46,7 +47,7 @@ export const AnimatedPrice = ({
           animationRef.current = requestAnimationFrame(animate);
         } else {
           setDisplayValue(endValue);
-          setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             setIsAnimating(false);
             setDirection(null);
           }, 400);
@@ -63,6 +64,9 @@ export const AnimatedPrice = ({
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     };
   }, [value]);

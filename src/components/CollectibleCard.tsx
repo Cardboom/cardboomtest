@@ -31,6 +31,8 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
   const [displayPrice, setDisplayPrice] = useState(collectible.price);
   const [priceDirection, setPriceDirection] = useState<'up' | 'down' | null>(null);
   const prevPriceRef = useRef(collectible.price);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const animationRef = useRef<number>();
   const isPositive = collectible.priceChange >= 0;
 
   const handleGoToCard = (e: React.MouseEvent) => {
@@ -77,16 +79,25 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
         setDisplayPrice(currentPrice);
         
         if (progress < 1) {
-          requestAnimationFrame(animate);
+          animationRef.current = requestAnimationFrame(animate);
         } else {
           setDisplayPrice(endPrice);
-          setTimeout(() => setPriceDirection(null), 500);
+          timeoutRef.current = setTimeout(() => setPriceDirection(null), 500);
         }
       };
       
-      requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
       prevPriceRef.current = collectible.price;
     }
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [collectible.price]);
 
   const handleFavorite = (e: React.MouseEvent) => {
