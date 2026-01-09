@@ -4474,7 +4474,7 @@ export type Database = {
           change_7d: number | null
           character_name: string | null
           created_at: string
-          current_price: number
+          current_price: number | null
           current_price_cents: number | null
           cvi_key: string | null
           data_source: string | null
@@ -4486,10 +4486,13 @@ export type Database = {
           last_sale_at: string | null
           last_sale_price: number | null
           liquidity: Database["public"]["Enums"]["liquidity_level"] | null
+          listing_median_price: number | null
+          listing_sample_count: number
           name: string
           price_24h_ago: number | null
           price_30d_ago: number | null
           price_7d_ago: number | null
+          price_status: string
           psa10_price: number | null
           psa9_price: number | null
           rarity: string | null
@@ -4501,6 +4504,10 @@ export type Database = {
           set_name: string | null
           subcategory: string | null
           updated_at: string
+          variant: string | null
+          verified_at: string | null
+          verified_price: number | null
+          verified_source: string | null
           views_24h: number | null
           views_7d: number | null
           volume_trend: string | null
@@ -4519,7 +4526,7 @@ export type Database = {
           change_7d?: number | null
           character_name?: string | null
           created_at?: string
-          current_price?: number
+          current_price?: number | null
           current_price_cents?: number | null
           cvi_key?: string | null
           data_source?: string | null
@@ -4531,10 +4538,13 @@ export type Database = {
           last_sale_at?: string | null
           last_sale_price?: number | null
           liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
+          listing_median_price?: number | null
+          listing_sample_count?: number
           name: string
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
+          price_status?: string
           psa10_price?: number | null
           psa9_price?: number | null
           rarity?: string | null
@@ -4546,6 +4556,10 @@ export type Database = {
           set_name?: string | null
           subcategory?: string | null
           updated_at?: string
+          variant?: string | null
+          verified_at?: string | null
+          verified_price?: number | null
+          verified_source?: string | null
           views_24h?: number | null
           views_7d?: number | null
           volume_trend?: string | null
@@ -4564,7 +4578,7 @@ export type Database = {
           change_7d?: number | null
           character_name?: string | null
           created_at?: string
-          current_price?: number
+          current_price?: number | null
           current_price_cents?: number | null
           cvi_key?: string | null
           data_source?: string | null
@@ -4576,10 +4590,13 @@ export type Database = {
           last_sale_at?: string | null
           last_sale_price?: number | null
           liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
+          listing_median_price?: number | null
+          listing_sample_count?: number
           name?: string
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
+          price_status?: string
           psa10_price?: number | null
           psa9_price?: number | null
           rarity?: string | null
@@ -4591,6 +4608,10 @@ export type Database = {
           set_name?: string | null
           subcategory?: string | null
           updated_at?: string
+          variant?: string | null
+          verified_at?: string | null
+          verified_price?: number | null
+          verified_source?: string | null
           views_24h?: number | null
           views_7d?: number | null
           volume_trend?: string | null

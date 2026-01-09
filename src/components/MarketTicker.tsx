@@ -17,14 +17,16 @@ export const MarketTicker = () => {
 
   useEffect(() => {
     const fetchTopGainers = async () => {
-      // Maximize price display - only require price > 0 and change_24h
+      // Only show items with verified or estimated prices
       const { data, error } = await supabase
         .from('market_items')
-        .select('id, name, current_price, change_24h')
-        .not('change_24h', 'is', null)
+        .select('id, name, current_price, change_24h, price_status')
+        .in('price_status', ['verified', 'estimated'])
+        .not('current_price', 'is', null)
         .gt('current_price', 0)
+        .not('change_24h', 'is', null)
         .order('change_24h', { ascending: false })
-        .limit(80); // Fetch more for better coverage
+        .limit(80);
 
       if (!error && data) {
         setItems(data);

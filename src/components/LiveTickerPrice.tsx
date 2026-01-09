@@ -74,6 +74,15 @@ export const LiveTickerPrice = ({
     };
   }, [displayValue, tickInterval, volatility]);
 
+  // Handle null/zero values
+  if (!value || value === 0) {
+    return (
+      <span className={cn('inline-block font-mono tabular-nums text-muted-foreground', className)}>
+        —
+      </span>
+    );
+  }
+
   return (
     <span
       className={cn(
