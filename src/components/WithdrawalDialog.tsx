@@ -6,26 +6,27 @@ import { Label } from '@/components/ui/label';
 import { ArrowDownLeft, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useCurrency } from '@/contexts/CurrencyContext';
 import { z } from 'zod';
+
+// Withdrawal fee in TRY
+const WITHDRAWAL_FEE_TRY = 16;
 
 interface WithdrawalDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  currentBalance: number;
+  currentBalance: number; // Balance in TRY
   onSuccess?: () => void;
 }
 
-// IBAN validation - basic check for length and format
+// Turkish IBAN validation - must start with TR
 const ibanSchema = z.string()
-  .min(15, 'IBAN must be at least 15 characters')
-  .max(34, 'IBAN must not exceed 34 characters')
-  .regex(/^[A-Z]{2}[0-9]{2}[A-Z0-9]+$/, 'Invalid IBAN format');
+  .min(26, 'Turkish IBAN must be 26 characters')
+  .max(26, 'Turkish IBAN must be 26 characters')
+  .regex(/^TR[0-9]{24}$/, 'Invalid Turkish IBAN format (must start with TR)');
 
 const withdrawalSchema = z.object({
   amount: z.number()
-    .positive('Amount must be greater than 0')
-    .min(10, 'Minimum withdrawal is $10'),
+    .positive('Amount must be greater than 0'),
   iban: ibanSchema,
   accountHolderName: z.string()
     .min(2, 'Name must be at least 2 characters')
@@ -34,13 +35,20 @@ const withdrawalSchema = z.object({
 });
 
 export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess }: WithdrawalDialogProps) => {
-  const { formatPrice } = useCurrency();
   const [amount, setAmount] = useState('');
   const [iban, setIban] = useState('');
   const [accountHolderName, setAccountHolderName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+
+  // Minimum withdrawal is fee + 1 TRY
+  const MIN_WITHDRAWAL_TRY = WITHDRAWAL_FEE_TRY + 1;
+  const maxWithdrawal = Math.max(0, currentBalance - WITHDRAWAL_FEE_TRY);
+
+  const formatTRY = (value: number) => {
+    return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value);
+  };
 
   const formatIban = (value: string) => {
     // Remove all non-alphanumeric characters and convert to uppercase
@@ -80,9 +88,16 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
       return;
     }
 
-    // Check balance
-    if (amountNum > currentBalance) {
-      setErrors({ amount: 'Insufficient balance' });
+    // Check minimum withdrawal (must cover fee + at least 1 TRY)
+    if (amountNum < MIN_WITHDRAWAL_TRY) {
+      setErrors({ amount: `Minimum withdrawal is ${formatTRY(MIN_WITHDRAWAL_TRY)}` });
+      return;
+    }
+
+    // Check balance (amount + fee must not exceed balance)
+    const totalRequired = amountNum + WITHDRAWAL_FEE_TRY;
+    if (totalRequired > currentBalance) {
+      setErrors({ amount: `Insufficient balance. You need ${formatTRY(totalRequired)} (including ${formatTRY(WITHDRAWAL_FEE_TRY)} fee)` });
       return;
     }
 
@@ -95,37 +110,40 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
         return;
       }
 
-      // Create withdrawal request
-      const { data: withdrawal, error: withdrawalError } = await supabase
-        .from('withdrawal_requests')
-        .insert({
-          user_id: user.id,
-          amount: amountNum,
-          iban: cleanIban,
-          account_holder_name: accountHolderName.trim(),
-          status: 'pending',
-        })
-        .select()
-        .single();
+      // First, check if this IBAN already exists for the user
+      let ibanId: string;
+      
+      const { data: existingIban } = await supabase
+        .from('user_ibans')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('iban', cleanIban)
+        .maybeSingle();
 
-      if (withdrawalError) throw withdrawalError;
+      if (existingIban) {
+        ibanId = existingIban.id;
+      } else {
+        // Insert new IBAN
+        const { data: newIban, error: insertError } = await supabase
+          .from('user_ibans')
+          .insert({
+            user_id: user.id,
+            iban: cleanIban,
+            holder_name: accountHolderName.trim(),
+            is_primary: true,
+          })
+          .select('id')
+          .single();
 
-      // Send email notification
-      const { error: emailError } = await supabase.functions.invoke('send-withdrawal-notification', {
-        body: {
-          withdrawalId: withdrawal.id,
-          userId: user.id,
-          amount: amountNum,
-          iban: cleanIban,
-          accountHolderName: accountHolderName.trim(),
-          userEmail: user.email,
+        if (insertError) {
+          console.error('IBAN save error:', insertError);
+          throw new Error('Failed to save IBAN details');
         }
-      });
-
-      if (emailError) {
-        console.error('Email notification failed:', emailError);
-        // Don't fail the request if email fails
+        ibanId = newIban.id;
       }
+
+      // Create withdrawal request
+      await createWithdrawalRequest(user.id, user.email, amountNum, ibanId, cleanIban, accountHolderName);
 
       setSubmitted(true);
       toast.success('Withdrawal request submitted successfully');
@@ -133,9 +151,52 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
 
     } catch (error) {
       console.error('Withdrawal error:', error);
-      toast.error('Failed to submit withdrawal request');
+      toast.error(error instanceof Error ? error.message : 'Failed to submit withdrawal request');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const createWithdrawalRequest = async (
+    userId: string, 
+    userEmail: string | undefined, 
+    amountTRY: number, 
+    ibanId: string,
+    cleanIban: string,
+    holderName: string
+  ) => {
+    // Create withdrawal request with IBAN reference
+    const { data: withdrawal, error: withdrawalError } = await supabase
+      .from('withdrawal_requests')
+      .insert({
+        user_id: userId,
+        amount: amountTRY,
+        iban_id: ibanId,
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (withdrawalError) throw withdrawalError;
+
+    // Send email notification
+    const { error: emailError } = await supabase.functions.invoke('send-withdrawal-notification', {
+      body: {
+        withdrawalId: withdrawal.id,
+        userId: userId,
+        amount: amountTRY,
+        fee: WITHDRAWAL_FEE_TRY,
+        netAmount: amountTRY,
+        currency: 'TRY',
+        iban: cleanIban,
+        accountHolderName: holderName,
+        userEmail: userEmail,
+      }
+    });
+
+    if (emailError) {
+      console.error('Email notification failed:', emailError);
+      // Don't fail the request if email fails
     }
   };
 
@@ -157,7 +218,7 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
             Withdraw Funds
           </DialogTitle>
           <DialogDescription>
-            Request a withdrawal to your bank account via IBAN transfer.
+            Request a withdrawal to your Turkish bank account. Withdrawals are processed in Turkish Lira (₺).
           </DialogDescription>
         </DialogHeader>
 
@@ -178,12 +239,19 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
             {/* Available Balance */}
             <div className="p-3 rounded-lg bg-muted/50 border">
               <p className="text-sm text-muted-foreground">Available Balance</p>
-              <p className="text-xl font-bold text-foreground">{formatPrice(currentBalance)}</p>
+              <p className="text-xl font-bold text-foreground">{formatTRY(currentBalance)}</p>
+            </div>
+
+            {/* Fee Notice */}
+            <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
+              <p className="text-sm text-warning-foreground">
+                <strong>Withdrawal Fee:</strong> {formatTRY(WITHDRAWAL_FEE_TRY)} will be deducted from your balance.
+              </p>
             </div>
 
             {/* Amount */}
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount (USD)</Label>
+              <Label htmlFor="amount">Amount (₺ TRY)</Label>
               <Input
                 id="amount"
                 type="number"
@@ -193,8 +261,8 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
                   setAmount(e.target.value);
                   setErrors(prev => ({ ...prev, amount: '' }));
                 }}
-                min="10"
-                max={currentBalance}
+                min={MIN_WITHDRAWAL_TRY}
+                max={maxWithdrawal}
                 step="0.01"
                 className={errors.amount ? 'border-destructive' : ''}
               />
@@ -204,7 +272,9 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
                   {errors.amount}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">Minimum withdrawal: $10</p>
+              <p className="text-xs text-muted-foreground">
+                Minimum: {formatTRY(MIN_WITHDRAWAL_TRY)} • Maximum: {formatTRY(maxWithdrawal)} • Fee: {formatTRY(WITHDRAWAL_FEE_TRY)}
+              </p>
             </div>
 
             {/* Account Holder Name */}
@@ -241,7 +311,7 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
                 value={iban}
                 onChange={handleIbanChange}
                 className={`font-mono ${errors.iban ? 'border-destructive' : ''}`}
-                maxLength={42} // 34 chars + 8 spaces
+                maxLength={32} // 26 chars + 6 spaces for TR IBAN
               />
               {errors.iban && (
                 <p className="text-sm text-destructive flex items-center gap-1">
@@ -249,6 +319,7 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
                   {errors.iban}
                 </p>
               )}
+              <p className="text-xs text-muted-foreground">Only Turkish IBANs (starting with TR) are accepted</p>
             </div>
 
             {/* Info Box */}
