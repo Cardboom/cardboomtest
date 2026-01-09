@@ -814,11 +814,13 @@ export type Database = {
           id: string
           is_active: boolean
           is_featured: boolean | null
+          max_claims: number | null
           period_type: string
           reward_gems: number
           starts_at: string
           target_count: number
           title: string
+          total_claimed: number | null
         }
         Insert: {
           auto_generated?: boolean | null
@@ -831,11 +833,13 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_featured?: boolean | null
+          max_claims?: number | null
           period_type?: string
           reward_gems?: number
           starts_at?: string
           target_count?: number
           title: string
+          total_claimed?: number | null
         }
         Update: {
           auto_generated?: boolean | null
@@ -848,11 +852,13 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_featured?: boolean | null
+          max_claims?: number | null
           period_type?: string
           reward_gems?: number
           starts_at?: string
           target_count?: number
           title?: string
+          total_claimed?: number | null
         }
         Relationships: []
       }
