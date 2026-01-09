@@ -4815,6 +4815,44 @@ export type Database = {
           },
         ]
       }
+      order_actions: {
+        Row: {
+          action_type: string
+          actor_id: string | null
+          actor_type: string
+          created_at: string
+          details: Json | null
+          id: string
+          order_id: string
+        }
+        Insert: {
+          action_type: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          order_id: string
+        }
+        Update: {
+          action_type?: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_actions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_disputes: {
         Row: {
           ai_analysis: Json | null
@@ -4947,11 +4985,13 @@ export type Database = {
           delivery_deadline: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
           escalation_reason: string | null
+          escrow_held_amount: number | null
           escrow_locked_at: string | null
           escrow_released_at: string | null
           escrow_status: string | null
           escrow_transaction_id: string | null
           exchange_rate_used: number | null
+          funds_released_at: string | null
           id: string
           inventory_locked_at: string | null
           listing_currency: string | null
@@ -4960,12 +5000,14 @@ export type Database = {
           price: number
           price_cents: number | null
           price_in_listing_currency: number | null
+          refunded_at: string | null
           sale_lane: Database["public"]["Enums"]["sale_lane"] | null
           seller_confirmed_at: string | null
           seller_currency: string | null
           seller_fee: number
           seller_fee_cents: number | null
           seller_id: string
+          seller_is_verified: boolean | null
           seller_payout_in_seller_currency: number | null
           ship_by_deadline: string | null
           shipping_address: Json | null
@@ -4987,11 +5029,13 @@ export type Database = {
           delivery_deadline?: string | null
           delivery_option: Database["public"]["Enums"]["delivery_option"]
           escalation_reason?: string | null
+          escrow_held_amount?: number | null
           escrow_locked_at?: string | null
           escrow_released_at?: string | null
           escrow_status?: string | null
           escrow_transaction_id?: string | null
           exchange_rate_used?: number | null
+          funds_released_at?: string | null
           id?: string
           inventory_locked_at?: string | null
           listing_currency?: string | null
@@ -5000,12 +5044,14 @@ export type Database = {
           price: number
           price_cents?: number | null
           price_in_listing_currency?: number | null
+          refunded_at?: string | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
           seller_confirmed_at?: string | null
           seller_currency?: string | null
           seller_fee: number
           seller_fee_cents?: number | null
           seller_id: string
+          seller_is_verified?: boolean | null
           seller_payout_in_seller_currency?: number | null
           ship_by_deadline?: string | null
           shipping_address?: Json | null
@@ -5027,11 +5073,13 @@ export type Database = {
           delivery_deadline?: string | null
           delivery_option?: Database["public"]["Enums"]["delivery_option"]
           escalation_reason?: string | null
+          escrow_held_amount?: number | null
           escrow_locked_at?: string | null
           escrow_released_at?: string | null
           escrow_status?: string | null
           escrow_transaction_id?: string | null
           exchange_rate_used?: number | null
+          funds_released_at?: string | null
           id?: string
           inventory_locked_at?: string | null
           listing_currency?: string | null
@@ -5040,12 +5088,14 @@ export type Database = {
           price?: number
           price_cents?: number | null
           price_in_listing_currency?: number | null
+          refunded_at?: string | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
           seller_confirmed_at?: string | null
           seller_currency?: string | null
           seller_fee?: number
           seller_fee_cents?: number | null
           seller_id?: string
+          seller_is_verified?: boolean | null
           seller_payout_in_seller_currency?: number | null
           ship_by_deadline?: string | null
           shipping_address?: Json | null
@@ -5631,6 +5681,7 @@ export type Database = {
           is_beta_tester: boolean | null
           is_fan_account: boolean | null
           is_id_verified: boolean | null
+          is_verified_seller: boolean | null
           last_auto_action_at: string | null
           last_ip_address: string | null
           last_location: string | null
@@ -5664,6 +5715,7 @@ export type Database = {
           trust_rating: number | null
           trust_review_count: number | null
           updated_at: string
+          verified_seller_at: string | null
           wire_transfer_code: string | null
           xp: number | null
         }
@@ -5696,6 +5748,7 @@ export type Database = {
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          is_verified_seller?: boolean | null
           last_auto_action_at?: string | null
           last_ip_address?: string | null
           last_location?: string | null
@@ -5729,6 +5782,7 @@ export type Database = {
           trust_rating?: number | null
           trust_review_count?: number | null
           updated_at?: string
+          verified_seller_at?: string | null
           wire_transfer_code?: string | null
           xp?: number | null
         }
@@ -5761,6 +5815,7 @@ export type Database = {
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          is_verified_seller?: boolean | null
           last_auto_action_at?: string | null
           last_ip_address?: string | null
           last_location?: string | null
@@ -5794,6 +5849,7 @@ export type Database = {
           trust_rating?: number | null
           trust_review_count?: number | null
           updated_at?: string
+          verified_seller_at?: string | null
           wire_transfer_code?: string | null
           xp?: number | null
         }
@@ -8513,6 +8569,16 @@ export type Database = {
         }
         Returns: Json
       }
+      log_order_action: {
+        Args: {
+          p_action_type: string
+          p_actor_id?: string
+          p_actor_type?: string
+          p_details?: Json
+          p_order_id: string
+        }
+        Returns: string
+      }
       post_ledger_entry: {
         Args: {
           p_currency: string
@@ -8539,6 +8605,14 @@ export type Database = {
       refund_grading_donations: {
         Args: { p_target_id: string; p_target_type: string }
         Returns: Json
+      }
+      refund_order: {
+        Args: { p_order_id: string; p_reason?: string; p_refunded_by?: string }
+        Returns: boolean
+      }
+      release_escrow_funds: {
+        Args: { p_order_id: string; p_released_by?: string }
+        Returns: boolean
       }
       spend_cardboom_points: {
         Args: {
