@@ -70,7 +70,8 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const iyzicoApiKey = Deno.env.get('IYZICO_API_KEY')!;
     const iyzicoSecretKey = Deno.env.get('IYZICO_SECRET_KEY')!;
-    const iyzicoBaseUrl = Deno.env.get('IYZICO_BASE_URL') || 'https://api.iyzipay.com';
+    // Remove trailing slash from base URL to avoid double slashes
+    const iyzicoBaseUrl = (Deno.env.get('IYZICO_BASE_URL') || 'https://api.iyzipay.com').replace(/\/+$/, '');
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
