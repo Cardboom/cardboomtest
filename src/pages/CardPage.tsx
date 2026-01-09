@@ -5,12 +5,12 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 import { 
   TrendingUp, TrendingDown, Users, Clock, 
   Loader2, Bell, Plus,
-  ShoppingCart, ExternalLink
+  ShoppingCart, ExternalLink, Heart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +19,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ItemPriceChart } from '@/components/item/ItemPriceChart';
 import { ItemSalesHistory } from '@/components/item/ItemSalesHistory';
 import { ItemListings } from '@/components/item/ItemListings';
+import { GradingDonationPanel } from '@/components/listing/GradingDonationPanel';
 import { ShareButton } from '@/components/ShareButton';
 import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
 import { CardPriceEstimates } from '@/components/CardPriceEstimates';
@@ -196,13 +197,13 @@ const CardPage = () => {
     enabled: !!item?.id,
   });
 
-  // Fetch active listings for this item
-  const { data: activeListings } = useQuery({
+  // Fetch active listings for this item (including donation fields)
+  const { data: activeListings, refetch: refetchListings } = useQuery({
     queryKey: ['card-listings', item?.id, searchTerms],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select('*, accepts_grading_donations, donation_goal_cents, seller_id')
         .ilike('title', `%${searchTerms}%`)
         .eq('status', 'active')
         .limit(20);
@@ -212,6 +213,9 @@ const CardPage = () => {
     },
     enabled: !!searchTerms,
   });
+
+  // Get listings that accept donations (for display)
+  const donationListings = activeListings?.filter(l => l.accepts_grading_donations) || [];
 
   // Check if user is watching
   const { data: isWatching } = useQuery({
@@ -507,6 +511,49 @@ const CardPage = () => {
                 />
               )}
             </section>
+
+            {/* Community Grading Donations */}
+            {donationListings.length > 0 && (
+              <section aria-labelledby="community-grading-heading" className="space-y-4">
+                <h2 id="community-grading-heading" className="text-xl font-semibold flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-primary" />
+                  Help Get This Card Graded
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Contribute towards grading fees. When the goal is reached ($10), the owner can get the card professionally graded!
+                </p>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {donationListings.slice(0, 4).map((listing) => (
+                    <GradingDonationPanel
+                      key={listing.id}
+                      targetType="listing"
+                      targetId={listing.id}
+                      ownerId={listing.seller_id}
+                      acceptsDonations={listing.accepts_grading_donations || false}
+                      goalCents={listing.donation_goal_cents || 1000}
+                      isOwner={user?.id === listing.seller_id}
+                      cardTitle={listing.title}
+                      onToggleDonations={async (enabled) => {
+                        const { error } = await supabase
+                          .from('listings')
+                          .update({ accepts_grading_donations: enabled })
+                          .eq('id', listing.id);
+                        if (!error) {
+                          refetchListings();
+                          toast.success(enabled ? 'Donations enabled' : 'Donations disabled');
+                        }
+                      }}
+                      onRefundAndDelist={async () => {
+                        // Delete the listing after refund
+                        await supabase.from('listings').update({ status: 'cancelled' }).eq('id', listing.id);
+                        refetchListings();
+                        toast.success('Listing delisted and donations refunded');
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Active Listings - TCGPlayer style */}
             <section aria-labelledby="listings-heading">
