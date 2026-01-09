@@ -18,6 +18,8 @@ interface Bounty {
   ends_at: string;
   icon: string;
   is_featured: boolean;
+  max_claims: number;
+  total_claimed: number;
 }
 
 interface BountyProgress {
@@ -187,6 +189,9 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
             const percentage = Math.min((currentCount / bounty.target_count) * 100, 100);
             const isCompleted = prog?.is_completed;
             const isClaimed = prog?.reward_claimed;
+            const maxClaims = bounty.max_claims || 1;
+            const totalClaimed = bounty.total_claimed || 0;
+            const isGloballyExhausted = totalClaimed >= maxClaims && !isClaimed;
 
             return (
               <div
@@ -195,7 +200,8 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                   "rounded-lg p-2 flex flex-col justify-between",
                   "bg-white/[0.03] border border-white/5",
                   "hover:bg-white/[0.05] transition-colors",
-                  bounty.is_featured && "border-amber-500/30 bg-amber-500/5"
+                  bounty.is_featured && "border-amber-500/30 bg-amber-500/5",
+                  isGloballyExhausted && "opacity-50"
                 )}
               >
                 <div>
@@ -223,7 +229,12 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                     </span>
                   </div>
                   
-                  {isCompleted && !isClaimed ? (
+                  {isGloballyExhausted ? (
+                    <div className="w-full h-5 flex items-center justify-center gap-1 text-[9px] text-gray-500 font-sans font-bold">
+                      <Check className="w-2.5 h-2.5" />
+                      TAKEN
+                    </div>
+                  ) : isCompleted && !isClaimed ? (
                     <Button
                       size="sm"
                       onClick={() => claimReward(bounty.id)}
