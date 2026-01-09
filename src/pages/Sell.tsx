@@ -23,6 +23,16 @@ import { CreateCollectiveDialog } from '@/components/collective';
 import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
 import { useCardAnalysis, CardAnalysis } from '@/hooks/useCardAnalysis';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { BulkImportDialog } from '@/components/seller/BulkImportDialog';
 import { BulkImageImportDialog } from '@/components/seller/BulkImageImportDialog';
 import { SmartPriceSuggestion } from '@/components/listing/SmartPriceSuggestion';
@@ -91,6 +101,9 @@ const SellPage = () => {
   const [scannedAnalysis, setScannedAnalysis] = useState<CardAnalysis | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewedCardData, setReviewedCardData] = useState<ReviewedCardData | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const { createListing } = useCardIndexer();
   const [formData, setFormData] = useState({
     title: '',
@@ -242,6 +255,9 @@ const SellPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Guard against double-submission
+    if (submitting) return;
+    
     if (!formData.title.trim()) {
       toast.error('Please enter a title');
       return;
@@ -375,32 +391,42 @@ const SellPage = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this listing?')) return;
+    setDeleteTargetId(id);
+    setDeleteDialogOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+    
     try {
       const { error } = await supabase
         .from('listings')
         .delete()
-        .eq('id', id);
+        .eq('id', deleteTargetId);
 
       if (error) throw error;
       toast.success('Listing deleted');
       setSelectedListings(prev => {
         const newSet = new Set(prev);
-        newSet.delete(id);
+        newSet.delete(deleteTargetId);
         return newSet;
       });
       fetchListings();
     } catch (error) {
       console.error('Error deleting listing:', error);
       toast.error('Failed to delete listing');
+    } finally {
+      setDeleteDialogOpen(false);
+      setDeleteTargetId(null);
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     if (selectedListings.size === 0) return;
-    if (!confirm(`Are you sure you want to delete ${selectedListings.size} listing(s)?`)) return;
+    setBulkDeleteDialogOpen(true);
+  };
 
+  const confirmBulkDelete = async () => {
     setBulkDeleting(true);
     try {
       const { error } = await supabase
@@ -417,6 +443,7 @@ const SellPage = () => {
       toast.error('Failed to delete listings');
     } finally {
       setBulkDeleting(false);
+      setBulkDeleteDialogOpen(false);
     }
   };
 
@@ -1374,6 +1401,49 @@ const SellPage = () => {
           toast.success('Card details confirmed! Complete your listing.');
         }}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this listing?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The listing will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedListings.size} listing(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. All selected listings will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmBulkDelete}
+              disabled={bulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleting ? 'Deleting...' : 'Delete All'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>

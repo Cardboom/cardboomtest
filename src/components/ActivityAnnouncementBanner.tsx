@@ -109,15 +109,20 @@ export const ActivityAnnouncementBanner = () => {
   useEffect(() => {
     if (activities.length <= 1) return;
     
+    let animationTimeoutId: ReturnType<typeof setTimeout>;
+    
     const interval = setInterval(() => {
       setIsAnimating(true);
-      setTimeout(() => {
+      animationTimeoutId = setTimeout(() => {
         setCurrentIndex(prev => (prev + 1) % activities.length);
         setIsAnimating(false);
       }, 300);
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (animationTimeoutId) clearTimeout(animationTimeoutId);
+    };
   }, [activities.length]);
 
   if (!isVisible || activities.length === 0) return null;

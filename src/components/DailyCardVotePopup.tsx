@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Swords, Sparkles, Trophy, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,12 +17,21 @@ export const DailyCardVotePopup = ({ className }: DailyCardVotePopupProps) => {
   const [dismissed, setDismissed] = useState(false);
   const [votingFor, setVotingFor] = useState<'card_a' | 'card_b' | null>(null);
   const [voted, setVoted] = useState(false);
+  const isMountedRef = useRef(true);
 
   const { todaysPoll, hasVotedToday, vote, loading } = useCommunityVotes(user?.id);
 
+  // Track mounted state to prevent memory leaks
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const checkUser = useCallback(async () => {
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) return;
+    if (!authUser || !isMountedRef.current) return;
     
     setUser(authUser);
 
@@ -34,7 +43,9 @@ export const DailyCardVotePopup = ({ className }: DailyCardVotePopupProps) => {
       .gte('expires_at', new Date().toISOString())
       .single();
     
-    setIsPro(sub?.tier === 'pro' || sub?.tier === 'verified_seller');
+    if (isMountedRef.current) {
+      setIsPro(sub?.tier === 'pro' || sub?.tier === 'verified_seller');
+    }
   }, []);
 
   useEffect(() => {
@@ -45,7 +56,9 @@ export const DailyCardVotePopup = ({ className }: DailyCardVotePopupProps) => {
     // Show popup if user is logged in, there's a poll, and they haven't voted
     if (user && todaysPoll && !hasVotedToday && !loading) {
       // Small delay to not overlap with daily XP popup
-      const timer = setTimeout(() => setIsVisible(true), 2000);
+      const timer = setTimeout(() => {
+        if (isMountedRef.current) setIsVisible(true);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [user, todaysPoll, hasVotedToday, loading]);
@@ -53,11 +66,13 @@ export const DailyCardVotePopup = ({ className }: DailyCardVotePopupProps) => {
   const handleVote = async (choice: 'card_a' | 'card_b') => {
     setVotingFor(choice);
     const success = await vote(choice, isPro);
-    if (success) {
+    if (success && isMountedRef.current) {
       setVoted(true);
-      setTimeout(() => setDismissed(true), 2500);
+      setTimeout(() => {
+        if (isMountedRef.current) setDismissed(true);
+      }, 2500);
     }
-    setVotingFor(null);
+    if (isMountedRef.current) setVotingFor(null);
   };
 
   if (dismissed || !isVisible || !todaysPoll || hasVotedToday) return null;

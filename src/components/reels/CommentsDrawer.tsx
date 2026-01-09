@@ -31,12 +31,19 @@ export function CommentsDrawer({ reelId, isOpen, onClose }: CommentsDrawerProps)
     });
   }, []);
 
+  const MAX_COMMENT_LENGTH = 500;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newComment.trim() || submitting) return;
+    const trimmedComment = newComment.trim();
+    if (!trimmedComment || submitting) return;
+    
+    if (trimmedComment.length > MAX_COMMENT_LENGTH) {
+      return; // Silently prevent, UI will show the limit
+    }
 
     setSubmitting(true);
-    const success = await addComment(newComment.trim(), replyingTo || undefined);
+    const success = await addComment(trimmedComment, replyingTo || undefined);
     if (success) {
       setNewComment('');
       setReplyingTo(null);
@@ -131,22 +138,33 @@ export function CommentsDrawer({ reelId, isOpen, onClose }: CommentsDrawerProps)
             </AnimatePresence>
 
             {/* Input */}
-            <form onSubmit={handleSubmit} className="p-4 border-t flex items-center gap-3">
-              <Input
-                placeholder={t.reels?.addComment || 'Add a comment...'}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="flex-1"
-                disabled={submitting}
-              />
-              <Button 
-                type="submit" 
-                size="icon" 
-                disabled={!newComment.trim() || submitting}
-                className="shrink-0"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
+            <form onSubmit={handleSubmit} className="p-4 border-t space-y-1">
+              <div className="flex items-center gap-3">
+                <Input
+                  placeholder={t.reels?.addComment || 'Add a comment...'}
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value.slice(0, MAX_COMMENT_LENGTH))}
+                  className="flex-1"
+                  disabled={submitting}
+                  maxLength={MAX_COMMENT_LENGTH}
+                />
+                <Button 
+                  type="submit" 
+                  size="icon" 
+                  disabled={!newComment.trim() || submitting || newComment.length > MAX_COMMENT_LENGTH}
+                  className="shrink-0"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+              {newComment.length > MAX_COMMENT_LENGTH * 0.8 && (
+                <p className={cn(
+                  "text-xs text-right",
+                  newComment.length >= MAX_COMMENT_LENGTH ? "text-destructive" : "text-muted-foreground"
+                )}>
+                  {newComment.length}/{MAX_COMMENT_LENGTH}
+                </p>
+              )}
             </form>
           </motion.div>
         </>
