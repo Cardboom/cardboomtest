@@ -237,6 +237,13 @@ export function useGrading() {
         return null;
       }
 
+      // CRITICAL: Require back image for grading
+      const finalBackUrl = existingBackUrl || (backImageFile ? 'pending-upload' : null);
+      if (!finalBackUrl) {
+        toast({ title: 'Back image required', description: 'Please upload the back of the card for accurate grading', variant: 'destructive' });
+        return null;
+      }
+
       const idempotencyKey = `${user.id}-listing-${listingId}-${Date.now()}`;
       const orderId = crypto.randomUUID();
 
