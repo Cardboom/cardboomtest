@@ -7384,6 +7384,137 @@ export type Database = {
           },
         ]
       }
+      system_health_alerts: {
+        Row: {
+          category: string
+          check_id: string
+          check_name: string
+          created_at: string
+          details: Json | null
+          fix_hint: string | null
+          id: string
+          message: string
+          report_id: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+        }
+        Insert: {
+          category: string
+          check_id: string
+          check_name: string
+          created_at?: string
+          details?: Json | null
+          fix_hint?: string | null
+          id?: string
+          message: string
+          report_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+        }
+        Update: {
+          category?: string
+          check_id?: string
+          check_name?: string
+          created_at?: string
+          details?: Json | null
+          fix_hint?: string | null
+          id?: string
+          message?: string
+          report_id?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "system_health_alerts_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "system_health_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      system_health_config: {
+        Row: {
+          alert_email: string | null
+          alert_threshold_failures: number
+          alert_threshold_warnings: number
+          check_interval_minutes: number
+          created_at: string
+          email_alerts_enabled: boolean
+          enabled_checks: string[]
+          id: string
+          retention_days: number
+          updated_at: string
+        }
+        Insert: {
+          alert_email?: string | null
+          alert_threshold_failures?: number
+          alert_threshold_warnings?: number
+          check_interval_minutes?: number
+          created_at?: string
+          email_alerts_enabled?: boolean
+          enabled_checks?: string[]
+          id?: string
+          retention_days?: number
+          updated_at?: string
+        }
+        Update: {
+          alert_email?: string | null
+          alert_threshold_failures?: number
+          alert_threshold_warnings?: number
+          check_interval_minutes?: number
+          created_at?: string
+          email_alerts_enabled?: boolean
+          enabled_checks?: string[]
+          id?: string
+          retention_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      system_health_reports: {
+        Row: {
+          check_results: Json
+          created_at: string
+          failures: number
+          id: string
+          latency_avg_ms: number | null
+          overall_status: string
+          passed: number
+          total_checks: number
+          triggered_by: string
+          warnings: number
+        }
+        Insert: {
+          check_results?: Json
+          created_at?: string
+          failures?: number
+          id?: string
+          latency_avg_ms?: number | null
+          overall_status: string
+          passed?: number
+          total_checks?: number
+          triggered_by?: string
+          warnings?: number
+        }
+        Update: {
+          check_results?: Json
+          created_at?: string
+          failures?: number
+          id?: string
+          latency_avg_ms?: number | null
+          overall_status?: string
+          passed?: number
+          total_checks?: number
+          triggered_by?: string
+          warnings?: number
+        }
+        Relationships: []
+      }
       tournament_entries: {
         Row: {
           cards_sold: number
@@ -8673,6 +8804,7 @@ export type Database = {
         | { Args: { p_bounty_id: string }; Returns: Json }
         | { Args: { p_bounty_id: string; p_user_id?: string }; Returns: Json }
       claim_gift_card: { Args: { gift_code: string }; Returns: Json }
+      cleanup_old_health_reports: { Args: never; Returns: undefined }
       complete_sale_transfer: {
         Args: {
           p_actor_user_id: string
