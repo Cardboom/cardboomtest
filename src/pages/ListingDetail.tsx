@@ -30,6 +30,7 @@ import { PurchaseDialog } from '@/components/purchase/PurchaseDialog';
 import { CardPriceEstimates } from '@/components/CardPriceEstimates';
 import { ListingOffersPanel } from '@/components/listing/ListingOffersPanel';
 import { GradingDonationPanel } from '@/components/listing/GradingDonationPanel';
+import { GradingCountdownPanel } from '@/components/grading/GradingCountdownPanel';
 import { StartConversationDialog } from '@/components/messaging/StartConversationDialog';
 import { ListThisCardDialog } from '@/components/item/ListThisCardDialog';
 import { MakeOfferDialog } from '@/components/trading/MakeOfferDialog';
@@ -787,8 +788,25 @@ const ListingDetail = () => {
             />
 
             {user?.id === listing.seller_id && (
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <Badge className="bg-primary/20 text-primary">This is your listing</Badge>
+                
+                {/* Grade this listing button - only for ungraded cards without pending grading */}
+                {!gradingInfo?.final_grade && 
+                 listing.certification_status !== 'completed' && 
+                 listing.certification_status !== 'pending' && 
+                 !listing.grading_order_id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-primary/50 text-primary hover:bg-primary/10"
+                    onClick={() => navigate(`/grading/new?listing=${listing.id}`)}
+                  >
+                    <Award className="w-4 h-4" />
+                    Grade This Listing
+                  </Button>
+                )}
+                
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -838,8 +856,23 @@ const ListingDetail = () => {
           </div>
         </div>
 
-        {/* Compact Grading Donation - Only for ungraded cards */}
-        {!gradingInfo?.final_grade && listing.certification_status !== 'completed' && (
+        {/* Grading Countdown - Show when grading is in progress */}
+        {listing.grading_order_id && listing.certification_status === 'pending' && (
+          <div className="mb-6">
+            <GradingCountdownPanel
+              gradingOrderId={listing.grading_order_id}
+              onComplete={() => {
+                fetchListing();
+              }}
+            />
+          </div>
+        )}
+
+        {/* Compact Grading Donation - Only for ungraded cards without pending grading */}
+        {!gradingInfo?.final_grade && 
+         listing.certification_status !== 'completed' && 
+         listing.certification_status !== 'pending' && 
+         !listing.grading_order_id && (
           <div className="mb-6">
             <GradingDonationPanel
               targetType="listing"
