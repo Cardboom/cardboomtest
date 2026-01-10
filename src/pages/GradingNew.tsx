@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useGrading, GRADING_CATEGORIES } from '@/hooks/useGrading';
 import { Header } from '@/components/Header';
@@ -33,7 +34,8 @@ import {
   Lightbulb,
   CheckCircle2,
   Clock,
-  ImageIcon
+  ImageIcon,
+  Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -45,6 +47,21 @@ import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { CardAnalysis } from '@/hooks/useCardAnalysis';
 import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
 import { ImageCropper } from '@/components/grading/ImageCropper';
+import { ListingSelector } from '@/components/grading/ListingSelector';
+
+interface SelectedListing {
+  id: string;
+  title: string;
+  category: string;
+  condition: string;
+  price: number;
+  image_url: string | null;
+  front_image_url: string | null;
+  back_image_url: string | null;
+  status: string;
+  grading_order_id: string | null;
+  cbgi_score: number | null;
+}
 
 type Step = 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
@@ -61,12 +78,15 @@ const containerVariants = {
 
 export default function GradingNew() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { createOrder, submitAndPay } = useGrading();
+  const { createOrder, submitAndPay, createOrderFromListing } = useGrading();
   
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [step, setStep] = useState<Step>('photos');
+  const [gradeMode, setGradeMode] = useState<'new' | 'listing'>('new');
+  const [selectedListing, setSelectedListing] = useState<SelectedListing | null>(null);
   const [category, setCategory] = useState<string>('pokemon'); // Default category
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
@@ -94,6 +114,34 @@ export default function GradingNew() {
   const [cropSide, setCropSide] = useState<'front' | 'back'>('front');
 
   const backInputRef = useRef<HTMLInputElement>(null);
+  const frontInputRef = useRef<HTMLInputElement>(null);
+
+  // Check for listing ID in URL params
+  useEffect(() => {
+    const listingId = searchParams.get('listing');
+    if (listingId) {
+      setGradeMode('listing');
+      // Fetch the listing details
+      supabase
+        .from('listings')
+        .select('id, title, category, condition, price, image_url, front_image_url, back_image_url, status, grading_order_id, cbgi_score')
+        .eq('id', listingId)
+        .single()
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setSelectedListing(data);
+            setCategory(data.category);
+            // Pre-populate images if available
+            if (data.front_image_url || data.image_url) {
+              setFrontPreview(data.front_image_url || data.image_url || '');
+            }
+            if (data.back_image_url) {
+              setBackPreview(data.back_image_url);
+            }
+          }
+        });
+    }
+  }, [searchParams]);
 
   // Fetch user ID
   useEffect(() => {
@@ -170,7 +218,11 @@ export default function GradingNew() {
   };
 
   const handleNext = async () => {
-    if (step === 'photos' && frontImage && backImage) setStep('options');
+    // For listing mode, check if we have both images (either from listing or newly uploaded)
+    const hasFrontImage = frontImage || frontPreview;
+    const hasBackImage = backImage || backPreview;
+    
+    if (step === 'photos' && hasFrontImage && hasBackImage) setStep('options');
     else if (step === 'options') setStep('review');
     else if (step === 'review') {
       const { data: { user } } = await supabase.auth.getUser();
@@ -187,14 +239,71 @@ export default function GradingNew() {
   };
 
   const handleSubmit = async () => {
-    if (!frontImage || !backImage) return;
     setIsSubmitting(true);
     try {
-      const order = await createOrder(category, frontImage, backImage, speedTier, autoListEnabled, autoListPrice);
+      let order;
+      
+      if (gradeMode === 'listing' && selectedListing) {
+        // Create order from existing listing
+        order = await createOrderFromListing(
+          selectedListing.id,
+          frontImage, // null if using existing image
+          backImage,  // null if using existing image
+          frontPreview || null,
+          backPreview || null,
+          speedTier
+        );
+      } else {
+        // Standard new card flow
+        if (!frontImage || !backImage) {
+          toast({ title: 'Please upload both front and back images', variant: 'destructive' });
+          setIsSubmitting(false);
+          return;
+        }
+        order = await createOrder(category, frontImage, backImage, speedTier, autoListEnabled, autoListPrice);
+      }
+      
       if (!order) { setIsSubmitting(false); return; }
       const success = await submitAndPay(order.id, order.idempotency_key);
       if (success) { setCreatedOrder(order); setStep('success'); }
     } catch (e) { console.error(e); } finally { setIsSubmitting(false); }
+  };
+  
+  // Handle listing selection
+  const handleListingSelect = (listing: SelectedListing | null) => {
+    setSelectedListing(listing);
+    if (listing) {
+      setCategory(listing.category);
+      // Pre-populate existing images
+      if (listing.front_image_url || listing.image_url) {
+        setFrontPreview(listing.front_image_url || listing.image_url || '');
+        setFrontImage(null); // Using existing URL, not a new file
+      } else {
+        setFrontPreview('');
+        setFrontImage(null);
+      }
+      if (listing.back_image_url) {
+        setBackPreview(listing.back_image_url);
+        setBackImage(null);
+      } else {
+        setBackPreview('');
+        setBackImage(null);
+      }
+    } else {
+      setFrontPreview('');
+      setBackPreview('');
+      setFrontImage(null);
+      setBackImage(null);
+    }
+  };
+  
+  // Handle front image upload for listing mode
+  const handleFrontImageChange = (file: File | null) => {
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    setCropImageSrc(previewUrl);
+    setCropSide('front');
+    setShowCropper(true);
   };
 
   const hasInsufficientBalance = walletBalance !== null && walletBalance < pricing.total;
@@ -248,36 +357,146 @@ export default function GradingNew() {
           {/* PHOTOS STEP */}
           {step === 'photos' && (
             <motion.div key="photos" variants={containerVariants} initial="hidden" animate="visible" exit="exit" className="space-y-4">
-              {/* AI Scanner for Front */}
-              {!frontPreview && (
-                <CardScannerUpload
-                  mode="grading"
-                  onScanComplete={(scanAnalysis, file, previewUrl) => {
-                    setCardAnalysis(scanAnalysis);
-                    
-                    // Auto-detect category
-                    if (scanAnalysis.category) {
-                      const matchedCategory = GRADING_CATEGORIES.find(
-                        c => c.id.toLowerCase() === scanAnalysis.category?.toLowerCase()
-                      );
-                      if (matchedCategory) setCategory(matchedCategory.id);
-                    }
-                    
-                    // Open cropper for front image
-                    setCropImageSrc(previewUrl);
-                    setCropSide('front');
-                    setShowCropper(true);
-                    
-                    // Store temp data for after cropping
-                    setFrontImage(file);
-                    
-                    if (scanAnalysis.needsReview) {
-                      setShowReviewModal(true);
-                    }
-                  }}
-                  className="border-0 shadow-none bg-transparent p-0"
-                />
-              )}
+              
+              {/* Mode Selector - New Card vs Existing Listing */}
+              <Tabs value={gradeMode} onValueChange={(v) => setGradeMode(v as 'new' | 'listing')} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="new" className="gap-2">
+                    <Camera className="w-4 h-4" />
+                    New Card
+                  </TabsTrigger>
+                  <TabsTrigger value="listing" className="gap-2">
+                    <Package className="w-4 h-4" />
+                    My Listing
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="listing" className="mt-4">
+                  <Card className="border-border/50">
+                    <CardContent className="p-4">
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Select a listing to grade. If it's missing front or back photos, you can upload them below.
+                      </p>
+                      <ListingSelector 
+                        onSelect={handleListingSelect}
+                        selectedListing={selectedListing}
+                      />
+                      
+                      {/* Show image upload for selected listing */}
+                      {selectedListing && (
+                        <div className="mt-4 grid grid-cols-2 gap-4">
+                          {/* Front Image */}
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-2 font-medium">FRONT</p>
+                            <input 
+                              ref={frontInputRef} 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => handleFrontImageChange(e.target.files?.[0] || null)} 
+                            />
+                            <button
+                              onClick={() => !frontPreview && frontInputRef.current?.click()}
+                              className={cn(
+                                'w-full aspect-[3/4] rounded-xl border-2 transition-all flex flex-col items-center justify-center overflow-hidden',
+                                frontPreview 
+                                  ? 'border-gain p-0' 
+                                  : 'border-dashed border-amber-500 hover:border-amber-400 bg-amber-500/5'
+                              )}
+                            >
+                              {frontPreview ? (
+                                <div className="relative w-full h-full group">
+                                  <img src={frontPreview} alt="Front" className="w-full h-full object-cover" />
+                                  <div 
+                                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); setFrontPreview(''); setFrontImage(null); }}
+                                  >
+                                    <span className="text-white text-xs">Replace</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-center p-3">
+                                  <Camera className="w-6 h-6 text-amber-500 mx-auto mb-2" />
+                                  <span className="text-xs text-amber-500 font-medium">Upload Front</span>
+                                </div>
+                              )}
+                            </button>
+                          </div>
+                          
+                          {/* Back Image */}
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-2 font-medium">BACK</p>
+                            <input 
+                              ref={backInputRef} 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => handleBackImageChange(e.target.files?.[0] || null)} 
+                            />
+                            <button
+                              onClick={() => !backPreview && backInputRef.current?.click()}
+                              className={cn(
+                                'w-full aspect-[3/4] rounded-xl border-2 transition-all flex flex-col items-center justify-center overflow-hidden',
+                                backPreview 
+                                  ? 'border-gain p-0' 
+                                  : 'border-dashed border-amber-500 hover:border-amber-400 bg-amber-500/5'
+                              )}
+                            >
+                              {backPreview ? (
+                                <div className="relative w-full h-full group">
+                                  <img src={backPreview} alt="Back" className="w-full h-full object-cover" />
+                                  <div 
+                                    className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); setBackPreview(''); setBackImage(null); }}
+                                  >
+                                    <span className="text-white text-xs">Replace</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-center p-3">
+                                  <Camera className="w-6 h-6 text-amber-500 mx-auto mb-2" />
+                                  <span className="text-xs text-amber-500 font-medium">Upload Back</span>
+                                </div>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="new" className="mt-4">
+                  {/* AI Scanner for Front */}
+                  {!frontPreview && (
+                    <CardScannerUpload
+                      mode="grading"
+                      onScanComplete={(scanAnalysis, file, previewUrl) => {
+                        setCardAnalysis(scanAnalysis);
+                        
+                        // Auto-detect category
+                        if (scanAnalysis.category) {
+                          const matchedCategory = GRADING_CATEGORIES.find(
+                            c => c.id.toLowerCase() === scanAnalysis.category?.toLowerCase()
+                          );
+                          if (matchedCategory) setCategory(matchedCategory.id);
+                        }
+                        
+                        // Open cropper for front image
+                        setCropImageSrc(previewUrl);
+                        setCropSide('front');
+                        setShowCropper(true);
+                        
+                        // Store temp data for after cropping
+                        setFrontImage(file);
+                        
+                        if (scanAnalysis.needsReview) {
+                          setShowReviewModal(true);
+                        }
+                      }}
+                      className="border-0 shadow-none bg-transparent p-0"
+                    />
+                  )}
 
               {/* Front uploaded - show preview and back upload */}
               {frontPreview && (
@@ -456,6 +675,8 @@ export default function GradingNew() {
                   </CardContent>
                 </Card>
               )}
+                </TabsContent>
+              </Tabs>
             </motion.div>
           )}
 
