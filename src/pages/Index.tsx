@@ -74,10 +74,12 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Scroll to market section if user is logged in
+  // Only scroll to market section on initial page load for logged in users
+  // Skip if user clicked logo to come here (indicated by scroll position being at top)
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
-    if (user && marketRef.current) {
+    // Only auto-scroll if user is logged in and page just loaded (not navigated via logo click)
+    if (user && marketRef.current && window.scrollY > 100) {
       timeoutId = setTimeout(() => {
         marketRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -85,7 +87,7 @@ const Index = () => {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [user]);
+  }, []);
   
 
   // Fetch items from database with real-time updates - prioritize items with images
