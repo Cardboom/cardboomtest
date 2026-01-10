@@ -21,7 +21,7 @@ import {
 import { 
   ChevronLeft, Vault, Truck, ArrowLeftRight, MessageCircle, 
   ShoppingCart, TrendingUp, TrendingDown, Send, Trash2, User,
-  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText, Clock, Heart
+  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText, Clock, Heart, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -31,6 +31,7 @@ import { ListingOffersPanel } from '@/components/listing/ListingOffersPanel';
 import { GradingDonationPanel } from '@/components/listing/GradingDonationPanel';
 import { StartConversationDialog } from '@/components/messaging/StartConversationDialog';
 import { ListThisCardDialog } from '@/components/item/ListThisCardDialog';
+import { MakeOfferDialog } from '@/components/trading/MakeOfferDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface Listing {
@@ -131,6 +132,7 @@ const ListingDetail = () => {
   const [voting, setVoting] = useState(false);
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [offerDialogOpen, setOfferDialogOpen] = useState(false);
   const [sellerName, setSellerName] = useState('Seller');
 
   useEffect(() => {
@@ -644,6 +646,22 @@ const ListingDetail = () => {
                   className="gap-2"
                   onClick={() => {
                     if (!user) {
+                      toast.info('Sign in to make an offer');
+                      navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
+                      return;
+                    }
+                    setOfferDialogOpen(true);
+                  }}
+                >
+                  <DollarSign className="w-4 h-4" />
+                  Make Offer
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="gap-2"
+                  onClick={() => {
+                    if (!user) {
                       toast.info('Sign in to message the seller');
                       navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
                       return;
@@ -683,6 +701,18 @@ const ListingDetail = () => {
                   size="lg" 
                   className="gap-2"
                   onClick={() => {
+                    toast.info('Sign in to make an offer');
+                    navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
+                  }}
+                >
+                  <DollarSign className="w-4 h-4" />
+                  Make Offer
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="gap-2"
+                  onClick={() => {
                     toast.info('Sign in to message the seller');
                     navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
                   }}
@@ -713,6 +743,15 @@ const ListingDetail = () => {
               onOpenChange={setMessageDialogOpen}
               listingId={listing.id}
               sellerId={listing.seller_id}
+              sellerName={sellerName}
+            />
+
+            {/* Make Offer Dialog */}
+            <MakeOfferDialog
+              open={offerDialogOpen}
+              onOpenChange={setOfferDialogOpen}
+              listingId={listing.id}
+              listingPrice={listing.price}
               sellerName={sellerName}
             />
 
