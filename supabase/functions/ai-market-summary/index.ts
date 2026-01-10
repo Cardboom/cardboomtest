@@ -13,7 +13,17 @@ serve(async (req) => {
   }
 
   try {
-    const { userId } = await req.json();
+    // Handle empty body gracefully
+    let userId: string | undefined;
+    try {
+      const body = await req.text();
+      if (body && body.trim()) {
+        const parsed = JSON.parse(body);
+        userId = parsed.userId;
+      }
+    } catch {
+      // Empty or invalid body is fine, userId is optional
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
