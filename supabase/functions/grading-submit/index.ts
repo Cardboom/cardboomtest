@@ -304,14 +304,18 @@ serve(async (req) => {
     const countdownHours = baseHours * multiplier;
     
     const estimatedCompletionAt = new Date(Date.now() + countdownHours * 60 * 60 * 1000).toISOString();
+    
+    // For admins, results are visible immediately. For others, after countdown
+    const resultsVisibleAt = isAdmin ? new Date().toISOString() : estimatedCompletionAt;
 
-    // Update order to paid with estimated completion time
+    // Update order to paid with estimated completion time and visibility time
     const { error: updateError } = await supabase
       .from('grading_orders')
       .update({
         status: 'queued',
         paid_at: new Date().toISOString(),
-        estimated_completion_at: isAdmin ? new Date().toISOString() : estimatedCompletionAt,
+        estimated_completion_at: estimatedCompletionAt,
+        results_visible_at: resultsVisibleAt,
       })
       .eq('id', orderId);
 
@@ -329,30 +333,10 @@ serve(async (req) => {
       );
     }
 
-    // For non-admins, DON'T run AI grading immediately - return success and let countdown expire
-    if (!isAdmin) {
-      console.log(`User ${user.id} is not admin. Grading queued for ${countdownHours} hours.`);
-      
-      const { data: queuedOrder } = await supabase
-        .from('grading_orders')
-        .select('*')
-        .eq('id', orderId)
-        .single();
-
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          order: queuedOrder,
-          message: `Grading queued. Results expected in ${countdownHours.toFixed(1)} hours.`,
-          estimatedCompletionAt 
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // ADMIN ONLY: Submit to CBGI immediately (ChatGPT Vision-based grading)
+    // Run AI grading for ALL users immediately (results hidden until countdown for non-admins)
+    // Submit to CBGI (ChatGPT Vision-based grading)
     try {
-      console.log('ADMIN: Submitting to CBGI AI grading immediately...');
+      console.log('Submitting to CBGI AI grading for all users...');
       console.log('Front image:', existingOrder.front_image_url);
       console.log('Back image:', existingOrder.back_image_url);
       

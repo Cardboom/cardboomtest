@@ -17,6 +17,7 @@ interface GradingOrderInfo {
   speed_tier: 'standard' | 'express' | 'priority' | null;
   created_at: string;
   estimated_completion_at: string | null;
+  results_visible_at: string | null;
   cbgi_score_0_100: number | null;
   grade_label: string | null;
 }
@@ -52,7 +53,7 @@ export function GradingCountdownPanel({ gradingOrderId, onComplete }: GradingCou
         // Fetch grading order
         const { data: order, error: orderError } = await supabase
           .from('grading_orders')
-          .select('id, status, speed_tier, created_at, estimated_completion_at, cbgi_score_0_100, grade_label')
+          .select('id, status, speed_tier, created_at, estimated_completion_at, results_visible_at, cbgi_score_0_100, grade_label')
           .eq('id', gradingOrderId)
           .single();
 
@@ -63,14 +64,17 @@ export function GradingCountdownPanel({ gradingOrderId, onComplete }: GradingCou
 
         setOrderInfo(order as GradingOrderInfo);
 
-        // Check if already completed
-        if (order.status === 'completed') {
+        // Check if results are visible (countdown expired and has results)
+        const resultsVisibleAt = order.results_visible_at ? new Date(order.results_visible_at).getTime() : null;
+        const now = Date.now();
+        
+        if (order.status === 'completed' && order.cbgi_score_0_100 && resultsVisibleAt && now >= resultsVisibleAt) {
           setIsComplete(true);
           onComplete?.();
           return;
         }
 
-        // Fetch user subscription
+        // Fetch user subscription for display purposes
         const { data: sub } = await supabase
           .from('user_subscriptions')
           .select('tier')
@@ -80,17 +84,22 @@ export function GradingCountdownPanel({ gradingOrderId, onComplete }: GradingCou
         const tier = (sub?.tier as 'free' | 'pro' | 'enterprise') || 'free';
         setSubscription({ tier });
 
-        // Calculate countdown
-        const baseHours = COUNTDOWN_HOURS[tier];
-        const speedMultiplier = SPEED_TIER_MULTIPLIER[order.speed_tier || 'standard'];
-        const totalHours = baseHours * speedMultiplier;
-        
-        const createdAt = new Date(order.created_at).getTime();
-        const targetTime = createdAt + (totalHours * 60 * 60 * 1000);
-        const now = Date.now();
-        const remaining = Math.max(0, targetTime - now);
-        
-        setTimeRemaining(remaining);
+        // Use results_visible_at for countdown (if available), otherwise calculate
+        if (resultsVisibleAt) {
+          const remaining = Math.max(0, resultsVisibleAt - now);
+          setTimeRemaining(remaining);
+        } else {
+          // Fallback: Calculate countdown from created_at
+          const baseHours = COUNTDOWN_HOURS[tier];
+          const speedMultiplier = SPEED_TIER_MULTIPLIER[order.speed_tier || 'standard'];
+          const totalHours = baseHours * speedMultiplier;
+          
+          const createdAt = new Date(order.created_at).getTime();
+          const targetTime = createdAt + (totalHours * 60 * 60 * 1000);
+          const remaining = Math.max(0, targetTime - now);
+          
+          setTimeRemaining(remaining);
+        }
       } catch (err) {
         console.error('Error in GradingCountdownPanel:', err);
       } finally {
