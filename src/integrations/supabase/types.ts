@@ -3688,6 +3688,7 @@ export type Database = {
           price_usd: number
           pricing_confidence: number | null
           rarity: string | null
+          results_visible_at: string | null
           set_code: string | null
           set_name: string | null
           source_listing_id: string | null
@@ -3759,6 +3760,7 @@ export type Database = {
           price_usd?: number
           pricing_confidence?: number | null
           rarity?: string | null
+          results_visible_at?: string | null
           set_code?: string | null
           set_name?: string | null
           source_listing_id?: string | null
@@ -3830,6 +3832,7 @@ export type Database = {
           price_usd?: number
           pricing_confidence?: number | null
           rarity?: string | null
+          results_visible_at?: string | null
           set_code?: string | null
           set_name?: string | null
           source_listing_id?: string | null

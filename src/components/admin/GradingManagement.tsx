@@ -31,8 +31,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useGradingAdmin, GradingOrderStatus, GRADING_CATEGORIES } from '@/hooks/useGrading';
+import { EditGradingDialog } from './EditGradingDialog';
 import { format } from 'date-fns';
-import { RefreshCw, DollarSign, Eye, Filter, RotateCcw, Image } from 'lucide-react';
+import { RefreshCw, DollarSign, Eye, Filter, RotateCcw, Image, Pencil, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const STATUS_COLORS: Record<GradingOrderStatus, string> = {
@@ -50,6 +51,7 @@ export function GradingManagement() {
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [isRegrading, setIsRegrading] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<any | null>(null);
 
   const filteredOrders = statusFilter === 'all' 
     ? orders 
@@ -169,6 +171,7 @@ export function GradingManagement() {
                   <TableHead>PSA Est.</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Actions</TableHead>
+                  <TableHead>Visibility</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -259,6 +262,17 @@ export function GradingManagement() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          {/* Edit button - only for completed orders with results */}
+                          {(order as any).cbgi_score_0_100 && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setEditingOrder(order)}
+                              title="Edit grading results"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </Button>
+                          )}
                           {canRegrade && (
                             <Button 
                               variant="outline" 
@@ -301,12 +315,38 @@ export function GradingManagement() {
                           )}
                         </div>
                       </TableCell>
+                      <TableCell>
+                        {/* Visibility timer */}
+                        {(order as any).results_visible_at && new Date((order as any).results_visible_at) > new Date() ? (
+                          <Badge variant="outline" className="text-xs gap-1">
+                            <Clock className="w-3 h-3" />
+                            Hidden
+                          </Badge>
+                        ) : (order as any).cbgi_score_0_100 ? (
+                          <Badge variant="secondary" className="text-xs bg-gain/20 text-gain">
+                            Visible
+                          </Badge>
+                        ) : null}
+                      </TableCell>
                     </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
           </div>
+        )}
+        
+        {/* Edit Dialog */}
+        {editingOrder && (
+          <EditGradingDialog
+            open={!!editingOrder}
+            onOpenChange={(open) => !open && setEditingOrder(null)}
+            order={editingOrder}
+            onSaved={() => {
+              setEditingOrder(null);
+              fetchAllOrders();
+            }}
+          />
         )}
       </CardContent>
     </Card>
