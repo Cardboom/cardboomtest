@@ -3690,6 +3690,7 @@ export type Database = {
           rarity: string | null
           set_code: string | null
           set_name: string | null
+          source_listing_id: string | null
           speed_tier: string | null
           status: Database["public"]["Enums"]["grading_order_status"]
           submitted_at: string | null
@@ -3760,6 +3761,7 @@ export type Database = {
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
+          source_listing_id?: string | null
           speed_tier?: string | null
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
@@ -3830,6 +3832,7 @@ export type Database = {
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
+          source_listing_id?: string | null
           speed_tier?: string | null
           status?: Database["public"]["Enums"]["grading_order_status"]
           submitted_at?: string | null
@@ -3852,6 +3855,13 @@ export type Database = {
             columns: ["market_item_id"]
             isOneToOne: false
             referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grading_orders_source_listing_id_fkey"
+            columns: ["source_listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
             referencedColumns: ["id"]
           },
         ]
@@ -4262,12 +4272,16 @@ export type Database = {
           allows_shipping: boolean
           allows_trade: boolean
           allows_vault: boolean
+          back_image_url: string | null
           boost_expires_at: string | null
           boost_price_paid: number | null
           boost_purchased_at: string | null
           boost_tier: string | null
           card_number: string | null
           category: string
+          cbgi_completed_at: string | null
+          cbgi_grade_label: string | null
+          cbgi_score: number | null
           certification_status: string | null
           condition: string
           created_at: string
@@ -4278,6 +4292,7 @@ export type Database = {
           external_id: string | null
           external_price: number | null
           external_price_cents: number | null
+          front_image_url: string | null
           grade: string | null
           grading_company: string | null
           grading_order_id: string | null
@@ -4308,12 +4323,16 @@ export type Database = {
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
+          back_image_url?: string | null
           boost_expires_at?: string | null
           boost_price_paid?: number | null
           boost_purchased_at?: string | null
           boost_tier?: string | null
           card_number?: string | null
           category: string
+          cbgi_completed_at?: string | null
+          cbgi_grade_label?: string | null
+          cbgi_score?: number | null
           certification_status?: string | null
           condition?: string
           created_at?: string
@@ -4324,6 +4343,7 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
+          front_image_url?: string | null
           grade?: string | null
           grading_company?: string | null
           grading_order_id?: string | null
@@ -4354,12 +4374,16 @@ export type Database = {
           allows_shipping?: boolean
           allows_trade?: boolean
           allows_vault?: boolean
+          back_image_url?: string | null
           boost_expires_at?: string | null
           boost_price_paid?: number | null
           boost_purchased_at?: string | null
           boost_tier?: string | null
           card_number?: string | null
           category?: string
+          cbgi_completed_at?: string | null
+          cbgi_grade_label?: string | null
+          cbgi_score?: number | null
           certification_status?: string | null
           condition?: string
           created_at?: string
@@ -4370,6 +4394,7 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
+          front_image_url?: string | null
           grade?: string | null
           grading_company?: string | null
           grading_order_id?: string | null

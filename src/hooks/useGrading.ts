@@ -203,6 +203,104 @@ export function useGrading() {
     } catch (err: any) {
       console.error('Error creating grading order:', err);
       toast({ title: 'Failed to create order', description: err.message, variant: 'destructive' });
+    return null;
+    }
+  };
+
+  // Create order from an existing listing
+  const createOrderFromListing = async (
+    listingId: string,
+    frontImageFile: File | null,
+    backImageFile: File | null,
+    existingFrontUrl: string | null,
+    existingBackUrl: string | null,
+    speedTier: 'standard' | 'express' | 'priority' = 'standard'
+  ): Promise<GradingOrder | null> => {
+    const tierConfig = GRADING_SPEED_TIERS[speedTier];
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: 'Please sign in to continue', variant: 'destructive' });
+        return null;
+      }
+
+      // Fetch listing details
+      const { data: listing, error: listingError } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('id', listingId)
+        .eq('seller_id', user.id)
+        .single();
+
+      if (listingError || !listing) {
+        toast({ title: 'Listing not found', variant: 'destructive' });
+        return null;
+      }
+
+      const idempotencyKey = `${user.id}-listing-${listingId}-${Date.now()}`;
+      const orderId = crypto.randomUUID();
+
+      let frontUrl = existingFrontUrl;
+      let backUrl = existingBackUrl;
+
+      // Upload new images if provided
+      if (frontImageFile) {
+        const frontPath = `${user.id}/${orderId}/front.jpg`;
+        const { error: frontUploadError } = await supabase.storage
+          .from('grading-images')
+          .upload(frontPath, frontImageFile, { contentType: frontImageFile.type, upsert: true });
+        if (frontUploadError) throw frontUploadError;
+        frontUrl = supabase.storage.from('grading-images').getPublicUrl(frontPath).data.publicUrl;
+        
+        // Also update listing's front_image_url
+        await supabase.from('listings').update({ front_image_url: frontUrl }).eq('id', listingId);
+      }
+
+      if (backImageFile) {
+        const backPath = `${user.id}/${orderId}/back.jpg`;
+        const { error: backUploadError } = await supabase.storage
+          .from('grading-images')
+          .upload(backPath, backImageFile, { contentType: backImageFile.type, upsert: true });
+        if (backUploadError) throw backUploadError;
+        backUrl = supabase.storage.from('grading-images').getPublicUrl(backPath).data.publicUrl;
+        
+        // Also update listing's back_image_url
+        await supabase.from('listings').update({ back_image_url: backUrl }).eq('id', listingId);
+      }
+
+      // Create order linked to listing
+      const { data: order, error: createError } = await supabase
+        .from('grading_orders')
+        .insert({
+          id: orderId,
+          user_id: user.id,
+          idempotency_key: idempotencyKey,
+          category: listing.category,
+          status: 'pending_payment',
+          front_image_url: frontUrl,
+          back_image_url: backUrl,
+          price_usd: tierConfig.price,
+          speed_tier: speedTier,
+          estimated_days_min: tierConfig.daysMin,
+          estimated_days_max: tierConfig.daysMax,
+          source_listing_id: listingId,
+          card_name: listing.title,
+          set_name: listing.set_name,
+          card_number: listing.card_number,
+        })
+        .select()
+        .single();
+
+      if (createError) throw createError;
+
+      // Update listing with grading order reference
+      await supabase.from('listings').update({ grading_order_id: orderId }).eq('id', listingId);
+
+      await fetchOrders();
+      return order as GradingOrder;
+    } catch (err: any) {
+      console.error('Error creating grading order from listing:', err);
+      toast({ title: 'Failed to create order', description: err.message, variant: 'destructive' });
       return null;
     }
   };
@@ -259,6 +357,7 @@ export function useGrading() {
     error,
     fetchOrders,
     createOrder,
+    createOrderFromListing,
     submitAndPay,
     getOrder
   };
