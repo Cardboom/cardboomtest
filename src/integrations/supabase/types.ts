@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      abandoned_carts: {
+        Row: {
+          cart_data: Json | null
+          created_at: string
+          email: string | null
+          id: string
+          listing_id: string | null
+          listing_image: string | null
+          listing_price: number | null
+          listing_title: string | null
+          order_id: string | null
+          recovered_at: string | null
+          recovery_email_count: number | null
+          recovery_email_sent_at: string | null
+          session_id: string | null
+          status: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cart_data?: Json | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          listing_id?: string | null
+          listing_image?: string | null
+          listing_price?: number | null
+          listing_title?: string | null
+          order_id?: string | null
+          recovered_at?: string | null
+          recovery_email_count?: number | null
+          recovery_email_sent_at?: string | null
+          session_id?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cart_data?: Json | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          listing_id?: string | null
+          listing_image?: string | null
+          listing_price?: number | null
+          listing_title?: string | null
+          order_id?: string | null
+          recovered_at?: string | null
+          recovery_email_count?: number | null
+          recovery_email_sent_at?: string | null
+          session_id?: string | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           category: string
@@ -326,6 +383,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      attribution_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          event_value: number | null
+          id: string
+          user_id: string
+          utm_tracking_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          event_value?: number | null
+          id?: string
+          user_id: string
+          utm_tracking_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          event_value?: number | null
+          id?: string
+          user_id?: string
+          utm_tracking_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attribution_events_utm_tracking_id_fkey"
+            columns: ["utm_tracking_id"]
+            isOneToOne: false
+            referencedRelation: "utm_tracking"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       auction_bids: {
         Row: {
@@ -2874,6 +2966,74 @@ export type Database = {
         }
         Relationships: []
       }
+      email_drip_campaigns: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          trigger_type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          trigger_type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          trigger_type?: string
+        }
+        Relationships: []
+      }
+      email_drip_sequences: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          delay_hours: number
+          id: string
+          is_active: boolean | null
+          sequence_order: number
+          subject: string
+          template_key: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          delay_hours?: number
+          id?: string
+          is_active?: boolean | null
+          sequence_order: number
+          subject: string
+          template_key: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          delay_hours?: number
+          id?: string
+          is_active?: boolean | null
+          sequence_order?: number
+          subject?: string
+          template_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_drip_sequences_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_drip_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           created_at: string | null
@@ -3214,6 +3374,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      first_purchase_discounts: {
+        Row: {
+          created_at: string
+          discount_percent: number | null
+          expires_at: string | null
+          id: string
+          is_used: boolean | null
+          order_id: string | null
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          order_id?: string | null
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          order_id?: string | null
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       follows: {
         Row: {
@@ -7774,6 +7967,50 @@ export type Database = {
           },
         ]
       }
+      user_drip_enrollment: {
+        Row: {
+          campaign_id: string
+          completed_at: string | null
+          current_sequence: number | null
+          enrolled_at: string
+          id: string
+          last_email_sent_at: string | null
+          status: string | null
+          unsubscribed_at: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          completed_at?: string | null
+          current_sequence?: number | null
+          enrolled_at?: string
+          id?: string
+          last_email_sent_at?: string | null
+          status?: string | null
+          unsubscribed_at?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          completed_at?: string | null
+          current_sequence?: number | null
+          enrolled_at?: string
+          id?: string
+          last_email_sent_at?: string | null
+          status?: string | null
+          unsubscribed_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_drip_enrollment_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "email_drip_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_ibans: {
         Row: {
           bank_name: string | null
@@ -8029,6 +8266,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      utm_tracking: {
+        Row: {
+          created_at: string
+          id: string
+          ip_country: string | null
+          landing_page: string | null
+          referrer: string | null
+          session_id: string
+          user_agent: string | null
+          user_id: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_country?: string | null
+          landing_page?: string | null
+          referrer?: string | null
+          session_id: string
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_country?: string | null
+          landing_page?: string | null
+          referrer?: string | null
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
       }
       vault_items: {
         Row: {
