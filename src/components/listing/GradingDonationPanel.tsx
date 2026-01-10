@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { PiggyBank, Gift, Sparkles, Heart, Users, DollarSign } from 'lucide-react';
+import { PiggyBank, Gift, Sparkles, Heart, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -184,38 +183,36 @@ export const GradingDonationPanel = ({
   const progress = Math.min((totalCents / effectiveGoalCents) * 100, 100);
   const isFunded = totalCents >= effectiveGoalCents;
 
-  if (!acceptsDonations && !isOwner) return null;
+  // Show panel for owners or when donations are accepted
+  if (!acceptsDonations && !isOwner) {
+    return null;
+  }
 
   return (
-    <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-yellow-500/5">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <PiggyBank className="w-5 h-5 text-amber-500" />
-          Grading Piggy Bank
-          {isFunded && (
-            <Badge className="ml-auto bg-gain text-gain-foreground">
-              <Sparkles className="w-3 h-3 mr-1" />
-              Funded!
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {isOwner && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-              <span className="text-sm">Accept donations for grading</span>
-              <Button
-                variant={acceptsDonations ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => onToggleDonations?.(!acceptsDonations)}
-              >
-                {acceptsDonations ? 'Enabled' : 'Disabled'}
-              </Button>
+    <div className="space-y-4">
+      {/* Owner Controls */}
+      {isOwner && (
+        <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <PiggyBank className="w-5 h-5 text-amber-500" />
+              <span className="font-medium">Grading Donations</span>
             </div>
-            
-            {/* Refund and Delist option for owner if there are donations */}
-            {acceptsDonations && totalCents > 0 && (
+            <Button
+              variant={acceptsDonations ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => onToggleDonations?.(!acceptsDonations)}
+            >
+              {acceptsDonations ? 'Enabled' : 'Enable'}
+            </Button>
+          </div>
+          
+          {acceptsDonations && totalCents > 0 && (
+            <div className="pt-2 border-t border-border">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="text-muted-foreground">Total Donations</span>
+                <span className="font-semibold text-amber-500">{formatPrice(totalCents / 100)}</span>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -223,132 +220,117 @@ export const GradingDonationPanel = ({
                 onClick={handleRefundAndDelist}
                 disabled={isRefunding}
               >
-                {isRefunding ? 'Refunding...' : `Refund All Donations & Delist (${formatPrice(totalCents / 100)})`}
+                {isRefunding ? 'Refunding...' : 'Refund All & Cancel'}
               </Button>
-            )}
-          </div>
-        )}
-
-        {acceptsDonations && (
-          <>
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">
-                  {formatPrice(totalCents / 100)} / {formatPrice(effectiveGoalCents / 100)}
-                </span>
-              </div>
-              <div className="relative">
-                <Progress 
-                  value={progress} 
-                  className={cn(
-                    "h-4",
-                    isFunded && "bg-gain/20"
-                  )}
-                />
-                <div 
-                  className="absolute inset-0 flex items-center justify-center"
-                  style={{ width: `${Math.min(progress, 100)}%` }}
-                >
-                  <PiggyBank className={cn(
-                    "w-3 h-3 transition-all",
-                    isFunded ? "text-gain" : "text-amber-500"
-                  )} />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Users className="w-3 h-3" />
-                {donations.length} contributor{donations.length !== 1 ? 's' : ''}
-              </div>
             </div>
+          )}
+        </div>
+      )}
 
-            {/* Donate Button */}
-            {!isOwner && currentUserId !== ownerId && (
-              <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black">
-                    <Gift className="w-4 h-4" />
-                    Donate Towards Grading
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Heart className="w-5 h-5 text-rose-500" />
-                      Donate for Grading
-                    </DialogTitle>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4 py-4">
-                    <p className="text-sm text-muted-foreground">
-                      Help this collector get their card professionally graded! Your donation goes directly towards the grading fee.
-                    </p>
+      {/* Donation Section for Non-Owners */}
+      {!isOwner && acceptsDonations && (
+        <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/30">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <PiggyBank className="w-5 h-5 text-amber-500" />
+              <span className="font-medium">Fund Grading</span>
+              {isFunded && (
+                <Badge className="bg-gain text-gain-foreground text-xs">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  Funded!
+                </Badge>
+              )}
+            </div>
+            <span className="text-sm font-semibold">
+              {formatPrice(totalCents / 100)} / {formatPrice(effectiveGoalCents / 100)}
+            </span>
+          </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Amount ($)</label>
-                      <div className="flex gap-2">
-                        {[1, 5, 10, 20].map((amt) => (
-                          <Button
-                            key={amt}
-                            variant={donateAmount === String(amt) ? 'default' : 'outline'}
-                            size="sm"
-                            onClick={() => setDonateAmount(String(amt))}
-                          >
-                            ${amt}
-                          </Button>
-                        ))}
-                      </div>
-                      <Input
-                        type="number"
-                        value={donateAmount}
-                        onChange={(e) => setDonateAmount(e.target.value)}
-                        min="1"
-                        step="0.01"
-                        className="mt-2"
-                      />
-                    </div>
+          {/* Progress Bar */}
+          <Progress 
+            value={progress} 
+            className={cn("h-2 mb-3", isFunded && "bg-gain/20")}
+          />
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Message (optional)</label>
-                      <Textarea
-                        value={donateMessage}
-                        onChange={(e) => setDonateMessage(e.target.value)}
-                        placeholder="Good luck with the grade!"
-                        rows={2}
-                      />
-                    </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            Help get this card professionally graded. Donations go towards the grading fee. 
+            {donations.length > 0 && ` ${donations.length} contributor${donations.length !== 1 ? 's' : ''} so far.`}
+          </p>
 
-                    <Button 
-                      className="w-full gap-2" 
-                      onClick={handleDonate}
-                      disabled={isDonating}
-                    >
-                      <DollarSign className="w-4 h-4" />
-                      {isDonating ? 'Processing...' : `Donate ${formatPrice(parseFloat(donateAmount) || 0)}`}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
-
-            {/* Recent Donors */}
-            {donations.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">Recent Contributors</p>
-                <div className="space-y-1">
-                  {donations.slice(0, 3).map((d) => (
-                    <div key={d.id} className="flex items-center justify-between text-xs p-2 rounded bg-muted/30">
-                      <span className="text-muted-foreground">Anonymous donor</span>
-                      <span className="font-medium text-amber-500">{formatPrice(d.amount_cents / 100)}</span>
-                    </div>
-                  ))}
+          {/* Donate Button */}
+          <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black">
+                <Gift className="w-4 h-4" />
+                Donate for Grading
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-rose-500" />
+                  Donate for Grading
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="p-3 rounded-lg bg-muted/50 text-sm">
+                  <p className="font-medium mb-1">How it works</p>
+                  <p className="text-muted-foreground text-xs">
+                    Your donation goes towards the grading fee for this card. 
+                    When the goal is reached, the owner receives a grading credit. 
+                    If the listing is removed before the goal, all donations are refunded.
+                  </p>
                 </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Amount ($)</label>
+                  <div className="flex gap-2">
+                    {[1, 5, 10, 20].map((amt) => (
+                      <Button
+                        key={amt}
+                        variant={donateAmount === String(amt) ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setDonateAmount(String(amt))}
+                      >
+                        ${amt}
+                      </Button>
+                    ))}
+                  </div>
+                  <Input
+                    type="number"
+                    value={donateAmount}
+                    onChange={(e) => setDonateAmount(e.target.value)}
+                    min="1"
+                    step="0.01"
+                    className="mt-2"
+                    placeholder="Custom amount"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Message (optional)</label>
+                  <Textarea
+                    value={donateMessage}
+                    onChange={(e) => setDonateMessage(e.target.value)}
+                    placeholder="Good luck with the grade!"
+                    rows={2}
+                  />
+                </div>
+
+                <Button 
+                  className="w-full gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black" 
+                  onClick={handleDonate}
+                  disabled={isDonating}
+                >
+                  <DollarSign className="w-4 h-4" />
+                  {isDonating ? 'Processing...' : `Donate ${formatPrice(parseFloat(donateAmount) || 0)}`}
+                </Button>
               </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+            </DialogContent>
+          </Dialog>
+        </div>
+      )}
+    </div>
   );
 };
