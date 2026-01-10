@@ -110,6 +110,8 @@ const SellPage = () => {
     description: '',
     category: 'nba',
     condition: 'Near Mint',
+    gradingCompany: '' as string,
+    grade: '' as string,
     price: '',
     currency: 'USD' as 'USD' | 'EUR' | 'TRY',
     setName: '',
@@ -355,6 +357,8 @@ const SellPage = () => {
         description: '',
         category: 'nba',
         condition: 'Near Mint',
+        gradingCompany: '',
+        grade: '',
         price: '',
         currency: 'USD',
         setName: '',
@@ -592,6 +596,8 @@ const SellPage = () => {
         description: '',
         category: 'nba',
         condition: 'Near Mint',
+        gradingCompany: '',
+        grade: '',
         price: '',
         currency: 'USD',
         setName: '',
@@ -831,6 +837,83 @@ const SellPage = () => {
                         </Select>
                       </div>
 
+                      {/* Grading Selection */}
+                      <div className="sm:col-span-2 grid grid-cols-2 gap-3">
+                        <div>
+                          <Label htmlFor="gradingCompany">Grading Company</Label>
+                          <Select
+                            value={formData.gradingCompany}
+                            onValueChange={(value) => setFormData({ ...formData, gradingCompany: value, grade: value ? formData.grade : '' })}
+                          >
+                            <SelectTrigger className="mt-1.5">
+                              <SelectValue placeholder="Not Graded" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Not Graded (Raw)</SelectItem>
+                              <SelectItem value="PSA">PSA</SelectItem>
+                              <SelectItem value="BGS">BGS (Beckett)</SelectItem>
+                              <SelectItem value="CGC">CGC</SelectItem>
+                              <SelectItem value="SGC">SGC</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {formData.gradingCompany && (
+                          <div>
+                            <Label htmlFor="grade">Grade</Label>
+                            <Select
+                              value={formData.grade}
+                              onValueChange={(value) => setFormData({ ...formData, grade: value })}
+                            >
+                              <SelectTrigger className="mt-1.5">
+                                <SelectValue placeholder="Select Grade" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {formData.gradingCompany === 'PSA' ? (
+                                  <>
+                                    <SelectItem value="10">PSA 10 - Gem Mint</SelectItem>
+                                    <SelectItem value="9">PSA 9 - Mint</SelectItem>
+                                    <SelectItem value="8">PSA 8 - Near Mint-Mint</SelectItem>
+                                    <SelectItem value="7">PSA 7 - Near Mint</SelectItem>
+                                    <SelectItem value="6">PSA 6 - Excellent-Mint</SelectItem>
+                                    <SelectItem value="5">PSA 5 - Excellent</SelectItem>
+                                    <SelectItem value="4">PSA 4 - Very Good-Excellent</SelectItem>
+                                    <SelectItem value="3">PSA 3 - Very Good</SelectItem>
+                                    <SelectItem value="2">PSA 2 - Good</SelectItem>
+                                    <SelectItem value="1">PSA 1 - Poor</SelectItem>
+                                  </>
+                                ) : formData.gradingCompany === 'BGS' ? (
+                                  <>
+                                    <SelectItem value="10">BGS 10 - Pristine</SelectItem>
+                                    <SelectItem value="9.5">BGS 9.5 - Gem Mint</SelectItem>
+                                    <SelectItem value="9">BGS 9 - Mint</SelectItem>
+                                    <SelectItem value="8.5">BGS 8.5 - Near Mint-Mint+</SelectItem>
+                                    <SelectItem value="8">BGS 8 - Near Mint-Mint</SelectItem>
+                                    <SelectItem value="7.5">BGS 7.5 - Near Mint+</SelectItem>
+                                    <SelectItem value="7">BGS 7 - Near Mint</SelectItem>
+                                  </>
+                                ) : formData.gradingCompany === 'CGC' ? (
+                                  <>
+                                    <SelectItem value="10">CGC 10 - Perfect</SelectItem>
+                                    <SelectItem value="9.5">CGC 9.5 - Gem Mint</SelectItem>
+                                    <SelectItem value="9">CGC 9 - Mint</SelectItem>
+                                    <SelectItem value="8.5">CGC 8.5 - Near Mint-Mint+</SelectItem>
+                                    <SelectItem value="8">CGC 8 - Near Mint-Mint</SelectItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <SelectItem value="10">10 - Gem Mint</SelectItem>
+                                    <SelectItem value="9.5">9.5</SelectItem>
+                                    <SelectItem value="9">9 - Mint</SelectItem>
+                                    <SelectItem value="8">8 - Near Mint-Mint</SelectItem>
+                                    <SelectItem value="7">7 - Near Mint</SelectItem>
+                                  </>
+                                )}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
+
                       <div>
                         <Label htmlFor="price">Your Price *</Label>
                         <div className="flex gap-2 mt-1.5">
@@ -898,6 +981,8 @@ const SellPage = () => {
                             itemName={formData.title}
                             category={formData.category}
                             condition={formData.condition}
+                            gradingCompany={formData.gradingCompany || null}
+                            grade={formData.grade || null}
                             currentPrice={formData.price ? parseFloat(formData.price) : undefined}
                             onPriceSelect={(price) => setFormData({ ...formData, price: price.toFixed(2) })}
                           />

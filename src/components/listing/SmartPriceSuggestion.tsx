@@ -19,6 +19,8 @@ interface SmartPriceSuggestionProps {
   itemName: string;
   category: string;
   condition?: string;
+  gradingCompany?: string | null;
+  grade?: string | null;
   currentPrice?: number;
   onPriceSelect?: (price: number) => void;
 }
@@ -34,12 +36,40 @@ interface PriceSuggestion {
   avgDaysToSell: number | null;
   priceVsMarket: 'below' | 'at' | 'above' | null;
   percentDiff: number | null;
+  priceType: 'raw' | 'psa10' | 'psa9' | 'graded';
 }
+
+// Helper to determine which price column to use based on grading
+const getGradePriceField = (gradingCompany?: string | null, grade?: string | null): { field: 'psa10_price' | 'psa9_price' | 'raw_price' | 'current_price', label: string } => {
+  if (!gradingCompany || !grade) {
+    return { field: 'current_price', label: 'Market' };
+  }
+  
+  const normalizedGrade = grade.toLowerCase().replace(/\s/g, '');
+  const normalizedCompany = gradingCompany.toLowerCase();
+  
+  // PSA 10 or BGS 10 or CGC 10
+  if ((normalizedCompany === 'psa' || normalizedCompany === 'bgs' || normalizedCompany === 'cgc') && 
+      (normalizedGrade === '10' || normalizedGrade === 'gem mint' || normalizedGrade === 'pristine')) {
+    return { field: 'psa10_price', label: `${gradingCompany.toUpperCase()} 10` };
+  }
+  
+  // PSA 9 or BGS 9.5 or CGC 9.5
+  if ((normalizedCompany === 'psa' && normalizedGrade === '9') ||
+      ((normalizedCompany === 'bgs' || normalizedCompany === 'cgc') && normalizedGrade === '9.5')) {
+    return { field: 'psa9_price', label: `${gradingCompany.toUpperCase()} ${grade}` };
+  }
+  
+  // Other graded cards - use raw price as baseline (they're typically worth more than raw)
+  return { field: 'raw_price', label: 'Graded' };
+};
 
 export const SmartPriceSuggestion = ({
   itemName,
   category,
   condition = 'near_mint',
+  gradingCompany,
+  grade,
   currentPrice,
   onPriceSelect,
 }: SmartPriceSuggestionProps) => {
@@ -59,10 +89,13 @@ export const SmartPriceSuggestion = ({
       setError(null);
 
       try {
-        // Search for matching market item
+        // Determine which price field to use based on grading
+        const { field: priceField, label: priceLabel } = getGradePriceField(gradingCompany, grade);
+        
+        // Search for matching market item with graded prices
         const { data: marketItems } = await supabase
           .from('market_items')
-          .select('id, name, current_price, change_24h, change_7d, views_24h, liquidity')
+          .select('id, name, current_price, psa10_price, psa9_price, raw_price, change_24h, change_7d, views_24h, liquidity')
           .ilike('name', `%${itemName}%`)
           .eq('category', category)
           .gt('current_price', 0)
@@ -75,7 +108,20 @@ export const SmartPriceSuggestion = ({
           return;
         }
 
-        const marketPrice = marketItems.current_price || 0;
+        // Use the appropriate price based on grading
+        let marketPrice = marketItems.current_price || 0;
+        let priceType: 'raw' | 'psa10' | 'psa9' | 'graded' = 'raw';
+        
+        if (priceField === 'psa10_price' && marketItems.psa10_price && marketItems.psa10_price > 0) {
+          marketPrice = marketItems.psa10_price;
+          priceType = 'psa10';
+        } else if (priceField === 'psa9_price' && marketItems.psa9_price && marketItems.psa9_price > 0) {
+          marketPrice = marketItems.psa9_price;
+          priceType = 'psa9';
+        } else if (priceField === 'raw_price' && marketItems.raw_price && marketItems.raw_price > 0) {
+          marketPrice = marketItems.raw_price;
+          priceType = 'graded';
+        }
 
         // Get recent sales count
         const { count: recentSales } = await supabase
@@ -95,10 +141,15 @@ export const SmartPriceSuggestion = ({
         const maxProfitPrice = marketPrice * 1.1; // 10% above market
         const competitivePrice = marketPrice * 0.95; // 5% below for competitive edge
 
-        // Determine confidence based on liquidity
+        // Determine confidence based on liquidity and graded price availability
         let priceConfidence: 'high' | 'medium' | 'low' = 'medium';
         if (marketItems.liquidity === 'high') priceConfidence = 'high';
         else if (marketItems.liquidity === 'low') priceConfidence = 'low';
+        
+        // Lower confidence if we're using graded pricing but the specific grade price isn't available
+        if (gradingCompany && grade && priceType === 'raw') {
+          priceConfidence = 'low';
+        }
 
         // Compare current price to market
         let priceVsMarket: 'below' | 'at' | 'above' | null = null;
@@ -122,6 +173,7 @@ export const SmartPriceSuggestion = ({
           avgDaysToSell: marketItems.liquidity === 'high' ? 3 : marketItems.liquidity === 'medium' ? 7 : 14,
           priceVsMarket,
           percentDiff,
+          priceType,
         });
       } catch (err) {
         console.error('Price suggestion error:', err);
@@ -133,7 +185,7 @@ export const SmartPriceSuggestion = ({
 
     const debounce = setTimeout(fetchPriceSuggestion, 500);
     return () => clearTimeout(debounce);
-  }, [itemName, category, currentPrice]);
+  }, [itemName, category, currentPrice, gradingCompany, grade]);
 
   if (!itemName || itemName.length < 3) {
     return null;
