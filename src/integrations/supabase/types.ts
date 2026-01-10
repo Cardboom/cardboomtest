@@ -6759,6 +6759,45 @@ export type Database = {
           },
         ]
       }
+      referral_leaderboard_cache: {
+        Row: {
+          avatar_url: string | null
+          display_name: string | null
+          id: string
+          period: string | null
+          rank: number | null
+          tier: string | null
+          total_referrals: number | null
+          total_volume: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string
+          period?: string | null
+          rank?: number | null
+          tier?: string | null
+          total_referrals?: number | null
+          total_volume?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          display_name?: string | null
+          id?: string
+          period?: string | null
+          rank?: number | null
+          tier?: string | null
+          total_referrals?: number | null
+          total_volume?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       referral_sales: {
         Row: {
           created_at: string
@@ -8139,6 +8178,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_onboarding_progress: {
+        Row: {
+          claimed_rewards: string[] | null
+          completed_at: string | null
+          completed_steps: string[] | null
+          created_at: string
+          id: string
+          total_xp_earned: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          claimed_rewards?: string[] | null
+          completed_at?: string | null
+          completed_steps?: string[] | null
+          created_at?: string
+          id?: string
+          total_xp_earned?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          claimed_rewards?: string[] | null
+          completed_at?: string | null
+          completed_steps?: string[] | null
+          created_at?: string
+          id?: string
+          total_xp_earned?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_rewards: {
         Row: {
