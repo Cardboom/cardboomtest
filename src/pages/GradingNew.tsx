@@ -222,8 +222,18 @@ export default function GradingNew() {
     const hasFrontImage = frontImage || frontPreview;
     const hasBackImage = backImage || backPreview;
     
-    if (step === 'photos' && hasFrontImage && hasBackImage) setStep('options');
-    else if (step === 'options') setStep('review');
+    if (step === 'photos') {
+      // CRITICAL: Both front AND back images are REQUIRED for grading
+      if (!hasFrontImage) {
+        toast({ title: 'Front image required', description: 'Please upload the front of the card', variant: 'destructive' });
+        return;
+      }
+      if (!hasBackImage) {
+        toast({ title: 'Back image required', description: 'Please upload the back of the card for accurate grading', variant: 'destructive' });
+        return;
+      }
+      setStep('options');
+    } else if (step === 'options') setStep('review');
     else if (step === 'review') {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { toast({ title: 'Please sign in', variant: 'destructive' }); navigate('/auth'); return; }
@@ -423,9 +433,11 @@ export default function GradingNew() {
                             </button>
                           </div>
                           
-                          {/* Back Image */}
+                          {/* Back Image - REQUIRED */}
                           <div>
-                            <p className="text-xs text-muted-foreground mb-2 font-medium">BACK</p>
+                            <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
+                              BACK <span className="text-destructive">*</span>
+                            </p>
                             <input 
                               ref={backInputRef} 
                               type="file" 
@@ -439,7 +451,7 @@ export default function GradingNew() {
                                 'w-full aspect-[3/4] rounded-xl border-2 transition-all flex flex-col items-center justify-center overflow-hidden',
                                 backPreview 
                                   ? 'border-gain p-0' 
-                                  : 'border-dashed border-amber-500 hover:border-amber-400 bg-amber-500/5'
+                                  : 'border-dashed border-destructive hover:border-destructive/80 bg-destructive/5'
                               )}
                             >
                               {backPreview ? (
@@ -454,8 +466,9 @@ export default function GradingNew() {
                                 </div>
                               ) : (
                                 <div className="text-center p-3">
-                                  <Camera className="w-6 h-6 text-amber-500 mx-auto mb-2" />
-                                  <span className="text-xs text-amber-500 font-medium">Upload Back</span>
+                                  <AlertCircle className="w-6 h-6 text-destructive mx-auto mb-2" />
+                                  <span className="text-xs text-destructive font-medium">Upload Back</span>
+                                  <p className="text-[10px] text-muted-foreground mt-1">Required for grading</p>
                                 </div>
                               )}
                             </button>
