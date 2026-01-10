@@ -264,12 +264,54 @@ serve(async (req) => {
       // Non-critical, continue
     }
 
-    // Update order to paid
+    // Check if user is admin for instant grading
+    const { data: adminRole } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    const isAdmin = !!adminRole;
+
+    // Get user subscription tier for countdown calculation
+    const { data: subscription } = await supabase
+      .from('user_subscriptions')
+      .select('tier')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    const tier = subscription?.tier || 'free';
+    
+    // Calculate countdown duration based on subscription tier
+    // Enterprise: 4 hours, Pro: 24 hours, Free: 72 hours
+    const COUNTDOWN_HOURS: Record<string, number> = {
+      enterprise: 4,
+      pro: 24,
+      free: 72,
+    };
+    
+    // Speed tier multipliers
+    const SPEED_MULTIPLIER: Record<string, number> = {
+      priority: 0.2,
+      express: 0.6,
+      standard: 1,
+    };
+    
+    const baseHours = COUNTDOWN_HOURS[tier] || 72;
+    const speedTier = existingOrder.speed_tier || 'standard';
+    const multiplier = SPEED_MULTIPLIER[speedTier] || 1;
+    const countdownHours = baseHours * multiplier;
+    
+    const estimatedCompletionAt = new Date(Date.now() + countdownHours * 60 * 60 * 1000).toISOString();
+
+    // Update order to paid with estimated completion time
     const { error: updateError } = await supabase
       .from('grading_orders')
       .update({
         status: 'queued',
-        paid_at: new Date().toISOString()
+        paid_at: new Date().toISOString(),
+        estimated_completion_at: isAdmin ? new Date().toISOString() : estimatedCompletionAt,
       })
       .eq('id', orderId);
 
@@ -287,9 +329,30 @@ serve(async (req) => {
       );
     }
 
-    // Submit to CBGI (ChatGPT Vision-based grading)
+    // For non-admins, DON'T run AI grading immediately - return success and let countdown expire
+    if (!isAdmin) {
+      console.log(`User ${user.id} is not admin. Grading queued for ${countdownHours} hours.`);
+      
+      const { data: queuedOrder } = await supabase
+        .from('grading_orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          order: queuedOrder,
+          message: `Grading queued. Results expected in ${countdownHours.toFixed(1)} hours.`,
+          estimatedCompletionAt 
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ADMIN ONLY: Submit to CBGI immediately (ChatGPT Vision-based grading)
     try {
-      console.log('Submitting to CBGI AI grading...');
+      console.log('ADMIN: Submitting to CBGI AI grading immediately...');
       console.log('Front image:', existingOrder.front_image_url);
       console.log('Back image:', existingOrder.back_image_url);
       

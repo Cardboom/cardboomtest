@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useGrading, GRADING_CATEGORIES } from '@/hooks/useGrading';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { Header } from '@/components/Header';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Collectible } from '@/types/collectible';
@@ -35,7 +36,8 @@ import {
   CheckCircle2,
   Clock,
   ImageIcon,
-  Package
+  Package,
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -81,6 +83,7 @@ export default function GradingNew() {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { createOrder, submitAndPay, createOrderFromListing } = useGrading();
+  const { isAdmin } = useAdminRole();
   
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -965,20 +968,44 @@ export default function GradingNew() {
                     initial={{ scale: 0 }} 
                     animate={{ scale: 1 }} 
                     transition={{ type: "spring", delay: 0.2 }} 
-                    className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center mx-auto mb-4"
+                    className={cn(
+                      "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4",
+                      isAdmin 
+                        ? "bg-gradient-to-br from-amber-400 to-amber-600" 
+                        : "bg-gradient-to-br from-primary to-blue-500"
+                    )}
                   >
-                    <Sparkles className="w-8 h-8 text-white" />
+                    {isAdmin ? <Zap className="w-8 h-8 text-white" /> : <Sparkles className="w-8 h-8 text-white" />}
                   </motion.div>
-                  <h2 className="text-xl font-bold mb-1">Order Submitted!</h2>
-                  <p className="text-sm text-muted-foreground mb-4">Your grading is being processed</p>
+                  <h2 className="text-xl font-bold mb-1">
+                    {isAdmin ? 'Grading Complete!' : 'Order Submitted!'}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {isAdmin 
+                      ? 'Your card has been graded instantly' 
+                      : 'Your grading is queued for processing'}
+                  </p>
                   
-                  <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mb-4">
-                    <div className="flex items-center justify-center gap-2 mb-1">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <span className="font-semibold text-primary text-sm">Est. Completion</span>
+                  {isAdmin ? (
+                    <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 mb-4">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <Zap className="w-4 h-4 text-amber-500" />
+                        <span className="font-semibold text-amber-600 text-sm">Admin Instant Grading</span>
+                      </div>
+                      <p className="text-lg font-bold">Results Ready Now</p>
                     </div>
-                    <p className="text-2xl font-bold">{pricing.daysMin}-{pricing.daysMax} Days</p>
-                  </div>
+                  ) : (
+                    <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 mb-4">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <Clock className="w-4 h-4 text-primary" />
+                        <span className="font-semibold text-primary text-sm">Est. Completion</span>
+                      </div>
+                      <p className="text-2xl font-bold">{pricing.daysMin}-{pricing.daysMax} Days</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        💡 Upgrade to Pro for faster grading
+                      </p>
+                    </div>
+                  )}
                   
                   <Badge variant="secondary" className="mb-4">Order: {createdOrder?.id?.slice(0, 8)}...</Badge>
                   
