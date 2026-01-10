@@ -183,10 +183,7 @@ export const GradingDonationPanel = ({
   const progress = Math.min((totalCents / effectiveGoalCents) * 100, 100);
   const isFunded = totalCents >= effectiveGoalCents;
 
-  // Show panel for owners or when donations are accepted
-  if (!acceptsDonations && !isOwner) {
-    return null;
-  }
+  // Always render something - show message if donations not enabled
 
   return (
     <div className="space-y-4">
@@ -227,7 +224,7 @@ export const GradingDonationPanel = ({
         </div>
       )}
 
-      {/* Donation Section for Non-Owners */}
+      {/* Donation Section for Non-Owners when enabled */}
       {!isOwner && acceptsDonations && (
         <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border border-amber-500/30">
           <div className="flex items-center justify-between mb-3">
@@ -329,6 +326,16 @@ export const GradingDonationPanel = ({
               </div>
             </DialogContent>
           </Dialog>
+        </div>
+      )}
+
+      {/* Message when donations not enabled (for non-owners) */}
+      {!isOwner && !acceptsDonations && (
+        <div className="p-4 rounded-xl bg-muted/30 border border-border text-center">
+          <PiggyBank className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">
+            The seller hasn't enabled community grading donations for this card yet.
+          </p>
         </div>
       )}
     </div>
