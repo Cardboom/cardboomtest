@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,7 @@ import {
 import { 
   ChevronLeft, Vault, Truck, ArrowLeftRight, MessageCircle, 
   ShoppingCart, TrendingUp, TrendingDown, Send, Trash2, User,
-  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText, Clock, Heart, DollarSign
+  Shield, BadgeCheck, Sparkles, Bot, Award, Globe, Layers, Hash, FileText, Clock, Heart, DollarSign, PiggyBank
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -133,6 +134,7 @@ const ListingDetail = () => {
   const [purchaseDialogOpen, setPurchaseDialogOpen] = useState(false);
   const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [offerDialogOpen, setOfferDialogOpen] = useState(false);
+  const [offersKey, setOffersKey] = useState(0);
   const [sellerName, setSellerName] = useState('Seller');
 
   useEffect(() => {
@@ -538,57 +540,84 @@ const ListingDetail = () => {
             </div>
 
             {/* Card Details Grid */}
-            {(listing.set_name || listing.card_number || listing.rarity || listing.language) && (
-              <Card className="border-border/50">
-                <CardHeader className="pb-3 pt-4 px-4">
-                  <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
-                    <FileText className="w-4 h-4" />
-                    Card Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-4 pb-4 pt-0">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    {listing.set_name && (
-                      <div className="flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Set:</span>
-                        <span className="font-medium text-foreground">{listing.set_name}</span>
-                      </div>
-                    )}
-                    {listing.set_code && (
-                      <div className="flex items-center gap-2">
-                        <Hash className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Code:</span>
-                        <span className="font-medium text-foreground">{listing.set_code}</span>
-                      </div>
-                    )}
-                    {listing.card_number && (
-                      <div className="flex items-center gap-2">
-                        <Hash className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Number:</span>
-                        <span className="font-medium text-foreground">#{listing.card_number}</span>
-                      </div>
-                    )}
-                    {listing.rarity && (
-                      <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Rarity:</span>
-                        <span className="font-medium text-foreground capitalize">{listing.rarity}</span>
-                      </div>
-                    )}
-                    {listing.language && (
-                      <div className="flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Language:</span>
-                        <span className="font-medium text-foreground capitalize">
-                          {getLanguageFlag(listing.language)} {listing.language}
-                        </span>
-                      </div>
-                    )}
+            <Card className="border-border/50">
+              <CardHeader className="pb-3 pt-4 px-4">
+                <CardTitle className="text-sm flex items-center gap-2 text-muted-foreground">
+                  <FileText className="w-4 h-4" />
+                  Card Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-4 pb-4 pt-0">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {/* CBGI Score */}
+                  {gradingInfo?.final_grade && (
+                    <div className="flex items-center gap-2">
+                      <Award className="w-4 h-4 text-primary" />
+                      <span className="text-muted-foreground">CBGI:</span>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="font-bold text-primary cursor-help">
+                            {gradingInfo.final_grade.toFixed(1)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">CardBoom Grading Index - AI-powered condition assessment</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  )}
+                  {listing.set_name && (
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Set:</span>
+                      <span className="font-medium text-foreground">{listing.set_name}</span>
+                    </div>
+                  )}
+                  {listing.set_code && (
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Code:</span>
+                      <span className="font-medium text-foreground">{listing.set_code}</span>
+                    </div>
+                  )}
+                  {listing.card_number && (
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Number:</span>
+                      <span className="font-medium text-foreground">#{listing.card_number}</span>
+                    </div>
+                  )}
+                  {listing.rarity && (
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Rarity:</span>
+                      <span className="font-medium text-foreground capitalize">{listing.rarity}</span>
+                    </div>
+                  )}
+                  {listing.language && (
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Language:</span>
+                      <span className="font-medium text-foreground capitalize">
+                        {getLanguageFlag(listing.language)} {listing.language}
+                      </span>
+                    </div>
+                  )}
+                  {listing.condition && (
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Condition:</span>
+                      <span className="font-medium text-foreground capitalize">{listing.condition}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Bot className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Category:</span>
+                    <span className="font-medium text-foreground">{getCategoryLabel(listing.category)}</span>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Price Estimates by Grade */}
             <CardPriceEstimates
@@ -753,6 +782,8 @@ const ListingDetail = () => {
               listingId={listing.id}
               listingPrice={listing.price}
               sellerName={sellerName}
+              sellerId={listing.seller_id}
+              onOfferSent={() => setOffersKey(k => k + 1)}
             />
 
             {user?.id === listing.seller_id && (
@@ -807,41 +838,32 @@ const ListingDetail = () => {
           </div>
         </div>
 
-        {/* Grading Donation Section - Only for ungraded cards */}
+        {/* Compact Grading Donation - Only for ungraded cards */}
         {!gradingInfo?.final_grade && listing.certification_status !== 'completed' && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-primary" />
-                Community Grading
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GradingDonationPanel
-                targetType="listing"
-                targetId={listing.id}
-                ownerId={listing.seller_id}
-                acceptsDonations={listing.accepts_grading_donations || false}
-                goalCents={listing.donation_goal_cents || 2000}
-                isOwner={user?.id === listing.seller_id}
-                cardTitle={listing.title}
-                onToggleDonations={async (enabled) => {
-                  const { error } = await supabase
-                    .from('listings')
-                    .update({ accepts_grading_donations: enabled })
-                    .eq('id', listing.id);
-                  if (!error) {
-                    setListing(prev => prev ? { ...prev, accepts_grading_donations: enabled } : null);
-                    toast.success(enabled ? 'Donations enabled' : 'Donations disabled');
-                  }
-                }}
-                onRefundAndDelist={async () => {
-                  // Refund logic handled in panel
-                  fetchListing();
-                }}
-              />
-            </CardContent>
-          </Card>
+          <div className="mb-6">
+            <GradingDonationPanel
+              targetType="listing"
+              targetId={listing.id}
+              ownerId={listing.seller_id}
+              acceptsDonations={listing.accepts_grading_donations || false}
+              goalCents={listing.donation_goal_cents || 2000}
+              isOwner={user?.id === listing.seller_id}
+              cardTitle={listing.title}
+              onToggleDonations={async (enabled) => {
+                const { error } = await supabase
+                  .from('listings')
+                  .update({ accepts_grading_donations: enabled })
+                  .eq('id', listing.id);
+                if (!error) {
+                  setListing(prev => prev ? { ...prev, accepts_grading_donations: enabled } : null);
+                  toast.success(enabled ? 'Donations enabled' : 'Donations disabled');
+                }
+              }}
+              onRefundAndDelist={async () => {
+                fetchListing();
+              }}
+            />
+          </div>
         )}
 
         {/* Offers Section */}
@@ -854,6 +876,7 @@ const ListingDetail = () => {
           </CardHeader>
           <CardContent>
             <ListingOffersPanel
+              key={offersKey}
               listingId={listing.id}
               sellerId={listing.seller_id}
               isOwner={user?.id === listing.seller_id}
