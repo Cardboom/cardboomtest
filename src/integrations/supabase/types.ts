@@ -4278,6 +4278,8 @@ export type Database = {
           external_id: string | null
           external_price: number | null
           external_price_cents: number | null
+          grade: string | null
+          grading_company: string | null
           grading_order_id: string | null
           id: string
           image_url: string | null
@@ -4322,6 +4324,8 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
+          grade?: string | null
+          grading_company?: string | null
           grading_order_id?: string | null
           id?: string
           image_url?: string | null
@@ -4366,6 +4370,8 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           external_price_cents?: number | null
+          grade?: string | null
+          grading_company?: string | null
           grading_order_id?: string | null
           id?: string
           image_url?: string | null
@@ -6829,6 +6835,48 @@ export type Database = {
           type?: Database["public"]["Enums"]["reward_type"]
           value_amount?: number | null
           xp_cost?: number
+        }
+        Relationships: []
+      }
+      saved_cards: {
+        Row: {
+          card_bank_name: string | null
+          card_brand: string | null
+          card_family: string | null
+          card_token: string
+          card_user_key: string
+          created_at: string
+          id: string
+          is_default: boolean | null
+          last_four: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_bank_name?: string | null
+          card_brand?: string | null
+          card_family?: string | null
+          card_token: string
+          card_user_key: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          last_four: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_bank_name?: string | null
+          card_brand?: string | null
+          card_family?: string | null
+          card_token?: string
+          card_user_key?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean | null
+          last_four?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
