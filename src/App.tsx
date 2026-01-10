@@ -47,6 +47,8 @@ import Careers from "./pages/Careers";
 import Blog from "./pages/Blog";
 import News from "./pages/News";
 import NewsArticle from "./pages/NewsArticle";
+import Insights from "./pages/Insights";
+import InsightArticle from "./pages/InsightArticle";
 import Press from "./pages/Press";
 import Help from "./pages/Help";
 import Safety from "./pages/Safety";
@@ -135,9 +137,11 @@ const AppContent = () => {
           <Route path="/order-success/:orderId" element={<OrderSuccess />} />
           <Route path="/about" element={<About />} />
           <Route path="/careers" element={<Careers />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/news/:slug" element={<NewsArticle />} />
+          <Route path="/blog" element={<Insights />} />
+          <Route path="/news" element={<Insights />} />
+          <Route path="/news/:slug" element={<InsightArticle />} />
+          <Route path="/insights" element={<Insights />} />
+          <Route path="/insights/:slug" element={<InsightArticle />} />
           <Route path="/press" element={<Press />} />
           <Route path="/help" element={<Help />} />
           <Route path="/safety" element={<Safety />} />
