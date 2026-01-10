@@ -45,7 +45,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { FAQSection } from '@/components/FAQSection';
 import { SEOFeaturesSection } from '@/components/SEOFeaturesSection';
-
+import { TrustBadgesBar, ViralReferralLeaderboard } from '@/components/growth';
 
 
 const Index = () => {
@@ -283,6 +283,7 @@ const Index = () => {
       {user && <DailyCardVotePopup />}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <MarketTicker />
+      <TrustBadgesBar />
       
       <main>
         {/* Boom Challenges - Full width at top */}

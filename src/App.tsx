@@ -14,6 +14,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { SocialProofPopup } from "@/components/SocialProofPopup";
 import { SellerShippingNotifier } from "@/components/seller/SellerShippingNotifier";
+import { ExitIntentPopup, OnboardingChecklist } from "@/components/growth";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -100,6 +101,8 @@ const AppContent = () => {
     <>
       <Toaster />
       <Sonner />
+      <ExitIntentPopup discountPercent={50} />
+      <OnboardingChecklist />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
