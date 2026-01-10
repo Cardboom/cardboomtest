@@ -20,6 +20,8 @@ interface MakeOfferDialogProps {
   listingId: string;
   listingPrice: number;
   sellerName: string;
+  sellerId?: string;
+  onOfferSent?: () => void;
 }
 
 export const MakeOfferDialog = ({
@@ -28,6 +30,8 @@ export const MakeOfferDialog = ({
   listingId,
   listingPrice,
   sellerName,
+  sellerId,
+  onOfferSent,
 }: MakeOfferDialogProps) => {
   const [offerAmount, setOfferAmount] = useState('');
   const [message, setMessage] = useState('');
@@ -55,14 +59,44 @@ export const MakeOfferDialog = ({
     setIsLoading(true);
 
     try {
-      // In production, create the offer in the database
+      // Get seller ID from listing if not provided
+      let actualSellerId = sellerId;
+      if (!actualSellerId) {
+        const { data: listing } = await supabase
+          .from('listings')
+          .select('seller_id')
+          .eq('id', listingId)
+          .maybeSingle();
+        actualSellerId = listing?.seller_id;
+      }
+
+      if (!actualSellerId) {
+        throw new Error('Could not find seller');
+      }
+
+      // Insert offer into database
+      const { error } = await supabase
+        .from('offers')
+        .insert({
+          listing_id: listingId,
+          buyer_id: session.user.id,
+          seller_id: actualSellerId,
+          amount: amount,
+          message: message || null,
+          status: 'pending',
+          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+        });
+
+      if (error) throw error;
+
       toast.success(`Offer of ${formatPrice(amount)} sent to ${sellerName}`);
       setOfferAmount('');
       setMessage('');
       onOpenChange(false);
-    } catch (error) {
+      onOfferSent?.();
+    } catch (error: any) {
       console.error('Error making offer:', error);
-      toast.error('Failed to submit offer');
+      toast.error(error.message || 'Failed to submit offer');
     } finally {
       setIsLoading(false);
     }
