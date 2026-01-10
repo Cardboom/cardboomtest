@@ -191,7 +191,7 @@ What would you like to do?`,
           </CardTitle>
           <Badge variant="outline" className="gap-1">
             <Sparkles className="w-3 h-3" />
-            GPT-4
+            GPT-4.1
           </Badge>
         </div>
       </CardHeader>

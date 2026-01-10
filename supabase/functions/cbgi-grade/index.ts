@@ -188,7 +188,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1',
         messages: [
           { role: 'system', content: CBGI_SYSTEM_PROMPT },
           { 
@@ -346,7 +346,7 @@ Return ONLY valid JSON:
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: 'gpt-4.1',
             messages: [
               { role: 'system', content: 'You are a TCG card pricing expert with knowledge of Pokemon, Magic, Yu-Gi-Oh, One Piece, and sports cards markets. Provide realistic USD estimates.' },
               { role: 'user', content: pricePrompt }
