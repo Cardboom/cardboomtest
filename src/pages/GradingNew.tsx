@@ -37,7 +37,8 @@ import {
   Clock,
   ImageIcon,
   Package,
-  Zap
+  Zap,
+  Save
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -129,6 +130,7 @@ export default function GradingNew() {
   const [cardAnalysis, setCardAnalysis] = useState<CardAnalysis | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewedCardData, setReviewedCardData] = useState<ReviewedCardData | null>(null);
+  const [saveBatchCredits, setSaveBatchCredits] = useState(false); // Save unused batch credits for future use
   
   // Cropping state
   const [showCropper, setShowCropper] = useState(false);
@@ -786,6 +788,29 @@ export default function GradingNew() {
                         <p className="text-xs text-amber-600 dark:text-amber-400">
                           <strong>Note:</strong> Batch orders with discount do not count toward Boom Challenges.
                         </p>
+                      </div>
+                      
+                      {/* Save Batch Credits Toggle */}
+                      <div 
+                        className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border-2 transition-all cursor-pointer",
+                          saveBatchCredits ? "border-primary bg-primary/5" : "border-border bg-muted/30"
+                        )} 
+                        onClick={() => setSaveBatchCredits(!saveBatchCredits)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "p-2 rounded-lg",
+                            saveBatchCredits ? "bg-primary text-primary-foreground" : "bg-muted"
+                          )}>
+                            <Save className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">Save Extra Credits to Vault</p>
+                            <p className="text-xs text-muted-foreground">Use for future gradings (valid 1 year)</p>
+                          </div>
+                        </div>
+                        <Switch checked={saveBatchCredits} onCheckedChange={setSaveBatchCredits} />
                       </div>
                     </div>
                   )}
