@@ -11,6 +11,7 @@ import { ProfileBadges } from './ProfileBadges';
 import { ProfileBackgroundSelector } from './ProfileBackgroundSelector';
 import { ProfileGuruSelector } from './ProfileGuruSelector';
 import { ProfilePrivacySettings } from './ProfilePrivacySettings';
+import { ProfileSecuritySettings } from './ProfileSecuritySettings';
 import { useAvatarUpload } from '@/hooks/useAvatarUpload';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -332,6 +333,7 @@ export const ProfileHeader = ({
                         showPortfolioValue={profile.show_portfolio_value ?? false}
                         onUpdate={onUpdate}
                       />
+                      <ProfileSecuritySettings userId={profile.id} />
                       {!profile.is_id_verified && (
                         <Button 
                           size="sm" 
