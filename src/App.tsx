@@ -101,9 +101,9 @@ const AppContent = () => {
     <>
       <Toaster />
       <Sonner />
-      <ExitIntentPopup discountPercent={50} />
-      <OnboardingChecklist />
       <BrowserRouter>
+        <ExitIntentPopup discountPercent={50} />
+        <OnboardingChecklist />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
