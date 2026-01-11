@@ -4628,6 +4628,67 @@ export type Database = {
           },
         ]
       }
+      login_notifications: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          id: string
+          ip_address: string | null
+          is_new_device: boolean | null
+          location: string | null
+          notification_sent: boolean | null
+          notification_sent_at: string | null
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_new_device?: boolean | null
+          location?: string | null
+          notification_sent?: boolean | null
+          notification_sent_at?: string | null
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          id?: string
+          ip_address?: string | null
+          is_new_device?: boolean | null
+          location?: string | null
+          notification_sent?: boolean | null
+          notification_sent_at?: string | null
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_notifications_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "user_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "login_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "login_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       market_controls: {
         Row: {
           activated_at: string | null
@@ -5979,6 +6040,8 @@ export type Database = {
           level: number | null
           location: string | null
           national_id: string | null
+          notify_new_device: boolean | null
+          notify_new_login: boolean | null
           onboarding_completed: boolean | null
           onboarding_step: number | null
           paused_at: string | null
@@ -5992,8 +6055,11 @@ export type Database = {
           profile_background: string | null
           profile_color_primary: string | null
           profile_color_secondary: string | null
+          referral_bonus_amount: number | null
+          referral_bonus_claimed: boolean | null
           referral_code: string | null
           referred_by: string | null
+          referred_by_code: string | null
           remember_me_expires_at: string | null
           remember_me_token: string | null
           reputation_score: number | null
@@ -6055,6 +6121,8 @@ export type Database = {
           level?: number | null
           location?: string | null
           national_id?: string | null
+          notify_new_device?: boolean | null
+          notify_new_login?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           paused_at?: string | null
@@ -6068,8 +6136,11 @@ export type Database = {
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
+          referral_bonus_amount?: number | null
+          referral_bonus_claimed?: boolean | null
           referral_code?: string | null
           referred_by?: string | null
+          referred_by_code?: string | null
           remember_me_expires_at?: string | null
           remember_me_token?: string | null
           reputation_score?: number | null
@@ -6131,6 +6202,8 @@ export type Database = {
           level?: number | null
           location?: string | null
           national_id?: string | null
+          notify_new_device?: boolean | null
+          notify_new_login?: boolean | null
           onboarding_completed?: boolean | null
           onboarding_step?: number | null
           paused_at?: string | null
@@ -6144,8 +6217,11 @@ export type Database = {
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
+          referral_bonus_amount?: number | null
+          referral_bonus_claimed?: boolean | null
           referral_code?: string | null
           referred_by?: string | null
+          referred_by_code?: string | null
           remember_me_expires_at?: string | null
           remember_me_token?: string | null
           reputation_score?: number | null
@@ -8348,6 +8424,66 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          created_at: string
+          device_info: Json | null
+          expires_at: string
+          id: string
+          ip_address: string | null
+          is_current: boolean | null
+          last_active_at: string | null
+          location: string | null
+          revoked_at: string | null
+          session_token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_info?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          is_current?: boolean | null
+          last_active_at?: string | null
+          location?: string | null
+          revoked_at?: string | null
+          session_token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_info?: Json | null
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          is_current?: boolean | null
+          last_active_at?: string | null
+          location?: string | null
+          revoked_at?: string | null
+          session_token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_subscriptions: {
         Row: {
