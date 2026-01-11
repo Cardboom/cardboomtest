@@ -14,6 +14,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlatformStats, formatStatValue } from '@/hooks/usePlatformStats';
+import { trackSignUpEvent } from '@/lib/tracking';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
@@ -285,6 +286,8 @@ const Auth = () => {
         toast.error(error.message);
       }
     } else {
+      // Track signup event for retargeting pixels
+      trackSignUpEvent('email');
       toast.success('Account created successfully! Welcome to Cardboom!');
     }
     setLoading(false);
