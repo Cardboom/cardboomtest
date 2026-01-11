@@ -5979,17 +5979,23 @@ export type Database = {
           level: number | null
           location: string | null
           national_id: string | null
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
           paused_at: string | null
           paused_until: string | null
           phone: string | null
           phone_verified: boolean | null
           phone_verified_at: string | null
+          preferred_categories: string[] | null
+          preferred_games: string[] | null
           premium_trial_expires_at: string | null
           profile_background: string | null
           profile_color_primary: string | null
           profile_color_secondary: string | null
           referral_code: string | null
           referred_by: string | null
+          remember_me_expires_at: string | null
+          remember_me_token: string | null
           reputation_score: number | null
           reputation_tier: string | null
           risk_flags: Json | null
@@ -6004,6 +6010,9 @@ export type Database = {
           total_sales_value: number | null
           trust_rating: number | null
           trust_review_count: number | null
+          two_factor_enabled: boolean | null
+          two_factor_phone: string | null
+          two_factor_verified_at: string | null
           updated_at: string
           verified_seller_at: string | null
           wire_transfer_code: string | null
@@ -6046,17 +6055,23 @@ export type Database = {
           level?: number | null
           location?: string | null
           national_id?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           paused_at?: string | null
           paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           phone_verified_at?: string | null
+          preferred_categories?: string[] | null
+          preferred_games?: string[] | null
           premium_trial_expires_at?: string | null
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          remember_me_expires_at?: string | null
+          remember_me_token?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
           risk_flags?: Json | null
@@ -6071,6 +6086,9 @@ export type Database = {
           total_sales_value?: number | null
           trust_rating?: number | null
           trust_review_count?: number | null
+          two_factor_enabled?: boolean | null
+          two_factor_phone?: string | null
+          two_factor_verified_at?: string | null
           updated_at?: string
           verified_seller_at?: string | null
           wire_transfer_code?: string | null
@@ -6113,17 +6131,23 @@ export type Database = {
           level?: number | null
           location?: string | null
           national_id?: string | null
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           paused_at?: string | null
           paused_until?: string | null
           phone?: string | null
           phone_verified?: boolean | null
           phone_verified_at?: string | null
+          preferred_categories?: string[] | null
+          preferred_games?: string[] | null
           premium_trial_expires_at?: string | null
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          remember_me_expires_at?: string | null
+          remember_me_token?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
           risk_flags?: Json | null
@@ -6138,6 +6162,9 @@ export type Database = {
           total_sales_value?: number | null
           trust_rating?: number | null
           trust_review_count?: number | null
+          two_factor_enabled?: boolean | null
+          two_factor_phone?: string | null
+          two_factor_verified_at?: string | null
           updated_at?: string
           verified_seller_at?: string | null
           wire_transfer_code?: string | null
@@ -7974,6 +8001,54 @@ export type Database = {
           },
         ]
       }
+      two_factor_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          type: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone: string
+          type?: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          type?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "two_factor_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "two_factor_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -9161,6 +9236,7 @@ export type Database = {
         | { Args: { p_bounty_id: string }; Returns: Json }
         | { Args: { p_bounty_id: string; p_user_id?: string }; Returns: Json }
       claim_gift_card: { Args: { gift_code: string }; Returns: Json }
+      cleanup_expired_2fa_codes: { Args: never; Returns: undefined }
       cleanup_old_health_reports: { Args: never; Returns: undefined }
       complete_sale_transfer: {
         Args: {
