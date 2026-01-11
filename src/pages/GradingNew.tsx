@@ -69,8 +69,27 @@ type Step = 'photos' | 'options' | 'review' | 'payment' | 'success';
 type DeliveryOption = 'shipping' | 'vault';
 
 const PROTECTION_BUNDLE_PRICE = 10; // Hologram seal + sleeve + CBGI tag
-const BULK_DISCOUNT_THRESHOLD = 10;
-const BULK_DISCOUNT_PERCENT = 25;
+
+// Batch discount tiers - note: batch discounted orders do NOT count toward Boom Challenges
+const BATCH_DISCOUNT_TIERS = [
+  { minQuantity: 3, discount: 10, label: '3+ cards' },
+  { minQuantity: 5, discount: 15, label: '5+ cards' },
+  { minQuantity: 10, discount: 25, label: '10+ cards' },
+  { minQuantity: 25, discount: 35, label: '25+ cards' },
+];
+
+const getBatchDiscount = (qty: number): { discount: number; label: string; isBatch: boolean } => {
+  for (let i = BATCH_DISCOUNT_TIERS.length - 1; i >= 0; i--) {
+    if (qty >= BATCH_DISCOUNT_TIERS[i].minQuantity) {
+      return { 
+        discount: BATCH_DISCOUNT_TIERS[i].discount, 
+        label: BATCH_DISCOUNT_TIERS[i].label,
+        isBatch: true 
+      };
+    }
+  }
+  return { discount: 0, label: '', isBatch: false };
+};
 
 const containerVariants = {
   hidden: { opacity: 0, x: 20 },
@@ -165,19 +184,24 @@ export default function GradingNew() {
   const currentStepIndex = steps.findIndex(s => s.key === step);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
-  // Calculate pricing based on speed tier
+  // Calculate pricing based on speed tier and batch discounts
   const pricing = useMemo(() => {
     const selectedSpeed = SPEED_TIERS.find(t => t.id === speedTier) || SPEED_TIERS[0];
     const basePerCard = selectedSpeed.price + (includeProtection ? PROTECTION_BUNDLE_PRICE : 0);
     const subtotal = basePerCard * quantity;
-    const hasBulkDiscount = quantity >= BULK_DISCOUNT_THRESHOLD;
-    const discountAmount = hasBulkDiscount ? subtotal * (BULK_DISCOUNT_PERCENT / 100) : 0;
+    
+    // Get batch discount
+    const batchInfo = getBatchDiscount(quantity);
+    const discountAmount = batchInfo.isBatch ? subtotal * (batchInfo.discount / 100) : 0;
     const total = subtotal - discountAmount;
     
     return { 
       basePerCard, 
       subtotal, 
-      hasBulkDiscount, 
+      hasBulkDiscount: batchInfo.isBatch,
+      batchDiscount: batchInfo.discount,
+      batchLabel: batchInfo.label,
+      isBatchOrder: batchInfo.isBatch,
       discountAmount, 
       total, 
       savings: discountAmount,
@@ -273,7 +297,23 @@ export default function GradingNew() {
           setIsSubmitting(false);
           return;
         }
-        order = await createOrder(category, frontImage, backImage, speedTier, autoListEnabled, autoListPrice);
+        
+        // Pass batch info to createOrder - batch orders don't count toward Boom Challenges
+        const batchInfo = pricing.isBatchOrder ? {
+          isBatchDiscounted: true,
+          batchSize: quantity,
+          batchDiscountPercent: pricing.batchDiscount,
+        } : undefined;
+        
+        order = await createOrder(
+          category, 
+          frontImage, 
+          backImage, 
+          speedTier, 
+          autoListEnabled, 
+          autoListPrice,
+          batchInfo
+        );
       }
       
       if (!order) { setIsSubmitting(false); return; }
@@ -730,10 +770,45 @@ export default function GradingNew() {
                     </div>
                   </div>
                   
-                  {quantity >= BULK_DISCOUNT_THRESHOLD && (
-                    <div className="flex items-center gap-2 text-sm text-primary font-medium bg-primary/10 rounded-lg p-2">
-                      <Percent className="w-4 h-4" />
-                      {BULK_DISCOUNT_PERCENT}% bulk discount!
+                  {/* Batch Discount Display */}
+                  {pricing.hasBulkDiscount && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-primary font-medium bg-primary/10 rounded-lg p-3">
+                        <Percent className="w-4 h-4" />
+                        <div className="flex-1">
+                          <span className="font-bold">{pricing.batchDiscount}% Batch Discount!</span>
+                          <span className="text-xs text-muted-foreground ml-2">({pricing.batchLabel})</span>
+                        </div>
+                        <span className="font-bold">-${pricing.discountAmount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                        <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <p className="text-xs text-amber-600 dark:text-amber-400">
+                          <strong>Note:</strong> Batch orders with discount do not count toward Boom Challenges.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Batch Discount Tiers Preview */}
+                  {!pricing.hasBulkDiscount && quantity >= 2 && (
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                      <p className="text-xs text-muted-foreground mb-2">Add more cards for batch discounts:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {BATCH_DISCOUNT_TIERS.map((tier) => (
+                          <button
+                            key={tier.minQuantity}
+                            onClick={() => setQuantity(tier.minQuantity)}
+                            className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                              quantity >= tier.minQuantity 
+                                ? 'bg-primary text-primary-foreground border-primary' 
+                                : 'bg-background border-border hover:border-primary/50'
+                            }`}
+                          >
+                            {tier.minQuantity}+ = {tier.discount}% off
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
 
