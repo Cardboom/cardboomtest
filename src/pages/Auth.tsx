@@ -920,12 +920,28 @@ const Auth = () => {
                           />
                           {errors.password && <p className="text-destructive text-sm">{errors.password}</p>}
                         </div>
+                        
+                        {/* Remember Me Checkbox */}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="remember-me"
+                            checked={rememberMe}
+                            onCheckedChange={(checked) => setRememberMe(checked === true)}
+                          />
+                          <label
+                            htmlFor="remember-me"
+                            className="text-sm text-muted-foreground cursor-pointer select-none"
+                          >
+                            Remember me on this device
+                          </label>
+                        </div>
+                        
                         <Button
                           type="submit"
                           disabled={loading}
                           className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-lg rounded-xl shadow-lg hover:shadow-glow transition-all"
                         >
-                          {loading ? `${t.auth.signIn}...` : t.auth.signIn}
+                          {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{t.auth.signIn}...</> : t.auth.signIn}
                         </Button>
                       </form>
                     ) : (
