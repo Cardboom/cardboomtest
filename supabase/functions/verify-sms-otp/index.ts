@@ -25,12 +25,11 @@ serve(async (req) => {
       throw new Error("Missing required fields: phone, otp, and type");
     }
 
-    // Format phone number to E.164 format
+    // Format phone number to E.164 format (international support)
     let formattedPhone = phone.trim();
-    if (formattedPhone.startsWith("0")) {
-      formattedPhone = "+90" + formattedPhone.slice(1);
-    } else if (!formattedPhone.startsWith("+")) {
-      formattedPhone = "+90" + formattedPhone;
+    if (!formattedPhone.startsWith("+")) {
+      // If no country code prefix, add + (assumes full number provided)
+      formattedPhone = "+" + formattedPhone;
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
