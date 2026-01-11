@@ -26,47 +26,74 @@ export function useRecentlyViewed() {
         // First try localStorage for quick load
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored && isMounted) {
-          const parsed = JSON.parse(stored);
-          setItems(parsed);
+          try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+              setItems(parsed);
+            }
+          } catch {
+            // Invalid JSON, ignore
+          }
         }
 
         // Then try to get from shadow_wishlists for logged-in users
         const { data: { user } } = await supabase.auth.getUser();
         if (user && isMounted) {
-          const { data } = await supabase
+          // Fetch shadow wishlists first
+          const { data: wishlists, error: wishlistError } = await supabase
             .from('shadow_wishlists')
-            .select(`
-              market_item_id,
-              last_viewed_at,
-              market_items:market_item_id (
-                id,
-                name,
-                image_url,
-                category,
-                current_price
-              )
-            `)
+            .select('market_item_id, last_viewed_at')
             .eq('user_id', user.id)
             .order('last_viewed_at', { ascending: false })
             .limit(MAX_ITEMS);
 
-          if (data && isMounted) {
-            const dbItems: RecentlyViewedItem[] = data
-              .filter((d: any) => d.market_items)
-              .map((d: any) => ({
-                id: d.market_items.id,
-                name: d.market_items.name,
-                image_url: d.market_items.image_url,
-                category: d.market_items.category,
-                current_price: d.market_items.current_price,
-                viewedAt: d.last_viewed_at,
-              }));
-            
-            if (dbItems.length > 0) {
-              setItems(dbItems);
-              // Sync to localStorage
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(dbItems));
-            }
+          if (wishlistError || !wishlists || wishlists.length === 0) {
+            if (isMounted) setIsLoading(false);
+            return;
+          }
+
+          // Get market item IDs
+          const itemIds = wishlists.map(w => w.market_item_id).filter(Boolean);
+          
+          if (itemIds.length === 0) {
+            if (isMounted) setIsLoading(false);
+            return;
+          }
+
+          // Fetch market items separately
+          const { data: marketItems, error: marketError } = await supabase
+            .from('market_items')
+            .select('id, name, image_url, category, current_price')
+            .in('id', itemIds);
+
+          if (marketError || !marketItems) {
+            if (isMounted) setIsLoading(false);
+            return;
+          }
+
+          // Create a map for quick lookup
+          const itemMap = new Map(marketItems.map(item => [item.id, item]));
+
+          // Combine data
+          const dbItems: RecentlyViewedItem[] = wishlists
+            .map(w => {
+              const item = itemMap.get(w.market_item_id);
+              if (!item) return null;
+              return {
+                id: item.id,
+                name: item.name,
+                image_url: item.image_url,
+                category: item.category,
+                current_price: item.current_price || 0,
+                viewedAt: w.last_viewed_at,
+              };
+            })
+            .filter((item): item is RecentlyViewedItem => item !== null);
+          
+          if (dbItems.length > 0 && isMounted) {
+            setItems(dbItems);
+            // Sync to localStorage
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(dbItems));
           }
         }
       } catch (error) {
