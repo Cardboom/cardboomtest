@@ -3838,7 +3838,7 @@ export type Database = {
           batch_size: number | null
           card_name: string | null
           card_number: string | null
-          category: string
+          category: string | null
           cbgi_confidence: string | null
           cbgi_json: Json | null
           cbgi_risk_flags: string[] | null
@@ -3913,7 +3913,7 @@ export type Database = {
           batch_size?: number | null
           card_name?: string | null
           card_number?: string | null
-          category: string
+          category?: string | null
           cbgi_confidence?: string | null
           cbgi_json?: Json | null
           cbgi_risk_flags?: string[] | null
@@ -3988,7 +3988,7 @@ export type Database = {
           batch_size?: number | null
           card_name?: string | null
           card_number?: string | null
-          category?: string
+          category?: string | null
           cbgi_confidence?: string | null
           cbgi_json?: Json | null
           cbgi_risk_flags?: string[] | null

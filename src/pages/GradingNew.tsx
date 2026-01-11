@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { useGrading, GRADING_CATEGORIES } from '@/hooks/useGrading';
+import { useGrading } from '@/hooks/useGrading';
 import { useAdminRole } from '@/hooks/useAdminRole';
 import { Header } from '@/components/Header';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -110,7 +110,7 @@ export default function GradingNew() {
   const [step, setStep] = useState<Step>('photos');
   const [gradeMode, setGradeMode] = useState<'new' | 'listing'>('new');
   const [selectedListing, setSelectedListing] = useState<SelectedListing | null>(null);
-  const [category, setCategory] = useState<string>('pokemon'); // Default category
+  // Category removed - grading works for all TCG types
   const [frontImage, setFrontImage] = useState<File | null>(null);
   const [backImage, setBackImage] = useState<File | null>(null);
   const [frontPreview, setFrontPreview] = useState<string>('');
@@ -154,7 +154,6 @@ export default function GradingNew() {
         .then(({ data, error }) => {
           if (!error && data) {
             setSelectedListing(data);
-            setCategory(data.category);
             // Pre-populate images if available
             if (data.front_image_url || data.image_url) {
               setFrontPreview(data.front_image_url || data.image_url || '');
@@ -308,7 +307,6 @@ export default function GradingNew() {
         } : undefined;
         
         order = await createOrder(
-          category, 
           frontImage, 
           backImage, 
           speedTier, 
@@ -328,7 +326,6 @@ export default function GradingNew() {
   const handleListingSelect = (listing: SelectedListing | null) => {
     setSelectedListing(listing);
     if (listing) {
-      setCategory(listing.category);
       // Pre-populate existing images
       if (listing.front_image_url || listing.image_url) {
         setFrontPreview(listing.front_image_url || listing.image_url || '');
@@ -362,11 +359,6 @@ export default function GradingNew() {
   };
 
   const hasInsufficientBalance = walletBalance !== null && walletBalance < pricing.total;
-
-  const getCategoryIcon = () => {
-    const cat = GRADING_CATEGORIES.find(c => c.id === category);
-    return cat?.icon || '🎴';
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -532,14 +524,6 @@ export default function GradingNew() {
                       onScanComplete={(scanAnalysis, file, previewUrl) => {
                         setCardAnalysis(scanAnalysis);
                         
-                        // Auto-detect category
-                        if (scanAnalysis.category) {
-                          const matchedCategory = GRADING_CATEGORIES.find(
-                            c => c.id.toLowerCase() === scanAnalysis.category?.toLowerCase()
-                          );
-                          if (matchedCategory) setCategory(matchedCategory.id);
-                        }
-                        
                         // Open cropper for front image
                         setCropImageSrc(previewUrl);
                         setCropSide('front');
@@ -569,7 +553,7 @@ export default function GradingNew() {
                             {cardAnalysis.cardNameEnglish || cardAnalysis.cardName || 'Card Detected'}
                           </p>
                           <p className="text-xs text-muted-foreground truncate">
-                            {cardAnalysis.setName || getCategoryIcon() + ' ' + category}
+                            {cardAnalysis.setName || 'Trading Card'}
                           </p>
                         </div>
                         <Badge variant="secondary" className="text-xs flex-shrink-0">
@@ -1132,10 +1116,6 @@ export default function GradingNew() {
         imagePreview={frontPreview}
         onConfirm={(reviewedData) => {
           setReviewedCardData(reviewedData);
-          const matchedCategory = GRADING_CATEGORIES.find(
-            c => c.id.toLowerCase() === reviewedData.category?.toLowerCase()
-          );
-          if (matchedCategory) setCategory(matchedCategory.id);
           if (cardAnalysis) {
             setCardAnalysis({
               ...cardAnalysis,

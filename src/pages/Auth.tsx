@@ -284,22 +284,29 @@ const Auth = () => {
         return;
       }
 
-      // Phone should already be in E.164 format from PhoneInputWithCountry
-      let formattedPhone = loginPhone;
-      if (!formattedPhone.startsWith('+')) {
-        formattedPhone = '+' + formattedPhone;
-      }
-
-      // Sign in with phone using Supabase
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: formattedPhone,
-        options: { shouldCreateUser: true }
-      });
-
-      if (error) {
-        toast.error(error.message);
+      // If we got a verification link, use it to complete login
+      if (verifyResponse.data?.verificationLink) {
+        // Extract the token from the magic link and verify the OTP token
+        const linkUrl = new URL(verifyResponse.data.verificationLink);
+        const token = linkUrl.searchParams.get('token');
+        const type = linkUrl.searchParams.get('type');
+        
+        if (token && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: type as 'magiclink',
+          });
+          
+          if (error) {
+            toast.error('Login failed. Please try again.');
+          } else {
+            toast.success('Welcome to CardBoom!');
+          }
+        } else {
+          toast.error('Login failed. Please try again.');
+        }
       } else {
-        toast.success('Welcome to CardBoom!');
+        toast.error('Login failed. No account found with this phone.');
       }
     } catch (err) {
       toast.error('Verification failed');

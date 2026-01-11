@@ -28,13 +28,14 @@ serve(async (req) => {
     // Format phone number to E.164 format (international support)
     let formattedPhone = phone.trim();
     if (!formattedPhone.startsWith("+")) {
-      // If no country code prefix, add + (assumes full number provided)
       formattedPhone = "+" + formattedPhone;
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
 
     // Get the OTP record
     const { data: otpRecord, error: fetchError } = await supabase
@@ -51,7 +52,6 @@ serve(async (req) => {
 
     // Check if expired
     if (new Date(otpRecord.expires_at) < new Date()) {
-      // Delete expired OTP
       await supabase.from("sms_otps").delete().eq("id", otpRecord.id);
       throw new Error("Verification code has expired. Please request a new one.");
     }
@@ -64,7 +64,6 @@ serve(async (req) => {
 
     // Verify OTP
     if (otpRecord.otp_code !== otp) {
-      // Increment attempts
       await supabase
         .from("sms_otps")
         .update({ attempts: otpRecord.attempts + 1 })
@@ -80,14 +79,72 @@ serve(async (req) => {
       .update({ verified: true, verified_at: new Date().toISOString() })
       .eq("id", otpRecord.id);
 
-    // If this is a registration verification, update user's phone_verified status
+    // Handle different verification types
     if (type === "verification" && otpRecord.user_id) {
+      // Registration verification - update phone_verified status
       await supabase
         .from("profiles")
         .update({ phone_verified: true, phone_verified_at: new Date().toISOString() })
         .eq("id", otpRecord.user_id);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Phone number verified successfully",
+          userId: otpRecord.user_id,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
+    if (type === "login_otp") {
+      // Login OTP - find user by phone and generate magic link
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .eq("phone", formattedPhone)
+        .single();
+
+      if (profileError || !profile || !profile.email) {
+        throw new Error("No account found with this phone number. Please sign up first.");
+      }
+
+      // Generate a magic link for the user's email (instant login)
+      const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email: profile.email,
+        options: {
+          redirectTo: `${req.headers.get('origin') || 'https://cardboom.app'}/`,
+        }
+      });
+
+      if (linkError || !linkData) {
+        console.error("Error generating magic link:", linkError);
+        throw new Error("Failed to generate login link. Please try again.");
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "Phone verified successfully",
+          userId: profile.id,
+          // Return the hashed token for client-side session verification
+          accessToken: linkData.properties?.hashed_token,
+          email: profile.email,
+          // Include the full link for direct verification
+          verificationLink: linkData.properties?.action_link,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Default response for password_reset and other types
     return new Response(
       JSON.stringify({
         success: true,
