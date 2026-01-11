@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   Shield, BadgeCheck, Lock, Heart, Bell, TrendingUp, TrendingDown,
-  Clock, Zap, ExternalLink
+  Clock, Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -119,30 +119,22 @@ export const CardHeroSection = ({
         </div>
       </div>
 
-      {/* CTA Buttons */}
+      {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button 
-          onClick={onBuyNow} 
-          size="lg" 
-          className="flex-1 h-12 sm:h-14 text-base sm:text-lg font-semibold gap-2"
-        >
-          Buy Now
-          <ExternalLink className="w-4 h-4" />
-        </Button>
         <Button 
           onClick={onToggleWatchlist}
           variant={isWatching ? "secondary" : "outline"}
           size="lg"
-          className="h-12 sm:h-14 gap-2"
+          className="flex-1 h-12 sm:h-14 gap-2"
           disabled={isPending}
         >
           <Heart className={cn("w-5 h-5", isWatching && "fill-current text-loss")} />
-          <span className="hidden sm:inline">{isWatching ? 'Watching' : 'Add to Watchlist'}</span>
-          <span className="sm:hidden">{isWatching ? 'Watching' : 'Watchlist'}</span>
+          <span>{isWatching ? 'Watching' : 'Add to Watchlist'}</span>
         </Button>
         <Button variant="outline" size="lg" className="h-12 sm:h-14 gap-2">
           <Bell className="w-5 h-5" />
           <span className="hidden sm:inline">Price Alert</span>
+          <span className="sm:hidden">Alert</span>
         </Button>
       </div>
 
