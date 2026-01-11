@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { MultiCardReviewTabs } from './MultiCardReviewTabs';
+import { AuthenticityBadge } from '@/components/VerifiedPurchaseBadge';
 
 interface DetectedCard {
   id: string;
@@ -678,10 +679,8 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
                         <>
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-sm truncate">{card.title || 'Unknown Card'}</span>
-                            {card.confidence > 0.7 && (
-                              <Badge variant="outline" className="text-xs bg-gain/10 text-gain border-gain/30">
-                                {Math.round(card.confidence * 100)}% match
-                              </Badge>
+                            {card.confidence > 0 && (
+                              <AuthenticityBadge confidence={card.confidence} />
                             )}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">

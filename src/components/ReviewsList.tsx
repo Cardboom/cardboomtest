@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReviews } from '@/hooks/useReviews';
 import { formatDistanceToNow } from 'date-fns';
+import { VerifiedPurchaseBadge } from '@/components/VerifiedPurchaseBadge';
 
 interface ReviewsListProps {
   sellerId: string;
@@ -70,6 +71,8 @@ export const ReviewsList = ({ sellerId }: ReviewsListProps) => {
                         />
                       ))}
                     </div>
+                    {/* Show Verified Purchase badge if review has order_id */}
+                    {review.order_id && <VerifiedPurchaseBadge size="sm" />}
                   </div>
                   <span className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(review.created_at), {
