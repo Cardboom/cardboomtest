@@ -73,12 +73,12 @@ export interface GradingOrder {
   listing_created_id: string | null;
 }
 
-export const GRADING_PRICE_USD = 10; // Base price (standard tier)
+export const GRADING_PRICE_USD = 15; // Base price (standard tier)
 
 export const GRADING_SPEED_TIERS = {
-  standard: { price: 10, daysMin: 4, daysMax: 7 },
-  express: { price: 15, daysMin: 3, daysMax: 5 },
-  priority: { price: 25, daysMin: 1, daysMax: 2 },
+  standard: { price: 15, daysMin: 20, daysMax: 25 },
+  express: { price: 25, daysMin: 7, daysMax: 10 },
+  priority: { price: 50, daysMin: 2, daysMax: 3 },
 };
 
 export const GRADING_CATEGORIES = [
