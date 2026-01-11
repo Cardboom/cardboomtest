@@ -131,7 +131,6 @@ export function useGrading() {
   }, [fetchOrders]);
 
   const createOrder = async (
-    category: string,
     frontImageFile: File,
     backImageFile: File,
     speedTier: 'standard' | 'express' | 'priority' = 'standard',
@@ -183,7 +182,7 @@ export function useGrading() {
           id: orderId,
           user_id: user.id,
           idempotency_key: idempotencyKey,
-          category,
+          category: 'tcg', // Default category for all grading
           status: 'pending_payment',
           front_image_url: frontUrl,
           back_image_url: backUrl,
