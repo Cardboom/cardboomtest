@@ -3834,6 +3834,8 @@ export type Database = {
           auto_list_enabled: boolean | null
           auto_list_price: number | null
           back_image_url: string | null
+          batch_discount_percent: number | null
+          batch_size: number | null
           card_name: string | null
           card_number: string | null
           category: string
@@ -3866,6 +3868,7 @@ export type Database = {
           id: string
           idempotency_key: string
           identified_confidence: number | null
+          is_batch_discounted: boolean | null
           language: string | null
           listing_created_id: string | null
           market_item_id: string | null
@@ -3906,6 +3909,8 @@ export type Database = {
           auto_list_enabled?: boolean | null
           auto_list_price?: number | null
           back_image_url?: string | null
+          batch_discount_percent?: number | null
+          batch_size?: number | null
           card_name?: string | null
           card_number?: string | null
           category: string
@@ -3938,6 +3943,7 @@ export type Database = {
           id?: string
           idempotency_key: string
           identified_confidence?: number | null
+          is_batch_discounted?: boolean | null
           language?: string | null
           listing_created_id?: string | null
           market_item_id?: string | null
@@ -3978,6 +3984,8 @@ export type Database = {
           auto_list_enabled?: boolean | null
           auto_list_price?: number | null
           back_image_url?: string | null
+          batch_discount_percent?: number | null
+          batch_size?: number | null
           card_name?: string | null
           card_number?: string | null
           category?: string
@@ -4010,6 +4018,7 @@ export type Database = {
           id?: string
           idempotency_key?: string
           identified_confidence?: number | null
+          is_batch_discounted?: boolean | null
           language?: string | null
           listing_created_id?: string | null
           market_item_id?: string | null

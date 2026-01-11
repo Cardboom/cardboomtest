@@ -136,7 +136,8 @@ export function useGrading() {
     backImageFile: File,
     speedTier: 'standard' | 'express' | 'priority' = 'standard',
     autoListEnabled: boolean = false,
-    autoListPrice: number | null = null
+    autoListPrice: number | null = null,
+    batchInfo?: { isBatchDiscounted: boolean; batchSize: number; batchDiscountPercent: number }
   ): Promise<GradingOrder | null> => {
     const tierConfig = GRADING_SPEED_TIERS[speedTier];
     try {
@@ -175,7 +176,7 @@ export function useGrading() {
         .from('grading-images')
         .getPublicUrl(backPath);
 
-      // Create order with speed tier and auto-list settings
+      // Create order with speed tier, auto-list settings, and batch info
       const { data: order, error: createError } = await supabase
         .from('grading_orders')
         .insert({
@@ -192,6 +193,10 @@ export function useGrading() {
           estimated_days_max: tierConfig.daysMax,
           auto_list_enabled: autoListEnabled,
           auto_list_price: autoListPrice,
+          // Batch discount fields - batch orders don't count toward Boom Challenges
+          is_batch_discounted: batchInfo?.isBatchDiscounted || false,
+          batch_size: batchInfo?.batchSize || 1,
+          batch_discount_percent: batchInfo?.batchDiscountPercent || 0,
         })
         .select()
         .single();
