@@ -156,6 +156,7 @@ export const PhoneInputWithCountry = ({
           onChange={(e) => handleInputChange(selectedCountry.dial + e.target.value.replace(/\D/g, ''))}
           placeholder={placeholder}
           className="h-12 flex-1 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+          maxLength={15}
         />
       </div>
       {error && <p className="text-destructive text-sm">{error}</p>}

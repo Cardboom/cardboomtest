@@ -20,8 +20,10 @@ import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
-const phoneSchema = z.string().regex(/^(\+90|0)?[5][0-9]{9}$/, 'Please enter a valid Turkish phone number');
-const nationalIdSchema = z.string().regex(/^[1-9][0-9]{10}$/, 'Please enter a valid 11-digit T.C. Kimlik No');
+// Universal phone validation - accepts international format with country code
+const phoneSchema = z.string().regex(/^\+[1-9]\d{6,14}$/, 'Please enter a valid phone number with country code');
+// National ID allows letters and numbers for international IDs (passport, tax ID, etc.)
+const nationalIdSchema = z.string().regex(/^[A-Za-z0-9]{5,20}$/, 'Please enter a valid ID (5-20 alphanumeric characters)');
 const otpSchema = z.string().length(6, 'OTP must be 6 digits');
 
 type AccountType = 'buyer' | 'seller' | 'both';
@@ -233,12 +235,10 @@ const Auth = () => {
         return;
       }
 
-      // Format phone for Supabase auth
+      // Phone should already be in E.164 format from PhoneInputWithCountry
       let formattedPhone = loginPhone;
-      if (loginPhone.startsWith('0')) {
-        formattedPhone = '+90' + loginPhone.slice(1);
-      } else if (!loginPhone.startsWith('+')) {
-        formattedPhone = '+90' + loginPhone;
+      if (!formattedPhone.startsWith('+')) {
+        formattedPhone = '+' + formattedPhone;
       }
 
       // Sign in with phone using Supabase
@@ -384,12 +384,10 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      // Format phone for lookup
+      // Phone should already be in E.164 format from PhoneInputWithCountry
       let formattedPhone = resetPhone;
-      if (resetPhone.startsWith('0')) {
-        formattedPhone = '+90' + resetPhone.slice(1);
-      } else if (!resetPhone.startsWith('+')) {
-        formattedPhone = '+90' + resetPhone;
+      if (!formattedPhone.startsWith('+')) {
+        formattedPhone = '+' + formattedPhone;
       }
 
       // Find user by phone number
