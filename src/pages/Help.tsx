@@ -83,11 +83,32 @@ const Help = () => {
     }
     
     setIsSubmitting(true);
-    // Simulate ticket submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    toast.success('Support ticket submitted! We\'ll respond within 24 hours.');
-    setTicketForm({ subject: '', message: '', email: '' });
-    setIsSubmitting(false);
+    try {
+      // Get current user if logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Submit ticket to database
+      const { error } = await supabase
+        .from('support_tickets')
+        .insert({
+          user_id: user?.id || null,
+          subject: ticketForm.subject,
+          message: ticketForm.message,
+          email: ticketForm.email,
+          status: 'open',
+          priority: 'medium',
+        });
+      
+      if (error) throw error;
+      
+      toast.success('Support ticket submitted! We\'ll respond within 24 hours.');
+      setTicketForm({ subject: '', message: '', email: '' });
+    } catch (error: any) {
+      console.error('Ticket submission error:', error);
+      toast.error('Failed to submit ticket. Please try again or email us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
