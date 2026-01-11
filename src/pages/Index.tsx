@@ -46,6 +46,7 @@ import { User } from '@supabase/supabase-js';
 import { FAQSection } from '@/components/FAQSection';
 import { SEOFeaturesSection } from '@/components/SEOFeaturesSection';
 import { TrustBadgesBar, ViralReferralLeaderboard } from '@/components/growth';
+import { RecentlyViewedSection } from '@/components/home/RecentlyViewedSection';
 
 
 const Index = () => {
@@ -421,6 +422,9 @@ const Index = () => {
             </div>
           </section>
         </ScrollReveal>
+
+        {/* Recently Viewed Section - personalized for logged in users */}
+        {user && <RecentlyViewedSection />}
 
         <ScrollReveal>
           <TrendingSection />
