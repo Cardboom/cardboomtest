@@ -842,15 +842,12 @@ const Auth = () => {
                                 <Phone className="w-4 h-4" />
                                 {t.auth.phone}
                               </Label>
-                              <Input
-                                id="login-phone"
-                                type="tel"
-                                placeholder="05XX XXX XX XX"
+                              <PhoneInputWithCountry
                                 value={loginPhone}
-                                onChange={(e) => setLoginPhone(formatPhone(e.target.value))}
-                                className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                                onChange={(fullNumber) => setLoginPhone(fullNumber)}
+                                placeholder="Phone number"
+                                error={errors.loginPhone}
                               />
-                              {errors.loginPhone && <p className="text-destructive text-sm">{errors.loginPhone}</p>}
                             </div>
                             <Button
                               type="button"
@@ -1008,16 +1005,12 @@ const Auth = () => {
                           <Phone className="w-3.5 h-3.5" />
                           {t.auth.phone}
                         </Label>
-                        <Input
-                          id="register-phone"
-                          type="tel"
-                          placeholder={t.auth.phonePlaceholder}
+                        <PhoneInputWithCountry
                           value={phone}
-                          onChange={(e) => setPhone(formatPhone(e.target.value))}
-                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                          required
+                          onChange={(fullNumber) => setPhone(fullNumber)}
+                          placeholder="Phone number"
+                          error={errors.phone}
                         />
-                        {errors.phone && <p className="text-destructive text-xs">{errors.phone}</p>}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="register-national-id" className="text-foreground font-medium flex items-center gap-2">
@@ -1029,9 +1022,9 @@ const Auth = () => {
                           type="text"
                           placeholder={t.auth.nationalIdPlaceholder}
                           value={nationalId}
-                          onChange={(e) => setNationalId(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                          onChange={(e) => setNationalId(e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 20))}
                           className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                          maxLength={11}
+                          maxLength={20}
                           required
                         />
                         {errors.nationalId && <p className="text-destructive text-xs">{errors.nationalId}</p>}
