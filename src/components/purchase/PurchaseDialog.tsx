@@ -13,12 +13,25 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Vault, Truck, ArrowLeftRight, ShoppingCart, Loader2, MapPin, Package, Wallet, Sparkles, Plus, AlertCircle } from 'lucide-react';
+import { Vault, Truck, ArrowLeftRight, ShoppingCart, Loader2, MapPin, Package, Wallet, Sparkles, Plus, AlertCircle, Home, Building2, ChevronDown } from 'lucide-react';
 import { usePurchase } from '@/hooks/usePurchase';
 import { useGeliverShipping } from '@/hooks/useGeliverShipping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+interface SavedAddress {
+  id: string;
+  label: string;
+  full_name: string;
+  phone: string;
+  address: string;
+  city: string;
+  district: string;
+  postal_code: string | null;
+  is_default: boolean;
+}
 
 interface PurchaseDialogProps {
   open: boolean;
@@ -58,6 +71,12 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
   });
   const [selectedCarrier, setSelectedCarrier] = useState<string>('');
   
+  // Saved addresses state
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | 'new'>('new');
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  
   // Wallet & Gems state
   const [walletBalance, setWalletBalance] = useState(0);
   const [gemBalance, setGemBalance] = useState(0);
@@ -81,9 +100,10 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
   
   const hasEnoughBalance = walletBalance >= totalAfterGems;
 
-  // Fetch wallet and gem balances
+  // Fetch wallet, gem balances, and saved addresses
   const fetchBalances = useCallback(async () => {
     setLoadingBalances(true);
+    setLoadingAddresses(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -109,10 +129,38 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
       if (gems) {
         setGemBalance(gems.balance || 0);
       }
+
+      // Fetch saved addresses
+      const { data: addresses } = await supabase
+        .from('user_addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false });
+      
+      if (addresses && addresses.length > 0) {
+        setSavedAddresses(addresses);
+        // Auto-select default address
+        const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
+        setSelectedAddressId(defaultAddr.id);
+        // Pre-fill shipping address from default
+        setShippingAddress({
+          name: defaultAddr.full_name,
+          phone: defaultAddr.phone,
+          address: defaultAddr.address,
+          city: defaultAddr.city,
+          district: defaultAddr.district,
+          postalCode: defaultAddr.postal_code || '',
+        });
+      } else {
+        setSelectedAddressId('new');
+        setShowNewAddressForm(true);
+      }
     } catch (error) {
       console.error('Error fetching balances:', error);
     } finally {
       setLoadingBalances(false);
+      setLoadingAddresses(false);
     }
   }, []);
 
@@ -125,11 +173,50 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
   useEffect(() => {
     if (deliveryOption === 'ship') {
       setShowShippingForm(true);
+      // Show new address form if no saved addresses
+      if (savedAddresses.length === 0) {
+        setShowNewAddressForm(true);
+      }
     } else {
       setShowShippingForm(false);
       setSelectedCarrier('');
     }
-  }, [deliveryOption]);
+  }, [deliveryOption, savedAddresses.length]);
+
+  // Handle saved address selection
+  const handleAddressSelect = (addressId: string) => {
+    setSelectedAddressId(addressId);
+    if (addressId === 'new') {
+      setShowNewAddressForm(true);
+      setShippingAddress({
+        name: '',
+        phone: '',
+        address: '',
+        city: '',
+        district: '',
+        postalCode: '',
+      });
+    } else {
+      setShowNewAddressForm(false);
+      const selected = savedAddresses.find(a => a.id === addressId);
+      if (selected) {
+        setShippingAddress({
+          name: selected.full_name,
+          phone: selected.phone,
+          address: selected.address,
+          city: selected.city,
+          district: selected.district,
+          postalCode: selected.postal_code || '',
+        });
+      }
+    }
+  };
+
+  const getLabelIcon = (label: string) => {
+    if (label === 'Home') return Home;
+    if (label === 'Work') return Building2;
+    return MapPin;
+  };
 
   // Reset gem amount when toggling off or when max changes
   useEffect(() => {
@@ -344,74 +431,138 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
             {/* Shipping Form for Turkey */}
             {showShippingForm && (
               <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/30">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <Label className="text-sm font-medium">Shipping Address (Turkey)</Label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-primary" />
+                    <Label className="text-sm font-medium">Shipping Address</Label>
+                  </div>
+                  {loadingAddresses && <Loader2 className="w-4 h-4 animate-spin" />}
                 </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2">
-                    <Label className="text-xs">Full Name</Label>
-                    <Input
-                      placeholder="Ad Soyad"
-                      value={shippingAddress.name}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, name: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-xs">Phone</Label>
-                    <Input
-                      placeholder="+90 5XX XXX XX XX"
-                      value={shippingAddress.phone}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-xs">Address</Label>
-                    <Input
-                      placeholder="Mahalle, Sokak, No"
-                      value={shippingAddress.address}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, address: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">City (İl)</Label>
-                    <Select
-                      value={shippingAddress.city}
-                      onValueChange={(v) => setShippingAddress({ ...shippingAddress, city: v })}
+
+                {/* Saved Addresses Selection */}
+                {savedAddresses.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-xs text-muted-foreground">Select an address</Label>
+                    <RadioGroup
+                      value={selectedAddressId}
+                      onValueChange={handleAddressSelect}
+                      className="space-y-2"
                     >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Şehir seçin" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {turkishCities.map(city => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      {savedAddresses.map((addr) => {
+                        const LabelIcon = getLabelIcon(addr.label);
+                        return (
+                          <label
+                            key={addr.id}
+                            className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                              selectedAddressId === addr.id 
+                                ? 'border-primary bg-primary/5' 
+                                : 'border-border hover:border-primary/50'
+                            }`}
+                          >
+                            <RadioGroupItem value={addr.id} className="mt-0.5" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <LabelIcon className="w-3.5 h-3.5 text-muted-foreground" />
+                                <span className="text-sm font-medium">{addr.label}</span>
+                                {addr.is_default && (
+                                  <Badge variant="secondary" className="text-xs px-1.5 py-0">Default</Badge>
+                                )}
+                              </div>
+                              <p className="text-sm truncate">{addr.full_name}</p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {addr.address}, {addr.district}, {addr.city}
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })}
+                      
+                      {/* New Address Option */}
+                      <label
+                        className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                          selectedAddressId === 'new' 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="new" />
+                        <Plus className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">Enter a new address</span>
+                      </label>
+                    </RadioGroup>
                   </div>
-                  <div>
-                    <Label className="text-xs">District (İlçe)</Label>
-                    <Input
-                      placeholder="İlçe"
-                      value={shippingAddress.district}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, district: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-xs">Postal Code</Label>
-                    <Input
-                      placeholder="34XXX"
-                      value={shippingAddress.postalCode}
-                      onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
+                )}
+
+                {/* New Address Form */}
+                {(showNewAddressForm || savedAddresses.length === 0) && (
+                  <Collapsible open={selectedAddressId === 'new' || savedAddresses.length === 0}>
+                    <CollapsibleContent className="space-y-3 pt-2">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="col-span-2">
+                          <Label className="text-xs">Full Name</Label>
+                          <Input
+                            placeholder="Ad Soyad"
+                            value={shippingAddress.name}
+                            onChange={(e) => setShippingAddress({ ...shippingAddress, name: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Label className="text-xs">Phone</Label>
+                          <Input
+                            placeholder="+90 5XX XXX XX XX"
+                            value={shippingAddress.phone}
+                            onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Label className="text-xs">Address</Label>
+                          <Input
+                            placeholder="Mahalle, Sokak, No"
+                            value={shippingAddress.address}
+                            onChange={(e) => setShippingAddress({ ...shippingAddress, address: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs">City (İl)</Label>
+                          <Select
+                            value={shippingAddress.city}
+                            onValueChange={(v) => setShippingAddress({ ...shippingAddress, city: v })}
+                          >
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Şehir seçin" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {turkishCities.map(city => (
+                                <SelectItem key={city} value={city}>{city}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-xs">District (İlçe)</Label>
+                          <Input
+                            placeholder="İlçe"
+                            value={shippingAddress.district}
+                            onChange={(e) => setShippingAddress({ ...shippingAddress, district: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <Label className="text-xs">Postal Code</Label>
+                          <Input
+                            placeholder="34XXX"
+                            value={shippingAddress.postalCode}
+                            onChange={(e) => setShippingAddress({ ...shippingAddress, postalCode: e.target.value })}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
 
                 <Button 
                   type="button" 
