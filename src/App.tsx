@@ -78,6 +78,7 @@ import StorefrontPage from "./pages/StorefrontPage";
 import Cardswap from "./pages/Cardswap";
 import OrderDetail from "./pages/OrderDetail";
 import Purchases from "./pages/Purchases";
+import AccountSettings from "./pages/AccountSettings";
 
 const queryClient = new QueryClient();
 
@@ -175,6 +176,7 @@ const AppContent = () => {
           {/* Order & Purchases */}
           <Route path="/order/:orderId" element={<OrderDetail />} />
           <Route path="/purchases" element={<Purchases />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
