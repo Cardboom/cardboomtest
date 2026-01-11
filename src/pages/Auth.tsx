@@ -6,14 +6,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkles, TrendingUp, Star, Smartphone, Mail } from 'lucide-react';
+import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkles, TrendingUp, Star, Smartphone, Mail, Link, Fingerprint, Loader2 } from 'lucide-react';
 import { PhoneInputWithCountry } from '@/components/ui/phone-input';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePlatformStats, formatStatValue } from '@/hooks/usePlatformStats';
+import { useRememberMe } from '@/hooks/useRememberMe';
+import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { TwoFactorVerify } from '@/components/auth/TwoFactorVerify';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { trackSignUpEvent } from '@/lib/tracking';
 import cardboomLogo from '@/assets/cardboom-logo.png';
 import cardboomLogoDark from '@/assets/cardboom-logo-dark.png';
@@ -27,13 +32,15 @@ const nationalIdSchema = z.string().regex(/^[A-Za-z0-9]{5,20}$/, 'Please enter a
 const otpSchema = z.string().length(6, 'OTP must be 6 digits');
 
 type AccountType = 'buyer' | 'seller' | 'both';
-type LoginMethod = 'email' | 'phone';
+type LoginMethod = 'email' | 'phone' | 'magic-link';
 
 const Auth = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { t } = useLanguage();
   const platformStats = usePlatformStats();
+  const { rememberMe, setRememberMe, savedEmail, saveRememberMe } = useRememberMe();
+  const { isAvailable: biometricAvailable, biometryType, isNativePlatform, authenticateWithBiometrics } = useBiometricAuth();
   const isDark = theme === 'dark';
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -58,6 +65,12 @@ const Auth = () => {
   const [newPassword, setNewPassword] = useState('');
   const [resetVerified, setResetVerified] = useState(false);
   const [loginCountryCode, setLoginCountryCode] = useState('+90');
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [magicLinkEmail, setMagicLinkEmail] = useState('');
+  const [show2FA, setShow2FA] = useState(false);
+  const [pending2FAUser, setPending2FAUser] = useState<{ id: string; phone: string } | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingUser, setOnboardingUser] = useState<{ id: string; email: string; displayName?: string } | null>(null);
   const [errors, setErrors] = useState<{ 
     email?: string; 
     password?: string; 
@@ -71,7 +84,15 @@ const Auth = () => {
     resetEmail?: string;
     resetOtp?: string;
     newPassword?: string;
+    magicLinkEmail?: string;
   }>({});
+
+  // Load saved email on mount
+  useEffect(() => {
+    if (savedEmail) {
+      setEmail(savedEmail);
+    }
+  }, [savedEmail]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -155,7 +176,7 @@ const Auth = () => {
     if (!validateLoginForm()) return;
     
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -167,7 +188,34 @@ const Auth = () => {
         toast.error(error.message);
       }
     } else {
+      // Save remember me preference
+      saveRememberMe(email, rememberMe);
       toast.success('Welcome back!');
+    }
+    setLoading(false);
+  };
+
+  const handleMagicLink = async () => {
+    const emailResult = emailSchema.safeParse(magicLinkEmail);
+    if (!emailResult.success) {
+      setErrors({ magicLinkEmail: emailResult.error.errors[0].message });
+      return;
+    }
+    setErrors({});
+    
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: magicLinkEmail,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+    } else {
+      setMagicLinkSent(true);
+      toast.success('Magic link sent! Check your email.');
     }
     setLoading(false);
   };
@@ -771,33 +819,80 @@ const Auth = () => {
                     </div>
 
                     {/* Login Method Toggle */}
-                    <div className="flex gap-2 p-1 bg-secondary/50 rounded-xl">
+                    <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl">
                       <button
                         type="button"
-                        onClick={() => { setLoginMethod('email'); setOtpSent(false); }}
-                        className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                        onClick={() => { setLoginMethod('email'); setOtpSent(false); setMagicLinkSent(false); }}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all ${
                           loginMethod === 'email' 
                             ? 'bg-primary text-primary-foreground' 
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
-                        Email
+                        Password
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setLoginMethod('phone'); setOtpSent(false); }}
-                        className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                        onClick={() => { setLoginMethod('magic-link'); setOtpSent(false); }}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1 ${
+                          loginMethod === 'magic-link' 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        <Link className="w-3 h-3" />
+                        Magic Link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setLoginMethod('phone'); setOtpSent(false); setMagicLinkSent(false); }}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1 ${
                           loginMethod === 'phone' 
                             ? 'bg-primary text-primary-foreground' 
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
-                        <Smartphone className="w-4 h-4" />
-                        Mobile
+                        <Smartphone className="w-3 h-3" />
+                        Phone
                       </button>
                     </div>
 
-                    {loginMethod === 'email' ? (
+                    {loginMethod === 'magic-link' ? (
+                      <div className="space-y-4">
+                        {!magicLinkSent ? (
+                          <>
+                            <div className="space-y-2">
+                              <Label htmlFor="magic-email" className="text-foreground font-medium">Email</Label>
+                              <Input
+                                id="magic-email"
+                                type="email"
+                                placeholder="your@email.com"
+                                value={magicLinkEmail}
+                                onChange={(e) => setMagicLinkEmail(e.target.value)}
+                                className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                              />
+                              {errors.magicLinkEmail && <p className="text-destructive text-sm">{errors.magicLinkEmail}</p>}
+                            </div>
+                            <Button
+                              type="button"
+                              onClick={handleMagicLink}
+                              disabled={loading || !magicLinkEmail}
+                              className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 font-semibold rounded-xl"
+                            >
+                              {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending...</> : 'Send Magic Link'}
+                            </Button>
+                          </>
+                        ) : (
+                          <div className="text-center space-y-4 py-4">
+                            <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
+                              <Mail className="w-8 h-8 text-green-500" />
+                            </div>
+                            <p className="text-muted-foreground">Check your email for the magic link!</p>
+                            <button onClick={() => setMagicLinkSent(false)} className="text-primary text-sm">Send again</button>
+                          </div>
+                        )}
+                      </div>
+                    ) : loginMethod === 'email' ? (
                       <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-2">
                           <Label htmlFor="login-email" className="text-foreground font-medium">{t.auth.email}</Label>
