@@ -48,6 +48,7 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [nationalId, setNationalId] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [accountType, setAccountType] = useState<AccountType>('buyer');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedFees, setAcceptedFees] = useState(false);
@@ -323,6 +324,7 @@ const Auth = () => {
           account_type: accountType,
           phone: phone,
           national_id: nationalId,
+          referred_by_code: referralCode || null,
         },
       },
     });
@@ -1142,18 +1144,36 @@ const Auth = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password" className="text-foreground font-medium">{t.auth.password}</Label>
-                      <Input
-                        id="register-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                        required
-                      />
-                      {errors.password && <p className="text-destructive text-xs">{errors.password}</p>}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="register-password" className="text-foreground font-medium">{t.auth.password}</Label>
+                        <Input
+                          id="register-password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                          required
+                        />
+                        {errors.password && <p className="text-destructive text-xs">{errors.password}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="register-referral" className="text-foreground font-medium flex items-center gap-2">
+                          <Sparkles className="w-3.5 h-3.5 text-accent" />
+                          Referral Code
+                        </Label>
+                        <Input
+                          id="register-referral"
+                          type="text"
+                          placeholder="Optional"
+                          value={referralCode}
+                          onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
+                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                          maxLength={12}
+                        />
+                        <p className="text-xs text-muted-foreground">Get bonus rewards!</p>
+                      </div>
                     </div>
 
                     {/* Account Type Selection */}
