@@ -13,13 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Gavel, Loader2 } from 'lucide-react';
 
 interface PlaceBidDialogProps {
@@ -30,16 +23,7 @@ interface PlaceBidDialogProps {
   user: any;
 }
 
-const GRADES = [
-  { value: 'any', label: 'Any Grade' },
-  { value: 'raw', label: 'Raw / Ungraded' },
-  { value: 'psa10', label: 'PSA 10' },
-  { value: 'psa9', label: 'PSA 9' },
-  { value: 'psa8', label: 'PSA 8' },
-  { value: 'bgs10', label: 'BGS 10' },
-  { value: 'bgs9_5', label: 'BGS 9.5' },
-  { value: 'cgc10', label: 'CGC 10' },
-];
+// Grading is not applicable to auction bids - items already have their grades set by sellers
 
 export const PlaceBidDialog = ({ 
   itemId, 
@@ -53,7 +37,6 @@ export const PlaceBidDialog = ({
   const [loading, setLoading] = useState(false);
   const [bidAmount, setBidAmount] = useState(currentPrice > 0 ? Math.floor(currentPrice * 0.9).toString() : '');
   const [maxBid, setMaxBid] = useState('');
-  const [grade, setGrade] = useState('any');
   const [notes, setNotes] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,7 +63,6 @@ export const PlaceBidDialog = ({
         category: category,
         bid_amount: parseFloat(bidAmount),
         max_bid: maxBid ? parseFloat(maxBid) : null,
-        grade,
         notes: notes || null,
       });
 
@@ -156,21 +138,6 @@ export const PlaceBidDialog = ({
             </p>
           </div>
 
-          <div className="space-y-2">
-            <Label>Preferred Grade</Label>
-            <Select value={grade} onValueChange={setGrade}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select grade" />
-              </SelectTrigger>
-              <SelectContent>
-                {GRADES.map((g) => (
-                  <SelectItem key={g.value} value={g.value}>
-                    {g.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
