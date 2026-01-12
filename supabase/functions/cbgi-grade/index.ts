@@ -6,7 +6,57 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const CBGI_SYSTEM_PROMPT = `You are CardBoom Grading Index (CBGI), an expert card grading AI. Analyze the provided card images and return a comprehensive grading assessment.
+// Interface for calibration data
+interface CalibrationData {
+  grading_company: string;
+  actual_grade: number;
+  cbgi_avg_score: number;
+  bias_offset: number;
+  confidence: number;
+  example_cards: Array<{
+    cbgi_score: number;
+    actual_grade: number;
+    notes: string | null;
+  }>;
+}
+
+// Generate calibration examples for the prompt
+function generateCalibrationSection(calibration: CalibrationData[]): string {
+  if (!calibration || calibration.length === 0) {
+    return '';
+  }
+
+  const byCompany: Record<string, CalibrationData[]> = {};
+  for (const c of calibration) {
+    if (!byCompany[c.grading_company]) {
+      byCompany[c.grading_company] = [];
+    }
+    byCompany[c.grading_company].push(c);
+  }
+
+  let section = `\n\n## CALIBRATION DATA (Based on ${calibration.reduce((sum, c) => sum + (c.example_cards?.length || 0), 0)} verified samples):\n`;
+  
+  for (const [company, grades] of Object.entries(byCompany)) {
+    section += `\n### ${company} Mapping (from real feedback):\n`;
+    grades.sort((a, b) => b.actual_grade - a.actual_grade);
+    
+    for (const g of grades) {
+      if (g.confidence >= 0.3) {
+        const adjustment = g.bias_offset > 0 ? 
+          `CBGI tends to be ${Math.abs(g.bias_offset).toFixed(1)} points HIGH` :
+          g.bias_offset < -0.3 ?
+          `CBGI tends to be ${Math.abs(g.bias_offset).toFixed(1)} points LOW` :
+          `Well-calibrated`;
+        
+        section += `- ${company} ${g.actual_grade}: CBGI should be ${(g.actual_grade - 0.3).toFixed(1)}-${(g.actual_grade + 0.3).toFixed(1)} (${adjustment})\n`;
+      }
+    }
+  }
+
+  return section;
+}
+
+const CBGI_BASE_PROMPT = `You are CardBoom Grading Index (CBGI), an expert card grading AI. Analyze the provided card images and return a comprehensive grading assessment.
 
 GRADING RUBRIC:
 - Centering (20% weight): Front/back centering balance, measure left-right and top-bottom ratios
@@ -35,9 +85,39 @@ RISK FLAGS (include if applicable):
 - PRINT_LINES_RISK: Potential factory print lines detected
 - CENTERING_SEVERE: Centering significantly off
 - SURFACE_WEAR: Visible surface wear detected
-- CORNER_DAMAGE: Notable corner damage present
+- CORNER_DAMAGE: Notable corner damage present`;
 
-OUTPUT STRICT JSON ONLY - no markdown, no explanation:`;
+// Function to build calibrated prompt
+async function buildCalibratedPrompt(supabase: any): Promise<{ prompt: string; version: string }> {
+  try {
+    const { data: calibration, error } = await supabase
+      .from('grading_calibration')
+      .select('*')
+      .gte('sample_count', 3)
+      .order('confidence', { ascending: false });
+    
+    if (error || !calibration || calibration.length === 0) {
+      return { 
+        prompt: CBGI_BASE_PROMPT + '\n\nOUTPUT STRICT JSON ONLY - no markdown, no explanation:', 
+        version: 'base-v1' 
+      };
+    }
+
+    const calibrationSection = generateCalibrationSection(calibration as CalibrationData[]);
+    const version = `calibrated-v1-${new Date().toISOString().slice(0, 10)}-${calibration.length}samples`;
+    
+    return {
+      prompt: CBGI_BASE_PROMPT + calibrationSection + '\n\nOUTPUT STRICT JSON ONLY - no markdown, no explanation:',
+      version
+    };
+  } catch (err) {
+    console.error('Error loading calibration:', err);
+    return { 
+      prompt: CBGI_BASE_PROMPT + '\n\nOUTPUT STRICT JSON ONLY - no markdown, no explanation:', 
+      version: 'base-v1-fallback' 
+    };
+  }
+}
 
 interface CBGIResponse {
   card_name: string;
@@ -137,6 +217,10 @@ serve(async (req) => {
       }
     }
 
+    // Build calibrated prompt with dynamic examples from feedback
+    const { prompt: calibratedPrompt, version: calibrationVersion } = await buildCalibratedPrompt(supabase);
+    console.log('Using calibration version:', calibrationVersion);
+
     // Build image content for ChatGPT Vision
     const imageContent: any[] = [];
     
@@ -190,7 +274,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4.1',
         messages: [
-          { role: 'system', content: CBGI_SYSTEM_PROMPT },
+          { role: 'system', content: calibratedPrompt },
           { 
             role: 'user', 
             content: [

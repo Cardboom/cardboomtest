@@ -3666,6 +3666,45 @@ export type Database = {
         }
         Relationships: []
       }
+      grading_calibration: {
+        Row: {
+          actual_grade: number
+          bias_offset: number | null
+          cbgi_avg_score: number
+          confidence: number | null
+          created_at: string
+          example_cards: Json | null
+          grading_company: string
+          id: string
+          sample_count: number
+          updated_at: string
+        }
+        Insert: {
+          actual_grade: number
+          bias_offset?: number | null
+          cbgi_avg_score: number
+          confidence?: number | null
+          created_at?: string
+          example_cards?: Json | null
+          grading_company: string
+          id?: string
+          sample_count?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_grade?: number
+          bias_offset?: number | null
+          cbgi_avg_score?: number
+          confidence?: number | null
+          created_at?: string
+          example_cards?: Json | null
+          grading_company?: string
+          id?: string
+          sample_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       grading_credit_history: {
         Row: {
           created_at: string
@@ -3839,6 +3878,7 @@ export type Database = {
           back_image_url: string | null
           batch_discount_percent: number | null
           batch_size: number | null
+          calibration_version: string | null
           card_name: string | null
           card_number: string | null
           category: string | null
@@ -3918,6 +3958,7 @@ export type Database = {
           back_image_url?: string | null
           batch_discount_percent?: number | null
           batch_size?: number | null
+          calibration_version?: string | null
           card_name?: string | null
           card_number?: string | null
           category?: string | null
@@ -3997,6 +4038,7 @@ export type Database = {
           back_image_url?: string | null
           batch_discount_percent?: number | null
           batch_size?: number | null
+          calibration_version?: string | null
           card_name?: string | null
           card_number?: string | null
           category?: string | null
@@ -9551,6 +9593,7 @@ export type Database = {
       }
       process_pending_wire_transfers: { Args: never; Returns: number }
       purchase_pro_pass: { Args: { p_user_id: string }; Returns: boolean }
+      recompute_grading_calibration: { Args: never; Returns: undefined }
       record_idempotency: {
         Args: {
           p_key: string
