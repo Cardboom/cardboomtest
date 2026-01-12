@@ -25,6 +25,7 @@ import {
 import { useSetCompletion } from '@/hooks/useSetCompletion';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 export const SetCompletionTracker = () => {
   const [userId, setUserId] = useState<string | undefined>();
@@ -215,7 +216,7 @@ export const SetCompletionTracker = () => {
               <SelectContent>
                 {categories.map(cat => (
                   <SelectItem key={cat} value={cat}>
-                    {cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    {cat === 'all' ? 'All' : formatCategoryName(cat)}
                   </SelectItem>
                 ))}
               </SelectContent>

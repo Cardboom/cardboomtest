@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -821,7 +822,7 @@ const SellPage = () => {
                           <SelectContent>
                             {categories.map((cat) => (
                               <SelectItem key={cat} value={cat}>
-                                {cat.toUpperCase()}
+                                {formatCategoryName(cat)}
                               </SelectItem>
                             ))}
                           </SelectContent>

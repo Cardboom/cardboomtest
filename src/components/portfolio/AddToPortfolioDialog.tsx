@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Search, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 interface AddToPortfolioDialogProps {
   open: boolean;
@@ -115,7 +116,7 @@ export const AddToPortfolioDialog = ({ open, onOpenChange }: AddToPortfolioDialo
                     }`}
                   >
                     <p className="text-foreground font-medium">{item.name}</p>
-                    <p className="text-muted-foreground text-xs">{item.category}</p>
+                    <p className="text-muted-foreground text-xs">{formatCategoryName(item.category)}</p>
                   </div>
                 ))
               )}
