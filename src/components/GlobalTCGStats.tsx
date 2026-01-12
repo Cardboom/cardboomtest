@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowRight } from 'lucide-react';
+import { TrendingUp, Users, ShoppingCart, DollarSign, ArrowRight, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { HeroNewsTicker } from './HeroNewsTicker';
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-
 interface GlobalStats {
   totalVolume: number;
   totalUsers: number;
@@ -217,16 +216,29 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
             }}
           />
 
+          {/* Accent line - Tiffany brand color */}
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+
+          {/* Header - Tiffany branding */}
+          <div className="absolute top-2 left-3 flex items-center gap-1.5 z-10">
+            <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
+              <BarChart3 className="w-2.5 h-2.5 text-primary" />
+            </div>
+            <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
+              CARDBOOM MARKET STATS
+            </span>
+          </div>
+
           {/* Top glow */}
           <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none" />
 
           {/* Stats Row */}
-          <div className="relative z-10 grid grid-cols-2 md:grid-cols-4">
+          <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 pt-8">
             {statItems.map((item, i) => (
               <div
                 key={item.label}
                 className={cn(
-                  "flex flex-col items-center justify-center text-center py-5 px-3 md:py-6 md:px-4",
+                  "flex flex-col items-center justify-center text-center py-4 px-3 md:py-5 md:px-4",
                   // Vertical dividers between columns
                   i < statItems.length - 1 && "md:border-r md:border-white/10",
                   // On mobile: right border for left column, bottom border for top row

@@ -144,35 +144,41 @@ export const LiveMarketPanel = () => {
   return (
     <div 
       className={cn(
-        "relative overflow-hidden rounded-2xl",
-        "bg-gradient-to-br from-card via-card/95 to-card/90",
-        "border border-border/50",
+        "relative overflow-hidden rounded-[18px]",
+        "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
+        "border border-white/5",
         "h-[100px] md:h-[140px]",
-        "shadow-lg"
+        "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
       )}
+      style={{ backdropFilter: 'blur(22px)' }}
     >
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+      {/* Noise texture */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+        }}
+      />
 
-      {/* Left accent bar */}
-      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary via-primary/60 to-primary/20" />
+      {/* Accent line - Tiffany brand color */}
+      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
 
-      {/* Header */}
-      <div className="absolute top-2 left-4 flex items-center gap-2">
-        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-          <Zap className="w-3 h-3 text-primary" />
-          <span className="font-sans text-[10px] md:text-[11px] text-primary font-bold uppercase tracking-wider">
-            Live Feed
-          </span>
+      {/* Header - Tiffany branding */}
+      <div className="absolute top-2 left-3 flex items-center gap-1.5 z-10">
+        <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
+          <Zap className="w-2.5 h-2.5 text-primary" />
         </div>
-        <span className="relative flex h-2 w-2">
+        <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
+          LIVE FEED
+        </span>
+        <span className="relative flex h-2 w-2 ml-1">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
         </span>
       </div>
 
       {/* Top: Horizontal Ticker */}
-      <div className="absolute top-8 md:top-9 left-0 right-0 h-5 overflow-hidden border-y border-border/30">
+      <div className="absolute top-8 md:top-9 left-0 right-0 h-5 overflow-hidden border-y border-white/5">
         <div 
           ref={tickerRef}
           className="flex items-center h-full whitespace-nowrap"
@@ -180,10 +186,10 @@ export const LiveMarketPanel = () => {
         >
           {marketTicks.map((tick, i) => (
             <div key={i} className="flex items-center gap-1.5 px-3">
-              <span className="font-sans font-semibold text-[10px] text-muted-foreground uppercase">
+              <span className="font-sans font-semibold text-[10px] text-gray-400 uppercase">
                 {tick.symbol}
               </span>
-              <span className="font-sans font-bold text-[10px] text-foreground">
+              <span className="font-sans font-bold text-[10px] text-white/90">
                 ${tick.price.toLocaleString()}
               </span>
               <span className={cn(
@@ -210,7 +216,7 @@ export const LiveMarketPanel = () => {
               className="flex items-center justify-center gap-3 text-center"
             >
               <span className="text-xl md:text-2xl">{currentEvent.icon}</span>
-              <span className="font-sans font-bold text-xs md:text-sm text-foreground tracking-wide">
+              <span className="font-sans font-bold text-xs md:text-sm text-white/90 tracking-wide">
                 {currentEvent.message}
               </span>
             </motion.div>
@@ -227,7 +233,7 @@ export const LiveMarketPanel = () => {
               "w-1.5 h-1.5 rounded-full transition-all duration-300",
               i === currentEventIndex % Math.min(6, events.length)
                 ? "bg-primary w-4"
-                : "bg-muted-foreground/30"
+                : "bg-white/20"
             )}
           />
         ))}
