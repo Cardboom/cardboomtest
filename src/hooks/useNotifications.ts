@@ -85,19 +85,23 @@ export const useNotifications = () => {
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !isMounted) return;
+
       await fetchNotifications();
       
       if (!isMounted) return;
 
-      // Subscribe to real-time notifications
+      // Subscribe to real-time notifications for this specific user
       channel = supabase
-        .channel('notifications-changes')
+        .channel(`notifications-${user.id}`)
         .on(
           'postgres_changes',
           {
             event: 'INSERT',
             schema: 'public',
             table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
           },
           (payload) => {
             if (!isMounted) return;
