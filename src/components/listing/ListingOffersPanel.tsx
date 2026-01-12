@@ -7,6 +7,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { DollarSign, User, Clock, Check, X, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 interface Offer {
   id: string;
@@ -46,13 +47,13 @@ export const ListingOffersPanel = ({ listingId, sellerId, isOwner }: ListingOffe
 
   const fetchOffers = async () => {
     try {
-      // Fetch offers
+      // Fetch offers - include pending and rejected
       const { data: offersData, error: offersError } = await supabase
         .from('offers')
         .select('id, amount, currency, amount_usd, message, status, created_at, buyer_id')
         .eq('listing_id', listingId)
-        .eq('status', 'pending')
-        .order('amount', { ascending: false });
+        .in('status', ['pending', 'rejected'])
+        .order('created_at', { ascending: false });
 
       if (offersError) throw offersError;
 
@@ -162,7 +163,12 @@ export const ListingOffersPanel = ({ listingId, sellerId, isOwner }: ListingOffe
             return (
               <div
                 key={offer.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border/50"
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-lg border",
+                  offer.status === 'rejected' 
+                    ? "bg-loss/5 border-loss/20 opacity-60" 
+                    : "bg-secondary/30 border-border/50"
+                )}
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
@@ -173,7 +179,10 @@ export const ListingOffersPanel = ({ listingId, sellerId, isOwner }: ListingOffe
                   </Avatar>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-primary">
+                      <span className={cn(
+                        "font-bold",
+                        offer.status === 'rejected' ? "text-muted-foreground line-through" : "text-primary"
+                      )}>
                         {formattedAmount}
                       </span>
                       {offer.currency !== 'USD' && (
@@ -194,18 +203,22 @@ export const ListingOffersPanel = ({ listingId, sellerId, isOwner }: ListingOffe
                           </TooltipContent>
                         </Tooltip>
                       )}
-                      <span className="text-xs text-muted-foreground">
-                        by {offer.buyer?.display_name || 'Anonymous'}
-                      </span>
+                      {offer.status === 'rejected' && (
+                        <span className="text-xs bg-loss/20 text-loss px-1.5 py-0.5 rounded font-medium">
+                          Rejected
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-medium">{offer.buyer?.display_name || 'Anonymous'}</span>
+                      <span>•</span>
                       <Clock className="w-3 h-3" />
                       {formatDistanceToNow(new Date(offer.created_at), { addSuffix: true })}
                     </div>
                   </div>
                 </div>
 
-                {isOwner && (
+                {isOwner && offer.status === 'pending' && (
                   <div className="flex gap-2">
                     <Button
                       size="sm"
