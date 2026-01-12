@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, BellRing, BellOff, Sparkles, Award } from 'lucide-react';
+import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, Sparkles, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,10 +13,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications } from '@/hooks/useNotifications';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+
 const getNotificationIcon = (type: string, data?: Record<string, unknown>) => {
   // Check if this is a grading completion notification
   if (type === 'order_update' && data?.grading_order_id) {
@@ -46,7 +46,6 @@ const getNotificationIcon = (type: string, data?: Record<string, unknown>) => {
 export const NotificationCenter = () => {
   const navigate = useNavigate();
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
-  const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const { toast } = useToast();
   
   const [canClaimXP, setCanClaimXP] = useState(false);
@@ -135,14 +134,6 @@ export const NotificationCenter = () => {
     }
   };
 
-  const handlePushToggle = () => {
-    if (isSubscribed) {
-      unsubscribe();
-    } else {
-      subscribe();
-    }
-  };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -187,30 +178,6 @@ export const NotificationCenter = () => {
                 </span>
               </div>
               <Gift className="h-4 w-4 text-primary animate-pulse" />
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
-        
-        {/* Push notifications toggle */}
-        {isSupported && (
-          <>
-            <DropdownMenuItem 
-              onClick={handlePushToggle}
-              className="cursor-pointer"
-              disabled={pushLoading}
-            >
-              {isSubscribed ? (
-                <>
-                  <BellOff className="h-4 w-4 mr-2" />
-                  Disable Push Notifications
-                </>
-              ) : (
-                <>
-                  <BellRing className="h-4 w-4 mr-2" />
-                  Enable Push Notifications
-                </>
-              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
