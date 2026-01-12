@@ -158,8 +158,8 @@ const Pricing = () => {
       fees: {
         buyer: '4.5%',
         seller: '6%',
-        card: '4.5%',
-        wire: '1.5%',
+        card: '5.5%',
+        wire: '2%',
       },
       features: [
         'Everything in Free',
@@ -184,8 +184,8 @@ const Pricing = () => {
       fees: {
         buyer: '3%',
         seller: '4.5%',
-        card: '5%',
-        wire: '1.5%',
+        card: '4.5%',
+        wire: '1%',
       },
       features: [
         'Everything in Pro',

@@ -46,7 +46,7 @@ export const EnterpriseUpgradeDialog = ({
     {
       icon: Zap,
       title: 'Minimal Deposit Fees',
-      description: '2% card fee (vs 4.5%), 0.5% wire fee (vs 1.5%)',
+      description: '4.5% card fee (vs 5.5%), 1% wire fee (vs 2%)',
     },
     {
       icon: Building2,
