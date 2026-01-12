@@ -17,9 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Zap, DollarSign, Calendar, Package } from 'lucide-react';
+import { Zap, DollarSign, Calendar, Package, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { CardAutocomplete } from '@/components/market/CardAutocomplete';
 
 interface CreateBuyOrderDialogProps {
   open: boolean;
@@ -75,6 +76,7 @@ export const CreateBuyOrderDialog = ({
     quantity: '1',
     expiryDays: '7',
     notes: '',
+    marketItemId: prefillData?.marketItemId || null as string | null,
   });
 
   const handleSubmit = async () => {
@@ -103,7 +105,7 @@ export const CreateBuyOrderDialog = ({
 
       const { error } = await supabase.from('buy_orders').insert({
         buyer_id: session.user.id,
-        market_item_id: prefillData?.marketItemId || null,
+        market_item_id: formData.marketItemId || prefillData?.marketItemId || null,
         item_name: formData.itemName,
         category: formData.category,
         condition: formData.condition || null,
@@ -144,11 +146,27 @@ export const CreateBuyOrderDialog = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 space-y-2">
               <Label>Item Name *</Label>
-              <Input
-                placeholder="e.g. Charizard Base Set 1st Edition"
+              <CardAutocomplete
                 value={formData.itemName}
-                onChange={(e) => setFormData({ ...formData, itemName: e.target.value })}
+                onChange={(value) => setFormData({ ...formData, itemName: value, marketItemId: null })}
+                onSelectCard={(card) => {
+                  setFormData({
+                    ...formData,
+                    itemName: card.name,
+                    category: card.category,
+                    marketItemId: card.id,
+                    maxPrice: formData.maxPrice || Math.floor(card.current_price * 0.9).toString(),
+                  });
+                }}
+                category={formData.category}
+                placeholder="e.g. Charizard Base Set 1st Edition"
               />
+              {formData.marketItemId && (
+                <p className="text-xs text-gain flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />
+                  Matched to card in database
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
