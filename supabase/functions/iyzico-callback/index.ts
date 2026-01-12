@@ -312,6 +312,29 @@ serve(async (req) => {
       console.error('Error awarding gems:', gemErr);
     }
 
+    // Save card token if user opted to save card
+    if (data.cardToken && data.cardUserKey) {
+      const metadata = pendingPayment.metadata as { saveCard?: boolean; cardLabel?: string } | null;
+      if (metadata?.saveCard) {
+        try {
+          await supabase.from('saved_cards').insert({
+            user_id: pendingPayment.user_id,
+            card_token: data.cardToken,
+            card_user_key: data.cardUserKey,
+            last_four: data.lastFourDigits || data.binNumber?.slice(-4) || '****',
+            card_brand: data.cardAssociation || null,
+            card_family: data.cardFamily || null,
+            card_bank_name: data.cardBankName || null,
+            card_label: metadata.cardLabel || null,
+            is_default: false,
+          });
+          console.log('Card saved successfully');
+        } catch (saveErr) {
+          console.error('Failed to save card:', saveErr);
+        }
+      }
+    }
+
     // Update pending payment as completed
     await supabase
       .from('pending_payments')

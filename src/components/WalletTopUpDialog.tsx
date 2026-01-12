@@ -3,11 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { CreditCard, AlertCircle, Loader2, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { SavedCardsSelector, SavedCard } from '@/components/wallet/SavedCardsSelector';
 
 interface WalletTopUpDialogProps {
   open: boolean;
@@ -15,8 +17,8 @@ interface WalletTopUpDialogProps {
   onSuccess: () => void;
 }
 
-const FLAT_FEE_USD = 0.5; // $0.50 flat fee
-const TRY_MARKUP_PERCENT = 0.08; // 8% markup on TRY conversion for revenue
+const FLAT_FEE_USD = 0.5;
+const TRY_MARKUP_PERCENT = 0.08;
 type PaymentCurrency = 'USD' | 'TRY';
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
@@ -26,22 +28,29 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const [threeDSContent, setThreeDSContent] = useState<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [userId, setUserId] = useState<string | undefined>();
-  const [paymentCurrency, setPaymentCurrency] = useState<PaymentCurrency>('TRY'); // Default to TRY for Turkish cards
+  const [paymentCurrency, setPaymentCurrency] = useState<PaymentCurrency>('TRY');
 
   const { exchangeRates } = useCurrency();
-  const baseRate = exchangeRates.USD_TRY || 38; // Fallback rate
-  const tryRate = baseRate * (1 + TRY_MARKUP_PERCENT); // Apply 8% markup for revenue
+  const baseRate = exchangeRates.USD_TRY || 38;
+  const tryRate = baseRate * (1 + TRY_MARKUP_PERCENT);
 
-  // Get subscription status for fee calculation
   const { isPro } = useSubscription(userId);
-  const TOPUP_FEE_PERCENT = isPro ? 4.5 : 6.5; // Pro gets 4.5%, standard gets 6.5%
+  const TOPUP_FEE_PERCENT = isPro ? 5.5 : 6.5;
 
-  // Card details
+  // Saved cards state
+  const [selectedCardId, setSelectedCardId] = useState<string | 'new'>('new');
+  const [selectedCard, setSelectedCard] = useState<SavedCard | null>(null);
+
+  // Card details for new card
   const [cardHolderName, setCardHolderName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expireMonth, setExpireMonth] = useState('');
   const [expireYear, setExpireYear] = useState('');
   const [cvc, setCvc] = useState('');
+  
+  // Save card option
+  const [saveCard, setSaveCard] = useState(false);
+  const [cardLabel, setCardLabel] = useState('');
 
   // Buyer details
   const [buyerName, setBuyerName] = useState('');
@@ -50,16 +59,12 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const [buyerAddress, setBuyerAddress] = useState('');
   const [buyerCity, setBuyerCity] = useState('');
 
-  // Calculate amounts in USD (internal) and display currency
   const numAmountUSD = parseFloat(amount) || 0;
   const percentFee = numAmountUSD * (TOPUP_FEE_PERCENT / 100);
   const feeUSD = percentFee + FLAT_FEE_USD;
   const totalUSD = numAmountUSD + feeUSD;
-  
-  // Convert to TRY if payment currency is TRY
   const displayTotal = paymentCurrency === 'TRY' ? totalUSD * tryRate : totalUSD;
 
-  // Fetch user ID for subscription check
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -70,13 +75,16 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
 
   const presetAmounts = [50, 100, 250, 500, 1000];
 
-  // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
       setStep('amount');
       setThreeDSContent(null);
       setCardNumber('');
       setCvc('');
+      setSaveCard(false);
+      setCardLabel('');
+      setSelectedCardId('new');
+      setSelectedCard(null);
     }
   }, [open]);
 
@@ -91,9 +99,13 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const handleCardSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!cardHolderName || !cardNumber || !expireMonth || !expireYear || !cvc) {
-      toast.error('Please fill all card details');
-      return;
+    const isUsingSavedCard = selectedCardId !== 'new' && selectedCard;
+    
+    if (!isUsingSavedCard) {
+      if (!cardHolderName || !cardNumber || !expireMonth || !expireYear || !cvc) {
+        toast.error('Please fill all card details');
+        return;
+      }
     }
 
     if (!buyerName || !buyerSurname) {
@@ -112,32 +124,44 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
         return;
       }
 
+      const requestBody: Record<string, any> = {
+        amountUSD: numAmountUSD,
+        paymentCurrency,
+        tryRate,
+        buyerName,
+        buyerSurname,
+        buyerEmail: session.user.email,
+        buyerPhone: buyerPhone || '+905000000000',
+        buyerAddress: buyerAddress || 'Not provided',
+        buyerCity: buyerCity || 'Istanbul',
+        buyerCountry: 'Turkey',
+        buyerZipCode: '34000',
+        buyerIp: '127.0.0.1',
+      };
+
+      if (isUsingSavedCard) {
+        // Use saved card token
+        requestBody.cardToken = selectedCard.card_token;
+        requestBody.cardUserKey = selectedCard.card_user_key;
+        requestBody.useSavedCard = true;
+      } else {
+        // Use new card details
+        requestBody.cardHolderName = cardHolderName;
+        requestBody.cardNumber = cardNumber.replace(/\s/g, '');
+        requestBody.expireMonth = expireMonth;
+        requestBody.expireYear = expireYear;
+        requestBody.cvc = cvc;
+        requestBody.saveCard = saveCard;
+        requestBody.cardLabel = cardLabel || null;
+      }
+
       const { data, error } = await supabase.functions.invoke('iyzico-init-3ds', {
-        body: {
-          amountUSD: numAmountUSD, // Amount in USD for wallet credit
-          paymentCurrency, // Currency to charge the card in
-          tryRate, // Exchange rate for conversion
-          cardHolderName,
-          cardNumber: cardNumber.replace(/\s/g, ''),
-          expireMonth,
-          expireYear,
-          cvc,
-          buyerName,
-          buyerSurname,
-          buyerEmail: session.user.email,
-          buyerPhone: buyerPhone || '+905000000000',
-          buyerAddress: buyerAddress || 'Not provided',
-          buyerCity: buyerCity || 'Istanbul',
-          buyerCountry: 'Turkey',
-          buyerZipCode: '34000',
-          buyerIp: '127.0.0.1'
-        }
+        body: requestBody
       });
 
       if (error) throw error;
 
       if (data.success && data.threeDSHtmlContent) {
-        // Decode base64 HTML content
         const decodedHtml = atob(data.threeDSHtmlContent);
         setThreeDSContent(decodedHtml);
         setStep('3ds');
@@ -184,7 +208,6 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
     return formatUSD(amountInUSD);
   };
 
-  // Render 3DS iframe
   useEffect(() => {
     if (step === '3ds' && threeDSContent && iframeRef.current) {
       const iframe = iframeRef.current;
@@ -204,7 +227,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
             {step === 'amount' && 'Add Funds to Wallet'}
-            {step === 'card' && 'Enter Payment Details'}
+            {step === 'card' && 'Select Payment Method'}
             {step === '3ds' && '3D Secure Verification'}
           </DialogTitle>
           <DialogDescription>
@@ -214,7 +237,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
                 {isPro && <span className="text-primary ml-1">(Pro discount applied!)</span>}
               </>
             )}
-            {step === 'card' && 'Enter your card details securely.'}
+            {step === 'card' && 'Choose a saved card or enter new card details.'}
             {step === '3ds' && 'Complete the 3D secure verification with your bank.'}
           </DialogDescription>
         </DialogHeader>
@@ -324,7 +347,15 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
         )}
 
         {step === 'card' && (
-          <form onSubmit={handleCardSubmit} className="space-y-4">
+          <form onSubmit={handleCardSubmit} className="space-y-4 max-h-[60vh] overflow-y-auto">
+            {/* Saved Cards Selector */}
+            <SavedCardsSelector
+              selectedCardId={selectedCardId}
+              onSelectCard={setSelectedCardId}
+              onCardSelected={setSelectedCard}
+            />
+
+            {/* Buyer Name (always required) */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="buyerName">First Name</Label>
@@ -348,65 +379,97 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="cardHolderName">Name on Card</Label>
-              <Input
-                id="cardHolderName"
-                value={cardHolderName}
-                onChange={(e) => setCardHolderName(e.target.value.toUpperCase())}
-                placeholder="JOHN DOE"
-                required
-              />
-            </div>
+            {/* New Card Form */}
+            {selectedCardId === 'new' && (
+              <>
+                <div>
+                  <Label htmlFor="cardHolderName">Name on Card</Label>
+                  <Input
+                    id="cardHolderName"
+                    value={cardHolderName}
+                    onChange={(e) => setCardHolderName(e.target.value.toUpperCase())}
+                    placeholder="JOHN DOE"
+                    required
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="cardNumber">Card Number</Label>
-              <Input
-                id="cardNumber"
-                value={cardNumber}
-                onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                placeholder="4111 1111 1111 1111"
-                maxLength={19}
-                required
-              />
-            </div>
+                <div>
+                  <Label htmlFor="cardNumber">Card Number</Label>
+                  <Input
+                    id="cardNumber"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                    placeholder="4111 1111 1111 1111"
+                    maxLength={19}
+                    required
+                  />
+                </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="expireMonth">Month</Label>
-                <Input
-                  id="expireMonth"
-                  value={expireMonth}
-                  onChange={(e) => setExpireMonth(e.target.value.slice(0, 2))}
-                  placeholder="MM"
-                  maxLength={2}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="expireYear">Year</Label>
-                <Input
-                  id="expireYear"
-                  value={expireYear}
-                  onChange={(e) => setExpireYear(e.target.value.slice(0, 2))}
-                  placeholder="YY"
-                  maxLength={2}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="cvc">CVC</Label>
-                <Input
-                  id="cvc"
-                  type="password"
-                  value={cvc}
-                  onChange={(e) => setCvc(e.target.value.slice(0, 4))}
-                  placeholder="***"
-                  maxLength={4}
-                  required
-                />
-              </div>
-            </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="expireMonth">Month</Label>
+                    <Input
+                      id="expireMonth"
+                      value={expireMonth}
+                      onChange={(e) => setExpireMonth(e.target.value.slice(0, 2))}
+                      placeholder="MM"
+                      maxLength={2}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="expireYear">Year</Label>
+                    <Input
+                      id="expireYear"
+                      value={expireYear}
+                      onChange={(e) => setExpireYear(e.target.value.slice(0, 2))}
+                      placeholder="YY"
+                      maxLength={2}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="cvc">CVC</Label>
+                    <Input
+                      id="cvc"
+                      type="password"
+                      value={cvc}
+                      onChange={(e) => setCvc(e.target.value.slice(0, 4))}
+                      placeholder="***"
+                      maxLength={4}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Save card option */}
+                <div className="space-y-3 p-3 rounded-lg bg-muted/30 border border-border">
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      id="save-card"
+                      checked={saveCard}
+                      onCheckedChange={(checked) => setSaveCard(!!checked)}
+                    />
+                    <Label htmlFor="save-card" className="cursor-pointer text-sm">
+                      Save this card for future payments
+                    </Label>
+                  </div>
+                  
+                  {saveCard && (
+                    <div>
+                      <Label htmlFor="cardLabel" className="text-xs">Card Label (optional)</Label>
+                      <Input
+                        id="cardLabel"
+                        value={cardLabel}
+                        onChange={(e) => setCardLabel(e.target.value)}
+                        placeholder="e.g., Personal Visa, Work Card"
+                        className="mt-1"
+                      />
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
 
             <div>
               <Label htmlFor="buyerPhone">Phone (optional)</Label>

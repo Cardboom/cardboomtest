@@ -7224,6 +7224,7 @@ export type Database = {
           card_bank_name: string | null
           card_brand: string | null
           card_family: string | null
+          card_label: string | null
           card_token: string
           card_user_key: string
           created_at: string
@@ -7237,6 +7238,7 @@ export type Database = {
           card_bank_name?: string | null
           card_brand?: string | null
           card_family?: string | null
+          card_label?: string | null
           card_token: string
           card_user_key: string
           created_at?: string
@@ -7250,6 +7252,7 @@ export type Database = {
           card_bank_name?: string | null
           card_brand?: string | null
           card_family?: string | null
+          card_label?: string | null
           card_token?: string
           card_user_key?: string
           created_at?: string
