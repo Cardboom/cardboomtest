@@ -1,5 +1,5 @@
-// Service Worker for Push Notifications and Offline Caching
-const CACHE_NAME = 'cardboom-v2';
+// Service Worker for Offline Caching (PWA Support)
+const CACHE_NAME = 'cardboom-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.webmanifest',
@@ -46,46 +46,5 @@ self.addEventListener('fetch', (event) => {
         return response;
       });
     }).catch(() => caches.match('/'))
-  );
-});
-
-self.addEventListener('push', (event) => {
-  let data = { title: 'CardBoom', body: 'You have a new notification', icon: '/icons/icon-192x192.png', badge: '/icons/icon-96x96.png', data: {} };
-  try {
-    if (event.data) {
-      const payload = event.data.json();
-      data = { ...data, ...payload };
-    }
-  } catch (e) {
-    console.error('Error parsing push data:', e);
-  }
-
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: data.icon,
-      badge: data.badge,
-      vibrate: [100, 50, 100],
-      data: data.data,
-      actions: [{ action: 'view', title: 'View' }, { action: 'dismiss', title: 'Dismiss' }],
-      requireInteraction: true
-    })
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  if (event.action === 'dismiss') return;
-  const urlToOpen = event.notification.data?.url || '/';
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.navigate(urlToOpen);
-          return client.focus();
-        }
-      }
-      return clients.openWindow(urlToOpen);
-    })
   );
 });

@@ -211,9 +211,9 @@ export const NotificationSender = () => {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Megaphone className="w-5 h-5 text-primary" />
-              Push Notifications
+              Notifications
             </CardTitle>
-            <CardDescription>Send announcements to your users</CardDescription>
+            <CardDescription>Send in-app announcements to your users</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => refetch()} className="gap-2">

@@ -61,7 +61,7 @@ const faqItems = [
   },
   {
     question: "How do price alerts and watchlists work?",
-    answer: "Add any card to your Watchlist to track its price movements. Set custom price alerts to get notified when a card drops below your target price or when new listings appear. Our AI also sends market insights about trending cards and arbitrage opportunities. Push notifications are available on mobile for instant alerts."
+    answer: "Add any card to your Watchlist to track its price movements. Set custom price alerts to get notified when a card drops below your target price or when new listings appear. Our AI also sends market insights about trending cards and arbitrage opportunities. In-app notifications keep you updated on all price movements."
   },
   {
     question: "What is the Social Proof Score shown on cards?",
