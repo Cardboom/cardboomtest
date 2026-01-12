@@ -141,13 +141,18 @@ const SellPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/auth');
-        return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
+        setUserId(session.user.id);
+        await fetchListings();
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        setLoading(false);
       }
-      setUserId(session.user.id);
-      fetchListings();
     };
     checkAuth();
   }, [navigate]);
