@@ -58,7 +58,7 @@ import { LaunchCheckDashboard } from '@/components/admin/LaunchCheckDashboard';
 import { SystemStatusDashboard } from '@/components/admin/SystemStatusDashboard';
 import { BountyManager } from '@/components/admin/BountyManager';
 import { MarketItemsManager } from '@/components/admin/MarketItemsManager';
-
+import { GradingCalibrationDashboard } from '@/components/admin/GradingCalibrationDashboard';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -286,6 +286,8 @@ const Admin = () => {
         return <VaultManagement />;
       case 'grading':
         return <GradingManagement />;
+      case 'grading-calibration':
+        return <GradingCalibrationDashboard />;
       case 'datasync':
         return <DataSyncManager />;
       case 'autobuy':

@@ -38,6 +38,7 @@ import {
   AlertTriangle,
   HelpCircle,
   Bot,
+  Target,
 } from "lucide-react";
 
 interface NavItem {
