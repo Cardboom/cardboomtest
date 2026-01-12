@@ -53,7 +53,7 @@ const faqItems = [
   },
   {
     question: "How does the referral program work?",
-    answer: "Invite friends with your unique referral code and earn rewards! You receive 50 XP and $5 wallet credit for each friend who signs up and makes their first purchase. Your referrals also get $5 off their first order. Top referrers earn additional bonuses and can qualify for our Ambassador program with higher commission rates on referred trades."
+    answer: "Invite friends with your unique referral code and earn rewards! You receive 50 XP and $0.50 wallet credit for each friend who signs up and makes their first purchase. Your referrals also get $0.50 off their first order. Top referrers earn additional bonuses and can qualify for our Ambassador program with higher commission rates on referred trades."
   },
   {
     question: "Can I trade cards directly with other users?",

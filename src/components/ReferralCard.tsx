@@ -40,7 +40,7 @@ export const ReferralCard = () => {
           <CardTitle>Invite Friends & Earn</CardTitle>
         </div>
         <CardDescription>
-          Earn ₺50 for every friend who makes their first purchase
+          Earn $0.50 credit for every friend who makes their first purchase
         </CardDescription>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
