@@ -116,6 +116,35 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
         .update({ balance: newBalance, updated_at: new Date().toISOString() })
         .eq('id', wallet.id);
 
+      // Get sender's display name for notification
+      const { data: senderProfile } = await supabase
+        .from('public_profiles')
+        .select('display_name')
+        .eq('id', user.id)
+        .single();
+      
+      const senderName = senderProfile?.display_name || 'Someone';
+
+      // Send notification via edge function (email or SMS based on recipient type)
+      const recipient = recipientType === 'email' ? recipientEmail : formatPhoneNumber(recipientPhone);
+      if (recipient) {
+        try {
+          await supabase.functions.invoke('send-gift-notification', {
+            body: {
+              recipientType,
+              recipient,
+              senderName,
+              gemAmount: selectedAmount.gems,
+              giftCode: giftCard.code,
+              message: message || null,
+            },
+          });
+        } catch (notifError) {
+          console.error('Failed to send notification:', notifError);
+          // Don't fail the whole purchase if notification fails
+        }
+      }
+
       setPurchasedCode(giftCard.code);
       toast.success('Gift card created!', { description: `Code: ${giftCard.code}` });
       onPurchaseComplete?.();

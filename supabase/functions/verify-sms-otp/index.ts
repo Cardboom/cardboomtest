@@ -9,7 +9,7 @@ const corsHeaders = {
 interface VerifyRequest {
   phone: string;
   otp: string;
-  type: "verification" | "password_reset" | "login_otp";
+  type: "verification" | "password_reset" | "login_otp" | "2fa_setup" | "2fa_login";
 }
 
 serve(async (req) => {
@@ -136,6 +136,36 @@ serve(async (req) => {
           email: profile.email,
           // Include the full link for direct verification
           verificationLink: linkData.properties?.action_link,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Handle 2FA setup verification
+    if (type === "2fa_setup") {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "2FA setup verified successfully",
+          userId: otpRecord.user_id,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Handle 2FA login verification
+    if (type === "2fa_login") {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "2FA login verified successfully",
+          userId: otpRecord.user_id,
         }),
         {
           status: 200,

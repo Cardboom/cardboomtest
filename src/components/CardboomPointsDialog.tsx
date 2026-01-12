@@ -18,6 +18,7 @@ interface CardboomPointsDialogProps {
 
 export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialogProps) => {
   const [userId, setUserId] = useState<string | undefined>();
+  const [walletBalanceCents, setWalletBalanceCents] = useState(0);
   const { t } = useLanguage();
   const { currency, formatPrice } = useCurrency();
   
@@ -26,6 +27,23 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
       setUserId(data.user?.id);
     });
   }, []);
+
+  // Fetch wallet balance for gift card purchases
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      if (!userId) return;
+      const { data } = await supabase
+        .from('wallets')
+        .select('balance')
+        .eq('user_id', userId)
+        .single();
+      if (data) {
+        // Balance is stored in dollars, convert to cents for GiftCardPurchase
+        setWalletBalanceCents(Number(data.balance) * 100);
+      }
+    };
+    fetchWalletBalance();
+  }, [userId]);
 
   const { balance, totalEarned, totalSpent, history, loading } = useCardboomPoints(userId);
 
@@ -135,8 +153,13 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
             </div>
 
             {/* Gift Card Actions */}
-            <div className="flex gap-2 justify-center">
-              <GiftCardPurchase userBalance={0} onPurchaseComplete={() => {}} />
+            <div className="flex gap-2 justify-center mt-4">
+              <GiftCardPurchase userBalance={walletBalanceCents} onPurchaseComplete={() => {
+                // Refetch wallet balance after purchase
+                supabase.from('wallets').select('balance').eq('user_id', userId).single().then(({ data }) => {
+                  if (data) setWalletBalanceCents(Number(data.balance) * 100);
+                });
+              }} />
               <ClaimGiftCard onClaimComplete={() => {}} />
             </div>
           </div>
