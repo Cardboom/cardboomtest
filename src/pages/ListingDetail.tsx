@@ -441,9 +441,10 @@ const ListingDetail = () => {
           {/* Image */}
           <div className="lg:col-span-1">
             <div className="glass rounded-2xl p-4 aspect-square relative">
-              {/* External Grading Badge Overlay (PSA, BGS, CGC) - Priority */}
-              {listing.grading_company && listing.grade && (
-                <div className="absolute top-6 left-6 z-10">
+              {/* Grading Badges Overlay - Show both external and CBGI */}
+              <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
+                {/* External Grading Badge (PSA, BGS, CGC) */}
+                {listing.grading_company && listing.grade && (
                   <div className={cn(
                     "px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg font-bold text-sm",
                     listing.grade === '10' || listing.grade === '9.5' 
@@ -451,19 +452,17 @@ const ListingDetail = () => {
                       : "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
                   )}>
                     <Shield className="w-4 h-4" />
-                    <span>{listing.grading_company} {listing.grade} ✓</span>
+                    <span>{listing.grading_company} {listing.grade}</span>
                   </div>
-                </div>
-              )}
-              {/* CBI Graded Badge Overlay - Show only if no external grading */}
-              {!listing.grading_company && gradingInfo?.final_grade && (
-                <div className="absolute top-6 left-6 z-10">
+                )}
+                {/* CBGI Badge - CardBoom's grading */}
+                {gradingInfo?.final_grade && (
                   <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
                     <Award className="w-4 h-4" />
-                    <span className="font-bold text-sm">CBI {gradingInfo.final_grade.toFixed(1)}</span>
+                    <span className="font-bold text-sm">CBGI {gradingInfo.final_grade.toFixed(1)}</span>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
               {listing.image_url ? (
                 <img 
                   src={listing.image_url} 
@@ -517,7 +516,7 @@ const ListingDetail = () => {
 
             {/* Trust & Verification Strip */}
             <div className="flex flex-wrap gap-2">
-              {/* External Grading Badge (PSA, BGS, CGC) - Priority */}
+              {/* External Grading Badge (PSA, BGS, CGC) */}
               {listing.grading_company && listing.grade && (
                 <div className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
@@ -526,27 +525,27 @@ const ListingDetail = () => {
                     : "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-400"
                 )}>
                   <Shield className="w-3.5 h-3.5" />
-                  {listing.grading_company} {listing.grade} ✓
+                  {listing.grading_company} {listing.grade}
+                </div>
+              )}
+              
+              {/* CBGI Badge - CardBoom's grading (always show if available) */}
+              {gradingInfo?.final_grade && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-xs font-semibold text-primary">
+                  <Award className="w-3.5 h-3.5" />
+                  CBGI {gradingInfo.final_grade.toFixed(1)}
                 </div>
               )}
               
               {/* AI Identified Badge */}
               {listing.ai_confidence && listing.ai_confidence > 0 && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary border border-border text-xs font-medium text-muted-foreground">
                   <Bot className="w-3.5 h-3.5" />
                   AI Identified • {Math.round(listing.ai_confidence * 100)}%
                 </div>
               )}
               
-              {/* CBGI Status - CardBoom internal grading */}
-              {gradingInfo?.final_grade && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30 text-xs font-medium text-accent-foreground">
-                  <Award className="w-3.5 h-3.5" />
-                  CardBoom Index: {gradingInfo.final_grade.toFixed(1)}
-                </div>
-              )}
-              
-              {/* Show pending or ungraded status only if no external grading */}
+              {/* Show pending or ungraded status only if no grading at all */}
               {!listing.grading_company && !gradingInfo?.final_grade && (
                 listing.certification_status === 'pending' ? (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400">
