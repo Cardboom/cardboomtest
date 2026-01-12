@@ -42,31 +42,35 @@ const getCountryFlag = (countryCode: string): string => {
   return String.fromCodePoint(...codePoints);
 };
 
-// Get grading display - prioritize external grading (PSA/BGS) over CBGI
-const getGradingDisplay = (listing: Listing) => {
-  // Priority 1: External grading company (PSA, BGS, CGC, etc.)
+// Get grading displays - return both external and CBGI if available
+const getGradingDisplays = (listing: Listing) => {
+  const displays: Array<{
+    label: string;
+    isTopGrade: boolean;
+    type: 'external' | 'cbgi';
+  }> = [];
+  
+  // External grading (PSA, BGS, CGC, etc.)
   if (listing.grading_company && listing.grade) {
     const isTopGrade = listing.grade === '10' || listing.grade === '9.5';
-    return {
+    displays.push({
       label: `${listing.grading_company} ${listing.grade}`,
-      isVerified: true,
       isTopGrade,
-      type: 'external' as const
-    };
+      type: 'external'
+    });
   }
   
-  // Priority 2: CBGI score (CardBoom internal grading)
+  // CBGI score (CardBoom internal grading)
   if (listing.cbgi_score !== null && listing.cbgi_score !== undefined) {
     const score = listing.cbgi_score > 10 ? listing.cbgi_score / 10 : listing.cbgi_score;
-    return {
-      label: `CB ${score.toFixed(1)}`,
-      isVerified: false,
+    displays.push({
+      label: `CBGI ${score.toFixed(1)}`,
       isTopGrade: score >= 9.5,
-      type: 'cbgi' as const
-    };
+      type: 'cbgi'
+    });
   }
   
-  return null;
+  return displays;
 };
 
 export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
@@ -184,7 +188,7 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
 
         <div className="divide-y divide-border/30">
           {listings.map((listing) => {
-            const grading = getGradingDisplay(listing);
+            const gradings = getGradingDisplays(listing);
             
             return (
               <div 
@@ -200,9 +204,10 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-foreground font-bold text-xl">{formatPrice(listing.price)}</p>
                         
-                        {/* Grading Badge - prioritize external grading over CBGI */}
-                        {grading && (
+                        {/* Grading Badges - show both external and CBGI */}
+                        {gradings.map((grading, idx) => (
                           <Badge 
+                            key={idx}
                             className={cn(
                               "text-xs font-semibold",
                               grading.type === 'external' && grading.isTopGrade && "bg-gradient-to-r from-amber-500 to-yellow-500 text-black",
@@ -212,12 +217,11 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
                           >
                             {grading.type === 'external' && <Shield className="w-3 h-3 mr-1" />}
                             {grading.label}
-                            {grading.type === 'external' && " ✓"}
                           </Badge>
-                        )}
+                        ))}
                         
-                        {/* Condition badge (if no grading) */}
-                        {!grading && (
+                        {/* Condition badge (if no grading at all) */}
+                        {gradings.length === 0 && (
                           <span className={cn(
                             "px-2 py-0.5 rounded text-xs font-medium",
                             listing.condition === 'Gem Mint' || listing.condition === 'PSA 10' 
