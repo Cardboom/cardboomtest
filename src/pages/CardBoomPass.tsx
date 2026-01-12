@@ -425,7 +425,7 @@ const CardBoomPass = () => {
   return (
     <>
       <Helmet>
-        <title>CardBoom Pass | Season {season?.season_number || 1}</title>
+        <title>{`CardBoom Pass | Season ${season?.season_number ?? 1}`}</title>
         <meta name="description" content="Progress through tiers, earn gems, and unlock exclusive rewards with CardBoom Pass." />
       </Helmet>
 
