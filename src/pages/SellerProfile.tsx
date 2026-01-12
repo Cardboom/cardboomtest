@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
@@ -357,8 +358,8 @@ const SellerProfile = () => {
                             {listing.title}
                           </h3>
                           <p className="text-lg font-bold">{formatPrice(listing.price)}</p>
-                          <Badge variant="secondary" className="mt-2 capitalize">
-                            {listing.category}
+                          <Badge variant="secondary" className="mt-2">
+                            {getCategoryLabel(listing.category)}
                           </Badge>
                         </CardContent>
                       </Card>

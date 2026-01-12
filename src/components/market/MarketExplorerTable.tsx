@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { InlinePlaceholder } from './CardPlaceholder';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 
 interface MarketItem {
   id: string;
@@ -233,7 +234,7 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
                   <p className="text-muted-foreground text-xs truncate">
                     {item.set_name || item.category} {item.series && `• ${item.series}`}
                   </p>
-                  <p className="text-muted-foreground text-xs capitalize">{item.category.replace('-', ' ')}</p>
+                  <p className="text-muted-foreground text-xs">{getCategoryLabel(item.category)}</p>
                 </div>
               </div>
 

@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { generateCardSlug, normalizeCategory } from '@/lib/seoSlug';
 import { Badge } from '@/components/ui/badge';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 interface ListingItem {
   id: string;
@@ -235,8 +236,8 @@ export function PopularCardsPanel() {
                   </div>
                   
                   <div className="mt-2">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
-                      {item.category}
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      {formatCategoryName(item.category)}
                     </span>
                   </div>
                 </div>

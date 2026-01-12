@@ -5,6 +5,7 @@ import { CheckCircle, Eye, Share2, Plus, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 
 interface ListingSuccessModalProps {
   open: boolean;
@@ -100,7 +101,7 @@ export const ListingSuccessModal = ({
                 {listing.title}
               </h3>
               <Badge variant="outline" className="mt-1 text-xs">
-                {listing.category.toUpperCase()}
+                {getCategoryLabel(listing.category)}
               </Badge>
               <p className="text-lg font-bold text-primary mt-1">
                 ${listing.price.toFixed(2)}

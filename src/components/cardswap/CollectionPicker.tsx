@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useUserHoldings, UserHoldingItem } from '@/hooks/useUserHoldings';
 import { Search, Package, Tag, Vault, Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 
 interface CollectionPickerProps {
   userId: string;
@@ -157,8 +158,8 @@ export const CollectionPicker = ({
                   </div>
 
                   <div className="flex items-center justify-between mt-1.5">
-                    <span className="text-xs text-muted-foreground capitalize">
-                      {item.category} • {item.condition.replace('_', ' ')}
+                    <span className="text-xs text-muted-foreground">
+                      {getCategoryLabel(item.category)} • {item.condition.replace('_', ' ')}
                     </span>
                     <span className="text-xs font-medium text-foreground">
                       {formatPrice(item.currentValue)}
