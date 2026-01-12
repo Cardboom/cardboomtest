@@ -114,9 +114,9 @@ export function GradingFeedbackDialog({ orderId, cbgiScore }: GradingFeedbackDia
           </div>
 
           <div className="space-y-2">
-            <Label>Observations (optional)</Label>
+            <Label>Notes (optional)</Label>
             <Textarea 
-              placeholder="Notable condition issues, discrepancies, etc..."
+              placeholder="Any notable condition issues, discrepancies, etc..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
