@@ -69,7 +69,7 @@ serve(async (req) => {
         referred_id: payload.referred_user_id,
         referral_code: payload.referral_code,
         status: 'pending',
-        reward_amount: 50,
+        reward_amount: 0.50,
       })
       .select()
       .single();
@@ -92,7 +92,7 @@ serve(async (req) => {
         user_id: referrer.id,
         type: 'referral',
         title: '🎉 New Referral!',
-        body: 'Someone joined using your referral code! Complete their first purchase to earn ₺50.',
+        body: 'Someone joined using your referral code! Complete their first purchase to earn $0.50.',
         data: { referral_id: referral.id },
       });
 

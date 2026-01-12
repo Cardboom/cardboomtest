@@ -281,31 +281,20 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle();
 
-    const tier = subscription?.tier || 'free';
-    
-    // Calculate countdown duration based on subscription tier
-    // Enterprise: 4 hours, Pro: 24 hours, Free: 72 hours
-    const COUNTDOWN_HOURS: Record<string, number> = {
-      enterprise: 4,
-      pro: 24,
-      free: 72,
+    // Speed tier determines grading visibility timing (NOT subscription tier)
+    // Priority: 4 hours, Express: 24 hours, Standard: 72 hours
+    const SPEED_TIER_HOURS: Record<string, number> = {
+      priority: 4,
+      express: 24,
+      standard: 72,
     };
     
-    // Speed tier multipliers
-    const SPEED_MULTIPLIER: Record<string, number> = {
-      priority: 0.2,
-      express: 0.6,
-      standard: 1,
-    };
-    
-    const baseHours = COUNTDOWN_HOURS[tier] || 72;
     const speedTier = existingOrder.speed_tier || 'standard';
-    const multiplier = SPEED_MULTIPLIER[speedTier] || 1;
-    const countdownHours = baseHours * multiplier;
+    const countdownHours = SPEED_TIER_HOURS[speedTier] || 72;
     
     const estimatedCompletionAt = new Date(Date.now() + countdownHours * 60 * 60 * 1000).toISOString();
     
-    // For admins, results are visible immediately. For others, after countdown
+    // For admins, results are visible immediately. For others, after countdown based on speed tier
     const resultsVisibleAt = isAdmin ? new Date().toISOString() : estimatedCompletionAt;
 
     // Update order to paid with estimated completion time and visibility time

@@ -26,18 +26,12 @@ interface SubscriptionInfo {
   tier: 'free' | 'pro' | 'enterprise';
 }
 
-// Countdown durations based on subscription tier (in hours)
-const COUNTDOWN_HOURS = {
-  free: 72, // 3 days
-  pro: 24,  // 1 day
-  enterprise: 4, // 4 hours
-};
-
-// Speed tier bonuses (reduce countdown further)
-const SPEED_TIER_MULTIPLIER = {
-  standard: 1,
-  express: 0.6,
-  priority: 0.2,
+// Countdown durations based on SPEED TIER selected during grading (in hours)
+// Speed tier is what determines the wait time, NOT subscription tier
+const SPEED_TIER_HOURS = {
+  standard: 72, // 3 days
+  express: 24,  // 1 day  
+  priority: 4,  // 4 hours
 };
 
 export function GradingCountdownPanel({ gradingOrderId, onComplete }: GradingCountdownPanelProps) {
@@ -89,10 +83,9 @@ export function GradingCountdownPanel({ gradingOrderId, onComplete }: GradingCou
           const remaining = Math.max(0, resultsVisibleAt - now);
           setTimeRemaining(remaining);
         } else {
-          // Fallback: Calculate countdown from created_at
-          const baseHours = COUNTDOWN_HOURS[tier];
-          const speedMultiplier = SPEED_TIER_MULTIPLIER[order.speed_tier || 'standard'];
-          const totalHours = baseHours * speedMultiplier;
+          // Fallback: Calculate countdown from created_at based on speed tier
+          const speedTier = order.speed_tier || 'standard';
+          const totalHours = SPEED_TIER_HOURS[speedTier as keyof typeof SPEED_TIER_HOURS] || 72;
           
           const createdAt = new Date(order.created_at).getTime();
           const targetTime = createdAt + (totalHours * 60 * 60 * 1000);
@@ -183,10 +176,10 @@ export function GradingCountdownPanel({ gradingOrderId, onComplete }: GradingCou
     return `${minutes}m ${seconds}s`;
   };
 
-  // Calculate progress
-  const baseHours = COUNTDOWN_HOURS[subscription.tier];
-  const speedMultiplier = SPEED_TIER_MULTIPLIER[orderInfo.speed_tier || 'standard'];
-  const totalMs = baseHours * speedMultiplier * 60 * 60 * 1000;
+  // Calculate progress based on speed tier
+  const speedTier = orderInfo.speed_tier || 'standard';
+  const totalHours = SPEED_TIER_HOURS[speedTier as keyof typeof SPEED_TIER_HOURS] || 72;
+  const totalMs = totalHours * 60 * 60 * 1000;
   const progressPercent = ((totalMs - timeRemaining) / totalMs) * 100;
 
   const getTierIcon = () => {
