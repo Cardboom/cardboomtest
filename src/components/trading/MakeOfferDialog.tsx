@@ -110,7 +110,20 @@ export const MakeOfferDialog = ({
 
       if (error) throw error;
 
+      // Send notification to seller
       const displayAmount = formatOfferDisplay(amount, offerCurrency);
+      const usdDisplay = amountUsd ? ` (≈$${amountUsd.toFixed(2)})` : '';
+      
+      await supabase.functions.invoke('send-notification', {
+        body: {
+          user_id: actualSellerId,
+          type: 'new_offer',
+          title: '💰 New Offer Received!',
+          body: `Someone offered ${displayAmount}${usdDisplay} for your listing`,
+          data: { listing_id: listingId, offer_amount: amount, currency: offerCurrency },
+        },
+      });
+
       toast.success(`Offer of ${displayAmount} sent to ${sellerName}`);
       setOfferAmount('');
       setMessage('');
