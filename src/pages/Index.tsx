@@ -284,7 +284,7 @@ const Index = () => {
       {user && <DailyCardVotePopup />}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <MarketTicker />
-      <TrustBadgesBar />
+      {/* TrustBadgesBar removed - stats shown elsewhere */}
       
       <main>
         {/* Boom Challenges - Full width at top */}
