@@ -51,7 +51,7 @@ const Help = () => {
     'security': [
       { q: 'How do I verify my identity?', a: 'Go to Profile → Verification. Upload your ID document and complete the verification process. This is required for withdrawals and selling.' },
       { q: 'What is 2FA and how do I enable it?', a: 'Two-factor authentication adds an extra security layer. Enable it in Profile → Security settings using your phone number.' },
-      { q: 'What should I do if my account is compromised?', a: 'Contact support immediately at destek@cardboom.com. We\'ll help you secure your account and investigate any unauthorized activity.' },
+      { q: 'What should I do if my account is compromised?', a: 'Contact support immediately at support@cardboom.com. We\'ll help you secure your account and investigate any unauthorized activity.' },
       { q: 'How does CardBoom detect fake cards?', a: 'We accept PSA/BGS/CGC graded cards, have a Verified Seller program, AI-assisted card scanning, and full buyer protection with refunds for counterfeits.' },
     ],
     'collective': [
@@ -212,7 +212,7 @@ const Help = () => {
                             </div>
                             <div>
                               <p className="text-sm text-muted-foreground">Email</p>
-                              <p className="font-medium">destek@cardboom.com</p>
+                              <p className="font-medium">support@cardboom.com</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
@@ -230,7 +230,7 @@ const Help = () => {
                             </div>
                             <div>
                               <p className="text-sm text-muted-foreground">Live Chat</p>
-                              <p className="font-medium">Available 9AM-9PM (GMT+3)</p>
+                              <p className="font-medium">Available 9AM-9PM (Istanbul)</p>
                             </div>
                           </div>
                         </div>
