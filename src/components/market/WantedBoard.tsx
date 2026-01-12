@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
+import { CardAutocomplete } from './CardAutocomplete';
 import { 
   Gavel, Plus, Clock, User, Target, TrendingUp, 
   MessageSquare, ChevronRight, Sparkles, Filter
@@ -69,7 +70,8 @@ export const WantedBoard = () => {
     grade: 'any',
     bid_amount: '',
     max_bid: '',
-    notes: ''
+    notes: '',
+    market_item_id: null as string | null,
   });
 
   // Check auth
@@ -127,6 +129,7 @@ export const WantedBoard = () => {
         bid_amount: parseFloat(formData.bid_amount),
         max_bid: formData.max_bid ? parseFloat(formData.max_bid) : null,
         notes: formData.notes || null,
+        market_item_id: formData.market_item_id,
         status: 'active'
       });
 
@@ -142,7 +145,8 @@ export const WantedBoard = () => {
         grade: 'any',
         bid_amount: '',
         max_bid: '',
-        notes: ''
+        notes: '',
+        market_item_id: null,
       });
     },
     onError: (error: any) => {
@@ -221,11 +225,28 @@ export const WantedBoard = () => {
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label>What are you looking for?</Label>
-                  <Input
-                    placeholder="e.g., Charizard Base Set Holo"
+                  <CardAutocomplete
                     value={formData.item_name}
-                    onChange={(e) => setFormData({ ...formData, item_name: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, item_name: value, market_item_id: null })}
+                    onSelectCard={(card) => {
+                      setFormData({
+                        ...formData,
+                        item_name: card.name,
+                        category: card.category,
+                        market_item_id: card.id,
+                        // Pre-fill a suggested bid based on market price
+                        bid_amount: formData.bid_amount || Math.floor(card.current_price * 0.9).toString(),
+                      });
+                    }}
+                    category={formData.category}
+                    placeholder="e.g., Charizard Base Set Holo"
                   />
+                  {formData.market_item_id && (
+                    <p className="text-xs text-gain flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      Matched to card in database
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
