@@ -12,7 +12,14 @@ const GEM_RATE = 0.002; // 0.2% in gems (or 0.25% for Pro)
 // CBGI Grading system prompt
 const CBGI_SYSTEM_PROMPT = `You are CardBoom Grading Index (CBGI), an expert card grading AI. Analyze the provided card images and return a comprehensive grading assessment.
 
-GRADING RUBRIC:
+IMPORTANT - PRE-GRADED CARD DETECTION:
+First, determine if the card is already in a graded slab (PSA, BGS, CGC, etc.):
+- If you see a plastic slab/case with a grading label (PSA, BGS, CGC, etc.), this is a PRE-GRADED card
+- For PRE-GRADED cards: Set "is_pre_graded": true and include the company and score from the label
+- For PRE-GRADED PSA 10 cards: Your CBGI score should reflect that grade (9.5-10.0 range) since PSA 10 is "Gem Mint"
+- For PRE-GRADED cards, analyze what's visible but acknowledge the professional grade
+
+GRADING RUBRIC (for raw cards):
 - Centering (20% weight): Front/back centering balance, measure left-right and top-bottom ratios
 - Corners (20% weight): Sharpness, wear, whitening, bends
 - Edges (20% weight): Smoothness, chips, wear, whitening
@@ -21,15 +28,16 @@ GRADING RUBRIC:
 
 SCORING RULES:
 - Score each category from 1.0 to 10.0 in 0.5 increments
-- Be CONSERVATIVE: if surface cannot be verified due to glare/low-res/sleeve, cap surface at 8.5
+- Be CONSERVATIVE for raw cards: if surface cannot be verified due to glare/low-res/sleeve, cap surface at 8.5
+- For PRE-GRADED cards: Trust the professional grade but score based on visible condition
 - Final CardBoom Index = weighted average on 0-10 scale with one decimal (e.g., 8.1, 9.5)
 
 PSA RANGE MAPPING (approximate):
-- 9.5-10.0: PSA 10 potential
-- 8.5-9.4: PSA 9 range
-- 7.5-8.4: PSA 8 range
-- 6.5-7.4: PSA 7 range
-- 5.5-6.4: PSA 6 range
+- 9.5-10.0: PSA 10 potential (Gem Mint)
+- 8.5-9.4: PSA 9 range (Mint)
+- 7.5-8.4: PSA 8 range (NM-MT)
+- 6.5-7.4: PSA 7 range (NM)
+- 5.5-6.4: PSA 6 range (EX-MT)
 - Below 5.5: PSA 5 or lower
 
 RISK FLAGS (include if applicable):
@@ -40,6 +48,7 @@ RISK FLAGS (include if applicable):
 - CENTERING_SEVERE: Centering significantly off
 - SURFACE_WEAR: Visible surface wear detected
 - CORNER_DAMAGE: Notable corner damage present
+- PRE_GRADED: Card is already in a professional grading slab
 
 OUTPUT STRICT JSON ONLY - no markdown, no explanation:`;
 
@@ -350,10 +359,17 @@ serve(async (req) => {
         throw new Error('No images available for grading');
       }
 
-      const userPrompt = `Analyze this trading card and provide a grading assessment. Return ONLY valid JSON matching this exact structure:
+      const userPrompt = `Analyze this trading card and provide a grading assessment. 
+
+FIRST: Check if this card is already in a professional grading slab (PSA, BGS, CGC case). If so, note the grade on the label.
+
+Return ONLY valid JSON matching this exact structure:
 {
   "card_name": "Card Name Here",
   "set": "Set Name Here",
+  "is_pre_graded": false,
+  "pre_grade_company": null,
+  "pre_grade_score": null,
   "analysis": {
     "centering": {"score": 8.5, "notes": "Brief notes"},
     "corners": {"score": 8.0, "notes": "Brief notes"},
@@ -366,7 +382,13 @@ serve(async (req) => {
   "confidence_level": "Medium",
   "risk_flags": [],
   "grading_disclaimer": "This is the CardBoom Grading Index. We do our best to grade with our fine-tuned AI system powered by Brainbaby."
-}`;
+}
+
+For pre-graded cards (e.g., PSA 10 slab):
+- Set "is_pre_graded": true
+- Set "pre_grade_company": "PSA" (or BGS, CGC, etc.)
+- Set "pre_grade_score": 10 (the score shown on the label)
+- Your "cardboom_index" should align with that grade (PSA 10 = CBGI 9.5-10.0)`;
 
       console.log('Calling OpenAI GPT-4o Vision for CBGI grading...');
 
@@ -496,6 +518,11 @@ serve(async (req) => {
       const cbgiScore = cbgiResult.cardboom_index || 0;
       const finalGrade = Math.round(cbgiScore * 10) / 10;
 
+      // Extract pre-graded info
+      const isPreGraded = cbgiResult.is_pre_graded || false;
+      const preGradeCompany = cbgiResult.pre_grade_company || null;
+      const preGradeScore = cbgiResult.pre_grade_score || null;
+
       // Update order with CBGI results
       const { error: updateGradeError } = await supabase
         .from('grading_orders')
@@ -508,7 +535,7 @@ serve(async (req) => {
           cbgi_score_0_100: finalGrade, // Now stores 0-10 score
           estimated_psa_range: cbgiResult.estimated_psa_range,
           cbgi_confidence: cbgiResult.confidence_level?.toLowerCase() || 'medium',
-          cbgi_risk_flags: cbgiResult.risk_flags || [],
+          cbgi_risk_flags: isPreGraded ? [...(cbgiResult.risk_flags || []), 'PRE_GRADED'] : (cbgiResult.risk_flags || []),
           // Standard grade fields
           final_grade: finalGrade,
           grade_label: getGradeLabelFromScore(finalGrade),
@@ -520,9 +547,15 @@ serve(async (req) => {
           // Card identification
           card_name: cbgiResult.card_name || existingOrder.card_name,
           set_name: cbgiResult.set || existingOrder.set_name,
+          // Pre-graded detection
+          is_pre_graded: isPreGraded,
+          pre_grade_company: preGradeCompany,
+          pre_grade_score: preGradeScore,
           // Clear error
           error_message: null,
-          grading_notes: cbgiResult.grading_disclaimer,
+          grading_notes: isPreGraded 
+            ? `Pre-graded ${preGradeCompany} ${preGradeScore} detected. ${cbgiResult.grading_disclaimer}`
+            : cbgiResult.grading_disclaimer,
         })
         .eq('id', orderId);
 

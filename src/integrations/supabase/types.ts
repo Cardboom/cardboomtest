@@ -3844,6 +3844,7 @@ export type Database = {
           category: string | null
           cbgi_confidence: string | null
           cbgi_json: Json | null
+          cbgi_passport_number: string | null
           cbgi_risk_flags: string[] | null
           cbgi_score_0_100: number | null
           centering_grade: number | null
@@ -3872,12 +3873,15 @@ export type Database = {
           idempotency_key: string
           identified_confidence: number | null
           is_batch_discounted: boolean | null
+          is_pre_graded: boolean | null
           language: string | null
           listing_created_id: string | null
           market_item_id: string | null
           overlay_coordinates: Json | null
           overlay_url: string | null
           paid_at: string | null
+          pre_grade_company: string | null
+          pre_grade_score: number | null
           price_cents: number | null
           price_currency: string | null
           price_high: number | null
@@ -3919,6 +3923,7 @@ export type Database = {
           category?: string | null
           cbgi_confidence?: string | null
           cbgi_json?: Json | null
+          cbgi_passport_number?: string | null
           cbgi_risk_flags?: string[] | null
           cbgi_score_0_100?: number | null
           centering_grade?: number | null
@@ -3947,12 +3952,15 @@ export type Database = {
           idempotency_key: string
           identified_confidence?: number | null
           is_batch_discounted?: boolean | null
+          is_pre_graded?: boolean | null
           language?: string | null
           listing_created_id?: string | null
           market_item_id?: string | null
           overlay_coordinates?: Json | null
           overlay_url?: string | null
           paid_at?: string | null
+          pre_grade_company?: string | null
+          pre_grade_score?: number | null
           price_cents?: number | null
           price_currency?: string | null
           price_high?: number | null
@@ -3994,6 +4002,7 @@ export type Database = {
           category?: string | null
           cbgi_confidence?: string | null
           cbgi_json?: Json | null
+          cbgi_passport_number?: string | null
           cbgi_risk_flags?: string[] | null
           cbgi_score_0_100?: number | null
           centering_grade?: number | null
@@ -4022,12 +4031,15 @@ export type Database = {
           idempotency_key?: string
           identified_confidence?: number | null
           is_batch_discounted?: boolean | null
+          is_pre_graded?: boolean | null
           language?: string | null
           listing_created_id?: string | null
           market_item_id?: string | null
           overlay_coordinates?: Json | null
           overlay_url?: string | null
           paid_at?: string | null
+          pre_grade_company?: string | null
+          pre_grade_score?: number | null
           price_cents?: number | null
           price_currency?: string | null
           price_high?: number | null
