@@ -57,6 +57,7 @@ import { EscalationManagement } from '@/components/admin/EscalationManagement';
 import { LaunchCheckDashboard } from '@/components/admin/LaunchCheckDashboard';
 import { SystemStatusDashboard } from '@/components/admin/SystemStatusDashboard';
 import { BountyManager } from '@/components/admin/BountyManager';
+import { MarketItemsManager } from '@/components/admin/MarketItemsManager';
 
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
@@ -249,6 +250,8 @@ const Admin = () => {
         return <ListingModeration />;
       case 'featured':
         return <FeaturedManager />;
+      case 'items-manager':
+        return <MarketItemsManager />;
       case 'prices':
         return renderPricesSection();
       case 'controls':
