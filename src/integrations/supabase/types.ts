@@ -3630,6 +3630,7 @@ export type Database = {
           message: string | null
           recipient_email: string | null
           recipient_id: string | null
+          recipient_phone: string | null
           sender_id: string
           status: string
         }
@@ -3644,6 +3645,7 @@ export type Database = {
           message?: string | null
           recipient_email?: string | null
           recipient_id?: string | null
+          recipient_phone?: string | null
           sender_id: string
           status?: string
         }
@@ -3658,6 +3660,7 @@ export type Database = {
           message?: string | null
           recipient_email?: string | null
           recipient_id?: string | null
+          recipient_phone?: string | null
           sender_id?: string
           status?: string
         }
@@ -5115,9 +5118,11 @@ export type Database = {
       offers: {
         Row: {
           amount: number
+          amount_usd: number | null
           buyer_id: string
           counter_price: number | null
           created_at: string
+          currency: string
           expires_at: string | null
           id: string
           is_counter_offer: boolean | null
@@ -5130,9 +5135,11 @@ export type Database = {
         }
         Insert: {
           amount: number
+          amount_usd?: number | null
           buyer_id: string
           counter_price?: number | null
           created_at?: string
+          currency?: string
           expires_at?: string | null
           id?: string
           is_counter_offer?: boolean | null
@@ -5145,9 +5152,11 @@ export type Database = {
         }
         Update: {
           amount?: number
+          amount_usd?: number | null
           buyer_id?: string
           counter_price?: number | null
           created_at?: string
+          currency?: string
           expires_at?: string | null
           id?: string
           is_counter_offer?: boolean | null

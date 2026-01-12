@@ -10,9 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { DollarSign, Send } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DollarSign, Send, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useCurrency, Currency } from '@/contexts/CurrencyContext';
 
 interface MakeOfferDialogProps {
   open: boolean;
@@ -34,13 +36,27 @@ export const MakeOfferDialog = ({
   onOfferSent,
 }: MakeOfferDialogProps) => {
   const [offerAmount, setOfferAmount] = useState('');
+  const [offerCurrency, setOfferCurrency] = useState<Currency>('USD');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { formatPriceInCurrency, convertToUSD, exchangeRates } = useCurrency();
 
-  const formatPrice = (price: number) => {
-    if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
-    if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
-    return `$${price.toLocaleString()}`;
+  const getCurrencySymbol = (cur: Currency) => {
+    if (cur === 'TRY') return '₺';
+    if (cur === 'EUR') return '€';
+    return '$';
+  };
+
+  const formatOfferDisplay = (price: number, cur: Currency) => {
+    const symbol = getCurrencySymbol(cur);
+    if (price >= 1000000) return `${symbol}${(price / 1000000).toFixed(2)}M`;
+    if (price >= 1000) return `${symbol}${(price / 1000).toFixed(1)}K`;
+    return `${symbol}${price.toLocaleString()}`;
+  };
+
+  const getUsdEquivalent = (amount: number, cur: Currency): number => {
+    if (cur === 'USD') return amount;
+    return convertToUSD(amount, cur);
   };
 
   const handleSubmit = async () => {
@@ -74,6 +90,9 @@ export const MakeOfferDialog = ({
         throw new Error('Could not find seller');
       }
 
+      // Calculate USD equivalent for non-USD offers
+      const amountUsd = offerCurrency !== 'USD' ? getUsdEquivalent(amount, offerCurrency) : null;
+
       // Insert offer into database
       const { error } = await supabase
         .from('offers')
@@ -82,6 +101,8 @@ export const MakeOfferDialog = ({
           buyer_id: session.user.id,
           seller_id: actualSellerId,
           amount: amount,
+          currency: offerCurrency,
+          amount_usd: amountUsd,
           message: message || null,
           status: 'pending',
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
@@ -89,9 +110,11 @@ export const MakeOfferDialog = ({
 
       if (error) throw error;
 
-      toast.success(`Offer of ${formatPrice(amount)} sent to ${sellerName}`);
+      const displayAmount = formatOfferDisplay(amount, offerCurrency);
+      toast.success(`Offer of ${displayAmount} sent to ${sellerName}`);
       setOfferAmount('');
       setMessage('');
+      setOfferCurrency('USD');
       onOpenChange(false);
       onOfferSent?.();
     } catch (error: any) {
@@ -108,6 +131,11 @@ export const MakeOfferDialog = ({
     Math.round(listingPrice * 0.95),
   ];
 
+  const parsedAmount = parseFloat(offerAmount) || 0;
+  const usdEquivalent = offerCurrency !== 'USD' && parsedAmount > 0 
+    ? getUsdEquivalent(parsedAmount, offerCurrency) 
+    : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -117,23 +145,48 @@ export const MakeOfferDialog = ({
             Make an Offer
           </DialogTitle>
           <DialogDescription>
-            Listed at {formatPrice(listingPrice)} by {sellerName}
+            Listed at {formatPriceInCurrency(listingPrice, 'USD')} by {sellerName}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Your Offer</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-              <Input
-                type="number"
-                placeholder="0.00"
-                value={offerAmount}
-                onChange={(e) => setOfferAmount(e.target.value)}
-                className="pl-7"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {getCurrencySymbol(offerCurrency)}
+                </span>
+                <Input
+                  type="number"
+                  placeholder="0.00"
+                  value={offerAmount}
+                  onChange={(e) => setOfferAmount(e.target.value)}
+                  className="pl-7"
+                />
+              </div>
+              <Select value={offerCurrency} onValueChange={(v) => setOfferCurrency(v as Currency)}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="TRY">TRY</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            {usdEquivalent !== null && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Info className="w-3 h-3" />
+                ≈ ${usdEquivalent.toFixed(2)} USD
+                {exchangeRates && (
+                  <span className="text-[10px]">
+                    (1 {offerCurrency} = ${offerCurrency === 'EUR' ? exchangeRates.EUR_USD.toFixed(4) : exchangeRates.TRY_USD.toFixed(4)})
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -142,10 +195,13 @@ export const MakeOfferDialog = ({
                 key={amount}
                 variant="outline"
                 size="sm"
-                onClick={() => setOfferAmount(amount.toString())}
+                onClick={() => {
+                  setOfferAmount(amount.toString());
+                  setOfferCurrency('USD');
+                }}
                 className="text-xs"
               >
-                {formatPrice(amount)} ({Math.round((amount / listingPrice) * 100)}%)
+                ${amount.toLocaleString()} ({Math.round((amount / listingPrice) * 100)}%)
               </Button>
             ))}
           </div>

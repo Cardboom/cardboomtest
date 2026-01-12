@@ -15,7 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, MessageSquare, Clock, Loader2, TrendingDown, TrendingUp } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DollarSign, MessageSquare, Clock, Loader2, TrendingDown, TrendingUp, Info } from 'lucide-react';
+import { useCurrency, Currency } from '@/contexts/CurrencyContext';
 
 interface Listing {
   id: string;
@@ -41,10 +43,24 @@ export const MakeOfferOnCardDialog = ({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [offerPrice, setOfferPrice] = useState('');
+  const [offerCurrency, setOfferCurrency] = useState<Currency>('USD');
   const [message, setMessage] = useState('');
+  const { convertToUSD, exchangeRates, formatPriceInCurrency } = useCurrency();
+
+  const getCurrencySymbol = (cur: Currency) => {
+    if (cur === 'TRY') return '₺';
+    if (cur === 'EUR') return '€';
+    return '$';
+  };
 
   const offerPriceNum = parseFloat(offerPrice) || 0;
-  const discount = listing.price > 0 ? ((listing.price - offerPriceNum) / listing.price * 100) : 0;
+  
+  // Convert to USD for comparison
+  const offerInUSD = offerCurrency !== 'USD' 
+    ? convertToUSD(offerPriceNum, offerCurrency) 
+    : offerPriceNum;
+  
+  const discount = listing.price > 0 ? ((listing.price - offerInUSD) / listing.price * 100) : 0;
   const isLowball = discount > 30;
 
   const handleSubmit = async () => {
@@ -67,7 +83,7 @@ export const MakeOfferOnCardDialog = ({
         return;
       }
 
-      // Check wallet balance
+      // Check wallet balance - we check against USD equivalent
       const { data: wallet } = await supabase
         .from('wallets')
         .select('balance')
@@ -75,10 +91,13 @@ export const MakeOfferOnCardDialog = ({
         .single();
 
       const balance = wallet?.balance || 0;
-      if (balance < offerPriceNum) {
-        toast.error(`Insufficient balance. You have $${balance.toFixed(2)}`);
+      if (balance < offerInUSD) {
+        toast.error(`Insufficient balance. You have $${balance.toFixed(2)} USD`);
         return;
       }
+
+      // Calculate USD equivalent for non-USD offers
+      const amountUsd = offerCurrency !== 'USD' ? offerInUSD : null;
 
       // Create offer
       const { error } = await supabase.from('offers').insert({
@@ -86,6 +105,8 @@ export const MakeOfferOnCardDialog = ({
         buyer_id: session.user.id,
         seller_id: listing.seller_id,
         amount: offerPriceNum,
+        currency: offerCurrency,
+        amount_usd: amountUsd,
         message: message.trim() || null,
         status: 'pending',
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24h expiry
@@ -94,19 +115,21 @@ export const MakeOfferOnCardDialog = ({
       if (error) throw error;
 
       // Send notification to seller
+      const displayAmount = `${getCurrencySymbol(offerCurrency)}${offerPriceNum.toFixed(2)}`;
       await supabase.functions.invoke('send-notification', {
         body: {
           user_id: listing.seller_id,
           type: 'new_offer',
           title: '💰 New Offer Received!',
-          body: `Someone offered $${offerPriceNum.toFixed(2)} for "${listing.title}"`,
-          data: { listing_id: listing.id, offer_amount: offerPriceNum },
+          body: `Someone offered ${displayAmount}${offerCurrency !== 'USD' ? ` (≈$${offerInUSD.toFixed(2)})` : ''} for "${listing.title}"`,
+          data: { listing_id: listing.id, offer_amount: offerPriceNum, currency: offerCurrency },
         },
       });
 
       toast.success('Offer sent! The seller will be notified.');
       onOpenChange(false);
       setOfferPrice('');
+      setOfferCurrency('USD');
       setMessage('');
     } catch (error) {
       console.error('Error making offer:', error);
@@ -148,14 +171,14 @@ export const MakeOfferOnCardDialog = ({
             <div className="flex-1 min-w-0">
               <p className="font-medium truncate">{listing.title}</p>
               <p className="text-lg font-bold text-primary">
-                ${listing.price.toLocaleString()}
+                {formatPriceInCurrency(listing.price, 'USD')}
               </p>
             </div>
           </div>
 
           {/* Quick Offer Buttons */}
           <div className="space-y-2">
-            <Label>Quick Offers</Label>
+            <Label>Quick Offers (USD)</Label>
             <div className="flex gap-2">
               {quickOffers.map((offer) => (
                 <Button
@@ -163,7 +186,10 @@ export const MakeOfferOnCardDialog = ({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setOfferPrice(offer.value.toFixed(2))}
+                  onClick={() => {
+                    setOfferPrice(offer.value.toFixed(2));
+                    setOfferCurrency('USD');
+                  }}
                   className="flex-1"
                 >
                   {offer.label}
@@ -178,19 +204,47 @@ export const MakeOfferOnCardDialog = ({
           {/* Custom Offer */}
           <div className="space-y-2">
             <Label htmlFor="offerPrice">Your Offer *</Label>
-            <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="offerPrice"
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={offerPrice}
-                onChange={(e) => setOfferPrice(e.target.value)}
-                placeholder="0.00"
-                className="pl-8 text-lg"
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {getCurrencySymbol(offerCurrency)}
+                </span>
+                <Input
+                  id="offerPrice"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={offerPrice}
+                  onChange={(e) => setOfferPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="pl-8 text-lg"
+                />
+              </div>
+              <Select value={offerCurrency} onValueChange={(v) => setOfferCurrency(v as Currency)}>
+                <SelectTrigger className="w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="TRY">TRY</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            
+            {/* USD equivalent for non-USD offers */}
+            {offerPriceNum > 0 && offerCurrency !== 'USD' && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Info className="w-3 h-3" />
+                ≈ ${offerInUSD.toFixed(2)} USD
+                {exchangeRates && (
+                  <span className="text-[10px]">
+                    (1 {offerCurrency} = ${offerCurrency === 'EUR' ? exchangeRates.EUR_USD.toFixed(4) : exchangeRates.TRY_USD.toFixed(4)})
+                  </span>
+                )}
+              </div>
+            )}
+            
             {offerPriceNum > 0 && (
               <div className="flex items-center gap-2">
                 {discount > 0 ? (

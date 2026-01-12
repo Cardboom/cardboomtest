@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Gift, Sparkles, Send, Check, Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Gift, Sparkles, Send, Check, Loader2, Mail, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -28,12 +28,24 @@ interface GiftCardPurchaseProps {
 
 export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPurchaseProps) {
   const [selectedAmount, setSelectedAmount] = useState<typeof GIFT_CARD_OPTIONS[0] | null>(null);
+  const [recipientType, setRecipientType] = useState<'email' | 'phone'>('email');
   const [recipientEmail, setRecipientEmail] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
   const [message, setMessage] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [purchasedCode, setPurchasedCode] = useState<string | null>(null);
   const { formatPrice } = useCurrency();
+
+  const formatPhoneNumber = (value: string) => {
+    // Remove all non-digit characters except +
+    const cleaned = value.replace(/[^\d+]/g, '');
+    // Ensure it starts with + if it has country code
+    if (cleaned.length > 0 && !cleaned.startsWith('+')) {
+      return '+' + cleaned;
+    }
+    return cleaned;
+  };
 
   const handlePurchase = async () => {
     if (!selectedAmount) return;
@@ -68,7 +80,8 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
         .from('gem_gift_cards')
         .insert({
           sender_id: user.id,
-          recipient_email: recipientEmail || null,
+          recipient_email: recipientType === 'email' && recipientEmail ? recipientEmail : null,
+          recipient_phone: recipientType === 'phone' && recipientPhone ? formatPhoneNumber(recipientPhone) : null,
           denomination_cents: selectedAmount.cents,
           gem_amount: selectedAmount.gems,
           message: message || null,
@@ -117,6 +130,8 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
   const resetForm = () => {
     setSelectedAmount(null);
     setRecipientEmail('');
+    setRecipientPhone('');
+    setRecipientType('email');
     setMessage('');
     setPurchasedCode(null);
   };
@@ -189,16 +204,40 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
               </div>
             </div>
 
-            {/* Recipient Email (Optional) */}
-            <div className="space-y-2">
-              <Label htmlFor="recipient-email">Recipient Email (Optional)</Label>
-              <Input
-                id="recipient-email"
-                type="email"
-                placeholder="friend@example.com"
-                value={recipientEmail}
-                onChange={(e) => setRecipientEmail(e.target.value)}
-              />
+            {/* Recipient Selection */}
+            <div className="space-y-3">
+              <Label>Send to (Optional)</Label>
+              <Tabs value={recipientType} onValueChange={(v) => setRecipientType(v as 'email' | 'phone')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="email" className="gap-2">
+                    <Mail className="w-4 h-4" />
+                    Email
+                  </TabsTrigger>
+                  <TabsTrigger value="phone" className="gap-2">
+                    <Phone className="w-4 h-4" />
+                    Phone
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="email" className="mt-3">
+                  <Input
+                    type="email"
+                    placeholder="friend@example.com"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                  />
+                </TabsContent>
+                <TabsContent value="phone" className="mt-3">
+                  <Input
+                    type="tel"
+                    placeholder="+1 555 123 4567"
+                    value={recipientPhone}
+                    onChange={(e) => setRecipientPhone(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Include country code (e.g., +1 for US, +90 for Turkey)
+                  </p>
+                </TabsContent>
+              </Tabs>
               <p className="text-xs text-muted-foreground">
                 Leave empty to create a gift card you can share manually
               </p>
