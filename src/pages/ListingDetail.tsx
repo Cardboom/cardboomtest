@@ -441,9 +441,16 @@ const ListingDetail = () => {
           {/* Image */}
           <div className="lg:col-span-1">
             <div className="glass rounded-2xl p-4 aspect-square relative">
-              {/* Grading Badges Overlay - Show both external and CBGI */}
+              {/* Grading Badges Overlay - CBGI first (tiffany), then external */}
               <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
-                {/* External Grading Badge (PSA, BGS, CGC) */}
+                {/* CBGI Badge first - CardBoom's grading with tiffany color */}
+                {gradingInfo?.final_grade && (
+                  <div className="bg-[#0ABAB5] text-white px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
+                    <Award className="w-4 h-4" />
+                    <span className="font-bold text-sm">CBGI {gradingInfo.final_grade.toFixed(1)}</span>
+                  </div>
+                )}
+                {/* External Grading Badge second (PSA, BGS, CGC) */}
                 {listing.grading_company && listing.grade && (
                   <div className={cn(
                     "px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg font-bold text-sm",
@@ -453,13 +460,6 @@ const ListingDetail = () => {
                   )}>
                     <Shield className="w-4 h-4" />
                     <span>{listing.grading_company} {listing.grade}</span>
-                  </div>
-                )}
-                {/* CBGI Badge - CardBoom's grading */}
-                {gradingInfo?.final_grade && (
-                  <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
-                    <Award className="w-4 h-4" />
-                    <span className="font-bold text-sm">CBGI {gradingInfo.final_grade.toFixed(1)}</span>
                   </div>
                 )}
               </div>

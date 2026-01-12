@@ -42,7 +42,7 @@ const getCountryFlag = (countryCode: string): string => {
   return String.fromCodePoint(...codePoints);
 };
 
-// Get grading displays - return both external and CBGI if available
+// Get grading displays - CBGI first, then external grading
 const getGradingDisplays = (listing: Listing) => {
   const displays: Array<{
     label: string;
@@ -50,23 +50,23 @@ const getGradingDisplays = (listing: Listing) => {
     type: 'external' | 'cbgi';
   }> = [];
   
-  // External grading (PSA, BGS, CGC, etc.)
-  if (listing.grading_company && listing.grade) {
-    const isTopGrade = listing.grade === '10' || listing.grade === '9.5';
-    displays.push({
-      label: `${listing.grading_company} ${listing.grade}`,
-      isTopGrade,
-      type: 'external'
-    });
-  }
-  
-  // CBGI score (CardBoom internal grading)
+  // CBGI score first (CardBoom internal grading) - tiffany color
   if (listing.cbgi_score !== null && listing.cbgi_score !== undefined) {
     const score = listing.cbgi_score > 10 ? listing.cbgi_score / 10 : listing.cbgi_score;
     displays.push({
       label: `CBGI ${score.toFixed(1)}`,
       isTopGrade: score >= 9.5,
       type: 'cbgi'
+    });
+  }
+  
+  // External grading second (PSA, BGS, CGC, etc.)
+  if (listing.grading_company && listing.grade) {
+    const isTopGrade = listing.grade === '10' || listing.grade === '9.5';
+    displays.push({
+      label: `${listing.grading_company} ${listing.grade}`,
+      isTopGrade,
+      type: 'external'
     });
   }
   
@@ -204,15 +204,15 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-foreground font-bold text-xl">{formatPrice(listing.price)}</p>
                         
-                        {/* Grading Badges - show both external and CBGI */}
+                        {/* Grading Badges - CBGI first (tiffany), then external */}
                         {gradings.map((grading, idx) => (
                           <Badge 
                             key={idx}
                             className={cn(
                               "text-xs font-semibold",
+                              grading.type === 'cbgi' && "bg-[#0ABAB5] text-white border-0",
                               grading.type === 'external' && grading.isTopGrade && "bg-gradient-to-r from-amber-500 to-yellow-500 text-black",
-                              grading.type === 'external' && !grading.isTopGrade && "bg-blue-500 text-white",
-                              grading.type === 'cbgi' && "bg-primary/20 text-primary border border-primary/30"
+                              grading.type === 'external' && !grading.isTopGrade && "bg-blue-500 text-white"
                             )}
                           >
                             {grading.type === 'external' && <Shield className="w-3 h-3 mr-1" />}
