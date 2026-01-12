@@ -141,6 +141,9 @@ const SellPage = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // Small delay to allow auth state to stabilize
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
@@ -151,6 +154,7 @@ const SellPage = () => {
         await fetchListings();
       } catch (error) {
         console.error('Error checking auth:', error);
+      } finally {
         setLoading(false);
       }
     };
