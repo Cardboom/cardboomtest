@@ -123,6 +123,19 @@ export const useXP = () => {
 
       if (updateError) throw updateError;
 
+      // IMPORTANT: Also update CardBoom Pass progress
+      // This ensures XP earned throughout the season adds to the reward road
+      try {
+        await supabase.rpc('add_pass_xp', {
+          p_user_id: user.id,
+          p_xp_amount: xpAmount,
+          p_source: action
+        });
+      } catch (passError) {
+        // Non-critical - don't fail if pass update fails
+        console.warn('Failed to update pass XP:', passError);
+      }
+
       // Check for level up
       if (newLevel > oldLevel) {
         toast({

@@ -43,23 +43,60 @@ export const CardboomPointsDialog = ({ open, onOpenChange }: CardboomPointsDialo
         return <Zap className="w-4 h-4" />;
       case 'purchase':
         return <ShoppingBag className="w-4 h-4" />;
+      case 'grading':
+      case 'grading_payment':
+        return <Gift className="w-4 h-4" />;
+      case 'bounty':
+      case 'bounty_reward':
+        return <Zap className="w-4 h-4" />;
+      case 'gift_card':
+        return <Gift className="w-4 h-4" />;
+      case 'referral':
+        return <TrendingUp className="w-4 h-4" />;
       default:
         return <Gift className="w-4 h-4" />;
     }
   };
 
   const getSourceLabel = (source: string) => {
+    // Format source labels - Title Case, professional UI text
     switch (source) {
       case 'top_up':
-        return 'Wallet Top-up';
+        return 'Wallet Top-Up';
       case 'card_war':
         return 'Card Wars';
       case 'purchase':
-        return 'Purchase';
+        return 'Card Purchase';
       case 'order':
-        return 'Order';
+        return 'Marketplace Order';
+      case 'grading':
+      case 'grading_payment':
+        return 'Grading Payment';
+      case 'bounty':
+      case 'bounty_reward':
+        return 'Bounty Reward';
+      case 'gift_card':
+        return 'Gift Card';
+      case 'referral':
+        return 'Referral Bonus';
+      case 'auction':
+        return 'Auction';
+      case 'listing':
+        return 'Listing Fee';
+      case 'sale':
+        return 'Sale Earnings';
+      case 'refund':
+        return 'Refund';
+      case 'promo':
+        return 'Promotional Bonus';
+      case 'daily_login':
+        return 'Daily Login Bonus';
       default:
-        return source;
+        // Capitalize first letter of each word for any unknown source
+        return source
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
     }
   };
 
