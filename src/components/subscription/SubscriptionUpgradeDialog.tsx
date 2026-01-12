@@ -58,7 +58,7 @@ export const SubscriptionUpgradeDialog = ({
     {
       icon: Zap,
       title: 'Lower Deposit Fees',
-      description: '4.5% card fee (vs 7%), 1.5% wire fee (vs 3%)',
+      description: '5.5% card fee (vs 7%), 2% wire fee (vs 3%)',
     },
     {
       icon: Crown,

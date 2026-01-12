@@ -206,16 +206,16 @@ export const useSubscription = (userId?: string) => {
       return {
         buyerFeeRate: 0.03, // 3% for Enterprise
         sellerFeeRate: 0.045, // 4.5% for Enterprise
-        cardFeeRate: 0.05, // 5% for Enterprise
-        wireFeeRate: 0.015, // 1.5% for Enterprise (minimum)
+        cardFeeRate: 0.045, // 4.5% for Enterprise
+        wireFeeRate: 0.01, // 1% for Enterprise
       };
     }
     if (isPro()) {
       return {
         buyerFeeRate: 0.045, // 4.5% for Pro
         sellerFeeRate: 0.06, // 6% for Pro
-        cardFeeRate: 0.045, // 4.5% for Pro
-        wireFeeRate: 0.015, // 1.5% for Pro (minimum)
+        cardFeeRate: 0.055, // 5.5% for Pro
+        wireFeeRate: 0.02, // 2% for Pro
       };
     }
     return {
