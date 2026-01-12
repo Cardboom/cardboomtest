@@ -7518,6 +7518,7 @@ export type Database = {
           assigned_to: string | null
           category: string | null
           created_at: string
+          email: string | null
           id: string
           message: string
           priority: string
@@ -7536,6 +7537,7 @@ export type Database = {
           assigned_to?: string | null
           category?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           message: string
           priority?: string
@@ -7554,6 +7556,7 @@ export type Database = {
           assigned_to?: string | null
           category?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           message?: string
           priority?: string
