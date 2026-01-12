@@ -9,8 +9,74 @@ const corsHeaders = {
 // Speed tier pricing - price is now stored on the order itself
 const GEM_RATE = 0.002; // 0.2% in gems (or 0.25% for Pro)
 
-// CBGI Grading system prompt
-const CBGI_SYSTEM_PROMPT = `You are CardBoom Grading Index (CBGI), an expert card grading AI. Analyze the provided card images and return a comprehensive grading assessment.
+// Interface for calibration data
+interface CalibrationData {
+  grading_company: string;
+  actual_grade: number;
+  cbgi_avg_score: number;
+  bias_offset: number;
+  confidence: number;
+  example_cards: Array<{
+    cbgi_score: number;
+    actual_grade: number;
+    notes: string | null;
+  }>;
+}
+
+// Generate calibration examples for the prompt
+function generateCalibrationSection(calibration: CalibrationData[]): string {
+  if (!calibration || calibration.length === 0) {
+    return '';
+  }
+
+  // Group by company
+  const byCompany: Record<string, CalibrationData[]> = {};
+  for (const c of calibration) {
+    if (!byCompany[c.grading_company]) {
+      byCompany[c.grading_company] = [];
+    }
+    byCompany[c.grading_company].push(c);
+  }
+
+  let section = `\n\n## CALIBRATION DATA (Based on ${calibration.reduce((sum, c) => sum + (c.example_cards?.length || 0), 0)} verified samples):\n`;
+  
+  for (const [company, grades] of Object.entries(byCompany)) {
+    section += `\n### ${company} Mapping (from real feedback):\n`;
+    
+    // Sort by grade
+    grades.sort((a, b) => b.actual_grade - a.actual_grade);
+    
+    for (const g of grades) {
+      if (g.confidence >= 0.3) {
+        const adjustment = g.bias_offset > 0 ? 
+          `CBGI tends to be ${Math.abs(g.bias_offset).toFixed(1)} points HIGH - score more conservatively` :
+          g.bias_offset < -0.3 ?
+          `CBGI tends to be ${Math.abs(g.bias_offset).toFixed(1)} points LOW - can score slightly higher` :
+          `CBGI is well-calibrated`;
+        
+        section += `- ${company} ${g.actual_grade}: CBGI should be ${(g.actual_grade - 0.3).toFixed(1)}-${(g.actual_grade + 0.3).toFixed(1)} (${adjustment})\n`;
+      }
+    }
+    
+    // Add up to 3 example cards
+    const examples = grades
+      .flatMap(g => g.example_cards || [])
+      .filter(e => e && e.notes)
+      .slice(0, 3);
+    
+    if (examples.length > 0) {
+      section += `\nReal examples for ${company}:\n`;
+      for (const ex of examples) {
+        section += `  • CBGI ${ex.cbgi_score?.toFixed(1)} → ${company} ${ex.actual_grade} (${ex.notes || 'No notes'})\n`;
+      }
+    }
+  }
+
+  return section;
+}
+
+// Base CBGI Grading system prompt
+const CBGI_BASE_PROMPT = `You are CardBoom Grading Index (CBGI), an expert card grading AI. Analyze the provided card images and return a comprehensive grading assessment.
 
 IMPORTANT - PRE-GRADED CARD DETECTION:
 First, determine if the card is already in a graded slab (PSA, BGS, CGC, etc.):
@@ -48,9 +114,43 @@ RISK FLAGS (include if applicable):
 - CENTERING_SEVERE: Centering significantly off
 - SURFACE_WEAR: Visible surface wear detected
 - CORNER_DAMAGE: Notable corner damage present
-- PRE_GRADED: Card is already in a professional grading slab
+- PRE_GRADED: Card is already in a professional grading slab`;
 
-OUTPUT STRICT JSON ONLY - no markdown, no explanation:`;
+// Function to build calibrated prompt
+async function buildCalibratedPrompt(supabase: any): Promise<{ prompt: string; version: string }> {
+  try {
+    // Fetch calibration data
+    const { data: calibration, error } = await supabase
+      .from('grading_calibration')
+      .select('*')
+      .gte('sample_count', 3) // Only use calibrations with at least 3 samples
+      .order('confidence', { ascending: false });
+    
+    if (error || !calibration || calibration.length === 0) {
+      console.log('No calibration data available, using base prompt');
+      return { 
+        prompt: CBGI_BASE_PROMPT + '\n\nOUTPUT STRICT JSON ONLY - no markdown, no explanation:', 
+        version: 'base-v1' 
+      };
+    }
+
+    console.log(`Loaded ${calibration.length} calibration records`);
+    
+    const calibrationSection = generateCalibrationSection(calibration as CalibrationData[]);
+    const version = `calibrated-v1-${new Date().toISOString().slice(0, 10)}-${calibration.length}samples`;
+    
+    return {
+      prompt: CBGI_BASE_PROMPT + calibrationSection + '\n\nOUTPUT STRICT JSON ONLY - no markdown, no explanation:',
+      version
+    };
+  } catch (err) {
+    console.error('Error loading calibration:', err);
+    return { 
+      prompt: CBGI_BASE_PROMPT + '\n\nOUTPUT STRICT JSON ONLY - no markdown, no explanation:', 
+      version: 'base-v1-fallback' 
+    };
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -338,6 +438,10 @@ serve(async (req) => {
       console.log('Front image:', existingOrder.front_image_url);
       console.log('Back image:', existingOrder.back_image_url);
       
+      // Build calibrated prompt with dynamic examples from feedback
+      const { prompt: calibratedPrompt, version: calibrationVersion } = await buildCalibratedPrompt(supabase);
+      console.log('Using calibration version:', calibrationVersion);
+      
       // Build image content for ChatGPT Vision
       const imageContent: any[] = [];
       
@@ -401,7 +505,7 @@ For pre-graded cards (e.g., PSA 10 slab):
         body: JSON.stringify({
           model: 'gpt-4.1',
           messages: [
-            { role: 'system', content: CBGI_SYSTEM_PROMPT },
+            { role: 'system', content: calibratedPrompt },
             { 
               role: 'user', 
               content: [
@@ -551,6 +655,8 @@ For pre-graded cards (e.g., PSA 10 slab):
           is_pre_graded: isPreGraded,
           pre_grade_company: preGradeCompany,
           pre_grade_score: preGradeScore,
+          // Calibration tracking
+          calibration_version: calibrationVersion,
           // Clear error
           error_message: null,
           grading_notes: isPreGraded 
