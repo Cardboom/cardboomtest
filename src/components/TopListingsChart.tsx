@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 
 interface TopListing {
   id: string;
@@ -390,7 +391,7 @@ export const TopListingsChart = () => {
                             <span>{getFlag(listing.seller_country)}</span>
                             <span className="truncate">{listing.seller_username}</span>
                             <span>•</span>
-                            <span className="capitalize">{listing.category?.replace(/-/g, ' ')}</span>
+                            <span>{getCategoryLabel(listing.category || '')}</span>
                           </div>
                         </div>
                       </div>

@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info, Zap, DollarSign, Sparkles, Camera } from 'lucide-react';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 import { CardScanner } from '@/components/CardScanner';
 import { CardPricingIntelligence } from '@/components/CardPricingIntelligence';
 import { CardScannerUpload } from '@/components/CardScannerUpload';
@@ -1292,7 +1293,7 @@ const SellPage = () => {
                                 {getStatusBadge(listing.status)}
                               </div>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                                <span>{listing.category.toUpperCase()}</span>
+                                <span>{getCategoryLabel(listing.category)}</span>
                                 <span>•</span>
                                 <span>{listing.condition}</span>
                                 <span>•</span>

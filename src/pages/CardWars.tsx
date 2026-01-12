@@ -44,7 +44,7 @@ const CardWars = () => {
           .gte('expires_at', new Date().toISOString())
           .single();
         
-        setIsPro(sub?.tier === 'pro' || sub?.tier === 'verified_seller');
+        setIsPro(sub?.tier === 'pro' || sub?.tier === 'verified_seller' || sub?.tier === 'enterprise');
       }
     };
     getUser();

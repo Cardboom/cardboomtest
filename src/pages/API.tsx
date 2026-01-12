@@ -397,7 +397,7 @@ grading_result = response.json()`
                       {[
                         '10,000 API requests/month',
                         'Real-time market data for 500K+ cards',
-                        'AI Card Grading API ($10/card)',
+                        'AI Card Grading API ($2.50/card)',
                         'Price history & trends',
                         'All TCG categories supported',
                         'Multi-currency (USD, EUR, TRY)',
@@ -562,7 +562,7 @@ grading_result = response.json()`
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Award className="h-5 w-5 text-purple-500" />
                       AI Grading API
-                      <Badge variant="outline" className="ml-2 text-purple-500 border-purple-500/50">$10/card</Badge>
+                      <Badge variant="outline" className="ml-2 text-purple-500 border-purple-500/50">$2.50/card</Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">

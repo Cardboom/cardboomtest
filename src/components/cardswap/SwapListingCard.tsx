@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 import { 
   Plug, 
   DollarSign, 
@@ -76,8 +77,8 @@ export const SwapListingCard = ({
           )}
           
           {/* Category Badge */}
-          <Badge className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm capitalize">
-            {listing.category}
+          <Badge className="absolute top-2 left-2 bg-background/80 backdrop-blur-sm">
+            {getCategoryLabel(listing.category)}
           </Badge>
 
           {/* Graded Badge */}

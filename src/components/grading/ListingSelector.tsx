@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Package, Check, AlertCircle, ImageIcon, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 
 interface Listing {
   id: string;
@@ -131,7 +132,7 @@ export function ListingSelector({ onSelect, selectedListing, className }: Listin
                 <p className="font-medium text-sm truncate">{listing.title}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="outline" className="text-xs">
-                    {listing.category.toUpperCase()}
+                    {getCategoryLabel(listing.category)}
                   </Badge>
                   <span className="text-xs text-muted-foreground">{listing.condition}</span>
                 </div>

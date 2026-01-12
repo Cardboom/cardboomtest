@@ -5,6 +5,7 @@ import {
   Clock, Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCategoryLabel } from '@/lib/categoryLabels';
 
 interface CardHeroSectionProps {
   item: {
@@ -52,8 +53,8 @@ export const CardHeroSection = ({
       {/* Card Name & Edition */}
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          <Badge variant="secondary" className="capitalize text-xs">
-            {item.category?.replace('-', ' ')}
+          <Badge variant="secondary" className="text-xs">
+            {getCategoryLabel(item.category || '')}
           </Badge>
           {item.is_trending && (
             <Badge className="bg-accent text-accent-foreground text-xs">
