@@ -63,6 +63,12 @@ interface Listing {
   // Certification
   certification_status?: string | null;
   grading_order_id?: string | null;
+  // External grading (PSA, BGS, CGC, etc.)
+  grading_company?: string | null;
+  grade?: string | null;
+  // CBGI (internal) scores
+  cbgi_score?: number | null;
+  cbgi_grade_label?: string | null;
   // Donations
   accepts_grading_donations?: boolean;
   donation_goal_cents?: number;
@@ -435,8 +441,22 @@ const ListingDetail = () => {
           {/* Image */}
           <div className="lg:col-span-1">
             <div className="glass rounded-2xl p-4 aspect-square relative">
-              {/* CBI Graded Badge Overlay */}
-              {gradingInfo?.final_grade && (
+              {/* External Grading Badge Overlay (PSA, BGS, CGC) - Priority */}
+              {listing.grading_company && listing.grade && (
+                <div className="absolute top-6 left-6 z-10">
+                  <div className={cn(
+                    "px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg font-bold text-sm",
+                    listing.grade === '10' || listing.grade === '9.5' 
+                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black" 
+                      : "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
+                  )}>
+                    <Shield className="w-4 h-4" />
+                    <span>{listing.grading_company} {listing.grade} ✓</span>
+                  </div>
+                </div>
+              )}
+              {/* CBI Graded Badge Overlay - Show only if no external grading */}
+              {!listing.grading_company && gradingInfo?.final_grade && (
                 <div className="absolute top-6 left-6 z-10">
                   <div className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
                     <Award className="w-4 h-4" />
@@ -497,6 +517,19 @@ const ListingDetail = () => {
 
             {/* Trust & Verification Strip */}
             <div className="flex flex-wrap gap-2">
+              {/* External Grading Badge (PSA, BGS, CGC) - Priority */}
+              {listing.grading_company && listing.grade && (
+                <div className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold",
+                  listing.grade === '10' || listing.grade === '9.5'
+                    ? "bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-400"
+                    : "bg-blue-500/20 border border-blue-500/30 text-blue-600 dark:text-blue-400"
+                )}>
+                  <Shield className="w-3.5 h-3.5" />
+                  {listing.grading_company} {listing.grade} ✓
+                </div>
+              )}
+              
               {/* AI Identified Badge */}
               {listing.ai_confidence && listing.ai_confidence > 0 && (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
@@ -505,22 +538,27 @@ const ListingDetail = () => {
                 </div>
               )}
               
-              {/* Grading Status */}
-              {gradingInfo?.final_grade ? (
+              {/* CBGI Status - CardBoom internal grading */}
+              {gradingInfo?.final_grade && (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-accent/20 border border-accent/30 text-xs font-medium text-accent-foreground">
                   <Award className="w-3.5 h-3.5" />
                   CardBoom Index: {gradingInfo.final_grade.toFixed(1)}
                 </div>
-              ) : listing.certification_status === 'pending' ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400">
-                  <Clock className="w-3.5 h-3.5 animate-pulse" />
-                  Grading in Progress
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-medium text-muted-foreground">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Ungraded
-                </div>
+              )}
+              
+              {/* Show pending or ungraded status only if no external grading */}
+              {!listing.grading_company && !gradingInfo?.final_grade && (
+                listing.certification_status === 'pending' ? (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-medium text-amber-600 dark:text-amber-400">
+                    <Clock className="w-3.5 h-3.5 animate-pulse" />
+                    Grading in Progress
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-medium text-muted-foreground">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Ungraded
+                  </div>
+                )
               )}
               
               {/* CVI Key */}
@@ -697,54 +735,6 @@ const ListingDetail = () => {
                       return;
                     }
                     setMessageDialogOpen(true);
-                  }}
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Message Seller
-                </Button>
-                <ListThisCardDialog
-                  cardName={listing.title}
-                  category={listing.category}
-                  setName={listing.set_name}
-                  marketItemId={listing.market_item_id}
-                  user={user}
-                />
-              </div>
-            )}
-            
-            {/* Show Buy Now for non-logged-in users too */}
-            {listing.status === 'active' && !user && (
-              <div className="flex flex-wrap gap-3">
-                <Button 
-                  size="lg" 
-                  className="gap-2" 
-                  onClick={() => {
-                    toast.info('Sign in to purchase this card');
-                    navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
-                  }}
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  Buy Now
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="gap-2"
-                  onClick={() => {
-                    toast.info('Sign in to make an offer');
-                    navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
-                  }}
-                >
-                  <DollarSign className="w-4 h-4" />
-                  Make Offer
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  className="gap-2"
-                  onClick={() => {
-                    toast.info('Sign in to message the seller');
-                    navigate('/auth', { state: { returnTo: `/listing/${listing.id}` } });
                   }}
                 >
                   <MessageCircle className="w-4 h-4" />
