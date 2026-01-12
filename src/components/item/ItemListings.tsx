@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, MessageSquare, Check, Package } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingCart, MessageSquare, Check, Package, Gavel, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { MakeOfferDialog } from '@/components/trading/MakeOfferDialog';
 import { StartConversationDialog } from '@/components/messaging/StartConversationDialog';
+import { PlaceBidDialog } from '@/components/item/PlaceBidDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface ItemListingsProps {
@@ -24,6 +26,11 @@ interface Listing {
   seller_name?: string;
   seller_country_code?: string;
   is_verified?: boolean;
+  is_auction?: boolean;
+  grading_company?: string | null;
+  grade?: string | null;
+  cbgi_score?: number | null;
+  cbgi_grade_label?: string | null;
 }
 
 const getCountryFlag = (countryCode: string): string => {
@@ -33,6 +40,33 @@ const getCountryFlag = (countryCode: string): string => {
     .split('')
     .map(char => 127397 + char.charCodeAt(0));
   return String.fromCodePoint(...codePoints);
+};
+
+// Get grading display - prioritize external grading (PSA/BGS) over CBGI
+const getGradingDisplay = (listing: Listing) => {
+  // Priority 1: External grading company (PSA, BGS, CGC, etc.)
+  if (listing.grading_company && listing.grade) {
+    const isTopGrade = listing.grade === '10' || listing.grade === '9.5';
+    return {
+      label: `${listing.grading_company} ${listing.grade}`,
+      isVerified: true,
+      isTopGrade,
+      type: 'external' as const
+    };
+  }
+  
+  // Priority 2: CBGI score (CardBoom internal grading)
+  if (listing.cbgi_score !== null && listing.cbgi_score !== undefined) {
+    const score = listing.cbgi_score > 10 ? listing.cbgi_score / 10 : listing.cbgi_score;
+    return {
+      label: `CB ${score.toFixed(1)}`,
+      isVerified: false,
+      isTopGrade: score >= 9.5,
+      type: 'cbgi' as const
+    };
+  }
+  
+  return null;
 };
 
 export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
@@ -47,10 +81,10 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
     const fetchListings = async () => {
       setLoading(true);
       
-      // Fetch listings that match this market item by name
+      // Fetch listings that match this market item by name - include grading fields
       const { data, error } = await supabase
         .from('listings')
-        .select('id, price, condition, seller_id, allows_vault, allows_trade, allows_shipping')
+        .select('id, price, condition, seller_id, allows_vault, allows_trade, allows_shipping, is_auction, grading_company, grade, cbgi_score, cbgi_grade_label')
         .eq('status', 'active')
         .ilike('title', itemName ? `%${itemName}%` : '%')
         .order('price', { ascending: true })
@@ -149,80 +183,135 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
         </div>
 
         <div className="divide-y divide-border/30">
-          {listings.map((listing) => (
-            <div 
-              key={listing.id}
-              className="p-4 hover:bg-secondary/30 transition-colors"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-foreground font-bold text-xl">{formatPrice(listing.price)}</p>
-                      <span className={cn(
-                        "px-2 py-0.5 rounded text-xs font-medium",
-                        listing.condition === 'Gem Mint' || listing.condition === 'PSA 10' 
-                          ? "bg-gold/20 text-gold" 
-                          : "bg-purple-500/20 text-purple-400"
-                      )}>
-                        {listing.condition}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-lg leading-none" title={listing.seller_country_code}>
-                        {getCountryFlag(listing.seller_country_code || 'TR')}
-                      </span>
-                      <span className="text-muted-foreground text-sm">{listing.seller_name}</span>
-                      {listing.is_verified && (
-                        <span className="flex items-center gap-1 text-xs text-primary">
-                          <Check className="w-3 h-3" />
-                          Verified
+          {listings.map((listing) => {
+            const grading = getGradingDisplay(listing);
+            
+            return (
+              <div 
+                key={listing.id}
+                className={cn(
+                  "p-4 hover:bg-secondary/30 transition-colors",
+                  listing.is_auction && "bg-primary/5 border-l-2 border-primary"
+                )}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-foreground font-bold text-xl">{formatPrice(listing.price)}</p>
+                        
+                        {/* Grading Badge - prioritize external grading over CBGI */}
+                        {grading && (
+                          <Badge 
+                            className={cn(
+                              "text-xs font-semibold",
+                              grading.type === 'external' && grading.isTopGrade && "bg-gradient-to-r from-amber-500 to-yellow-500 text-black",
+                              grading.type === 'external' && !grading.isTopGrade && "bg-blue-500 text-white",
+                              grading.type === 'cbgi' && "bg-primary/20 text-primary border border-primary/30"
+                            )}
+                          >
+                            {grading.type === 'external' && <Shield className="w-3 h-3 mr-1" />}
+                            {grading.label}
+                            {grading.type === 'external' && " ✓"}
+                          </Badge>
+                        )}
+                        
+                        {/* Condition badge (if no grading) */}
+                        {!grading && (
+                          <span className={cn(
+                            "px-2 py-0.5 rounded text-xs font-medium",
+                            listing.condition === 'Gem Mint' || listing.condition === 'PSA 10' 
+                              ? "bg-gold/20 text-gold" 
+                              : "bg-purple-500/20 text-purple-400"
+                          )}>
+                            {listing.condition || 'Raw'}
+                          </span>
+                        )}
+                        
+                        {/* Auction indicator */}
+                        {listing.is_auction && (
+                          <Badge variant="secondary" className="bg-primary/20 text-primary">
+                            <Gavel className="w-3 h-3 mr-1" />
+                            Auction
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-lg leading-none" title={listing.seller_country_code}>
+                          {getCountryFlag(listing.seller_country_code || 'TR')}
                         </span>
-                      )}
+                        <span className="text-muted-foreground text-sm">{listing.seller_name}</span>
+                        {listing.is_verified && (
+                          <span className="flex items-center gap-1 text-xs text-primary">
+                            <Check className="w-3 h-3" />
+                            Verified
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  {listing.allows_vault && (
-                    <span className="text-xs bg-secondary px-2 py-1 rounded text-muted-foreground">
-                      Vault
-                    </span>
-                  )}
-                  {listing.allows_trade && (
-                    <span className="text-xs bg-secondary px-2 py-1 rounded text-muted-foreground">
-                      Trade
-                    </span>
-                  )}
-                </div>
+                  <div className="flex items-center gap-2">
+                    {listing.allows_vault && (
+                      <span className="text-xs bg-secondary px-2 py-1 rounded text-muted-foreground">
+                        Vault
+                      </span>
+                    )}
+                    {listing.allows_trade && (
+                      <span className="text-xs bg-secondary px-2 py-1 rounded text-muted-foreground">
+                        Trade
+                      </span>
+                    )}
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleMessage(listing.id)}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleMakeOffer(listing.id)}
-                  >
-                    Make Offer
-                  </Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => handleBuyNow(listing.id)}
-                    className="bg-primary text-primary-foreground"
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Buy Now
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleMessage(listing.id)}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                    </Button>
+                    
+                    {listing.is_auction ? (
+                      // Show Place Bid button for auctions
+                      <Button 
+                        size="sm"
+                        className="bg-primary text-primary-foreground gap-2"
+                        onClick={() => {
+                          setSelectedListing(listing.id);
+                          // For now, use offer dialog - can be enhanced with proper auction bidding
+                          setShowOfferDialog(true);
+                        }}
+                      >
+                        <Gavel className="w-4 h-4" />
+                        Place Bid
+                      </Button>
+                    ) : (
+                      // Regular listing buttons
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleMakeOffer(listing.id)}
+                        >
+                          Make Offer
+                        </Button>
+                        <Button 
+                          size="sm"
+                          onClick={() => handleBuyNow(listing.id)}
+                          className="bg-primary text-primary-foreground"
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Buy Now
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
