@@ -18,6 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { CollectiveJoinDialog } from '@/components/collective/CollectiveJoinDialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Select,
@@ -178,7 +179,7 @@ const CollectiveMarket = () => {
               </div>
               <Select value={filterCategory} onValueChange={setFilterCategory}>
                 <SelectTrigger className="w-[140px]"><Filter className="h-4 w-4 mr-2" /><SelectValue placeholder="Category" /></SelectTrigger>
-                <SelectContent>{categories.map(cat => (<SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>))}</SelectContent>
+                <SelectContent>{categories.map(cat => (<SelectItem key={cat} value={cat}>{cat === 'all' ? 'All' : formatCategoryName(cat)}</SelectItem>))}</SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-[140px]"><ArrowUpDown className="h-4 w-4 mr-2" /><SelectValue placeholder="Sort" /></SelectTrigger>

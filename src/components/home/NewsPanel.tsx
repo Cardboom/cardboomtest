@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { Newspaper } from 'lucide-react';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 interface NewsItem {
   id: string;
@@ -134,7 +135,7 @@ export const NewsPanel = () => {
                       "inline-block w-fit px-1.5 py-0.5 rounded text-[8px] font-sans font-bold uppercase mb-1",
                       getCategoryColor(item.category)
                     )}>
-                      {item.category}
+                      {formatCategoryName(item.category)}
                     </span>
                   )}
                   <h3 className="font-sans font-bold text-[10px] md:text-[11px] text-white/90 leading-tight line-clamp-2 group-hover:text-white transition-colors">

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 interface SendToVaultDialogProps {
   open: boolean;
@@ -264,7 +265,7 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
                     <SelectContent>
                       {categories.map((cat) => (
                         <SelectItem key={cat} value={cat}>
-                          {cat.toUpperCase()}
+                          {formatCategoryName(cat)}
                         </SelectItem>
                       ))}
                     </SelectContent>

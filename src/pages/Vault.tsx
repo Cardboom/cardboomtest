@@ -28,6 +28,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { toast } from 'sonner';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 import { SendToVaultDialog } from '@/components/SendToVaultDialog';
 import { RequestReturnDialog } from '@/components/vault/RequestReturnDialog';
 import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard';
@@ -415,7 +416,7 @@ const VaultPage = () => {
                               {item.title}
                             </h3>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                              <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                              <Badge variant="outline" className="text-xs">{formatCategoryName(item.category)}</Badge>
                               <span>•</span>
                               <span>{item.condition}</span>
                             </div>

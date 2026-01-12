@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { LiveTickerPrice } from './LiveTickerPrice';
 import { Badge } from '@/components/ui/badge';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 interface MarketItem {
   id: string;
@@ -128,7 +129,7 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
                   {/* Row 2: Category + Price */}
                   <div className="flex items-center justify-between gap-2 mt-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-muted-foreground truncate">{item.category}</span>
+                      <span className="text-xs text-muted-foreground truncate">{formatCategoryName(item.category)}</span>
                       {item.liquidity && (
                         <div className={cn(
                           'flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px] font-medium',
@@ -163,7 +164,7 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
                   <div className="min-w-0">
                     <p className="font-medium text-foreground text-sm truncate group-hover:text-primary transition-colors">{item.name}</p>
                     <div className="flex items-center gap-1.5">
-                      <p className="text-xs text-muted-foreground">{item.category}</p>
+                      <p className="text-xs text-muted-foreground">{formatCategoryName(item.category)}</p>
                       {item.salesCount && (
                         <span className="text-xs text-muted-foreground">• {item.salesCount} listings</span>
                       )}
