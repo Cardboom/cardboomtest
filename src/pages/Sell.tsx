@@ -110,8 +110,8 @@ const SellPage = () => {
     description: '',
     category: 'nba',
     condition: 'Near Mint',
-    gradingCompany: '' as string,
-    grade: '' as string,
+    gradingCompany: '',
+    grade: '',
     price: '',
     currency: 'USD' as 'USD' | 'EUR' | 'TRY',
     setName: '',
@@ -847,14 +847,15 @@ const SellPage = () => {
                         <div>
                           <Label htmlFor="gradingCompany">Grading Company</Label>
                           <Select
-                            value={formData.gradingCompany}
-                            onValueChange={(value) => setFormData({ ...formData, gradingCompany: value, grade: value ? formData.grade : '' })}
+                            value={formData.gradingCompany || 'none'}
+                            onValueChange={(value) => setFormData({ ...formData, gradingCompany: value === 'none' ? '' : value, grade: value === 'none' ? '' : formData.grade })}
                           >
                             <SelectTrigger className="mt-1.5">
                               <SelectValue placeholder="Not Graded" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Not Graded (Raw)</SelectItem>
+                              <SelectItem value="none">Not Graded (Raw)</SelectItem>
+                              <SelectItem value="CBG">CBG (CardBoom)</SelectItem>
                               <SelectItem value="PSA">PSA</SelectItem>
                               <SelectItem value="BGS">BGS (Beckett)</SelectItem>
                               <SelectItem value="CGC">CGC</SelectItem>
@@ -873,7 +874,17 @@ const SellPage = () => {
                                 <SelectValue placeholder="Select Grade" />
                               </SelectTrigger>
                               <SelectContent>
-                                {formData.gradingCompany === 'PSA' ? (
+                                {formData.gradingCompany === 'CBG' ? (
+                                  <>
+                                    <SelectItem value="10">CBG 10 - Gem Mint</SelectItem>
+                                    <SelectItem value="9.5">CBG 9.5</SelectItem>
+                                    <SelectItem value="9">CBG 9 - Mint</SelectItem>
+                                    <SelectItem value="8.5">CBG 8.5</SelectItem>
+                                    <SelectItem value="8">CBG 8 - Near Mint-Mint</SelectItem>
+                                    <SelectItem value="7">CBG 7 - Near Mint</SelectItem>
+                                    <SelectItem value="6">CBG 6 - Excellent</SelectItem>
+                                  </>
+                                ) : formData.gradingCompany === 'PSA' ? (
                                   <>
                                     <SelectItem value="10">PSA 10 - Gem Mint</SelectItem>
                                     <SelectItem value="9">PSA 9 - Mint</SelectItem>

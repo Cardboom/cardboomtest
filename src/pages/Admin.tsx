@@ -90,12 +90,20 @@ const Admin = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeSection, setActiveSection] = useState('revenue');
 
-  // Redirect if not admin
+  // Redirect if not admin - only after auth check is complete
   useEffect(() => {
-    if (!isCheckingAdmin && !isAdmin) {
-      toast.error('Access denied. Admin privileges required.');
-      navigate('/');
-    }
+    // Wait for auth check to complete before redirecting
+    if (isCheckingAdmin) return;
+    
+    // Small delay to ensure session is fully established
+    const timer = setTimeout(() => {
+      if (!isAdmin) {
+        toast.error('Access denied. Admin privileges required.');
+        navigate('/');
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [isAdmin, isCheckingAdmin, navigate]);
 
   // Fetch market items
