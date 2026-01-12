@@ -6,15 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Trim any whitespace from secrets that could corrupt the signature
 const IYZICO_API_KEY = (Deno.env.get('IYZICO_API_KEY') || '').trim();
 const IYZICO_SECRET_KEY = (Deno.env.get('IYZICO_SECRET_KEY') || '').trim();
-// Remove trailing slash from base URL if present
 const IYZICO_BASE_URL = (Deno.env.get('IYZICO_BASE_URL') || 'https://api.iyzipay.com').replace(/\/$/, '').trim();
 
-// Generate iyzico authorization header using HMAC-SHA256 (V2 format - recommended for production)
-// Formula: HMACSHA256(randomKey + uriPath + requestBody, secretKey)
-// Header: IYZWSv2 base64("apiKey:" + apiKey + "&randomKey:" + randomKey + "&signature:" + signature)
 async function generateAuthorizationV2(
   apiKey: string,
   secretKey: string,
@@ -23,15 +18,8 @@ async function generateAuthorizationV2(
   requestBody: string
 ): Promise<string> {
   const encoder = new TextEncoder();
-  
-  // HMAC-SHA256: sign(randomKey + uriPath + requestBody, secretKey)
   const dataToSign = randomKey + uriPath + requestBody;
   
-  console.log('[iyzico-init-3ds] V2 Auth - Data to sign length:', dataToSign.length);
-  console.log('[iyzico-init-3ds] V2 Auth - URI Path:', uriPath);
-  console.log('[iyzico-init-3ds] V2 Auth - Random Key:', randomKey);
-  
-  // Import the secret key for HMAC
   const key = await crypto.subtle.importKey(
     'raw',
     encoder.encode(secretKey),
@@ -40,22 +28,14 @@ async function generateAuthorizationV2(
     ['sign']
   );
   
-  // Create HMAC signature
   const signatureBuffer = await crypto.subtle.sign('HMAC', key, encoder.encode(dataToSign));
   const signatureArray = new Uint8Array(signatureBuffer);
-  
-  // Convert to hex string
   const signatureHex = Array.from(signatureArray)
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
   
-  console.log('[iyzico-init-3ds] V2 Auth - Signature (hex):', signatureHex.substring(0, 32) + '...');
-  
-  // Build the authorization string
   const authString = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signatureHex}`;
   const authBase64 = btoa(authString);
-  
-  console.log('[iyzico-init-3ds] Using V2 HMAC-SHA256 auth format');
   
   return `IYZWSv2 ${authBase64}`;
 }
@@ -83,14 +63,23 @@ serve(async (req) => {
     }
 
     const { 
-      amountUSD, // Amount in USD for wallet credit
-      paymentCurrency = 'TRY', // Currency to charge the card in (TRY or USD)
-      tryRate = 38, // Exchange rate if paying in TRY
+      amountUSD,
+      paymentCurrency = 'TRY',
+      tryRate = 38,
+      // New card fields
       cardHolderName, 
       cardNumber, 
       expireMonth, 
       expireYear, 
       cvc,
+      // Saved card fields
+      useSavedCard = false,
+      cardToken,
+      cardUserKey,
+      // Save card option
+      saveCard = false,
+      cardLabel,
+      // Buyer details
       buyerName,
       buyerSurname,
       buyerEmail,
@@ -99,7 +88,11 @@ serve(async (req) => {
       buyerCity,
       buyerCountry,
       buyerZipCode,
-      buyerIp
+      buyerIp,
+      // Direct purchase (optional)
+      directPurchase = false,
+      listingId,
+      sellerId,
     } = await req.json();
 
     // Validate amount
@@ -112,7 +105,6 @@ serve(async (req) => {
     const feeUSD = (amountUSD * feePercent) + flatFee;
     const totalUSD = amountUSD + feeUSD;
     
-    // Calculate payment amount based on currency
     const paymentAmount = paymentCurrency === 'TRY' ? totalUSD * tryRate : totalUSD;
     const currency = paymentCurrency === 'TRY' ? 'TRY' : 'USD';
     
@@ -125,16 +117,16 @@ serve(async (req) => {
       totalUSD, 
       paymentCurrency: currency,
       paymentAmount,
-      tryRate,
+      useSavedCard,
+      saveCard,
       userId: user.id 
     });
-    console.log('[iyzico-init-3ds] Using base URL:', IYZICO_BASE_URL);
 
     const { error: insertError } = await supabase
       .from('pending_payments')
       .insert({
         user_id: user.id,
-        amount: amountUSD, // Store in USD
+        amount: amountUSD,
         fee: feeUSD,
         total: totalUSD,
         conversation_id: conversationId,
@@ -148,15 +140,35 @@ serve(async (req) => {
 
     const callbackUrl = `${supabaseUrl}/functions/v1/iyzico-callback`;
     
-    // Format price - remove trailing zeros as per iyzico documentation
     const formatPrice = (price: number): string => {
       const fixed = price.toFixed(2);
-      // Remove trailing zeros: 10.00 -> 10, 10.50 -> 10.5
       return parseFloat(fixed).toString();
     };
     
-    // Build request object with correct currency
-    const iyzicoRequest = {
+    // Build payment card object based on whether using saved card or new card
+    let paymentCard: Record<string, any>;
+    
+    if (useSavedCard && cardToken && cardUserKey) {
+      // Use saved card token
+      paymentCard = {
+        cardToken: cardToken,
+        cardUserKey: cardUserKey,
+      };
+      console.log('[iyzico-init-3ds] Using saved card token');
+    } else {
+      // Use new card details
+      paymentCard = {
+        cardHolderName: cardHolderName,
+        cardNumber: cardNumber.replace(/\s/g, ''),
+        expireYear: expireYear.length === 2 ? `20${expireYear}` : expireYear,
+        expireMonth: expireMonth.padStart(2, '0'),
+        cvc: cvc,
+        registerCard: saveCard ? 1 : 0, // Enable card registration if user wants to save
+      };
+      console.log('[iyzico-init-3ds] Using new card, registerCard:', saveCard ? 1 : 0);
+    }
+
+    const iyzicoRequest: Record<string, any> = {
       locale: 'en',
       conversationId: conversationId,
       price: formatPrice(paymentAmount),
@@ -166,15 +178,8 @@ serve(async (req) => {
       basketId: basketId,
       paymentGroup: 'PRODUCT',
       callbackUrl: callbackUrl,
-      currency: currency, // TRY for Turkish cards, USD for international
-      paymentCard: {
-        cardHolderName: cardHolderName,
-        cardNumber: cardNumber.replace(/\s/g, ''),
-        expireYear: expireYear.length === 2 ? `20${expireYear}` : expireYear,
-        expireMonth: expireMonth.padStart(2, '0'),
-        cvc: cvc,
-        registerCard: 0
-      },
+      currency: currency,
+      paymentCard: paymentCard,
       buyer: {
         id: user.id.substring(0, 20),
         name: buyerName || 'Test',
@@ -216,9 +221,21 @@ serve(async (req) => {
       ]
     };
 
-    console.log('[iyzico-init-3ds] Callback URL:', callbackUrl);
-    console.log('[iyzico-init-3ds] Currency:', currency);
-    console.log('[iyzico-init-3ds] Payment amount:', formatPrice(paymentAmount));
+    // Store metadata for callback to use (card label, save preference)
+    if (saveCard && cardLabel) {
+      await supabase
+        .from('pending_payments')
+        .update({ 
+          metadata: { 
+            saveCard: true, 
+            cardLabel: cardLabel,
+            directPurchase,
+            listingId,
+            sellerId,
+          } 
+        })
+        .eq('conversation_id', conversationId);
+    }
 
     const randomKey = Date.now().toString() + Math.random().toString(36).substring(2, 15);
     const uriPath = '/payment/3dsecure/initialize';
@@ -231,10 +248,6 @@ serve(async (req) => {
       uriPath, 
       requestBody
     );
-    
-    console.log('[iyzico-init-3ds] Random key:', randomKey);
-    console.log('[iyzico-init-3ds] API Key (first 10):', IYZICO_API_KEY?.substring(0, 10) + '...');
-    console.log('[iyzico-init-3ds] Secret Key length:', IYZICO_SECRET_KEY?.length);
 
     const response = await fetch(`${IYZICO_BASE_URL}${uriPath}`, {
       method: 'POST',
@@ -250,7 +263,6 @@ serve(async (req) => {
     const data = await response.json();
     console.log('[iyzico-init-3ds] Response status:', data.status);
     console.log('[iyzico-init-3ds] Response errorCode:', data.errorCode);
-    console.log('[iyzico-init-3ds] Response errorMessage:', data.errorMessage);
 
     if (data.status !== 'success') {
       console.error('[iyzico-init-3ds] Payment failed:', data.errorMessage, data.errorCode);
