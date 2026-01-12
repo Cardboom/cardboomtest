@@ -257,7 +257,7 @@ export const GradingDonationPanel = ({
           {/* Donate Button */}
           <Dialog open={donateOpen} onOpenChange={setDonateOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black">
+              <Button className="w-full gap-2 bg-gradient-to-r from-gold to-premium hover:from-gold/90 hover:to-premium/90 text-background">
                 <Gift className="w-4 h-4" />
                 Donate for Grading
               </Button>

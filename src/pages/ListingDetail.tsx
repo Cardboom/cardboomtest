@@ -445,7 +445,7 @@ const ListingDetail = () => {
               <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
                 {/* CBGI Badge first - CardBoom's grading with tiffany color */}
                 {gradingInfo?.final_grade && (
-                  <div className="bg-[#0ABAB5] text-white px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
+                  <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
                     <Award className="w-4 h-4" />
                     <span className="font-bold text-sm">CBGI {gradingInfo.final_grade.toFixed(1)}</span>
                   </div>
@@ -455,7 +455,7 @@ const ListingDetail = () => {
                   <div className={cn(
                     "px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg font-bold text-sm",
                     listing.grade === '10' || listing.grade === '9.5' 
-                      ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-black" 
+                      ? "bg-gradient-to-r from-gold to-premium text-background" 
                       : "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
                   )}>
                     <Shield className="w-4 h-4" />

@@ -210,8 +210,8 @@ export const ItemListings = ({ itemId, itemName }: ItemListingsProps) => {
                             key={idx}
                             className={cn(
                               "text-xs font-semibold",
-                              grading.type === 'cbgi' && "bg-[#0ABAB5] text-white border-0",
-                              grading.type === 'external' && grading.isTopGrade && "bg-gradient-to-r from-amber-500 to-yellow-500 text-black",
+                              grading.type === 'cbgi' && "bg-primary text-primary-foreground border-0",
+                              grading.type === 'external' && grading.isTopGrade && "bg-gradient-to-r from-gold to-premium text-background",
                               grading.type === 'external' && !grading.isTopGrade && "bg-blue-500 text-white"
                             )}
                           >

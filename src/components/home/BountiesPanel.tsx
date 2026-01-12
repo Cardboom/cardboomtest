@@ -158,7 +158,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
 
   if (loading) {
     return (
-      <div className="h-[100px] md:h-[140px] rounded-[18px] bg-[#0a0f1a] animate-pulse" />
+      <div className="h-[100px] md:h-[140px] rounded-[18px] bg-card/50 animate-pulse" />
     );
   }
 

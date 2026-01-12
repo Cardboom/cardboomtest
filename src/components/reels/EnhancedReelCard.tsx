@@ -338,7 +338,7 @@ export function EnhancedReelCard({
                 "absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg transition-colors",
                 isFollowing 
                   ? "bg-white/20 backdrop-blur-sm border border-white/30" 
-                  : "bg-[#00D4FF]"
+                  : "bg-primary"
               )}
             >
               {isFollowing ? (

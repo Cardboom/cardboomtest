@@ -153,12 +153,12 @@ export const PriceChart = ({ title = 'Market Index' }: PriceChartProps) => {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(220, 18%, 8%)',
-                  border: '1px solid hsl(220, 15%, 18%)',
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  color: 'hsl(0, 0%, 98%)',
+                  color: 'hsl(var(--foreground))',
                 }}
-                labelStyle={{ color: 'hsl(220, 10%, 55%)' }}
+                labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
                 formatter={(value: number) => [value.toFixed(2), 'Index']}
               />
               <Area
