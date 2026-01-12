@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, BellRing, BellOff, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, BellRing, BellOff, Sparkles, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,8 +17,12 @@ import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
-
-const getNotificationIcon = (type: string) => {
+const getNotificationIcon = (type: string, data?: Record<string, unknown>) => {
+  // Check if this is a grading completion notification
+  if (type === 'order_update' && data?.grading_order_id) {
+    return <Award className="h-4 w-4 text-amber-500" />;
+  }
+  
   switch (type) {
     case 'price_alert':
       return <TrendingDown className="h-4 w-4 text-primary" />;
@@ -39,6 +44,7 @@ const getNotificationIcon = (type: string) => {
 };
 
 export const NotificationCenter = () => {
+  const navigate = useNavigate();
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
   const { isSupported, isSubscribed, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
   const { toast } = useToast();
@@ -220,35 +226,52 @@ export const NotificationCenter = () => {
               No notifications yet
             </div>
           ) : (
-            notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`flex items-start gap-3 p-3 cursor-pointer ${
-                  !notification.is_read ? 'bg-accent/50' : ''
-                }`}
-                onClick={() => markAsRead(notification.id)}
-              >
-                <div className="mt-0.5">
-                  {getNotificationIcon(notification.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">
-                    {notification.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {notification.body}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatDistanceToNow(new Date(notification.created_at), {
-                      addSuffix: true,
-                    })}
-                  </p>
-                </div>
-                {!notification.is_read && (
-                  <div className="w-2 h-2 bg-primary rounded-full mt-1" />
-                )}
-              </DropdownMenuItem>
-            ))
+            notifications.map((notification) => {
+              const notificationData = notification.data as Record<string, unknown> | undefined;
+              
+              const handleNotificationClick = () => {
+                markAsRead(notification.id);
+                
+                // Navigate based on notification type and data
+                if (notificationData?.grading_order_id) {
+                  navigate(`/grading/order/${notificationData.grading_order_id}`);
+                } else if (notificationData?.listing_id) {
+                  navigate(`/listing/${notificationData.listing_id}`);
+                } else if (notificationData?.order_id) {
+                  navigate(`/orders/${notificationData.order_id}`);
+                }
+              };
+              
+              return (
+                <DropdownMenuItem
+                  key={notification.id}
+                  className={`flex items-start gap-3 p-3 cursor-pointer ${
+                    !notification.is_read ? 'bg-accent/50' : ''
+                  }`}
+                  onClick={handleNotificationClick}
+                >
+                  <div className="mt-0.5">
+                    {getNotificationIcon(notification.type, notificationData)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">
+                      {notification.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {notification.body}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {formatDistanceToNow(new Date(notification.created_at), {
+                        addSuffix: true,
+                      })}
+                    </p>
+                  </div>
+                  {!notification.is_read && (
+                    <div className="w-2 h-2 bg-primary rounded-full mt-1" />
+                  )}
+                </DropdownMenuItem>
+              );
+            })
           )}
         </ScrollArea>
       </DropdownMenuContent>
