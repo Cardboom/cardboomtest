@@ -566,6 +566,28 @@ serve(async (req) => {
           console.log(`Card instance created for user ${user.id} from grading order ${orderId}`);
         }
 
+        // Update source listing with grading results if this was graded from an existing listing
+        if (existingOrder.source_listing_id) {
+          console.log('Updating source listing with grading results:', existingOrder.source_listing_id);
+          const { error: updateListingError } = await supabase
+            .from('listings')
+            .update({
+              cbgi_score: finalGrade,
+              cbgi_grade_label: getGradeLabelFromScore(finalGrade),
+              cbgi_completed_at: new Date().toISOString(),
+              grading_company: 'CardBoom',
+              grade: finalGrade.toFixed(1),
+              certification_status: 'completed',
+            })
+            .eq('id', existingOrder.source_listing_id);
+
+          if (updateListingError) {
+            console.error('Failed to update source listing with grading results:', updateListingError);
+          } else {
+            console.log('Source listing updated with CBGI score:', finalGrade.toFixed(1));
+          }
+        }
+
         // Auto-list if Grade & Flip is enabled
         if (existingOrder.auto_list_enabled) {
           console.log('Auto-list enabled, creating listing...');
@@ -573,7 +595,7 @@ serve(async (req) => {
           // Calculate suggested price based on grade
           const suggestedPrice = existingOrder.auto_list_price || Math.max(10, finalGrade * 15);
           
-          // Create listing
+          // Create listing with CBGI score
           const { data: listing, error: listingError } = await supabase
             .from('listings')
             .insert({
@@ -594,6 +616,12 @@ serve(async (req) => {
               cvi_key: existingOrder.cvi_key,
               grading_order_id: orderId,
               certification_status: 'completed',
+              // Add CBGI grading fields
+              cbgi_score: finalGrade,
+              cbgi_grade_label: getGradeLabelFromScore(finalGrade),
+              cbgi_completed_at: new Date().toISOString(),
+              grading_company: 'CardBoom',
+              grade: finalGrade.toFixed(1),
             })
             .select()
             .single();
