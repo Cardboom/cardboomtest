@@ -157,14 +157,14 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
   const TypeIcon = typeConfig.icon;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-card border border-border h-[120px] md:h-[160px]">
-      {/* Decorative gradient */}
+    <div className="relative overflow-hidden rounded-2xl bg-card dark:bg-card border border-border shadow-sm h-[120px] md:h-[160px]">
+      {/* Decorative gradient - theme aware */}
       <div className={cn(
-        "absolute inset-0 opacity-30 pointer-events-none transition-colors duration-500",
-        currentInsight?.type === 'bullish' && "bg-gradient-to-br from-gain/20 via-transparent to-transparent",
-        currentInsight?.type === 'bearish' && "bg-gradient-to-br from-loss/20 via-transparent to-transparent",
-        currentInsight?.type === 'tip' && "bg-gradient-to-br from-primary/20 via-transparent to-transparent",
-        currentInsight?.type === 'neutral' && "bg-gradient-to-br from-muted via-transparent to-transparent"
+        "absolute inset-0 opacity-20 dark:opacity-30 pointer-events-none transition-colors duration-500",
+        currentInsight?.type === 'bullish' && "bg-gradient-to-br from-gain/30 dark:from-gain/20 via-transparent to-transparent",
+        currentInsight?.type === 'bearish' && "bg-gradient-to-br from-loss/30 dark:from-loss/20 via-transparent to-transparent",
+        currentInsight?.type === 'tip' && "bg-gradient-to-br from-primary/30 dark:from-primary/20 via-transparent to-transparent",
+        currentInsight?.type === 'neutral' && "bg-gradient-to-br from-muted/50 dark:from-muted via-transparent to-transparent"
       )} />
       
       {/* Header */}
@@ -229,8 +229,8 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
       {/* Footer with progress */}
       <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
         {/* Progress bar */}
-        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden mr-4">
-          <motion.div 
+        <div className="flex-1 h-1 bg-muted/60 dark:bg-muted rounded-full overflow-hidden mr-4">
+          <motion.div
             className={cn("h-full rounded-full", 
               currentInsight?.type === 'bullish' && "bg-gain",
               currentInsight?.type === 'bearish' && "bg-loss",

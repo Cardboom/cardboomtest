@@ -51,6 +51,7 @@ import { AuctionManager } from '@/components/admin/AuctionManager';
 import { PointsManager } from '@/components/admin/PointsManager';
 import { WhaleInviteManager } from '@/components/admin/WhaleInviteManager';
 import { SystemAccountsManager } from '@/components/admin/SystemAccountsManager';
+import { AdminStorefrontsManager } from '@/components/admin/AdminStorefrontsManager';
 import { InventoryIntegrityDashboard } from '@/components/admin/InventoryIntegrityDashboard';
 import { DigitalProductsManager } from '@/components/admin/DigitalProductsManager';
 import { EscalationManagement } from '@/components/admin/EscalationManagement';
@@ -246,6 +247,8 @@ const Admin = () => {
         return <WhaleInviteManager />;
       case 'system-accounts':
         return <SystemAccountsManager />;
+      case 'admin-storefronts':
+        return <AdminStorefrontsManager />;
       case 'moderation':
         return <ListingModeration />;
       case 'featured':
