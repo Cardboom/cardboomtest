@@ -82,6 +82,41 @@ const SeasonCountdown = ({ timeRemaining }: { timeRemaining: { days: number; hou
 };
 
 // Reward icon based on type
+// Format cosmetic type labels nicely (e.g., "profile_border" -> "Profile Border")
+const formatCosmeticLabel = (type: string): string => {
+  const labels: Record<string, string> = {
+    'profile_border': 'Profile Border',
+    'avatar_frame': 'Avatar Frame',
+    'profile_banner': 'Profile Banner',
+    'name_effect': 'Name Effect',
+    'chat_bubble': 'Chat Bubble',
+    'card_back': 'Card Back'
+  };
+  return labels[type] || type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+};
+
+// Format reward display label based on type and value
+const formatRewardLabel = (rewardType: string | null, rewardValue: any): string => {
+  if (!rewardType) return 'No reward';
+  
+  switch (rewardType) {
+    case 'gems':
+      return `${rewardValue?.amount || 0} Gems`;
+    case 'badge':
+      return rewardValue?.name || 'Badge';
+    case 'discount_cap':
+      return `${rewardValue?.percent || 0}% Checkout Discount`;
+    case 'cosmetic':
+      return formatCosmeticLabel(rewardValue?.type || 'cosmetic');
+    case 'priority':
+      return rewardValue?.days ? `${rewardValue.days} Days Priority Support` : 'Priority Support';
+    case 'grading':
+      return rewardValue?.count ? `${rewardValue.count} Free Grading` : 'Free Grading';
+    default:
+      return rewardType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+};
+
 const RewardIcon = ({ type, size = 'md' }: { type: string | null; size?: 'sm' | 'md' | 'lg' }) => {
   const sizeClass = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-8 h-8' : 'w-5 h-5';
   
@@ -383,12 +418,16 @@ const CardBoomPass = () => {
     });
   }, []);
 
+  const [claiming, setClaiming] = useState(false);
+
   const { 
     season, 
     tiers, 
     progress, 
     loading, 
-    purchaseProPass, 
+    purchaseProPass,
+    claimTierReward,
+    isRewardClaimed,
     getProgressToNextTier,
     getSeasonTimeRemaining,
     getTotalXpRequired
@@ -684,36 +723,107 @@ const CardBoomPass = () => {
               </div>
 
               <div className="space-y-4">
+                {/* Free Reward */}
                 <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
                   <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Free Reward</div>
-                  <div className="flex items-center gap-3">
-                    <RewardIcon type={selectedTier.free_reward_type} size="lg" />
-                    <div>
-                      <div className="font-medium">
-                        {selectedTier.free_reward_type === 'gems' && `${selectedTier.free_reward_value?.amount} Gems`}
-                        {selectedTier.free_reward_type === 'badge' && selectedTier.free_reward_value?.name}
-                        {selectedTier.free_reward_type === 'discount_cap' && `${selectedTier.free_reward_value?.percent}% Checkout Discount`}
-                        {!selectedTier.free_reward_type && 'No reward'}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <RewardIcon type={selectedTier.free_reward_type} size="lg" />
+                      <div>
+                        <div className="font-medium">
+                          {formatRewardLabel(selectedTier.free_reward_type, selectedTier.free_reward_value)}
+                        </div>
+                        {selectedTier.free_reward_type === 'cosmetic' && selectedTier.free_reward_value?.id && (
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            ID: {selectedTier.free_reward_value.id}
+                          </div>
+                        )}
                       </div>
                     </div>
+                    {selectedTier.free_reward_type && selectedTier.tier_number <= (progress?.current_tier || 0) && (
+                      <Button
+                        size="sm"
+                        variant={isRewardClaimed(selectedTier.tier_number, false) ? "secondary" : "default"}
+                        disabled={isRewardClaimed(selectedTier.tier_number, false) || claiming}
+                        onClick={async () => {
+                          setClaiming(true);
+                          await claimTierReward(selectedTier.tier_number, false);
+                          setClaiming(false);
+                        }}
+                      >
+                        {isRewardClaimed(selectedTier.tier_number, false) ? (
+                          <><Check className="w-4 h-4 mr-1" /> Claimed</>
+                        ) : claiming ? (
+                          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity }}><Gift className="w-4 h-4" /></motion.div>
+                        ) : (
+                          'Claim'
+                        )}
+                      </Button>
+                    )}
+                    {!selectedTier.free_reward_type && (
+                      <Badge variant="secondary">No Reward</Badge>
+                    )}
+                    {selectedTier.free_reward_type && selectedTier.tier_number > (progress?.current_tier || 0) && (
+                      <Badge variant="outline" className="gap-1">
+                        <Lock className="w-3 h-3" /> Locked
+                      </Badge>
+                    )}
                   </div>
                 </div>
 
+                {/* Pro Reward */}
                 <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
                   <div className="text-xs uppercase tracking-wider text-amber-400 mb-2 flex items-center gap-1">
                     <Crown className="w-3 h-3" /> Pro Reward
                   </div>
-                  <div className="flex items-center gap-3">
-                    <RewardIcon type={selectedTier.pro_reward_type} size="lg" />
-                    <div>
-                      <div className="font-medium text-amber-400">
-                        {selectedTier.pro_reward_type === 'gems' && `${selectedTier.pro_reward_value?.amount} Gems`}
-                        {selectedTier.pro_reward_type === 'badge' && selectedTier.pro_reward_value?.name}
-                        {selectedTier.pro_reward_type === 'cosmetic' && selectedTier.pro_reward_value?.type}
-                        {selectedTier.pro_reward_type === 'priority' && 'Priority Support'}
-                        {!selectedTier.pro_reward_type && 'No reward'}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <RewardIcon type={selectedTier.pro_reward_type} size="lg" />
+                      <div>
+                        <div className="font-medium text-amber-400">
+                          {formatRewardLabel(selectedTier.pro_reward_type, selectedTier.pro_reward_value)}
+                        </div>
+                        {selectedTier.pro_reward_type === 'cosmetic' && selectedTier.pro_reward_value?.id && (
+                          <div className="text-xs text-amber-400/60 mt-0.5">
+                            ID: {selectedTier.pro_reward_value.id}
+                          </div>
+                        )}
                       </div>
                     </div>
+                    {selectedTier.pro_reward_type && progress?.is_pro && selectedTier.tier_number <= (progress?.current_tier || 0) && (
+                      <Button
+                        size="sm"
+                        variant={isRewardClaimed(selectedTier.tier_number, true) ? "secondary" : "default"}
+                        disabled={isRewardClaimed(selectedTier.tier_number, true) || claiming}
+                        className={!isRewardClaimed(selectedTier.tier_number, true) ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white" : ""}
+                        onClick={async () => {
+                          setClaiming(true);
+                          await claimTierReward(selectedTier.tier_number, true);
+                          setClaiming(false);
+                        }}
+                      >
+                        {isRewardClaimed(selectedTier.tier_number, true) ? (
+                          <><Check className="w-4 h-4 mr-1" /> Claimed</>
+                        ) : claiming ? (
+                          <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity }}><Gift className="w-4 h-4" /></motion.div>
+                        ) : (
+                          'Claim'
+                        )}
+                      </Button>
+                    )}
+                    {!selectedTier.pro_reward_type && (
+                      <Badge variant="secondary">No Reward</Badge>
+                    )}
+                    {selectedTier.pro_reward_type && !progress?.is_pro && (
+                      <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-400">
+                        <Crown className="w-3 h-3" /> Pro Only
+                      </Badge>
+                    )}
+                    {selectedTier.pro_reward_type && progress?.is_pro && selectedTier.tier_number > (progress?.current_tier || 0) && (
+                      <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-400">
+                        <Lock className="w-3 h-3" /> Locked
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
