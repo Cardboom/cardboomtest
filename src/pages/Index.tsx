@@ -288,21 +288,19 @@ const Index = () => {
       
       <main>
         {/* Boom Challenges - Full width at top */}
-        {user && (
-          <div className="container mx-auto px-4 pt-6 space-y-3">
-            {/* Full-width Bounties Panel with explanation */}
-            <BountiesPanel userId={user.id} />
-            
-            {/* Two column layout for market panels */}
-            <div className="grid md:grid-cols-2 gap-3">
-              <LiveMarketPanel />
-              <PersonalizedInsightsPanel userId={user.id} />
-            </div>
-            
-            {/* Full-width News Panel */}
-            <NewsPanel />
+        <div className="container mx-auto px-4 pt-6 space-y-3">
+          {/* Full-width Bounties Panel with explanation - only for logged in users */}
+          {user && <BountiesPanel userId={user.id} />}
+          
+          {/* Two column layout for market panels - visible to all */}
+          <div className="grid md:grid-cols-2 gap-3">
+            <LiveMarketPanel />
+            <PersonalizedInsightsPanel userId={user?.id} />
           </div>
-        )}
+          
+          {/* Full-width News Panel - visible to all */}
+          <NewsPanel />
+        </div>
         
         {/* Global Stats Bar - Hero at top (hide hero for logged in users) */}
         <GlobalTCGStats hideHero={!!user} />

@@ -24,7 +24,7 @@ interface AIMarketSummary {
 }
 
 interface PersonalizedInsightsPanelProps {
-  userId: string;
+  userId?: string;
 }
 
 export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelProps) => {
@@ -157,14 +157,31 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
   const TypeIcon = typeConfig.icon;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-card dark:bg-card border border-border shadow-sm h-[120px] md:h-[160px]">
-      {/* Decorative gradient - theme aware */}
+    <div className={cn(
+      "relative overflow-hidden rounded-[18px]",
+      "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
+      "border border-white/5",
+      "h-[120px] md:h-[160px]",
+      "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+    )} style={{ backdropFilter: 'blur(22px)' }}>
+      {/* Noise texture */}
+      <div 
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+        }}
+      />
+      
+      {/* Accent line - Tiffany brand color */}
+      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+      
+      {/* Dynamic gradient based on insight type */}
       <div className={cn(
-        "absolute inset-0 opacity-20 dark:opacity-30 pointer-events-none transition-colors duration-500",
-        currentInsight?.type === 'bullish' && "bg-gradient-to-br from-gain/30 dark:from-gain/20 via-transparent to-transparent",
-        currentInsight?.type === 'bearish' && "bg-gradient-to-br from-loss/30 dark:from-loss/20 via-transparent to-transparent",
-        currentInsight?.type === 'tip' && "bg-gradient-to-br from-primary/30 dark:from-primary/20 via-transparent to-transparent",
-        currentInsight?.type === 'neutral' && "bg-gradient-to-br from-muted/50 dark:from-muted via-transparent to-transparent"
+        "absolute inset-0 opacity-20 pointer-events-none transition-colors duration-500",
+        currentInsight?.type === 'bullish' && "bg-gradient-to-br from-gain/30 via-transparent to-transparent",
+        currentInsight?.type === 'bearish' && "bg-gradient-to-br from-loss/30 via-transparent to-transparent",
+        currentInsight?.type === 'tip' && "bg-gradient-to-br from-primary/30 via-transparent to-transparent",
+        currentInsight?.type === 'neutral' && "bg-gradient-to-br from-muted/30 via-transparent to-transparent"
       )} />
       
       {/* Header */}
@@ -173,7 +190,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
           <div className={cn("p-1 rounded", typeConfig.bg)}>
             <Sparkles className={cn("w-3.5 h-3.5", typeConfig.color)} />
           </div>
-          <span className="text-xs font-semibold text-foreground tracking-wide">
+          <span className="text-xs font-semibold text-white tracking-wide">
             {t.home.aiInsights}
           </span>
         </div>
@@ -209,7 +226,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
               
               {/* Message */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground leading-relaxed line-clamp-2">
+                <p className="text-sm font-medium text-white leading-relaxed line-clamp-2">
                   {currentInsight.message}
                 </p>
               </div>
@@ -229,7 +246,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
       {/* Footer with progress */}
       <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
         {/* Progress bar */}
-        <div className="flex-1 h-1 bg-muted/60 dark:bg-muted rounded-full overflow-hidden mr-4">
+        <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden mr-4">
           <motion.div
             className={cn("h-full rounded-full", 
               currentInsight?.type === 'bullish' && "bg-gain",
@@ -245,7 +262,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         </div>
         
         {/* Counter */}
-        <span className="text-[10px] text-muted-foreground font-medium">
+        <span className="text-[10px] text-white/60 font-medium">
           {currentIndex + 1}/{insights.length}
         </span>
       </div>
