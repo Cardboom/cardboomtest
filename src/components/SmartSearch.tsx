@@ -22,9 +22,10 @@ interface SmartSearchProps {
   placeholder?: string;
   className?: string;
   onSearch?: (query: string) => void;
+  autoFocus?: boolean;
 }
 
-export const SmartSearch = ({ placeholder = "Search cards, collectibles...", className, onSearch }: SmartSearchProps) => {
+export const SmartSearch = ({ placeholder = "Search cards, collectibles...", className, onSearch, autoFocus }: SmartSearchProps) => {
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [query, setQuery] = useState('');
@@ -169,6 +170,7 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          autoFocus={autoFocus}
           className="pl-10 pr-10 bg-secondary/50 border-border/50 focus:border-primary/50"
         />
         {query && (

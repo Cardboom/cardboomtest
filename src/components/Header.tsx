@@ -16,6 +16,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
@@ -168,10 +173,26 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             />
           </Link>
 
-          {/* Smart Search with Autocomplete */}
-          <div className="hidden md:flex items-center flex-1 max-w-md">
-            <SmartSearch placeholder={t.nav.search} className="w-full" />
-          </div>
+          {/* Search Icon with Dropdown */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="hidden md:flex h-9 w-9 hover:bg-muted/50"
+              >
+                <Search className="h-5 w-5" />
+                <span className="sr-only">{t.nav.search}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent 
+              className="w-[400px] p-3 bg-popover border border-border shadow-xl" 
+              align="center"
+              sideOffset={8}
+            >
+              <SmartSearch placeholder={t.nav.search} className="w-full" />
+            </PopoverContent>
+          </Popover>
 
           {/* Desktop Nav with Grouped Menus */}
           <nav className="hidden lg:flex items-center gap-0">
