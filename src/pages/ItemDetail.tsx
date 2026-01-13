@@ -381,7 +381,7 @@ const ItemDetail = () => {
           {/* Details */}
           <div className="lg:col-span-2 space-y-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <Badge variant="secondary" className="capitalize">
                   {item.category?.replace('-', ' ')}
                 </Badge>
@@ -392,6 +392,18 @@ const ItemDetail = () => {
                 )}
                 {item.rarity && (
                   <Badge variant="outline">{item.rarity}</Badge>
+                )}
+                {/* PSA 10 Price Badge */}
+                {item.psa10_price && item.psa10_price > 0 && (
+                  <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-background font-semibold">
+                    PSA 10: {formatPrice(item.psa10_price)}
+                  </Badge>
+                )}
+                {/* PSA 9 Price Badge */}
+                {item.psa9_price && item.psa9_price > 0 && (
+                  <Badge className="bg-blue-500 text-white">
+                    PSA 9: {formatPrice(item.psa9_price)}
+                  </Badge>
                 )}
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
@@ -443,6 +455,45 @@ const ItemDetail = () => {
                 </div>
               </div>
             </div>
+
+            {/* Grading Prices Row */}
+            {(item.psa10_price || item.psa9_price || item.raw_price) && (
+              <div className="glass rounded-xl p-4 bg-gradient-to-r from-amber-500/10 via-primary/5 to-blue-500/10 border border-amber-500/20">
+                <h4 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Market Prices by Grade
+                </h4>
+                <div className="grid grid-cols-3 gap-4">
+                  {item.psa10_price && item.psa10_price > 0 && (
+                    <div className="text-center">
+                      <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-background mb-2">
+                        PSA 10
+                      </Badge>
+                      <p className="font-display text-lg font-bold text-foreground">{formatPrice(item.psa10_price)}</p>
+                      <p className="text-xs text-muted-foreground">Gem Mint</p>
+                    </div>
+                  )}
+                  {item.psa9_price && item.psa9_price > 0 && (
+                    <div className="text-center">
+                      <Badge className="bg-blue-500 text-white mb-2">
+                        PSA 9
+                      </Badge>
+                      <p className="font-display text-lg font-bold text-foreground">{formatPrice(item.psa9_price)}</p>
+                      <p className="text-xs text-muted-foreground">Mint</p>
+                    </div>
+                  )}
+                  {item.raw_price && item.raw_price > 0 && (
+                    <div className="text-center">
+                      <Badge variant="outline" className="mb-2">
+                        Raw
+                      </Badge>
+                      <p className="font-display text-lg font-bold text-foreground">{formatPrice(item.raw_price)}</p>
+                      <p className="text-xs text-muted-foreground">Ungraded</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Stats Row */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
