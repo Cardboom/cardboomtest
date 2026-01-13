@@ -81,6 +81,7 @@ import Purchases from "./pages/Purchases";
 import AccountSettings from "./pages/AccountSettings";
 import Sitemap from "./pages/Sitemap";
 import BuyCategoryPage from "./pages/BuyCategoryPage";
+import LongtailLandingPage from "./pages/LongtailLandingPage";
 
 const queryClient = new QueryClient();
 
@@ -175,6 +176,8 @@ const AppContent = () => {
           {/* SEO Category Pages */}
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/buy/:category" element={<BuyCategoryPage />} />
+          {/* Long-tail SEO Landing Pages */}
+          <Route path="/deals/:slug" element={<LongtailLandingPage />} />
           {/* Buy Orders */}
           <Route path="/buy-orders" element={<BuyOrders />} />
           {/* Order & Purchases */}
