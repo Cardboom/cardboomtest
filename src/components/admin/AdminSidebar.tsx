@@ -40,6 +40,7 @@ import {
   Bot,
   Target,
   Store,
+  Trash2,
 } from "lucide-react";
 
 interface NavItem {
@@ -96,6 +97,7 @@ const navGroups: NavGroup[] = [
       { id: "moderation", label: "Moderation", icon: ListChecks },
       { id: "featured", label: "Featured", icon: Star },
       { id: "items-manager", label: "Items Manager", icon: Package },
+      { id: "listings-manager", label: "Listings (Delete)", icon: Trash2 },
       { id: "prices", label: "Prices (Legacy)", icon: Tag },
       { id: "controls", label: "Market Controls", icon: Settings },
     ],

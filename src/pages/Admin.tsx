@@ -60,6 +60,7 @@ import { SystemStatusDashboard } from '@/components/admin/SystemStatusDashboard'
 import { BountyManager } from '@/components/admin/BountyManager';
 import { MarketItemsManager } from '@/components/admin/MarketItemsManager';
 import { GradingCalibrationDashboard } from '@/components/admin/GradingCalibrationDashboard';
+import { AdminListingsManager } from '@/components/admin/AdminListingsManager';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -255,6 +256,8 @@ const Admin = () => {
         return <FeaturedManager />;
       case 'items-manager':
         return <MarketItemsManager />;
+      case 'listings-manager':
+        return <AdminListingsManager />;
       case 'prices':
         return renderPricesSection();
       case 'controls':
