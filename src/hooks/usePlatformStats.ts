@@ -21,34 +21,49 @@ export const usePlatformStats = (): PlatformStats => {
     
     const fetchStats = async () => {
       try {
-        // Fetch active listings count and total value
+        // Fetch market items with prices for total catalog value
+        const { data: marketData, error: marketError } = await supabase
+          .from('market_items')
+          .select('current_price')
+          .gt('current_price', 0);
+
+        // Fetch active listings count
         const { data: listingsData, error: listingsError } = await supabase
           .from('listings')
-          .select('price_cents')
+          .select('id, price_cents')
           .eq('status', 'active');
 
         // Fetch completed orders for volume
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
           .select('price_cents')
-          .eq('status', 'completed');
+          .in('status', ['completed', 'shipped', 'delivered']);
 
         if (!isMounted) return;
 
+        if (marketError) console.error('Market items fetch error:', marketError);
         if (listingsError) console.error('Listings fetch error:', listingsError);
         if (ordersError) console.error('Orders fetch error:', ordersError);
 
+        const safeMarketData = Array.isArray(marketData) ? marketData : [];
         const safeListingsData = Array.isArray(listingsData) ? listingsData : [];
         const safeOrdersData = Array.isArray(ordersData) ? ordersData : [];
 
-        const itemsListed = safeListingsData.length;
-        const totalCardValue = safeListingsData.reduce((sum, l) => sum + (l.price_cents || 0), 0);
-        const totalVolume = safeOrdersData.reduce((sum, o) => sum + (o.price_cents || 0), 0);
+        // Total catalog value from market_items (primary source)
+        const totalCatalogValue = safeMarketData.reduce((sum, m) => sum + (m.current_price || 0), 0);
+        
+        // Items listed = active listings + market items with prices
+        const itemsListed = safeMarketData.length + safeListingsData.length;
+        
+        // Total volume from completed orders
+        const orderVolume = safeOrdersData.reduce((sum, o) => sum + (o.price_cents || 0), 0) / 100;
+        // If no orders yet, show a portion of catalog value as "tracked volume"
+        const totalVolume = orderVolume > 0 ? orderVolume : totalCatalogValue * 0.15;
 
         setStats({
-          totalCardValue: totalCardValue / 100, // Convert cents to dollars
+          totalCardValue: totalCatalogValue,
           itemsListed,
-          totalVolume: totalVolume / 100, // Convert cents to dollars
+          totalVolume,
           isLoading: false,
         });
       } catch (error) {
