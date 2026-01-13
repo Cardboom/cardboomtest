@@ -532,12 +532,12 @@ const Auth = () => {
             className="hidden lg:block"
           >
             <div className="space-y-8">
-              {/* Logo */}
-              <div className="flex items-center gap-4">
-              <img 
+              {/* Logo - Large and Centered */}
+              <div className="flex justify-center mb-8">
+                <img 
                   src={isDark ? cardboomLogoDark : cardboomLogo} 
                   alt="Cardboom" 
-                  className="h-24 md:h-32 lg:h-40 w-auto object-contain"
+                  className="h-48 lg:h-56 xl:h-64 w-auto object-contain"
                 />
               </div>
 
@@ -617,12 +617,12 @@ const Auth = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Mobile Logo */}
-            <div className="text-center mb-6 lg:hidden">
+            {/* Mobile Logo - Large and Centered */}
+            <div className="text-center mb-8 lg:hidden">
               <img 
                 src={isDark ? cardboomLogoDark : cardboomLogo} 
                 alt="Cardboom" 
-                className="h-20 md:h-28 w-auto object-contain mx-auto"
+                className="h-32 md:h-40 w-auto object-contain mx-auto"
               />
             </div>
 
