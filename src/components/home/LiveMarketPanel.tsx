@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MarketTick {
   symbol: string;
@@ -19,6 +20,7 @@ interface EventItem {
 }
 
 export const LiveMarketPanel = () => {
+  const { t } = useLanguage();
   const [marketTicks, setMarketTicks] = useState<MarketTick[]>([]);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [currentEventIndex, setCurrentEventIndex] = useState(0);
@@ -142,11 +144,11 @@ export const LiveMarketPanel = () => {
 
   const getEventLabel = (type: EventItem['type']) => {
     switch (type) {
-      case 'sale': return 'SOLD';
-      case 'grading': return 'GRADED';
-      case 'listing': return 'LISTED';
-      case 'price': return 'INDEX';
-      default: return 'UPDATE';
+      case 'sale': return t.home.sold;
+      case 'grading': return t.home.graded;
+      case 'listing': return t.home.listed;
+      case 'price': return t.home.index;
+      default: return t.home.update;
     }
   };
 
@@ -166,11 +168,11 @@ export const LiveMarketPanel = () => {
             </span>
           </div>
           <span className="text-xs font-semibold text-foreground tracking-wide">
-            Live Market
+            {t.home.liveMarket}
           </span>
         </div>
         <span className="text-[10px] text-muted-foreground">
-          Real-time updates
+          {t.home.realTimeUpdates}
         </span>
       </div>
 
