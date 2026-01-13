@@ -25,6 +25,22 @@ function replaceVariables(template: string, variables: Record<string, string>): 
   return result;
 }
 
+// Generate plain text version from HTML
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<[^>]+>/g, '\n')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n\s*\n/g, '\n\n')
+    .trim();
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -39,6 +55,9 @@ const handler = async (req: Request): Promise<Response> => {
     const { to, template_key, variables, user_id }: EmailRequest = await req.json();
 
     console.log(`Sending email: ${template_key} to ${to}`);
+
+    // Add email to variables for unsubscribe link
+    const enrichedVariables = { ...variables, email: to };
 
     // Check user email preferences if user_id provided
     if (user_id) {
@@ -85,18 +104,33 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Replace variables in subject and content
-    const subject = replaceVariables(template.subject, variables);
-    const htmlContent = replaceVariables(template.html_content, variables);
+    const subject = replaceVariables(template.subject, enrichedVariables);
+    const htmlContent = replaceVariables(template.html_content, enrichedVariables);
+    const textContent = htmlToPlainText(htmlContent);
 
-    // Send email via Resend
-    // Use resend.dev for testing until cardboom.com domain is verified
+    // Send email via Resend with deliverability headers
     const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "CardBoom <onboarding@resend.dev>";
+    const replyToEmail = Deno.env.get("RESEND_REPLY_TO") || "support@cardboom.com";
     
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: [to],
+      reply_to: replyToEmail,
       subject: subject,
       html: htmlContent,
+      text: textContent,
+      headers: {
+        // List-Unsubscribe header for one-click unsubscribe (RFC 8058)
+        "List-Unsubscribe": `<https://cardboom.com/unsubscribe?email=${encodeURIComponent(to)}>, <mailto:unsubscribe@cardboom.com?subject=Unsubscribe%20${encodeURIComponent(to)}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        // Precedence header to indicate bulk mail
+        "X-Priority": "3",
+        "X-Mailer": "CardBoom Mailer",
+      },
+      tags: [
+        { name: "template", value: template_key },
+        { name: "environment", value: "production" },
+      ],
     });
 
     console.log("Email sent successfully:", emailResponse);
