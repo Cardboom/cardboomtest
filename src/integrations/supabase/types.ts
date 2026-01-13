@@ -4158,6 +4158,113 @@ export type Database = {
         }
         Relationships: []
       }
+      instant_sale_requests: {
+        Row: {
+          admin_notes: string | null
+          category: string
+          claimed_market_price: number
+          condition: string
+          created_at: string
+          final_payout: number | null
+          id: string
+          image_url: string | null
+          instant_price: number
+          ledger_entry_id: string | null
+          paid_at: string | null
+          received_at: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          shipped_at: string | null
+          shipping_carrier: string | null
+          shipping_tracking: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          verified_market_price: number | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          category: string
+          claimed_market_price: number
+          condition: string
+          created_at?: string
+          final_payout?: number | null
+          id?: string
+          image_url?: string | null
+          instant_price: number
+          ledger_entry_id?: string | null
+          paid_at?: string | null
+          received_at?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shipped_at?: string | null
+          shipping_carrier?: string | null
+          shipping_tracking?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          verified_market_price?: number | null
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: string
+          claimed_market_price?: number
+          condition?: string
+          created_at?: string
+          final_payout?: number | null
+          id?: string
+          image_url?: string | null
+          instant_price?: number
+          ledger_entry_id?: string | null
+          paid_at?: string | null
+          received_at?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shipped_at?: string | null
+          shipping_carrier?: string | null
+          shipping_tracking?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verified_market_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instant_sale_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instant_sale_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instant_sale_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "instant_sale_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_audit_log: {
         Row: {
           action: string
