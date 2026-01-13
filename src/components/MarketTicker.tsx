@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Tag } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -16,7 +16,9 @@ interface TickerItem {
 
 export const MarketTicker = () => {
   const [items, setItems] = useState<TickerItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { formatPrice } = useCurrency();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -84,36 +86,44 @@ export const MarketTicker = () => {
         }
       }
 
-      setItems(combined.slice(0, 80));
+      // Only update if not initialized or if items changed significantly
+      const newItems = combined.slice(0, 80);
+      
+      if (!isInitialized) {
+        setItems(newItems);
+        setIsInitialized(true);
+      }
+      // Don't update items after initial load to prevent animation reset
     };
 
     fetchTickerItems();
 
-    // Refresh every 60 seconds instead of real-time to prevent glitching
-    const interval = setInterval(fetchTickerItems, 60000);
-
     return () => {
       isMounted = false;
-      clearInterval(interval);
     };
-  }, []);
-
-  const duplicatedItems = useMemo(() => 
-    [...items, ...items], 
-  [items]);
+  }, [isInitialized]);
 
   if (items.length === 0) {
     return null;
   }
 
+  // Create duplicated items for seamless loop - triple for smoother loop
+  const duplicatedItems = [...items, ...items, ...items];
+
   return (
     <div className="bg-muted/30 border-b border-border/40 overflow-hidden">
-      <div className="flex animate-ticker">
+      <div 
+        ref={containerRef}
+        className="flex ticker-scroll"
+        style={{
+          willChange: 'transform',
+        }}
+      >
         {duplicatedItems.map((item, index) => (
           <Link
             key={`${item.id}-${index}`}
             to={item.type === 'listing' && item.listing_id ? `/listing/${item.listing_id}` : `/item/${item.id}`}
-            className="flex items-center gap-2 px-6 py-2.5 whitespace-nowrap border-r border-border/20 hover:bg-muted/50 transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 whitespace-nowrap border-r border-border/20 hover:bg-muted/50 transition-colors flex-shrink-0"
           >
             {item.type === 'listing' && (
               <Tag className="w-3 h-3 text-primary" />
@@ -126,19 +136,21 @@ export const MarketTicker = () => {
             </span>
             {item.change_24h !== null && (
               <span className={cn(
-                'flex items-center gap-1 text-xs font-medium',
-                (item.change_24h ?? 0) >= 0 ? 'text-gain' : 'text-loss'
+                "text-xs font-medium flex items-center gap-0.5",
+                item.change_24h >= 0 ? "text-gain" : "text-loss"
               )}>
-                {(item.change_24h ?? 0) >= 0 ? (
+                {item.change_24h >= 0 ? (
                   <TrendingUp className="w-3 h-3" />
                 ) : (
                   <TrendingDown className="w-3 h-3" />
                 )}
-                {(item.change_24h ?? 0) >= 0 ? '+' : ''}{(item.change_24h ?? 0).toFixed(2)}%
+                {item.change_24h >= 0 ? '+' : ''}{item.change_24h.toFixed(1)}%
               </span>
             )}
             {item.type === 'listing' && (
-              <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded">FOR SALE</span>
+              <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-semibold">
+                FOR SALE
+              </span>
             )}
           </Link>
         ))}
