@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Shield, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { OTPInput } from './OTPInput';
 
 interface TwoFactorVerifyProps {
   phone: string;
@@ -76,12 +76,16 @@ export const TwoFactorVerify = ({ phone, userId, onVerified, onCancel }: TwoFact
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      <div className="text-center space-y-2">
-        <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
-          <Shield className="w-8 h-8 text-primary" />
-        </div>
-        <h2 className="text-xl font-semibold">Two-Factor Authentication</h2>
-        <p className="text-muted-foreground text-sm">
+      <div className="text-center space-y-3">
+        <motion.div 
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          className="w-20 h-20 mx-auto bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl flex items-center justify-center border border-primary/20"
+        >
+          <Shield className="w-10 h-10 text-primary" />
+        </motion.div>
+        <h2 className="text-2xl font-bold">Two-Factor Authentication</h2>
+        <p className="text-muted-foreground">
           {codeSent 
             ? `Enter the code sent to ${maskedPhone}`
             : 'Verify your identity to continue'
@@ -91,17 +95,20 @@ export const TwoFactorVerify = ({ phone, userId, onVerified, onCancel }: TwoFact
 
       {!codeSent ? (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground text-center">
-            We'll send a verification code to your registered phone number ending in {phone.slice(-4)}
-          </p>
+          <div className="bg-secondary/30 rounded-xl p-4 border border-border/30">
+            <p className="text-sm text-muted-foreground text-center">
+              We'll send a verification code to your registered phone number ending in{' '}
+              <span className="text-foreground font-medium">{phone.slice(-4)}</span>
+            </p>
+          </div>
           <Button
             onClick={handleSendCode}
             disabled={loading}
-            className="w-full h-12"
+            className="w-full h-12 text-lg font-semibold"
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                 Sending...
               </>
             ) : (
@@ -110,30 +117,23 @@ export const TwoFactorVerify = ({ phone, userId, onVerified, onCancel }: TwoFact
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="2fa-otp">Verification Code</Label>
-            <Input
-              id="2fa-otp"
-              type="text"
-              placeholder="000000"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              className="h-12 text-center text-2xl tracking-widest"
-              maxLength={6}
-              autoFocus
-            />
-            {error && <p className="text-destructive text-sm">{error}</p>}
-          </div>
+        <div className="space-y-5">
+          <OTPInput
+            value={otp}
+            onChange={setOtp}
+            length={6}
+            error={error}
+            autoFocus
+          />
 
           <Button
             onClick={handleVerify}
             disabled={loading || otp.length !== 6}
-            className="w-full h-12"
+            className="w-full h-12 text-lg font-semibold"
           >
             {loading ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                 Verifying...
               </>
             ) : (
@@ -145,7 +145,7 @@ export const TwoFactorVerify = ({ phone, userId, onVerified, onCancel }: TwoFact
             type="button"
             onClick={handleSendCode}
             disabled={loading}
-            className="w-full text-primary hover:text-primary/80 text-sm"
+            className="w-full text-primary hover:text-primary/80 text-sm transition-colors"
           >
             Resend code
           </button>
@@ -155,7 +155,7 @@ export const TwoFactorVerify = ({ phone, userId, onVerified, onCancel }: TwoFact
       <button
         type="button"
         onClick={onCancel}
-        className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground text-sm"
+        className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground text-sm transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to login

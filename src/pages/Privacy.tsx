@@ -10,13 +10,14 @@ import { legalTranslations } from '@/translations/legal';
 const Privacy = () => {
   const { locale } = useLanguage();
   const legal = legalTranslations.en.legal;
-  const localizedTitle = (legalTranslations as any)[locale]?.legal?.privacy?.title || legal.privacy.title;
+  const localizedPrivacy = (legalTranslations as any)[locale]?.legal?.privacy || legal.privacy;
   
   return (
     <>
       <Helmet>
-        <title>{localizedTitle} | CardBoom</title>
+        <title>{localizedPrivacy.title} | CardBoom</title>
         <meta name="description" content="CardBoom Privacy Policy - Learn how we collect, use, and protect your personal information." />
+      </Helmet>
       
       <div className="min-h-screen bg-background">
         <Header cartCount={0} onCartClick={() => {}} />
@@ -24,9 +25,9 @@ const Privacy = () => {
         <main className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <Badge className="mb-4">{t.badge || 'Legal'}</Badge>
+              <Badge className="mb-4">{localizedPrivacy.badge || 'Legal'}</Badge>
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                {t.title}
+                {localizedPrivacy.title}
               </h1>
               <p className="text-muted-foreground">{legal.lastUpdated}: January 13, 2026</p>
               <p className="text-sm text-muted-foreground mt-2">{legal.effectiveDate}: January 13, 2026</p>

@@ -9,15 +9,15 @@ import { legalTranslations } from '@/translations/legal';
 
 const Terms = () => {
   const { locale } = useLanguage();
-  // Always use English for full content, get localized title from locale if available
   const legal = legalTranslations.en.legal;
-  const localizedTitle = (legalTranslations as any)[locale]?.legal?.terms?.title || legal.terms.title;
+  const localizedTerms = (legalTranslations as any)[locale]?.legal?.terms || legal.terms;
   
   return (
     <>
       <Helmet>
-        <title>{localizedTitle} | CardBoom</title>
+        <title>{localizedTerms.title} | CardBoom</title>
         <meta name="description" content="CardBoom Terms of Service - Read our terms and conditions for using the CardBoom collectibles marketplace." />
+      </Helmet>
       
       <div className="min-h-screen bg-background">
         <Header cartCount={0} onCartClick={() => {}} />
@@ -25,9 +25,9 @@ const Terms = () => {
         <main className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <Badge className="mb-4">{t.badge || 'Legal'}</Badge>
+              <Badge className="mb-4">{localizedTerms.badge || 'Legal'}</Badge>
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                {t.title}
+                {localizedTerms.title}
               </h1>
               <p className="text-muted-foreground">{legal.lastUpdated}: January 13, 2026</p>
               <p className="text-sm text-muted-foreground mt-2">{legal.effectiveDate}: January 13, 2026</p>
@@ -246,7 +246,7 @@ const Terms = () => {
                 </section>
 
                 <section className="border-t border-border pt-6">
-                  <h2 className="text-xl font-semibold mb-4">{t.relatedDocsTitle || "Related Legal Documents"}</h2>
+                  <h2 className="text-xl font-semibold mb-4">{localizedTerms.relatedDocsTitle || "Related Legal Documents"}</h2>
                   <ul className="space-y-2">
                     <li>
                       <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>

@@ -17,6 +17,7 @@ import { usePlatformStats, formatStatValue } from '@/hooks/usePlatformStats';
 import { useRememberMe } from '@/hooks/useRememberMe';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
 import { TwoFactorVerify } from '@/components/auth/TwoFactorVerify';
+import { OTPInput } from '@/components/auth/OTPInput';
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 import { trackSignUpEvent } from '@/lib/tracking';
 import cardboomLogo from '@/assets/cardboom-logo.png';
@@ -613,12 +614,12 @@ const Auth = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Mobile Logo - Large and Centered */}
-            <div className="text-center mb-8 lg:hidden">
+            {/* Mobile Logo - Compact and positioned at top */}
+            <div className="text-center mb-4 lg:hidden">
               <img 
                 src={isDark ? cardboomLogoDark : cardboomLogo} 
                 alt="Cardboom" 
-                className="h-32 md:h-40 w-auto object-contain mx-auto"
+                className="h-16 md:h-20 w-auto object-contain mx-auto"
               />
             </div>
 
@@ -729,36 +730,55 @@ const Auth = () => {
                           </div>
                         ) : !resetVerified ? (
                           /* Phone Reset - Enter OTP */
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="reset-otp" className="text-foreground font-medium">Enter Verification Code</Label>
-                              <p className="text-muted-foreground text-sm">We sent a 6-digit code to {resetPhone}</p>
-                              <Input
-                                id="reset-otp"
-                                type="text"
-                                placeholder="000000"
-                                value={resetOtp}
-                                onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                className="h-12 bg-secondary/50 border-border/50 rounded-xl text-center text-2xl tracking-widest"
-                                maxLength={6}
-                              />
-                              {errors.resetOtp && <p className="text-destructive text-sm">{errors.resetOtp}</p>}
+                          <div className="space-y-5">
+                            <div className="text-center space-y-2">
+                              <Label className="text-foreground font-medium text-lg">Enter Verification Code</Label>
+                              <p className="text-muted-foreground text-sm">
+                                We sent a 6-digit code to <span className="text-foreground font-medium">{resetPhone}</span>
+                              </p>
                             </div>
+                            
+                            <OTPInput
+                              value={resetOtp}
+                              onChange={setResetOtp}
+                              length={6}
+                              error={errors.resetOtp}
+                              autoFocus
+                            />
+                            
                             <Button
                               type="button"
                               onClick={handleVerifyResetOtp}
                               disabled={loading || resetOtp.length !== 6}
                               className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 font-semibold rounded-xl"
                             >
-                              {loading ? 'Verifying...' : 'Verify Code'}
+                              {loading ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Verifying...
+                                </>
+                              ) : (
+                                'Verify Code'
+                              )}
                             </Button>
-                            <button
-                              type="button"
-                              onClick={() => setResetOtpSent(false)}
-                              className="w-full text-muted-foreground hover:text-foreground text-sm"
-                            >
-                              Change phone number
-                            </button>
+                            
+                            <div className="flex items-center justify-between text-sm">
+                              <button
+                                type="button"
+                                onClick={handleSendResetOtp}
+                                disabled={loading}
+                                className="text-primary hover:text-primary/80 transition-colors"
+                              >
+                                Resend code
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setResetOtpSent(false)}
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                Change number
+                              </button>
+                            </div>
                           </div>
                         ) : (
                           /* Phone Reset - Verified */
@@ -975,35 +995,56 @@ const Auth = () => {
                             </Button>
                           </div>
                         ) : (
-                          <form onSubmit={handleVerifyOtp} className="space-y-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="otp" className="text-foreground font-medium">Enter OTP Code</Label>
-                              <p className="text-muted-foreground text-sm">We sent a 6-digit code to {loginPhone}</p>
-                              <Input
-                                id="otp"
-                                type="text"
-                                placeholder="000000"
+                          <form onSubmit={handleVerifyOtp} className="space-y-5">
+                            <div className="space-y-4">
+                              <div className="text-center">
+                                <Label className="text-foreground font-medium text-lg">Enter Verification Code</Label>
+                                <p className="text-muted-foreground text-sm mt-1">
+                                  We sent a 6-digit code to <span className="text-foreground font-medium">{loginPhone}</span>
+                                </p>
+                              </div>
+                              
+                              <OTPInput
                                 value={otp}
-                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl text-center text-2xl tracking-widest"
-                                maxLength={6}
+                                onChange={setOtp}
+                                length={6}
+                                error={errors.otp}
+                                autoFocus
                               />
-                              {errors.otp && <p className="text-destructive text-sm">{errors.otp}</p>}
                             </div>
+                            
                             <Button
                               type="submit"
                               disabled={loading || otp.length !== 6}
                               className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-lg rounded-xl shadow-lg hover:shadow-glow transition-all"
                             >
-                              {loading ? 'Verifying...' : 'Verify & Sign In'}
+                              {loading ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Verifying...
+                                </>
+                              ) : (
+                                'Verify & Sign In'
+                              )}
                             </Button>
-                            <button
-                              type="button"
-                              onClick={() => { setOtpSent(false); setOtp(''); }}
-                              className="w-full text-muted-foreground hover:text-foreground text-sm"
-                            >
-                              Change phone number
-                            </button>
+                            
+                            <div className="flex items-center justify-between text-sm">
+                              <button
+                                type="button"
+                                onClick={handleSendOtp}
+                                disabled={loading}
+                                className="text-primary hover:text-primary/80 transition-colors"
+                              >
+                                Resend code
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => { setOtpSent(false); setOtp(''); }}
+                                className="text-muted-foreground hover:text-foreground transition-colors"
+                              >
+                                Change number
+                              </button>
+                            </div>
                           </form>
                         )}
                       </div>
