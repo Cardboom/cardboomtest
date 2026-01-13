@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PhoneInputWithCountry } from '@/components/ui/phone-input';
@@ -8,9 +7,10 @@ import { Shield, Phone, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { motion } from 'framer-motion';
+import { OTPInput } from './OTPInput';
 
 const phoneSchema = z.string().regex(/^\+[1-9]\d{6,14}$/, 'Please enter a valid phone number');
-const otpSchema = z.string().length(6, 'OTP must be 6 digits');
 
 interface TwoFactorSetupProps {
   open: boolean;
@@ -55,9 +55,8 @@ export const TwoFactorSetup = ({ open, onOpenChange, onComplete, userId }: TwoFa
   };
 
   const handleVerifyCode = async () => {
-    const result = otpSchema.safeParse(otp);
-    if (!result.success) {
-      setError(result.error.errors[0].message);
+    if (otp.length !== 6) {
+      setError('Please enter all 6 digits');
       return;
     }
     setError('');
@@ -111,7 +110,7 @@ export const TwoFactorSetup = ({ open, onOpenChange, onComplete, userId }: TwoFa
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-xl">
             <Shield className="w-5 h-5 text-primary" />
             {step === 'success' ? '2FA Enabled!' : 'Set Up Two-Factor Authentication'}
           </DialogTitle>
@@ -122,11 +121,11 @@ export const TwoFactorSetup = ({ open, onOpenChange, onComplete, userId }: TwoFa
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-5 py-4">
           {step === 'phone' && (
             <>
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2 text-base">
                   <Phone className="w-4 h-4" />
                   Phone Number
                 </Label>
@@ -140,7 +139,7 @@ export const TwoFactorSetup = ({ open, onOpenChange, onComplete, userId }: TwoFa
               <Button
                 onClick={handleSendCode}
                 disabled={loading || !phone}
-                className="w-full"
+                className="w-full h-12 text-base font-semibold"
               >
                 {loading ? (
                   <>
@@ -155,23 +154,19 @@ export const TwoFactorSetup = ({ open, onOpenChange, onComplete, userId }: TwoFa
           )}
 
           {step === 'verify' && (
-            <>
-              <div className="space-y-2">
-                <Label>Verification Code</Label>
-                <Input
-                  type="text"
-                  placeholder="000000"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="text-center text-2xl tracking-widest"
-                  maxLength={6}
-                />
-                {error && <p className="text-destructive text-sm">{error}</p>}
-              </div>
+            <div className="space-y-5">
+              <OTPInput
+                value={otp}
+                onChange={setOtp}
+                length={6}
+                error={error}
+                autoFocus
+              />
+              
               <Button
                 onClick={handleVerifyCode}
                 disabled={loading || otp.length !== 6}
-                className="w-full"
+                className="w-full h-12 text-base font-semibold"
               >
                 {loading ? (
                   <>
@@ -182,28 +177,43 @@ export const TwoFactorSetup = ({ open, onOpenChange, onComplete, userId }: TwoFa
                   'Verify & Enable 2FA'
                 )}
               </Button>
-              <button
-                type="button"
-                onClick={() => { setStep('phone'); setOtp(''); setError(''); }}
-                className="w-full text-muted-foreground hover:text-foreground text-sm"
-              >
-                Change phone number
-              </button>
-            </>
+              
+              <div className="flex items-center justify-between text-sm">
+                <button
+                  type="button"
+                  onClick={handleSendCode}
+                  disabled={loading}
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
+                  Resend code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setStep('phone'); setOtp(''); setError(''); }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Change number
+                </button>
+              </div>
+            </div>
           )}
 
           {step === 'success' && (
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 mx-auto bg-green-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-500" />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-4"
+            >
+              <div className="w-20 h-20 mx-auto bg-green-500/20 rounded-2xl flex items-center justify-center">
+                <CheckCircle className="w-10 h-10 text-green-500" />
               </div>
               <p className="text-muted-foreground">
                 You'll receive a verification code via SMS each time you log in.
               </p>
-              <Button onClick={handleClose} className="w-full">
+              <Button onClick={handleClose} className="w-full h-12 text-base font-semibold">
                 Done
               </Button>
-            </div>
+            </motion.div>
           )}
         </div>
       </DialogContent>
