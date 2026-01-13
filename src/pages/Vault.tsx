@@ -476,7 +476,7 @@ const VaultPage = () => {
                                     variant="outline" 
                                     size="sm" 
                                     className="flex-1"
-                                    onClick={() => navigate(`/orders/${item.order_id}`)}
+                                    onClick={() => navigate(`/order/${item.order_id}`)}
                                   >
                                     <Truck className="h-4 w-4 mr-1.5" />
                                     Track Order
