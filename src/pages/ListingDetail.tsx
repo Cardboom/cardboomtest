@@ -186,8 +186,27 @@ const ListingDetail = () => {
       // Check for CardBoom grading - multiple strategies
       let gradingData = null;
       
-      // Strategy 1: Match by market_item_id
-      if (data?.market_item_id) {
+      // Strategy 0: Check if listing already has cbgi_score stored directly
+      if (data?.cbgi_score && data.cbgi_score > 0) {
+        gradingData = {
+          final_grade: data.cbgi_score,
+          grade_label: data.cbgi_grade_label || 'Graded'
+        };
+      }
+      
+      // Strategy 1: Match by grading_order_id (direct link)
+      if (!gradingData && data?.grading_order_id) {
+        const { data: directGrading } = await supabase
+          .from('grading_orders')
+          .select('final_grade, grade_label')
+          .eq('id', data.grading_order_id)
+          .eq('status', 'completed')
+          .maybeSingle();
+        gradingData = directGrading;
+      }
+      
+      // Strategy 2: Match by market_item_id
+      if (!gradingData && data?.market_item_id) {
         const { data: marketGrading } = await supabase
           .from('grading_orders')
           .select('final_grade, grade_label')
@@ -199,7 +218,7 @@ const ListingDetail = () => {
         gradingData = marketGrading;
       }
       
-      // Strategy 2: Check if this listing was created from a grading order
+      // Strategy 3: Check if this listing was created from a grading order
       if (!gradingData && data?.id) {
         const { data: linkedGrading } = await supabase
           .from('grading_orders')
@@ -211,7 +230,7 @@ const ListingDetail = () => {
         gradingData = linkedGrading;
       }
       
-      // Strategy 3: Match seller's grading orders by image URL
+      // Strategy 4: Match seller's grading orders by image URL
       if (!gradingData && data?.seller_id && data?.image_url) {
         const { data: imageGrading } = await supabase
           .from('grading_orders')
@@ -223,6 +242,30 @@ const ListingDetail = () => {
           .limit(1)
           .maybeSingle();
         gradingData = imageGrading;
+      }
+      
+      // Strategy 5: Match by card name + seller (fuzzy fallback for same user's grades)
+      if (!gradingData && data?.seller_id && data?.title) {
+        const normalizedTitle = data.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const { data: nameMatches } = await supabase
+          .from('grading_orders')
+          .select('final_grade, grade_label, card_name')
+          .eq('user_id', data.seller_id)
+          .eq('status', 'completed')
+          .order('completed_at', { ascending: false })
+          .limit(20);
+        
+        if (nameMatches) {
+          const match = nameMatches.find(g => {
+            const normalizedGradeName = (g.card_name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            return normalizedGradeName === normalizedTitle || 
+                   normalizedTitle.includes(normalizedGradeName) ||
+                   normalizedGradeName.includes(normalizedTitle);
+          });
+          if (match) {
+            gradingData = { final_grade: match.final_grade, grade_label: match.grade_label };
+          }
+        }
       }
       
       if (gradingData) {
@@ -604,6 +647,21 @@ const ListingDetail = () => {
                           <p className="text-xs">CardBoom Grading Index - AI-powered condition assessment</p>
                         </TooltipContent>
                       </Tooltip>
+                    </div>
+                  )}
+                  {/* PSA/BGS/CGC Grade */}
+                  {listing.grading_company && listing.grade && (
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-blue-500" />
+                      <span className="text-muted-foreground">{listing.grading_company}:</span>
+                      <span className={cn(
+                        "font-bold",
+                        listing.grade === '10' || listing.grade === '9.5'
+                          ? "text-amber-500"
+                          : "text-blue-500"
+                      )}>
+                        {listing.grade}
+                      </span>
                     </div>
                   )}
                   {listing.set_name && (
