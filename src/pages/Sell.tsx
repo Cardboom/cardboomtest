@@ -545,7 +545,7 @@ const SellPage = () => {
     setShowInstantSellDialog(true);
   };
 
-  // Execute instant sell to CardBoom
+  // Execute instant sell to CardBoom - creates a pending request for admin approval
   const executeInstantSell = async () => {
     if (!instantSellData) return;
 
@@ -554,65 +554,35 @@ const SellPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      // Get user's wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from('wallets')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .single();
-
-      if (walletError || !wallet) {
-        throw new Error('Wallet not found. Please contact support.');
-      }
-
       // Upload image if exists
       let uploadedImageUrl = instantSellData.imageUrl;
       if (imageFile) {
         uploadedImageUrl = await uploadImage(session.user.id);
       }
 
-      // Generate idempotency key
-      const idempotencyKey = `instant_sell_${session.user.id}_${Date.now()}`;
-
-      // Convert to cents for ledger
-      const amountCents = Math.round(instantSellData.instantPrice * 100);
-
-      // Post ledger entry to credit seller (using 'sale' type for instant sales)
-      const { data: ledgerEntry, error: ledgerError } = await supabase.rpc('post_ledger_entry', {
-        p_wallet_id: wallet.id,
-        p_delta_cents: amountCents,
-        p_currency: 'USD',
-        p_entry_type: 'sale',
-        p_reference_type: 'instant_sale',
-        p_reference_id: null,
-        p_description: `Instant sale to CardBoom: ${instantSellData.title}`,
-        p_idempotency_key: idempotencyKey,
-      });
-
-      if (ledgerError) {
-        console.error('Ledger error:', ledgerError);
-        throw new Error('Failed to process payment. Please try again.');
-      }
-
-      // Create a vault item record for CardBoom's inventory (optional tracking)
-      const { error: vaultError } = await supabase
-        .from('vault_items')
+      // Create an instant sale request (pending admin approval after shipping)
+      const { error: requestError } = await supabase
+        .from('instant_sale_requests')
         .insert({
-          owner_id: session.user.id, // Will be transferred to system account
-          title: `[CardBoom Inventory] ${instantSellData.title}`,
-          description: `Instant purchase from seller at $${instantSellData.instantPrice.toFixed(2)} (80% of $${instantSellData.marketPrice.toFixed(2)})`,
+          user_id: session.user.id,
+          title: instantSellData.title,
           category: instantSellData.category,
           condition: instantSellData.condition,
-          estimated_value: instantSellData.marketPrice,
+          claimed_market_price: instantSellData.marketPrice,
+          instant_price: instantSellData.instantPrice,
           image_url: uploadedImageUrl,
+          status: 'pending_shipment',
         });
 
-      if (vaultError) {
-        console.error('Vault item creation failed:', vaultError);
-        // Non-critical - payment already processed
+      if (requestError) {
+        console.error('Request creation error:', requestError);
+        throw new Error('Failed to create sale request. Please try again.');
       }
 
-      toast.success(`Sold! $${instantSellData.instantPrice.toFixed(2)} has been added to your wallet.`);
+      toast.success(
+        'Instant sale request submitted! Ship your card to our address and add tracking to receive payment after verification.',
+        { duration: 6000 }
+      );
       
       // Reset form
       setFormData({

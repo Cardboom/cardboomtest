@@ -90,11 +90,15 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
 
   const fees = calculateFeesSync(listing.price);
   const selectedOffer = offers.find(o => o.id === selectedCarrier);
-  const shippingCost = selectedOffer?.price || 0;
+  const shippingCostTRY = selectedOffer?.price || 0;
+  
+  // Convert shipping cost from TRY to USD for proper calculation
+  // Geliver returns prices in TRY, but our checkout is in USD
+  const shippingCostUSD = shippingCostTRY / 42.62; // Using approximate rate, ideally from context
   
   // Calculate gem discount (1 gem = $0.01)
   const gemDiscountUSD = gemAmount / 100;
-  const totalBeforeGems = fees.totalBuyerPays + (deliveryOption === 'ship' ? shippingCost : 0);
+  const totalBeforeGems = fees.totalBuyerPays + (deliveryOption === 'ship' ? shippingCostUSD : 0);
   const maxGemsUsable = Math.min(gemBalance, Math.floor(totalBeforeGems * 100));
   const totalAfterGems = Math.max(0, totalBeforeGems - gemDiscountUSD);
   
@@ -620,10 +624,10 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
                 <span className="text-muted-foreground">Buyer Fee (5%)</span>
                 <span>{formatCurrency(fees.buyerFee)}</span>
               </div>
-              {deliveryOption === 'ship' && shippingCost > 0 && (
+              {deliveryOption === 'ship' && shippingCostTRY > 0 && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
-                  <span>{shippingCost.toFixed(2)} TRY</span>
+                  <span>{shippingCostTRY.toFixed(2)} TRY (~{formatCurrency(shippingCostUSD)})</span>
                 </div>
               )}
               {useGems && gemAmount > 0 && (
