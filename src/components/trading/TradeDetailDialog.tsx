@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ const MOCK_TRADE_DETAIL = {
 
 export const TradeDetailDialog = ({ open, onOpenChange, tradeId }: TradeDetailDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   const trade = MOCK_TRADE_DETAIL;
 
   const formatPrice = (price: number) => {
@@ -46,12 +48,15 @@ export const TradeDetailDialog = ({ open, onOpenChange, tradeId }: TradeDetailDi
   };
 
   const handleAccept = async () => {
-    if (isLoading) return; // Prevent double-click
+    if (isLoading) return;
     setIsLoading(true);
     try {
-      // TODO: Implement actual trade acceptance logic
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API call
-      toast.success('Trade accepted! Upload photos to proceed.');
+      // TODO: Implement actual trade acceptance logic with database
+      await new Promise(resolve => setTimeout(resolve, 500));
+      toast.success('Trade accepted! Redirecting to messages to upload photos...');
+      onOpenChange(false);
+      // Navigate to messages after accepting trade
+      navigate('/messages');
     } catch (error) {
       console.error('Trade accept error:', error);
       toast.error('Failed to accept trade');
