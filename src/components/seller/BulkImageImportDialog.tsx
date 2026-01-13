@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { MultiCardReviewTabs } from './MultiCardReviewTabs';
 import { AuthenticityBadge } from '@/components/VerifiedPurchaseBadge';
+import { processImageFile, isHeicFile } from '@/lib/heic-converter';
 
 interface DetectedCard {
   id: string;
@@ -307,12 +308,23 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const fileExt = file.name.split('.').pop();
+    // Convert HEIC to JPEG if needed
+    let processedFile = file;
+    if (isHeicFile(file)) {
+      try {
+        processedFile = await processImageFile(file);
+      } catch (error) {
+        console.error('HEIC conversion failed:', error);
+        return null;
+      }
+    }
+
+    const fileExt = processedFile.name.split('.').pop();
     const fileName = `${user.id}/${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('listing-images')
-      .upload(fileName, file);
+      .upload(fileName, processedFile);
 
     if (uploadError) {
       console.error('Upload error:', uploadError);

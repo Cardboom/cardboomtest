@@ -20,6 +20,7 @@ import {
   Plus,
   DollarSign 
 } from 'lucide-react';
+import { processImageFile, isHeicFile } from '@/lib/heic-converter';
 
 interface MakeOfferModalProps {
   open: boolean;
@@ -50,11 +51,18 @@ export const MakeOfferModal = ({ open, onOpenChange, listing, onSuccess }: MakeO
   });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     try {
+      // Convert HEIC to JPEG if needed
+      if (isHeicFile(file)) {
+        toast.loading('Converting HEIC image...', { id: 'heic-convert' });
+        file = await processImageFile(file);
+        toast.success('Image converted!', { id: 'heic-convert' });
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `swap-offers/${fileName}`;
@@ -72,6 +80,7 @@ export const MakeOfferModal = ({ open, onOpenChange, listing, onSuccess }: MakeO
       setImageUrl(publicUrl);
     } catch (error) {
       console.error('Upload error:', error);
+      toast.dismiss('heic-convert');
       toast.error('Failed to upload image');
     } finally {
       setUploading(false);
