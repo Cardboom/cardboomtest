@@ -463,7 +463,18 @@ const ItemDetail = () => {
                   <BarChart3 className="w-4 h-4" />
                   Market Prices by Grade
                 </h4>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {/* CBGI 10 */}
+                  {item.psa10_price && item.psa10_price > 0 && (
+                    <div className="text-center">
+                      <Badge className="bg-[#0ABAB5] text-white mb-2">
+                        CBGI 10
+                      </Badge>
+                      <p className="font-display text-lg font-bold text-foreground">{formatPrice(item.psa10_price)}</p>
+                      <p className="text-xs text-muted-foreground">Gem Mint</p>
+                    </div>
+                  )}
+                  {/* PSA 10 */}
                   {item.psa10_price && item.psa10_price > 0 && (
                     <div className="text-center">
                       <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-background mb-2">
@@ -473,6 +484,7 @@ const ItemDetail = () => {
                       <p className="text-xs text-muted-foreground">Gem Mint</p>
                     </div>
                   )}
+                  {/* PSA 9 */}
                   {item.psa9_price && item.psa9_price > 0 && (
                     <div className="text-center">
                       <Badge className="bg-blue-500 text-white mb-2">
@@ -482,6 +494,7 @@ const ItemDetail = () => {
                       <p className="text-xs text-muted-foreground">Mint</p>
                     </div>
                   )}
+                  {/* Raw */}
                   {item.raw_price && item.raw_price > 0 && (
                     <div className="text-center">
                       <Badge variant="outline" className="mb-2">
