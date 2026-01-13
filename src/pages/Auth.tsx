@@ -532,12 +532,12 @@ const Auth = () => {
             className="hidden lg:block"
           >
             <div className="space-y-8">
-              {/* Logo - Large and Centered */}
-              <div className="flex justify-center mb-8">
+              {/* Logo - Extra Large and Centered directly above features */}
+              <div className="flex justify-center mb-4">
                 <img 
                   src={isDark ? cardboomLogoDark : cardboomLogo} 
                   alt="Cardboom" 
-                  className="h-48 lg:h-56 xl:h-64 w-auto object-contain"
+                  className="h-64 lg:h-80 xl:h-96 w-auto object-contain"
                 />
               </div>
 
