@@ -225,7 +225,7 @@ export const CardPriceEstimates = ({
             })}
           </div>
 
-          {estimate.notes && (
+          {estimate.notes && !estimate.notes.toLowerCase().includes('data from ebay') && (
             <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border/50">
               <Info className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
               <p className="text-xs text-muted-foreground">{estimate.notes}</p>

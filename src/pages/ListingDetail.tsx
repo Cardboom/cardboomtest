@@ -34,7 +34,9 @@ import { GradingCountdownPanel } from '@/components/grading/GradingCountdownPane
 import { StartConversationDialog } from '@/components/messaging/StartConversationDialog';
 import { ListThisCardDialog } from '@/components/item/ListThisCardDialog';
 import { MakeOfferDialog } from '@/components/trading/MakeOfferDialog';
+import { EditListingDialog } from '@/components/listing/EditListingDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { Pencil } from 'lucide-react';
 
 interface Listing {
   id: string;
@@ -779,6 +781,20 @@ const ListingDetail = () => {
             {user?.id === listing.seller_id && (
               <div className="flex flex-wrap items-center gap-3">
                 <Badge className="bg-primary/20 text-primary">This is your listing</Badge>
+                
+                {/* Edit Listing Button */}
+                <EditListingDialog
+                  listing={{
+                    id: listing.id,
+                    title: listing.title,
+                    description: listing.description,
+                    price: listing.price,
+                    image_url: listing.image_url,
+                    grading_order_id: listing.grading_order_id,
+                    cbgi_score: listing.cbgi_score,
+                  }}
+                  onSuccess={() => window.location.reload()}
+                />
                 
                 {/* Grade this listing button - only for ungraded cards without pending grading */}
                 {!gradingInfo?.final_grade && 
