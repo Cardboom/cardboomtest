@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { SavedCardsSelector, SavedCard } from '@/components/wallet/SavedCardsSelector';
+import { RequireProfileInfoDialog } from '@/components/wallet/RequireProfileInfoDialog';
+import { useRequireProfileInfo } from '@/hooks/useRequireProfileInfo';
 
 interface WalletTopUpDialogProps {
   open: boolean;
@@ -29,6 +31,9 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [userId, setUserId] = useState<string | undefined>();
   const [paymentCurrency, setPaymentCurrency] = useState<PaymentCurrency>('TRY');
+  const [showProfileInfoDialog, setShowProfileInfoDialog] = useState(false);
+
+  const { needsProfileInfo, refetch: refetchProfileInfo } = useRequireProfileInfo();
 
   const { exchangeRates } = useCurrency();
   const baseRate = exchangeRates.USD_TRY || 38;
@@ -93,6 +98,18 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
       toast.error('Minimum top-up is $10');
       return;
     }
+    
+    // Check if SSO user needs to provide phone/national ID
+    if (needsProfileInfo) {
+      setShowProfileInfoDialog(true);
+      return;
+    }
+    
+    setStep('card');
+  };
+  
+  const handleProfileInfoComplete = () => {
+    refetchProfileInfo();
     setStep('card');
   };
 
@@ -221,6 +238,7 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   }, [step, threeDSContent]);
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={step === '3ds' ? 'sm:max-w-2xl h-[600px]' : 'sm:max-w-md'}>
         <DialogHeader>
@@ -523,5 +541,12 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
         )}
       </DialogContent>
     </Dialog>
+    
+    <RequireProfileInfoDialog
+      open={showProfileInfoDialog}
+      onOpenChange={setShowProfileInfoDialog}
+      onComplete={handleProfileInfoComplete}
+    />
+    </>
   );
 };
