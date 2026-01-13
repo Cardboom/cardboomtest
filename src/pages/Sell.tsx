@@ -45,6 +45,7 @@ import { useCardIndexer } from '@/hooks/useCardIndexer';
 import { CertificationToggle, CertificationTier } from '@/components/listing/CertificationToggle';
 import { AuctionToggle, AUCTION_LISTING_FEE } from '@/components/listing/AuctionToggle';
 import { useAuctions } from '@/hooks/useAuctions';
+import { processImageFile, isHeicFile } from '@/lib/heic-converter';
 interface Listing {
   id: string;
   title: string;
@@ -195,8 +196,20 @@ const SellPage = () => {
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
+
+    // Convert HEIC to JPEG if needed
+    if (isHeicFile(file)) {
+      toast.loading('Converting HEIC image...', { id: 'heic-convert' });
+      try {
+        file = await processImageFile(file);
+        toast.success('Image converted successfully!', { id: 'heic-convert' });
+      } catch (error) {
+        toast.error('Failed to convert HEIC image. Please use JPG or PNG.', { id: 'heic-convert' });
+        return;
+      }
+    }
 
     if (file.size > 10 * 1024 * 1024) {
       toast.error('Image must be less than 10MB');
@@ -1031,7 +1044,7 @@ const SellPage = () => {
                             type="file"
                             ref={fileInputRef}
                             onChange={handleImageSelect}
-                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            accept="image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.heic,.heif"
                             className="hidden"
                           />
                           {imagePreview ? (

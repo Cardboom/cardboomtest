@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { processImageFile, isHeicFile } from '@/lib/heic-converter';
 
 interface CardScannerUploadProps {
   onScanComplete: (analysis: CardAnalysis, imageFile: File, previewUrl: string) => void;
@@ -106,8 +108,20 @@ export function CardScannerUpload({
   }, []);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
+
+    // Convert HEIC to JPEG if needed
+    if (isHeicFile(file)) {
+      toast.loading('Converting HEIC image...', { id: 'heic-convert' });
+      try {
+        file = await processImageFile(file);
+        toast.success('Image converted!', { id: 'heic-convert' });
+      } catch (error) {
+        toast.error('Failed to convert HEIC image. Please use JPG or PNG.', { id: 'heic-convert' });
+        return;
+      }
+    }
 
     if (file.size > 15 * 1024 * 1024) {
       return;
@@ -180,7 +194,7 @@ export function CardScannerUpload({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
           className="hidden"
           onChange={handleImageSelect}
         />
