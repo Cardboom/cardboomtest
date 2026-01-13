@@ -958,6 +958,88 @@ export const legalTranslations = {
         section11Title: "MADDE 11 - İLETİŞİM",
         section11Text: "Tüm soru, öneri ve şikayetleriniz için",
         section11Text2: "adresine e-posta gönderebilir veya Platform içi destek sistemini kullanabilirsiniz.",
+      },
+      
+      // User Agreement - Turkish
+      userAgreement: {
+        title: "Kullanıcı Sözleşmesi",
+        metaDescription: "CardBoom Kullanıcı Sözleşmesi - Platform kullanım koşulları, haklar ve yükümlülükler.",
+        section1Title: "1. Taraflar",
+        section1Text: "Bu Kullanıcı Sözleşmesi (\"Sözleşme\"), CardBoom platformu (\"Platform\") ile Platform'a üye olan kullanıcı (\"Kullanıcı\") arasında, Platform kullanım koşullarını düzenlemek amacıyla akdedilmiştir.",
+        section2Title: "2. Tanımlar",
+        section2Items: [
+          { name: "Platform", desc: "CardBoom web sitesi ve mobil uygulamaları" },
+          { name: "Kullanıcı", desc: "Platform'a kayıt olan ve hizmetlerden yararlanan gerçek veya tüzel kişiler" },
+          { name: "Satıcı", desc: "Platform üzerinde ürün satan kullanıcılar" },
+          { name: "Alıcı", desc: "Platform üzerinde ürün satın alan kullanıcılar" },
+          { name: "Cüzdan", desc: "Kullanıcıların Platform içi bakiyelerini yönettikleri sistem" }
+        ],
+        section3Title: "3. Üyelik Koşulları",
+        section3Text: "Platform'a üye olmak için:",
+        section3Items: [
+          "18 yaşından büyük olmak veya yasal veli onayına sahip olmak",
+          "Geçerli bir e-posta adresi ve telefon numarasına sahip olmak",
+          "Doğru ve güncel kişisel bilgiler sağlamak",
+          "Bu Sözleşme'yi kabul etmek"
+        ],
+        section4Title: "4. Kullanıcı Hakları ve Yükümlülükleri",
+        section4_1Title: "4.1 Haklar",
+        section4_1Items: [
+          "Platform hizmetlerini kullanmak",
+          "Ürün alım-satımı yapmak",
+          "Cüzdan sistemini kullanmak",
+          "Müşteri desteğinden yararlanmak"
+        ],
+        section4_2Title: "4.2 Yükümlülükler",
+        section4_2Items: [
+          "Doğru ve güncel bilgi sağlamak",
+          "Hesap güvenliğini korumak",
+          "Yasal düzenlemelere uymak",
+          "Platform kurallarını takip etmek",
+          "Sahte veya çalıntı ürün satmamak"
+        ],
+        section5Title: "5. İşlem Kuralları",
+        section5Items: [
+          "Satıcılar ürünlerini doğru ve eksiksiz tanımlamakla yükümlüdür",
+          "Sahte, çalıntı veya yasadışı ürünlerin satışı yasaktır",
+          "Platform, şüpheli işlemleri durdurma ve hesapları askıya alma hakkını saklı tutar",
+          "İşlem ücretleri Platform tarafından belirlenir ve değiştirilebilir"
+        ],
+        section6Title: "6. Ödeme ve Cüzdan Sistemi",
+        section6Items: [
+          "Kullanıcılar Cüzdan'a kredi kartı veya havale/EFT ile bakiye yükleyebilir",
+          "Satış gelirleri, işlem tamamlandıktan sonra Cüzdan'a aktarılır",
+          "Para çekme işlemleri kimlik doğrulaması sonrası gerçekleştirilir",
+          "Platform, satış tutarından işlem ücreti keser"
+        ],
+        section7Title: "7. Yasaklanan Faaliyetler",
+        section7Text: "Aşağıdaki faaliyetler kesinlikle yasaktır:",
+        section7Items: [
+          "Sahte veya taklit ürün satışı",
+          "Kara para aklama faaliyetleri",
+          "Platform dışı iletişim ve ödeme teşvik etmek",
+          "Birden fazla hesap açmak",
+          "Fiyat manipülasyonu yapmak",
+          "Diğer kullanıcıları aldatmak"
+        ],
+        section8Title: "8. Platform Hakları ve Yükümlülükleri",
+        section8Items: [
+          "Güvenli işlem ortamı sağlamak",
+          "Kullanıcı verilerini korumak",
+          "Müşteri desteği sağlamak",
+          "Anlaşmazlıklarda arabuluculuk yapmak",
+          "Kural ihlallerinde hesapları askıya almak/kapatmak"
+        ],
+        section9Title: "9. Sorumluluk Sınırlaması",
+        section9Text: "Platform, kullanıcılar arasındaki işlemlerde aracı konumundadır. Satışa sunulan ürünlerin kalitesi, özgünlüğü ve durumundan doğrudan sorumluluk kabul etmez. Anlaşmazlıklarda arabuluculuk yapar ancak nihai karar yargı mercilerine aittir.",
+        section10Title: "10. Fikri Mülkiyet",
+        section10Text: "Platform'un logosu, tasarımı, yazılımı ve tüm içeriği CardBoom'un fikri mülkiyetidir. İzinsiz kullanımı yasaktır.",
+        section11Title: "11. Sözleşme Değişiklikleri",
+        section11Text: "Platform, önceden bildirimde bulunarak bu Sözleşme'yi değiştirme hakkını saklı tutar. Değişiklikler Platform'da yayınlandığı tarihte yürürlüğe girer.",
+        section12Title: "12. Uygulanacak Hukuk ve Yetki",
+        section12Text: "Bu Sözleşme Türkiye Cumhuriyeti kanunlarına tabidir. Uyuşmazlıklarda İstanbul Mahkemeleri ve İcra Daireleri yetkilidir.",
+        section13Title: "13. İletişim",
+        section13Text: "Sorularınız için bize ulaşabilirsiniz:"
       }
     }
   },
