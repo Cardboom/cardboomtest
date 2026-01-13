@@ -47,10 +47,13 @@ interface VaultItem {
   status: string;
   created_at: string;
   verified_at: string | null;
+  order_id: string | null; // If set, this is a purchased item awaiting seller shipment
+  listing_id: string | null;
 }
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending_shipment: { label: 'Awaiting Shipment', color: 'bg-amber-500/10 text-amber-500', icon: <Clock className="w-3 h-3" /> },
+  pending_seller_shipment: { label: 'Seller Shipping', color: 'bg-cyan-500/10 text-cyan-500', icon: <Truck className="w-3 h-3" /> },
   shipped: { label: 'In Transit', color: 'bg-blue-500/10 text-blue-500', icon: <Truck className="w-3 h-3" /> },
   received: { label: 'Received', color: 'bg-purple-500/10 text-purple-500', icon: <Package className="w-3 h-3" /> },
   verified: { label: 'Verified & Stored', color: 'bg-emerald-500/10 text-emerald-500', icon: <CheckCircle className="w-3 h-3" /> },
@@ -384,7 +387,14 @@ const VaultPage = () => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {filteredItems.map((item, index) => {
-                    const status = statusConfig[item.status] || statusConfig.pending_shipment;
+                    // Determine the display status: if item has order_id and is pending_shipment, 
+                    // it means buyer is waiting for SELLER to ship, not the buyer
+                    const isPurchasedItem = !!item.order_id;
+                    const displayStatus = (item.status === 'pending_shipment' && isPurchasedItem) 
+                      ? 'pending_seller_shipment' 
+                      : item.status;
+                    const status = statusConfig[displayStatus] || statusConfig.pending_shipment;
+                    
                     return (
                       <motion.div
                         key={item.id}
@@ -410,6 +420,12 @@ const VaultPage = () => {
                               {status.icon}
                               {status.label}
                             </Badge>
+                            {isPurchasedItem && item.status !== 'verified' && (
+                              <Badge className="absolute top-3 left-3 gap-1 bg-primary/20 text-primary">
+                                <Package className="w-3 h-3" />
+                                Purchased
+                              </Badge>
+                            )}
                           </div>
                           <CardContent className="p-4">
                             <h3 className="font-semibold text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
@@ -454,26 +470,40 @@ const VaultPage = () => {
                                   </Button>
                                 </>
                               ) : item.status === 'pending_shipment' ? (
-                                <>
+                                isPurchasedItem ? (
+                                  // Purchased item - buyer is waiting for seller to ship
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
                                     className="flex-1"
-                                    onClick={() => setAddressDialogItem(item)}
+                                    onClick={() => navigate(`/orders/${item.order_id}`)}
                                   >
-                                    <MapPin className="h-4 w-4 mr-1.5" />
-                                    View Address
+                                    <Truck className="h-4 w-4 mr-1.5" />
+                                    Track Order
                                   </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    className="text-destructive hover:bg-destructive/10"
-                                    onClick={() => handleCancelRequest(item.id)}
-                                    disabled={cancellingItemId === item.id}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </>
+                                ) : (
+                                  // User's own item - they need to ship it
+                                  <>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="flex-1"
+                                      onClick={() => setAddressDialogItem(item)}
+                                    >
+                                      <MapPin className="h-4 w-4 mr-1.5" />
+                                      View Address
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="text-destructive hover:bg-destructive/10"
+                                      onClick={() => handleCancelRequest(item.id)}
+                                      disabled={cancellingItemId === item.id}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                )
                               ) : (
                                 <Button 
                                   variant="outline" 
