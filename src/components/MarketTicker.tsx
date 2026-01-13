@@ -19,6 +19,8 @@ export const MarketTicker = () => {
   const { formatPrice } = useCurrency();
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchTickerItems = async () => {
       // Fetch recent active listings (user listings)
       const { data: listings } = await supabase
@@ -30,15 +32,6 @@ export const MarketTicker = () => {
         .order('created_at', { ascending: false })
         .limit(30);
 
-      const listingItems: TickerItem[] = (listings || []).map(l => ({
-        id: `listing-${l.id}`,
-        name: l.title,
-        current_price: l.price,
-        change_24h: null,
-        type: 'listing' as const,
-        listing_id: l.id,
-      }));
-
       // Fetch top market items (popular cards with price changes)
       const { data: marketItems } = await supabase
         .from('market_items')
@@ -48,6 +41,17 @@ export const MarketTicker = () => {
         .gt('current_price', 0)
         .order('change_24h', { ascending: false, nullsFirst: false })
         .limit(50);
+
+      if (!isMounted) return;
+
+      const listingItems: TickerItem[] = (listings || []).map(l => ({
+        id: `listing-${l.id}`,
+        name: l.title,
+        current_price: l.price,
+        change_24h: null,
+        type: 'listing' as const,
+        listing_id: l.id,
+      }));
 
       const marketTickerItems: TickerItem[] = (marketItems || []).map(m => ({
         id: m.id,
@@ -85,23 +89,12 @@ export const MarketTicker = () => {
 
     fetchTickerItems();
 
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('ticker-updates')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'listings' },
-        () => fetchTickerItems()
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'market_items' },
-        () => fetchTickerItems()
-      )
-      .subscribe();
+    // Refresh every 60 seconds instead of real-time to prevent glitching
+    const interval = setInterval(fetchTickerItems, 60000);
 
     return () => {
-      supabase.removeChannel(channel);
+      isMounted = false;
+      clearInterval(interval);
     };
   }, []);
 
