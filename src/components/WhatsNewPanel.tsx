@@ -3,8 +3,9 @@ import { useListings } from '@/hooks/useMarketItems';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GradeBadge } from '@/components/ui/grade-badge';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { Clock, ShoppingCart, Award, Sparkles } from 'lucide-react';
+import { Clock, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -84,26 +85,11 @@ export function WhatsNewPanel() {
               
               {/* Grade Badge - Show grading info or Ungraded */}
               <div className="absolute top-2 right-2">
-                {listing.grading_company === 'CardBoom' && listing.grade === 'Pending' ? (
-                  <Badge variant="outline" className="bg-background/80 backdrop-blur-sm text-amber-500 border-amber-500/30 gap-1">
-                    <Award className="w-3 h-3" />
-                    Grading...
-                  </Badge>
-                ) : listing.grading_company === 'CardBoom' ? (
-                  <Badge className="bg-primary text-primary-foreground gap-1">
-                    <Award className="w-3 h-3" />
-                    CB {listing.grade || 'Graded'}
-                  </Badge>
-                ) : listing.grading_company ? (
-                  <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm gap-1">
-                    <Award className="w-3 h-3" />
-                    {listing.grading_company} {listing.grade}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-background/80 backdrop-blur-sm text-xs">
-                    Ungraded
-                  </Badge>
-                )}
+                <GradeBadge 
+                  gradingCompany={listing.grading_company}
+                  grade={listing.grade}
+                  certificationStatus={listing.certification_status}
+                />
               </div>
               
               {/* Time Badge */}
