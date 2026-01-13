@@ -480,7 +480,129 @@ export const legalTranslations = {
         section2Text2: "BU KOŞULLARI KABUL ETMİYORSANIZ, PLATFORMA ERİŞMEMELİ VEYA KULLANMAMALISINIZ.",
         section2Text3: "Platformu kullanmaya devam etmeniz, zaman zaman değiştirilen bu Koşulları kabul ettiğiniz anlamına gelir.",
         
-        // ... Turkish translations continue similarly
+        section3Title: "3. Uygunluk ve Kullanıcı Hesapları",
+        section3Text: "CardBoom'u kullanmak için:",
+        section3Items: [
+          "En az 18 yaşında veya bulunduğunuz yargı bölgesinde yasal reşitlik yaşında olmalısınız",
+          "Bağlayıcı sözleşmeler yapma hukuki ehliyetine sahip olmalısınız",
+          "Yürürlükteki kanunlar kapsamında Platformu kullanmanız yasaklanmamış olmalıdır",
+          "Doğru, güncel ve eksiksiz kayıt bilgileri sağlamalısınız",
+          "Hesap kimlik bilgilerinizin güvenliğini ve gizliliğini korumalısınız"
+        ],
+        section3Footer: "Hesabınız altında gerçekleşen tüm faaliyetlerden yalnızca siz sorumlusunuz. Hesabınızın yetkisiz kullanımını security@cardboom.com adresinden derhal bize bildirmelisiniz.",
+        
+        section4Title: "4. Platform Hizmetleri",
+        section4Text: "CardBoom aşağıdaki hizmetleri sunmaktadır:",
+        section4Items: [
+          { name: "Pazar Yeri", desc: "Ticaret kartları, koleksiyon ürünleri ve ilgili eşyaları alıp satın" },
+          { name: "Kasa Depolama", desc: "Sigortalı tesislerimizde koleksiyon ürünleri için güvenli depolama" },
+          { name: "Portföy Takibi", desc: "Koleksiyonunuzun değerini takip edin" },
+          { name: "Derecelendirme Hizmetleri", desc: "Kartlarınızı profesyonel derecelendirme için gönderin" },
+          { name: "Hisseli Sahiplik", desc: "Yüksek değerli koleksiyon ürünlerinde pay satın alın" },
+          { name: "Oyun Hizmetleri", desc: "Dijital oyun ürünleri ve koçluk hizmetleri" },
+          { name: "Açık Artırmalar", desc: "Süreli açık artırmalarda koleksiyon ürünlerine teklif verin" }
+        ],
+        
+        section5Title: "5. Ücretler, Komisyonlar ve Ödeme Koşulları",
+        section5Text: "CardBoom'u kullanarak aşağıdaki ücret yapısını kabul etmiş olursunuz:",
+        section5Items: [
+          { name: "Kredi Kartı Yükleme Ücreti", value: "İşlem başına %6.5 + $0.50" },
+          { name: "Havale Yükleme Ücreti", value: "İşlem başına %3 + $0.50" },
+          { name: "Satıcı Komisyonu", value: "Tamamlanan işlemlerde satış fiyatının %5'i" },
+          { name: "Para Çekme Ücreti", value: "Yönteme ve hedefe göre değişir" }
+        ],
+        section5Footer: "Tüm ücretler 30 gün önceden bildirimle değiştirilebilir. Güncel ücret tarifeleri Fiyatlandırma Sayfamızda mevcuttur. Aksi belirtilmedikçe ücretler iade edilmez.",
+        
+        section6Title: "6. Satıcı Yükümlülükleri",
+        section6Text: "CardBoom'da ürün satıyorsanız, şunları kabul etmiş olursunuz:",
+        section6Items: [
+          "Doğru açıklamalar, görseller ve durum değerlendirmeleri sağlamak",
+          "Yalnızca sahip olduğunuz ve satma hakkına sahip olduğunuz ürünleri listelemek",
+          "Ürünleri belirtilen süre içinde göndermek (varsayılan: 5 iş günü)",
+          "Kargo sırasında hasarı önlemek için uygun ambalaj kullanmak",
+          "Sahte teklif verme, fiyat manipülasyonu veya dolandırıcılık faaliyetlerinde bulunmamak",
+          "Alıcı sorularına 48 saat içinde yanıt vermek",
+          "Açıklamadan önemli ölçüde farklı ürünler için iadeleri kabul etmek"
+        ],
+        
+        section7Title: "7. Alıcı Yükümlülükleri",
+        section7Text: "CardBoom'da ürün satın alıyorsanız, şunları kabul etmiş olursunuz:",
+        section7Items: [
+          "Satın alma onayı üzerine ürünler için derhal ödeme yapmak",
+          "Doğru teslimat bilgileri sağlamak",
+          "Teslim alındığında ürünleri incelemek ve sorunları 72 saat içinde bildirmek",
+          "Sahte itirazlar veya ters ibrazlar yapmamak",
+          "Satıcılarla iyi niyetle iletişim kurmak"
+        ],
+        
+        section8Title: "8. Yasaklanmış Faaliyetler",
+        section8Text: "CardBoom'u şu amaçlarla KULLANAMAZSINIZ:",
+        section8Items: [
+          "Sahte, çalıntı veya yasadışı yollarla elde edilmiş ürünleri satmak",
+          "Ürün özgünlüğünü, durumunu veya derecelendirmesini yanlış beyan etmek",
+          "Kara para aklama veya terörün finansmanına katılmak",
+          "Fiyatları, teklifleri veya piyasa verilerini manipüle etmek",
+          "Platform dışı işlemlerle platform ücretlerini atlatmak",
+          "Diğer kullanıcıları taciz etmek, tehdit etmek veya karalamak",
+          "Fikri mülkiyet haklarını ihlal etmek",
+          "İzinsiz bot, kazıyıcı veya otomatik araçlar kullanmak",
+          "Platform güvenliği veya altyapısına müdahale etmek"
+        ],
+        
+        section9Title: "9. Uyuşmazlık Çözümü",
+        section9Text: "Alıcılar ve satıcılar arasında bir uyuşmazlık olması durumunda:",
+        section9Items: [
+          "Kullanıcılar öncelikle uyuşmazlıkları doğrudan çözmeye çalışmalıdır",
+          "Çözülemezse, taraflardan biri CardBoom arabuluculuğu talep edebilir",
+          "CardBoom uyuşmazlık çözümü sırasında fonları emanette tutabilir",
+          "CardBoom'un uyuşmazlık konularındaki kararları nihai ve bağlayıcıdır",
+          "Uyuşmazlık çözüm süresi: başvurudan itibaren 30 güne kadar"
+        ],
+        section9Footer: "İç sürecimiz aracılığıyla çözülemeyen uyuşmazlıklar için İstanbul'daki Türk mahkemeleri münhasır yetkiye sahip olacaktır.",
+        
+        section10Title: "10. Sorumluluk Sınırlaması",
+        section10Text: "YÜRÜRLÜKTE OLAN KANUNUN İZİN VERDİĞİ AZAMİ ÖLÇÜDE:",
+        section10Items: [
+          "Platformu açık veya zımni herhangi bir garanti olmaksızın \"OLDUĞU GİBİ\" ve \"MEVCUT OLDUĞU ŞEKİLDE\" sağlar.",
+          "Üçüncü taraf satıcılar tarafından listelenen ürünlerin özgünlüğünü, kalitesini veya durumunu garanti etmiyoruz.",
+          "Kullanıcılar arası işlemlerden, kargo hasarından veya üçüncü taraf hizmet arızalarından kaynaklanan kayıplardan sorumlu değiliz.",
+          "Toplam sorumluluğumuz, talepten önceki 12 ay içinde CardBoom'a ödediğiniz ücretleri aşmayacaktır.",
+          "Dolaylı, arızi, özel, sonuç olarak ortaya çıkan veya cezai tazminatlardan sorumlu olmayacağız."
+        ],
+        
+        section11Title: "11. Tazminat",
+        section11Text: "Şunlardan doğan her türlü iddia, zarar, kayıp, yükümlülük, maliyet ve giderlerden (makul yasal ücretler dahil)",
+        section11Text2: "yetkililerini, yöneticilerini, çalışanlarını ve temsilcilerini tazmin etmeyi, savunmayı ve zarar görmekten korumayı kabul edersiniz: (a) Platformu kullanımınız; (b) bu Koşulları ihlal etmeniz; (c) herhangi bir üçüncü taraf hakkını ihlal etmeniz; veya (d) Platformla bağlantılı davranışınız.",
+        
+        section12Title: "12. Fikri Mülkiyet",
+        section12Text1: "CardBoom adı, logosu ve tüm ilgili işaretler, grafikler ve yazılımlar",
+        section12Text2: "mülkiyetindedir. Tüm hakları saklıdır.",
+        section12Trademarks: "Üçüncü Taraf Ticari Markalar:",
+        section12TrademarksText: "Pokémon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Disney Lorcana ve tüm ilgili adlar ve görseller ilgili sahiplerinin ticari markalarıdır. CardBoom bağımsız bir pazar yeridir ve bu ticari marka sahipleriyle bağlantılı değildir, onlar tarafından onaylanmamış veya desteklenmemiştir.",
+        
+        section13Title: "13. Hesap Feshi",
+        section13Text: "Hesabınızı herhangi bir zamanda şu nedenlerle askıya alabilir veya feshedebiliriz:",
+        section13Items: [
+          "Bu Koşulların ihlali",
+          "Dolandırıcılık veya yasadışı faaliyet",
+          "Tekrarlanan anlaşmazlıklar veya ters ibrazlar",
+          "İşlemleri tamamlayamama",
+          "Kolluk kuvvetleri veya düzenleyici otoritelerin talebi"
+        ],
+        
+        section14Title: "14. Yürürlükteki Hukuk ve Yargı Yetkisi",
+        section14Text: "Bu Koşullar, hukuk ihtilafı ilkelerine bakılmaksızın Türkiye Cumhuriyeti kanunlarına göre yönetilecek ve yorumlanacaktır. Bu Koşullardan doğan herhangi bir uyuşmazlık, İstanbul, Türkiye mahkemelerinin münhasır yargı yetkisine tabi olacaktır. Taraflar, tüketici uyuşmazlıkları için İstanbul Tüketici Hakem Heyetleri ve İstanbul Mahkemelerinin yetkili olduğunu kabul eder.",
+        
+        section15Title: "15. Bölünebilirlik ve Feragat",
+        section15Text: "Bu Koşulların herhangi bir hükmünün uygulanamaz veya geçersiz bulunması halinde, bu hüküm gereken asgari ölçüde sınırlandırılacak veya kaldırılacak ve kalan hükümler tam olarak yürürlükte kalmaya devam edecektir. Bu Koşulların herhangi bir hakkını veya hükmünü uygulamamız, bu hak veya hükümden feragat teşkil etmeyecektir.",
+        
+        section16Title: "16. Değişiklikler",
+        section16Text: "bu Koşulları herhangi bir zamanda değiştirme hakkını saklı tutar. Önemli değişiklikler, yürürlüğe girmeden en az 30 gün önce e-posta veya Platform'da belirgin bir bildirim yoluyla bildirilecektir. Değişiklikler yürürlüğe girdikten sonra Platformu kullanmaya devam etmeniz, değiştirilmiş Koşulları kabul ettiğiniz anlamına gelir.",
+        
+        section17Title: "17. İletişim Bilgileri",
+        legalInquiries: "Hukuki Sorular",
+        dataProtection: "Veri Koruma",
+        
         relatedDocsTitle: "İlgili Yasal Belgeler",
       },
       
@@ -488,7 +610,132 @@ export const legalTranslations = {
         title: "Gizlilik Politikası",
         badge: "Yasal",
         metaDescription: "CardBoom Gizlilik Politikası - GDPR ve KVKK uyumlu olarak kişisel bilgilerinizi nasıl topladığımızı, kullandığımızı ve koruduğumuzu öğrenin.",
-        // ... Turkish translations
+        
+        section1Title: "1. Veri Sorumlusu",
+        section1Text: "AB Genel Veri Koruma Yönetmeliği (GDPR) ve 6698 sayılı Türk Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında kişisel verilerinizin işlenmesinden sorumlu veri sorumlusudur.",
+        dataProtectionOfficer: "Veri Koruma Görevlisi",
+        
+        section2Title: "2. Topladığımız Bilgiler",
+        section2_1Title: "2.1 Sağladığınız Bilgiler",
+        section2_1Items: [
+          { name: "Kimlik Verileri", desc: "Ad soyad, kullanıcı adı, doğum tarihi, T.C. Kimlik No, pasaport numarası" },
+          { name: "İletişim Verileri", desc: "E-posta adresi, telefon numarası, teslimat adresi, fatura adresi" },
+          { name: "Finansal Veriler", desc: "Banka hesap bilgileri (IBAN), ödeme kartı bilgileri (ödeme sağlayıcıları tarafından işlenir)" },
+          { name: "Profil Verileri", desc: "Avatar, biyografi, tercihler, işlem geçmişi" },
+          { name: "İletişim Verileri", desc: "Mesajlar, destek talepleri, geri bildirimler" }
+        ],
+        section2_2Title: "2.2 Otomatik Olarak Toplanan Bilgiler",
+        section2_2Items: [
+          { name: "Cihaz Verileri", desc: "IP adresi, tarayıcı türü, işletim sistemi, cihaz tanımlayıcıları" },
+          { name: "Kullanım Verileri", desc: "Ziyaret edilen sayfalar, kullanılan özellikler, geçirilen süre, tıklama kalıpları" },
+          { name: "Konum Verileri", desc: "IP adresine dayalı yaklaşık konum" },
+          { name: "Çerez Verileri", desc: "Oturum tanımlayıcıları, tercihler, analitik (Bölüm 8'e bakın)" }
+        ],
+        
+        section3Title: "3. İşlemenin Hukuki Dayanağı",
+        section3Text: "Kişisel verilerinizi aşağıdaki dayanaklarla işliyoruz:",
+        section3Items: [
+          { name: "Sözleşmenin İfası", desc: "Pazar yeri hizmetlerimizi sağlamak için" },
+          { name: "Yasal Yükümlülük", desc: "Vergi uyumu, kara para aklamanın önlenmesi, dolandırıcılık önleme" },
+          { name: "Meşru Menfaat", desc: "Güvenlik, analitik, hizmet iyileştirme" },
+          { name: "Onay", desc: "Pazarlama iletişimleri (uygun durumlarda)" }
+        ],
+        
+        section4Title: "4. Bilgilerinizi Nasıl Kullanıyoruz",
+        section4Text: "verilerinizi şu amaçlarla kullanır:",
+        section4Items: [
+          "Platformumuzu ve hizmetlerimizi sağlamak, sürdürmek ve geliştirmek",
+          "İşlemleri, ödemeleri ve para çekimlerini işlemek",
+          "Kimliğinizi doğrulamak ve dolandırıcılığı önlemek",
+          "İşlemsel bildirimler göndermek (siparişler, kargo, hesap güvenliği)",
+          "Müşteri desteği sağlamak ve sorulara yanıt vermek",
+          "Kullanım Koşullarımızı ve politikalarımızı uygulamak",
+          "Yasal yükümlülüklere uymak (vergi, AML, düzenleyici)",
+          "Kullanıcı deneyimini iyileştirmek için kullanım kalıplarını analiz etmek",
+          "Pazarlama iletişimleri göndermek (onayınızla)"
+        ],
+        
+        section5Title: "5. Bilgi Paylaşımı ve Açıklama",
+        section5Text: "Kişisel verilerinizi SATMIYORUZ.",
+        section5Text2: "Bilgilerinizi şu taraflarla paylaşabiliriz:",
+        section5Items: [
+          { name: "Diğer Kullanıcılar", desc: "Satıcılar alıcı teslimat bilgilerini; alıcılar satıcı mağaza bilgilerini görür" },
+          { name: "Ödeme İşlemcileri", desc: "İşlemleri işlemek için (Stripe, banka ortakları)" },
+          { name: "Kargo Ortakları", desc: "Teslimat için taşıyıcı bilgileri" },
+          { name: "Derecelendirme Hizmetleri", desc: "Kartları doğrulama için gönderdiğinizde" },
+          { name: "Hizmet Sağlayıcıları", desc: "Barındırma, analitik, müşteri destek araçları" },
+          { name: "Yasal Makamlar", desc: "Kanun, mahkeme kararı veya hakları korumak gerektiğinde" },
+          { name: "İş Transferleri", desc: "Birleşme, satın alma veya varlık satışı ile bağlantılı olarak" }
+        ],
+        
+        section6Title: "6. Uluslararası Veri Transferleri",
+        section6Text: "Verileriniz Türkiye veya AB/AEA dışındaki ülkelere transfer edilebilir ve bu ülkelerde işlenebilir. Standart Sözleşme Maddeleri (SCCs), yeterlilik kararları veya diğer yasal transfer mekanizmaları aracılığıyla uygun güvenceler sağlıyoruz. CardBoom'u kullanarak bu tür transferlere onay vermiş olursunuz.",
+        
+        section7Title: "7. Veri Güvenliği",
+        section7Text: "Endüstri standardı güvenlik önlemleri uyguluyoruz:",
+        section7Items: [
+          "Transit halindeki veriler için 256-bit TLS/SSL şifreleme",
+          "Saklanan hassas veriler için AES-256 şifreleme",
+          "Düzenli güvenlik denetimleri ve penetrasyon testleri",
+          "Çalışan erişimi için rol tabanlı erişim kontrolleri",
+          "Hesap güvenliği için çok faktörlü kimlik doğrulama",
+          "Güvenli, sertifikalı veri merkezleri"
+        ],
+        
+        section8Title: "8. Çerezler ve İzleme Teknolojileri",
+        section8Text: "Çerezleri ve benzer teknolojileri şu amaçlarla kullanıyoruz:",
+        section8Items: [
+          { name: "Zorunlu Çerezler", desc: "Kimlik doğrulama, güvenlik, sepet işlevselliği" },
+          { name: "Tercih Çerezleri", desc: "Dil, para birimi, görüntüleme ayarları" },
+          { name: "Analitik Çerezleri", desc: "Kullanım kalıpları, performans izleme" },
+          { name: "Pazarlama Çerezleri", desc: "Reklam etkinliği (onay ile)" }
+        ],
+        section8Footer: "Çerez tercihlerinizi çerez bannerımız veya tarayıcı ayarlarınız aracılığıyla yönetebilirsiniz. Zorunlu çerezleri devre dışı bırakmanın Platform işlevselliğini etkileyebileceğini unutmayın.",
+        
+        section9Title: "9. Haklarınız (GDPR)",
+        section9Text: "AB/AEA'da iseniz, şu haklara sahipsiniz:",
+        section9Items: [
+          { name: "Erişim", desc: "Kişisel verilerinizin bir kopyasını alma" },
+          { name: "Düzeltme", desc: "Yanlış veya eksik verileri düzeltme" },
+          { name: "Silme", desc: "Verilerinizin silinmesini talep etme ('unutulma hakkı')" },
+          { name: "Kısıtlama", desc: "Verilerinizin nasıl işlendiğini sınırlama" },
+          { name: "Taşınabilirlik", desc: "Verilerinizi yapılandırılmış, makine tarafından okunabilir formatta alma" },
+          { name: "İtiraz", desc: "Meşru menfaatlere dayalı işlemeye itiraz etme" },
+          { name: "Onayı Geri Çekme", desc: "Onayı istediğiniz zaman geri çekme (önceki işlemeyi etkilemeden)" }
+        ],
+        section9Footer: "Bu hakları kullanmak için iletişime geçin. Yerel veri koruma otoritenize şikayette bulunma hakkına da sahipsiniz.",
+        
+        section10Title: "10. Haklarınız (KVKK - Türkiye)",
+        section10Text: "6698 sayılı Türk Kanunu (KVKK) kapsamında şu haklara sahipsiniz:",
+        section10Items: [
+          "Kişisel verilerinizin işlenip işlenmediğini öğrenme",
+          "Veri işleme hakkında bilgi talep etme",
+          "İşleme amacını ve verilerin buna göre kullanılıp kullanılmadığını öğrenme",
+          "Verilerin aktarıldığı üçüncü tarafları bilme",
+          "Eksik veya yanlış verilerin düzeltilmesini talep etme",
+          "Verilerin silinmesini veya yok edilmesini talep etme",
+          "Otomatik karar almaya itiraz etme",
+          "Hukuka aykırı işleme nedeniyle tazminat talep etme"
+        ],
+        section10Footer: "Detaylı bilgi için KVKK Aydınlatma Metnimize bakın.",
+        
+        section11Title: "11. Veri Saklama",
+        section11Text: "Verilerinizi şu sürelerde saklıyoruz:",
+        section11Items: [
+          { name: "Hesap Verileri", duration: "Hesap süresi + 5 yıl" },
+          { name: "İşlem Kayıtları", duration: "10 yıl (Türk ticaret hukuku gerekliliği)" },
+          { name: "Vergi Kayıtları", duration: "5 yıl (vergi dairesi gereklilikleri)" },
+          { name: "İletişim Günlükleri", duration: "3 yıl" },
+          { name: "Analitik Verileri", duration: "26 ay (sonrasında anonimleştirilir)" }
+        ],
+        
+        section12Title: "12. Çocukların Gizliliği",
+        section12Text: "CardBoom 18 yaşın altındaki kullanıcılar için tasarlanmamıştır. Bilerek çocuklardan kişisel veri toplamıyoruz. Ebeveyn onayı olmadan bir çocuktan veri topladığımızı öğrenirsek, derhal sileriz. Çocuklarının veri sağladığına inanan ebeveynler veya vasiler privacy@cardboom.com adresinden bizimle iletişime geçmelidir.",
+        
+        section13Title: "13. Bu Politikadaki Değişiklikler",
+        section13Text: "Bu Gizlilik Politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler, yürürlüğe girmeden en az 30 gün önce e-posta veya Platform'da belirgin bir bildirim yoluyla bildirilecektir. Üstteki 'Son güncelleme' tarihi, politikanın en son ne zaman revize edildiğini gösterir.",
+        
+        section14Title: "14. Bize Ulaşın",
       },
       
       kvkk: {
