@@ -77,25 +77,25 @@
   }
 
   .dark {
-    /* Dark Theme - Obsidian */
-    --background: 220 20% 6%;
+    /* Dark Theme - Refined Slate */
+    --background: 220 18% 12%;
     --foreground: 220 10% 98%;
 
-    --card: 220 18% 10%;
+    --card: 220 16% 16%;
     --card-foreground: 220 10% 98%;
 
-    --popover: 220 18% 12%;
+    --popover: 220 16% 18%;
     --popover-foreground: 220 10% 98%;
 
     /* CardBoom Light Blue - matching logo */
     --primary: 182 58% 55%;
     --primary-foreground: 220 20% 4%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 220 10% 85%;
+    --secondary: 220 14% 22%;
+    --secondary-foreground: 220 10% 88%;
 
-    --muted: 220 15% 14%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 220 14% 18%;
+    --muted-foreground: 220 10% 60%;
 
     --accent: 182 58% 50%;
     --accent-foreground: 220 20% 4%;
