@@ -5,6 +5,7 @@ import { Footer } from '@/components/Footer';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { ListingsTable } from '@/components/market/ListingsTable';
 import { WantedBoard } from '@/components/market/WantedBoard';
+import { FilteredPageSEO } from '@/components/seo/FilteredPageSEO';
 import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
 import { 
   Search, BarChart3, ChevronDown, X, ShoppingBag
@@ -53,11 +54,13 @@ const Markets = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* SEO - noindex for filtered/sorted views */}
+      <FilteredPageSEO canonicalPath="/markets" />
+      
       <Helmet>
         <title>Marketplace | CardBoom - Buy Trading Cards & Collectibles</title>
         <meta name="description" content="Browse user-listed trading cards and collectibles for sale. Find Pokemon, One Piece, Yu-Gi-Oh!, MTG cards, and more from verified sellers on CardBoom." />
         <meta name="keywords" content="buy trading cards, Pokemon cards for sale, One Piece cards, collectibles marketplace, TCG marketplace, card sellers" />
-        <link rel="canonical" href="https://cardboom.com/markets" />
         <meta property="og:title" content="Marketplace | CardBoom" />
         <meta property="og:description" content="Browse user-listed trading cards and collectibles for sale from verified sellers." />
         <meta property="og:url" content="https://cardboom.com/markets" />

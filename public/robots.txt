@@ -57,6 +57,9 @@ Allow: /markets
 Allow: /explorer
 Allow: /blog
 Allow: /deals
+Allow: /deals/*
+Allow: /buy/*
+Allow: /sitemap
 # Allow: /fractional # Temporarily disabled
 Allow: /gaming
 Allow: /leaderboard
@@ -73,6 +76,13 @@ Allow: /careers
 Allow: /press
 Allow: /terms
 Allow: /privacy
+Allow: /cards/*
+
+# Disallow filtered/sorted URLs to prevent duplicate content
+Disallow: /*?sort=*
+Disallow: /*?order=*
+Disallow: /*?filter=*
+Disallow: /*?page=*
 
 # Allow all card category pages for SEO indexing
 Allow: /pokemon/*
