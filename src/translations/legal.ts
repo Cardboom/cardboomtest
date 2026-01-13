@@ -440,6 +440,88 @@ export const legalTranslations = {
         section11Title: "MADDE 11 - İLETİŞİM",
         section11Text: "Tüm soru, öneri ve şikayetleriniz için",
         section11Text2: "adresine e-posta gönderebilir veya Platform içi destek sistemini kullanabilirsiniz.",
+      },
+      
+      // User Agreement
+      userAgreement: {
+        title: "User Agreement",
+        metaDescription: "CardBoom User Agreement - Platform usage terms, rights and obligations.",
+        section1Title: "1. Parties",
+        section1Text: "This User Agreement (\"Agreement\") is made between the CardBoom platform (\"Platform\") and the user who becomes a member of the Platform (\"User\") to regulate the terms of use of the Platform.",
+        section2Title: "2. Definitions",
+        section2Items: [
+          { name: "Platform", desc: "CardBoom website and mobile applications" },
+          { name: "User", desc: "Natural or legal persons who register on the Platform and benefit from the services" },
+          { name: "Seller", desc: "Users who sell products on the Platform" },
+          { name: "Buyer", desc: "Users who purchase products on the Platform" },
+          { name: "Wallet", desc: "The system where users manage their in-Platform balances" }
+        ],
+        section3Title: "3. Membership Conditions",
+        section3Text: "To become a member of the Platform:",
+        section3Items: [
+          "Be over 18 years old or have legal guardian approval",
+          "Have a valid email address and phone number",
+          "Provide accurate and up-to-date personal information",
+          "Accept this Agreement"
+        ],
+        section4Title: "4. User Rights and Obligations",
+        section4_1Title: "4.1 Rights",
+        section4_1Items: [
+          "Use Platform services",
+          "Buy and sell products",
+          "Use the Wallet system",
+          "Benefit from customer support"
+        ],
+        section4_2Title: "4.2 Obligations",
+        section4_2Items: [
+          "Provide accurate and up-to-date information",
+          "Maintain account security",
+          "Comply with legal regulations",
+          "Follow Platform rules",
+          "Not sell counterfeit or stolen products"
+        ],
+        section5Title: "5. Trading Rules",
+        section5Items: [
+          "Sellers are obligated to describe their products accurately and completely",
+          "Sale of counterfeit, stolen or illegal products is prohibited",
+          "The Platform reserves the right to stop suspicious transactions and suspend accounts",
+          "Transaction fees are determined by the Platform and may be changed"
+        ],
+        section6Title: "6. Payment and Wallet System",
+        section6Items: [
+          "Users can add balance to Wallet via credit card or wire transfer",
+          "Sales proceeds are transferred to Wallet after transaction is completed",
+          "Withdrawal transactions are processed after identity verification",
+          "The Platform deducts transaction fees from the sale amount"
+        ],
+        section7Title: "7. Prohibited Activities",
+        section7Text: "The following activities are strictly prohibited:",
+        section7Items: [
+          "Sale of counterfeit or fake products",
+          "Money laundering activities",
+          "Encouraging off-platform communication and payment",
+          "Opening multiple accounts",
+          "Price manipulation",
+          "Deceiving other users"
+        ],
+        section8Title: "8. Platform Rights and Obligations",
+        section8Items: [
+          "Provide a secure transaction environment",
+          "Protect user data",
+          "Provide customer support",
+          "Mediate in disputes",
+          "Suspend/close accounts for rule violations"
+        ],
+        section9Title: "9. Limitation of Liability",
+        section9Text: "The Platform acts as an intermediary in transactions between users. It does not accept direct responsibility for the quality, authenticity and condition of products offered for sale. It mediates in disputes but the final decision belongs to the judicial authorities.",
+        section10Title: "10. Intellectual Property",
+        section10Text: "The Platform's logo, design, software and all content are CardBoom's intellectual property. Unauthorized use is prohibited.",
+        section11Title: "11. Contract Changes",
+        section11Text: "The Platform reserves the right to change this Agreement by giving prior notice. Changes take effect on the date they are published on the Platform.",
+        section12Title: "12. Applicable Law and Jurisdiction",
+        section12Text: "This Agreement is subject to the laws of the Republic of Turkey. Istanbul Courts and Enforcement Offices are authorized in disputes.",
+        section13Title: "13. Contact",
+        section13Text: "For your questions, you can reach us at"
       }
     }
   },

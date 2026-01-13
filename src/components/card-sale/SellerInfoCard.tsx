@@ -7,6 +7,7 @@ import {
   MessageSquare, ExternalLink, Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 interface SellerInfoProps {
   seller: {
@@ -68,16 +69,23 @@ export const SellerInfoCard = ({
       <CardContent className="space-y-4">
         {/* Seller Profile */}
         <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 border-2 border-border">
-            <AvatarImage src={seller.avatarUrl} alt={seller.username} />
-            <AvatarFallback className="bg-primary/10 text-primary font-medium">
-              {getInitials(seller.username)}
-            </AvatarFallback>
-          </Avatar>
+          <Link to={`/u/${seller.id}`} className="shrink-0">
+            <Avatar className="h-12 w-12 border-2 border-border hover:border-primary transition-colors cursor-pointer">
+              <AvatarImage src={seller.avatarUrl} alt={seller.username} />
+              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                {getInitials(seller.username)}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-foreground">{seller.username}</span>
+              <Link 
+                to={`/u/${seller.id}`} 
+                className="font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+              >
+                {seller.username}
+              </Link>
               {seller.isVerified && (
                 <BadgeCheck className="w-5 h-5 text-primary" />
               )}
