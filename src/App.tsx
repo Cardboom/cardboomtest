@@ -79,6 +79,8 @@ import Cardswap from "./pages/Cardswap";
 import OrderDetail from "./pages/OrderDetail";
 import Purchases from "./pages/Purchases";
 import AccountSettings from "./pages/AccountSettings";
+import Sitemap from "./pages/Sitemap";
+import BuyCategoryPage from "./pages/BuyCategoryPage";
 
 const queryClient = new QueryClient();
 
@@ -170,6 +172,9 @@ const AppContent = () => {
           <Route path="/@:username" element={<CreatorPage />} />
           <Route path="/creators" element={<CreatorInvite />} />
           <Route path="/store/:slug" element={<StorefrontPage />} />
+          {/* SEO Category Pages */}
+          <Route path="/sitemap" element={<Sitemap />} />
+          <Route path="/buy/:category" element={<BuyCategoryPage />} />
           {/* Buy Orders */}
           <Route path="/buy-orders" element={<BuyOrders />} />
           {/* Order & Purchases */}
