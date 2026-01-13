@@ -436,23 +436,34 @@ export const usePurchase = () => {
         const sellerName = sellerProfile?.full_name || sellerProfile?.display_name || 'Seller';
         const currencySymbol = listingCurrency === 'USD' ? '$' : listingCurrency === 'EUR' ? '€' : '₺';
 
+        // Determine notification content based on delivery option
+        const isVaultDelivery = params.deliveryOption === 'vault';
+        const notificationType = isVaultDelivery ? 'vault_shipping_required' : 'sale';
+        const notificationTitle = isVaultDelivery 
+          ? '📦 Ship to CardBoom Vault!' 
+          : '🎉 Your item sold!';
+        const notificationBody = isVaultDelivery
+          ? `${params.title} sold for ${currencySymbol}${params.price.toFixed(2)}. Please ship to CardBoom Vault ASAP for buyer verification.`
+          : `${params.title} sold for ${currencySymbol}${params.price.toFixed(2)}`;
+
         // In-app notification
         await supabase.functions.invoke('send-notification', {
           body: {
             user_id: params.sellerId,
-            type: 'sale',
-            title: '🎉 Your item sold!',
-            body: `${params.title} sold for ${currencySymbol}${params.price.toFixed(2)}`,
-            data: { listing_id: params.listingId, order_id: order.id },
+            type: notificationType,
+            title: notificationTitle,
+            body: notificationBody,
+            data: { listing_id: params.listingId, order_id: order.id, delivery_option: params.deliveryOption },
           },
         });
 
-        // Email notification
+        // Email notification with vault-specific content
         if (sellerProfile?.email) {
+          const emailTemplateKey = isVaultDelivery ? 'vault_shipping_required' : 'item_sold';
           await supabase.functions.invoke('send-email', {
             body: {
               to: sellerProfile.email,
-              template_key: 'item_sold',
+              template_key: emailTemplateKey,
               user_id: params.sellerId,
               variables: {
                 user_name: sellerName,
@@ -460,17 +471,25 @@ export const usePurchase = () => {
                 sale_price: `${currencySymbol}${params.price.toFixed(2)}`,
                 payout_amount: `${currencySymbol}${sellerPayoutInWalletCurrency.toFixed(2)}`,
                 order_id: order.id,
+                is_vault_delivery: isVaultDelivery,
+                vault_address: isVaultDelivery ? 'CardBoom Verification Hub, Istanbul, Turkey' : null,
               },
             },
           });
         }
 
-        // SMS notification
+        // SMS notification with vault-specific content
         if (sellerProfile?.phone) {
+          const smsType = isVaultDelivery ? 'vault_shipping_required' : 'item_sold';
+          const smsMessage = isVaultDelivery
+            ? `CardBoom: ${params.title.slice(0, 20)} sold! Ship to our Vault ASAP for verification. Check app for details.`
+            : null;
+          
           await supabase.functions.invoke('send-sms', {
             body: {
               phone: sellerProfile.phone,
-              type: 'item_sold',
+              type: smsType,
+              message: smsMessage,
               data: {
                 item_title: params.title.slice(0, 30),
                 sale_price: `${currencySymbol}${params.price.toFixed(2)}`,

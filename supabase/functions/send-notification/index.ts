@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface NotificationPayload {
   user_id: string;
-  type: 'price_alert' | 'new_offer' | 'message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee' | 'sale' | 'daily_xp' | 'donation_complete' | 'donation_refund';
+  type: 'price_alert' | 'new_offer' | 'message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee' | 'sale' | 'daily_xp' | 'donation_complete' | 'donation_refund' | 'vault_shipping_required' | 'gift';
   title: string;
   body: string;
   data?: Record<string, unknown>;
@@ -51,6 +51,8 @@ serve(async (req) => {
       'storage_fee': 'order_updates',
       'donation_complete': 'order_updates',
       'donation_refund': 'order_updates',
+      'vault_shipping_required': 'order_updates',
+      'gift': 'new_offers',
     };
 
     const prefField = prefMap[payload.type];

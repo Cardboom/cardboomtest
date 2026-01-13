@@ -9623,7 +9623,7 @@ export type Database = {
           p_source: string
           p_user_id: string
         }
-        Returns: boolean
+        Returns: Json
       }
       spend_gems_on_service: {
         Args: {
