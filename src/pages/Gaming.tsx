@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -7,38 +7,19 @@ import { CoachRegistrationDialog } from '@/components/gaming/CoachRegistrationDi
 import { CoachesSection } from '@/components/gaming/CoachesSection';
 import { Collectible } from '@/types/collectible';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Gamepad2, Trophy, Coins, Users, GraduationCap, Package } from 'lucide-react';
+import { Gamepad2, Trophy, GraduationCap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { useNavigate } from 'react-router-dom';
-
-interface GamingItem {
-  id: string;
-  name: string;
-  category: string;
-  subcategory: string | null;
-  current_price: number;
-  image_url: string | null;
-  change_24h: number | null;
-}
 
 const Gaming = () => {
   const { t } = useLanguage();
-  const { formatPrice } = useCurrency();
-  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('all');
   const [showCoachDialog, setShowCoachDialog] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const [gamingItems, setGamingItems] = useState<GamingItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Check auth state
   useEffect(() => {
@@ -54,73 +35,6 @@ const Gaming = () => {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  // Fetch gaming items from database
-  useEffect(() => {
-    const fetchGamingItems = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('market_items')
-        .select('id, name, category, subcategory, current_price, image_url, change_24h')
-        .in('category', ['gamepoints', 'gaming', 'coaching'])
-        .order('current_price', { ascending: false })
-        .limit(100);
-
-      if (error) {
-        console.error('Error fetching gaming items:', error);
-      } else {
-        setGamingItems(data || []);
-      }
-      setLoading(false);
-    };
-
-    fetchGamingItems();
-  }, []);
-
-  // Game Points: items with category 'gamepoints'
-  const gamePointsItems = useMemo(() => {
-    return gamingItems.filter(item => item.category === 'gamepoints');
-  }, [gamingItems]);
-
-  // Gaming collectibles (non-coaching gaming items)
-  const gamingCollectibles = useMemo(() => {
-    return gamingItems.filter(item => 
-      item.category === 'gaming' && !item.subcategory?.toLowerCase().includes('coaching')
-    );
-  }, [gamingItems]);
-
-  // Coaching: items with category 'coaching' OR subcategory includes 'coaching' or 'vod'
-  const coachingItems = useMemo(() => {
-    return gamingItems.filter(item => 
-      item.category === 'coaching' || 
-      item.subcategory?.toLowerCase().includes('coaching') ||
-      item.subcategory?.toLowerCase().includes('vod')
-    );
-  }, [gamingItems]);
-
-  // Helper to filter by game - checks both subcategory AND name for the game keyword
-  const filterByGame = (items: GamingItem[], gameKeyword: string) => {
-    const keyword = gameKeyword.toLowerCase();
-    return items.filter(item => 
-      item.subcategory?.toLowerCase().includes(keyword) ||
-      item.name?.toLowerCase().includes(keyword)
-    );
-  };
-
-  const filteredItems = useMemo(() => {
-    if (activeTab === 'all') return gamingItems;
-    if (activeTab === 'points') return gamePointsItems;
-    if (activeTab === 'gaming') return gamingCollectibles;
-    if (activeTab === 'coaching') return coachingItems;
-    // Game-specific tabs show ALL items for that game (points + coaching + VOD)
-    if (activeTab === 'valorant') return filterByGame(gamingItems, 'valorant');
-    if (activeTab === 'lol') return filterByGame(gamingItems, 'league');
-    if (activeTab === 'csgo') return filterByGame(gamingItems, 'cs');
-    if (activeTab === 'pubg') return filterByGame(gamingItems, 'pubg');
-    if (activeTab === 'fortnite') return filterByGame(gamingItems, 'fortnite');
-    if (activeTab === 'genshin') return filterByGame(gamingItems, 'genshin');
-    return gamingItems;
-  }, [activeTab, gamingItems, gamePointsItems, gamingCollectibles, coachingItems]);
 
   const handleRemoveFromCart = (id: string) => {
     setCartItems(cartItems.filter((item) => item.id !== id));
@@ -151,7 +65,7 @@ const Gaming = () => {
                 <Gamepad2 className="w-8 h-8 text-primary" />
               </div>
               <Badge variant="secondary" className="bg-gain/20 text-gain">
-                New Category
+                Coming Soon
               </Badge>
             </div>
             <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">
@@ -176,121 +90,8 @@ const Gaming = () => {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <Coins className="w-5 h-5 text-gold mb-2" />
-            <p className="text-2xl font-bold">{gamePointsItems.length}</p>
-            <p className="text-sm text-muted-foreground">Game Points</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <Package className="w-5 h-5 text-purple-500 mb-2" />
-            <p className="text-2xl font-bold">{gamingCollectibles.length}</p>
-            <p className="text-sm text-muted-foreground">Gaming Items</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <Trophy className="w-5 h-5 text-primary mb-2" />
-            <p className="text-2xl font-bold">{coachingItems.length}</p>
-            <p className="text-sm text-muted-foreground">Coaching & VOD</p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border">
-            <Users className="w-5 h-5 text-gain mb-2" />
-            <p className="text-2xl font-bold">{gamingItems.length}</p>
-            <p className="text-sm text-muted-foreground">Total Items</p>
-          </div>
-        </div>
-
         {/* Our Coaches Section */}
         <CoachesSection />
-
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="flex flex-wrap h-auto gap-2 bg-transparent p-0">
-            <TabsTrigger value="all" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              All
-            </TabsTrigger>
-            <TabsTrigger value="points" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              🎮 Game Points
-            </TabsTrigger>
-            <TabsTrigger value="gaming" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              🎮 Gaming Items
-            </TabsTrigger>
-            <TabsTrigger value="coaching" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              🎓 Coaching & VOD
-            </TabsTrigger>
-            <TabsTrigger value="valorant" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              Valorant
-            </TabsTrigger>
-            <TabsTrigger value="lol" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              League of Legends
-            </TabsTrigger>
-            <TabsTrigger value="fortnite" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              Fortnite
-            </TabsTrigger>
-            <TabsTrigger value="pubg" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              PUBG
-            </TabsTrigger>
-            <TabsTrigger value="genshin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full px-4 py-2">
-              Genshin Impact
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {/* Items Grid */}
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-muted rounded-lg mb-3" />
-                  <div className="h-4 bg-muted rounded mb-2" />
-                  <div className="h-3 bg-muted rounded w-2/3" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : filteredItems.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredItems.map((item) => (
-              <Card 
-                key={item.id} 
-                className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => navigate(`/item/${item.id}`)}
-              >
-                <CardContent className="p-4">
-                  <div className="aspect-square bg-muted rounded-lg mb-3 overflow-hidden">
-                    {item.image_url ? (
-                      <img 
-                        src={item.image_url} 
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Gamepad2 className="w-12 h-12 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                  <h3 className="font-medium text-sm line-clamp-2 mb-1">{item.name}</h3>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-primary">{formatPrice(item.current_price)}</span>
-                    {item.change_24h !== null && (
-                      <span className={item.change_24h >= 0 ? 'text-gain text-xs' : 'text-loss text-xs'}>
-                        {item.change_24h >= 0 ? '+' : ''}{item.change_24h.toFixed(1)}%
-                      </span>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <Package className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No items found</h3>
-            <p className="text-muted-foreground">Gaming items will appear here once added to the marketplace</p>
-          </div>
-        )}
 
         {/* Coaching Info Section */}
         <div className="mt-16 p-8 rounded-2xl bg-card border border-border">
