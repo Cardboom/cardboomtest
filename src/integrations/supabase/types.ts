@@ -6085,6 +6085,7 @@ export type Database = {
           banned_at: string | null
           banned_reason: string | null
           bio: string | null
+          checkout_discount_percent: number | null
           country_code: string | null
           created_at: string
           custom_guru: string | null
@@ -6124,6 +6125,7 @@ export type Database = {
           preferred_categories: string[] | null
           preferred_games: string[] | null
           premium_trial_expires_at: string | null
+          priority_support_until: string | null
           profile_background: string | null
           profile_color_primary: string | null
           profile_color_secondary: string | null
@@ -6166,6 +6168,7 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
+          checkout_discount_percent?: number | null
           country_code?: string | null
           created_at?: string
           custom_guru?: string | null
@@ -6205,6 +6208,7 @@ export type Database = {
           preferred_categories?: string[] | null
           preferred_games?: string[] | null
           premium_trial_expires_at?: string | null
+          priority_support_until?: string | null
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
@@ -6247,6 +6251,7 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
+          checkout_discount_percent?: number | null
           country_code?: string | null
           created_at?: string
           custom_guru?: string | null
@@ -6286,6 +6291,7 @@ export type Database = {
           preferred_categories?: string[] | null
           preferred_games?: string[] | null
           premium_trial_expires_at?: string | null
+          priority_support_until?: string | null
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
@@ -9495,6 +9501,14 @@ export type Database = {
         | { Args: { p_bounty_id: string }; Returns: Json }
         | { Args: { p_bounty_id: string; p_user_id?: string }; Returns: Json }
       claim_gift_card: { Args: { gift_code: string }; Returns: Json }
+      claim_tier_reward: {
+        Args: {
+          p_is_pro_reward?: boolean
+          p_tier_number: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
       cleanup_expired_2fa_codes: { Args: never; Returns: undefined }
       cleanup_old_health_reports: { Args: never; Returns: undefined }
       complete_sale_transfer: {

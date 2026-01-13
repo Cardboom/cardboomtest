@@ -131,6 +131,56 @@ export const useCardboomPass = (userId?: string) => {
     }
   };
 
+  const claimTierReward = async (tierNumber: number, isProReward: boolean = false): Promise<{ success: boolean; reward?: any; error?: string }> => {
+    if (!userId) {
+      return { success: false, error: 'Login required' };
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('claim_tier_reward', {
+        p_user_id: userId,
+        p_tier_number: tierNumber,
+        p_is_pro_reward: isProReward
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; reward?: any; error?: string } | null;
+
+      if (result?.success) {
+        toast({
+          title: "Reward Claimed! 🎉",
+          description: `You received: ${formatRewardDescription(result.reward)}`
+        });
+        await fetchData();
+        return { success: true, reward: result.reward };
+      } else {
+        return { success: false, error: result?.error || 'Failed to claim reward' };
+      }
+    } catch (error) {
+      console.error('Error claiming tier reward:', error);
+      return { success: false, error: 'Failed to claim reward' };
+    }
+  };
+
+  const isRewardClaimed = (tierNumber: number, isProReward: boolean): boolean => {
+    if (!progress?.claimed_tiers) return false;
+    const claimKey = tierNumber * 10 + (isProReward ? 2 : 1);
+    return progress.claimed_tiers.includes(claimKey);
+  };
+
+  const formatRewardDescription = (reward: any): string => {
+    if (!reward) return 'Unknown reward';
+    switch (reward.type) {
+      case 'gems': return `${reward.amount} Gems`;
+      case 'badge': return `Badge: ${reward.name}`;
+      case 'cosmetic': return `${reward.cosmetic_type?.replace('_', ' ')} Unlocked`;
+      case 'discount_cap': return `${reward.percent}% Checkout Discount`;
+      case 'priority': return `${reward.days} Days Priority Support`;
+      default: return 'Reward';
+    }
+  };
+
   const getNextTier = () => {
     if (!progress || tiers.length === 0) return tiers[0] || null;
     return tiers.find(t => t.tier_number === progress.current_tier + 1) || null;
@@ -236,6 +286,8 @@ export const useCardboomPass = (userId?: string) => {
     progress,
     loading,
     purchaseProPass,
+    claimTierReward,
+    isRewardClaimed,
     getNextTier,
     getProgressToNextTier,
     getSeasonTimeRemaining,
