@@ -1156,40 +1156,41 @@ const Auth = () => {
                     </div>
 
                     {/* Terms Checkbox */}
-                    <div className="space-y-3">
+                    <div className="space-y-2 bg-secondary/30 rounded-lg p-3 border border-border/30">
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={acceptedTerms}
                           onChange={(e) => setAcceptedTerms(e.target.checked)}
-                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50"
+                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50 shrink-0"
                         />
-                        <span className="text-sm text-muted-foreground">
-                          {t.auth.termsAgreement}{' '}
-                          <a href="/terms" target="_blank" className="text-primary hover:underline">{t.auth.termsOfService}</a>,{' '}
-                          <a href="/privacy" target="_blank" className="text-primary hover:underline">{t.auth.privacyPolicy}</a>,{' '}
-                          <a href="/kvkk" target="_blank" className="text-primary hover:underline">{t.auth.kvkkNotice}</a>, {t.common.and}{' '}
-                          <a href="/mesafeli-satis-sozlesmesi" target="_blank" className="text-primary hover:underline">{t.auth.distanceSalesContract}</a>
+                        <span className="text-sm text-muted-foreground leading-relaxed">
+                          I have read and agree to the{' '}
+                          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Terms of Service</a>,{' '}
+                          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Privacy Policy</a>,{' '}
+                          <a href="/kvkk" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">KVKK Privacy Notice</a>, and{' '}
+                          <a href="/mesafeli-satis-sozlesmesi" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Distance Sales Contract</a>
                         </span>
                       </label>
-                      {errors.terms && <p className="text-destructive text-xs">{t.auth.termsError}</p>}
+                      {errors.terms && <p className="text-destructive text-xs ml-8">{t.auth.termsError}</p>}
                     </div>
 
                     {/* Fees & Commissions Checkbox */}
-                    <div className="space-y-2">
+                    <div className="space-y-2 bg-secondary/30 rounded-lg p-3 border border-border/30">
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={acceptedFees}
                           onChange={(e) => setAcceptedFees(e.target.checked)}
-                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50"
+                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50 shrink-0"
                         />
-                        <span className="text-sm text-muted-foreground">
-                          {t.auth.feesAgreement} <span className="text-primary font-medium">{t.auth.platformFees}</span>:{' '}
+                        <span className="text-sm text-muted-foreground leading-relaxed">
+                          I acknowledge and accept the{' '}
+                          <a href="/pricing" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Platform Fees & Commissions</a>:{' '}
                           <span className="text-foreground">Credit Card (6.5% + $0.50), Wire Transfer (3% + $0.50), Seller Fee (5%)</span>
                         </span>
                       </label>
-                      {errors.fees && <p className="text-destructive text-xs">{t.auth.feesError}</p>}
+                      {errors.fees && <p className="text-destructive text-xs ml-8">{t.auth.feesError}</p>}
                     </div>
 
                     <Button
