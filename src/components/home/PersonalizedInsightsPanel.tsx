@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Sparkles, TrendingUp, TrendingDown, Lightbulb, ChevronRight } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Insight {
   id: string;
@@ -27,6 +28,7 @@ interface PersonalizedInsightsPanelProps {
 }
 
 export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelProps) => {
+  const { t } = useLanguage();
   const [insights, setInsights] = useState<Insight[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,20 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
     }, 7000);
     return () => clearInterval(interval);
   }, [insights.length]);
+
+  // Helper to get translated category
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'Market Pulse': return t.home.marketPulse;
+      case 'Hot Take': return t.home.hotTake;
+      case 'Hidden Gem': return t.home.hiddenGem;
+      case 'Getting Started': return t.home.gettingStarted;
+      case 'Did You Know': return t.home.didYouKnow;
+      case 'Pro Tip': return t.home.proTip;
+      case 'Status': return t.home.status;
+      default: return category;
+    }
+  };
 
   const fetchInsights = async () => {
     const newInsights: Insight[] = [];
@@ -87,16 +103,16 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
 
       if (newInsights.length === 0) {
         newInsights.push(
-          { id: 'welcome', icon: '👋', message: 'Start building your portfolio to get personalized insights', type: 'tip', category: 'Getting Started' },
-          { id: 'tip-1', icon: '🧠', message: 'Our AI analyzes market trends 24/7 to find opportunities', type: 'neutral', category: 'Did You Know' },
-          { id: 'tip-2', icon: '🔔', message: 'Set price alerts to never miss a deal on cards you want', type: 'tip', category: 'Pro Tip' },
+          { id: 'welcome', icon: '👋', message: t.home.buildPortfolio, type: 'tip', category: 'Getting Started' },
+          { id: 'tip-1', icon: '🧠', message: t.home.aiAnalyzes, type: 'neutral', category: 'Did You Know' },
+          { id: 'tip-2', icon: '🔔', message: t.home.setPriceAlerts, type: 'tip', category: 'Pro Tip' },
         );
       }
 
       setInsights(newInsights);
     } catch (error) {
       console.error('Error fetching insights:', error);
-      setInsights([{ id: 'fallback', icon: '📊', message: 'Trading desk ready - explore the market', type: 'neutral', category: 'Status' }]);
+      setInsights([{ id: 'fallback', icon: '📊', message: t.home.tradingDeskReady, type: 'neutral', category: 'Status' }]);
     } finally {
       setLoading(false);
     }
@@ -158,7 +174,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
             <Sparkles className={cn("w-3.5 h-3.5", typeConfig.color)} />
           </div>
           <span className="text-xs font-semibold text-foreground tracking-wide">
-            AI Insights
+            {t.home.aiInsights}
           </span>
         </div>
         {currentInsight?.category && (
@@ -166,7 +182,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
             "text-[10px] font-medium px-2 py-0.5 rounded-full",
             typeConfig.bg, typeConfig.color
           )}>
-            {currentInsight.category}
+            {getCategoryLabel(currentInsight.category)}
           </span>
         )}
       </div>
