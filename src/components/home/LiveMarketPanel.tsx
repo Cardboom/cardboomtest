@@ -153,9 +153,9 @@ export const LiveMarketPanel = () => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-card border border-border h-[120px] md:h-[160px]">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+    <div className="relative overflow-hidden rounded-2xl bg-card dark:bg-card border border-border shadow-sm h-[120px] md:h-[160px]">
+      {/* Subtle gradient overlay - theme aware */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 dark:from-primary/10 via-transparent to-transparent pointer-events-none" />
       
       {/* Header */}
       <div className="absolute top-3 left-4 right-4 flex items-center justify-between z-10">
@@ -177,7 +177,7 @@ export const LiveMarketPanel = () => {
       </div>
 
       {/* Ticker strip */}
-      <div className="absolute top-10 md:top-11 left-0 right-0 h-6 overflow-hidden bg-muted/30">
+      <div className="absolute top-10 md:top-11 left-0 right-0 h-6 overflow-hidden bg-muted/50 dark:bg-muted/30">
         <div 
           ref={tickerRef}
           className="flex items-center h-full whitespace-nowrap"
