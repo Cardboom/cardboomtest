@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, Award, Users } from 'lucide-react';
+import { GradeBadge } from '@/components/ui/grade-badge';
+import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
@@ -26,6 +27,7 @@ interface Listing {
   // Grading fields
   certification_status?: string | null;
   grading_order_id?: string | null;
+  grading_company?: string | null;
   grade?: string | null;
   // Market info
   market_item_id?: string | null;
@@ -102,31 +104,50 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         .filter(l => l.grading_order_id)
         .map(l => l.grading_order_id!);
 
-      let gradeMap = new Map<string, string>();
+      let gradeMap = new Map<string, { grade: string | null; status: string }>();
       if (gradingOrderIds.length > 0) {
         const { data: gradingOrders } = await supabase
           .from('grading_orders')
-          .select('id, cbgi_score_0_100')
+          .select('id, cbgi_score_0_100, status')
           .in('id', gradingOrderIds);
 
         gradingOrders?.forEach(go => {
+          let grade: string | null = null;
           if (go.cbgi_score_0_100) {
-            gradeMap.set(go.id, (go.cbgi_score_0_100 / 10).toFixed(1));
+            // Normalize: if > 10, it's 0-100 scale, divide by 10
+            const score = go.cbgi_score_0_100 > 10 ? go.cbgi_score_0_100 / 10 : go.cbgi_score_0_100;
+            grade = score.toFixed(1);
           }
+          gradeMap.set(go.id, { grade, status: go.status });
         });
       }
       
       // Enrich listings with seller info and grade
       const enrichedListings = (data || []).map(listing => {
         const profile = profileMap.get(listing.seller_id);
-        const grade = listing.grading_order_id 
-          ? gradeMap.get(listing.grading_order_id) || null
+        const gradingInfo = listing.grading_order_id 
+          ? gradeMap.get(listing.grading_order_id) 
           : null;
+
+        // Determine grading display values
+        let gradingCompany: string | null = null;
+        let grade: string | null = null;
+        
+        if (gradingInfo) {
+          if (gradingInfo.status === 'completed' && gradingInfo.grade) {
+            gradingCompany = 'CardBoom';
+            grade = gradingInfo.grade;
+          } else if (['pending', 'queued', 'processing', 'in_review'].includes(gradingInfo.status)) {
+            gradingCompany = 'CardBoom';
+            grade = 'Pending';
+          }
+        }
 
         return {
           ...listing,
           seller_name: profile?.display_name || 'Seller',
           seller_country_code: profile?.country_code || 'TR',
+          grading_company: gradingCompany,
           grade,
         };
       });
@@ -165,27 +186,15 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
     return labels[cat] || cat.replace(/-/g, ' ').toUpperCase();
   };
 
-  // Render grade badge
+  // Render grade badge using unified component
   const renderGradeBadge = (listing: Listing) => {
-    // CardBoom graded - show if we have a grade (regardless of certification_status)
-    if (listing.grade) {
-      return (
-        <Badge className="bg-primary text-primary-foreground gap-1">
-          <Award className="h-3 w-3" />
-          CB {listing.grade}
-        </Badge>
-      );
-    }
-    // Grading pending
-    if (listing.certification_status === 'pending') {
-      return (
-        <Badge variant="outline" className="text-amber-500 border-amber-500/30">
-          Grading...
-        </Badge>
-      );
-    }
-    // Regular ungraded
-    return <span className="text-xs text-muted-foreground">Ungraded</span>;
+    return (
+      <GradeBadge
+        gradingCompany={listing.grading_company}
+        grade={listing.grade}
+        certificationStatus={listing.certification_status}
+      />
+    );
   };
 
   if (loading) {
