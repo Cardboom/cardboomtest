@@ -99,12 +99,21 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         }]) || []);
       }
 
-      // Fetch grading orders for grade info
+      // Fetch grading orders for grade info - both by ID and for fallback matching
       const gradingOrderIds = (data || [])
         .filter(l => l.grading_order_id)
         .map(l => l.grading_order_id!);
 
       let gradeMap = new Map<string, { grade: string | null; status: string }>();
+      
+      // Fetch all completed grading orders for fallback matching (reuse sellerIds from above)
+      const { data: allGradingOrders } = await supabase
+        .from('grading_orders')
+        .select('id, card_name, cbgi_score_0_100, status, user_id, listing_created_id')
+        .in('user_id', sellerIds)
+        .eq('status', 'completed');
+
+      // Build grade map by ID
       if (gradingOrderIds.length > 0) {
         const { data: gradingOrders } = await supabase
           .from('grading_orders')
@@ -121,13 +130,37 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
           gradeMap.set(go.id, { grade, status: go.status });
         });
       }
+
+      // Helper function for fuzzy name matching
+      const normalizeCardName = (name: string | null): string => {
+        if (!name) return '';
+        return name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      };
       
       // Enrich listings with seller info and grade
       const enrichedListings = (data || []).map(listing => {
         const profile = profileMap.get(listing.seller_id);
-        const gradingInfo = listing.grading_order_id 
+        let gradingInfo = listing.grading_order_id 
           ? gradeMap.get(listing.grading_order_id) 
           : null;
+
+        // Fallback: Try to find matching grading order by seller and card name
+        if (!gradingInfo && allGradingOrders && listing.title) {
+          const normalizedTitle = normalizeCardName(listing.title);
+          const matchingOrder = allGradingOrders.find(go => 
+            go.user_id === listing.seller_id && 
+            go.status === 'completed' &&
+            go.cbgi_score_0_100 &&
+            (go.listing_created_id === listing.id || normalizeCardName(go.card_name) === normalizedTitle)
+          );
+          
+          if (matchingOrder && matchingOrder.cbgi_score_0_100) {
+            const score = matchingOrder.cbgi_score_0_100 > 10 
+              ? matchingOrder.cbgi_score_0_100 / 10 
+              : matchingOrder.cbgi_score_0_100;
+            gradingInfo = { grade: score.toFixed(1), status: 'completed' };
+          }
+        }
 
         // Determine grading display values
         let gradingCompany: string | null = null;
