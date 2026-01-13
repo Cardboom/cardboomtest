@@ -66,24 +66,38 @@ export const PriceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const fetchInProgress = useRef(false);
   const fetchCount = useRef(0);
 
-  const fetchPrices = useCallback(async () => {
+  const fetchPrices = useCallback(async (retryCount = 0) => {
     if (fetchInProgress.current) return;
     fetchInProgress.current = true;
     setIsLoading(true);
-    setError(null);
+    
+    // Don't clear error on retry, only on fresh fetch
+    if (retryCount === 0) {
+      setError(null);
+    }
 
     fetchCount.current += 1;
+    const maxRetries = 2;
 
     try {
       const { data, error: functionError } = await supabase.functions.invoke('fetch-prices', {
         body: { productIds: ALL_PRODUCT_IDS, source: 'all' }
       });
 
-      if (functionError) throw new Error(functionError.message);
+      if (functionError) {
+        // Retry on transient errors
+        if (retryCount < maxRetries && (functionError.message?.includes('500') || functionError.message?.includes('network') || functionError.message?.includes('timeout'))) {
+          console.warn(`Retrying fetch-prices (attempt ${retryCount + 2}/${maxRetries + 1})...`);
+          fetchInProgress.current = false;
+          await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+          return fetchPrices(retryCount + 1);
+        }
+        throw new Error(functionError.message);
+      }
 
       const newPrices: Record<string, PriceData> = {};
       
-      for (const [id, priceData] of Object.entries(data.prices || {})) {
+      for (const [id, priceData] of Object.entries(data?.prices || {})) {
         const typedData = priceData as PriceData;
         const previousPrice = previousPrices.current[id];
         const updated = previousPrice !== undefined && previousPrice !== typedData.price;
@@ -98,6 +112,7 @@ export const PriceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       setPrices(newPrices);
       setLastUpdated(new Date());
+      setError(null);
 
       // Clear the 'updated' flag after animation
       setTimeout(() => {
@@ -111,8 +126,11 @@ export const PriceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }, 500);
 
     } catch (err) {
-      console.error('Error fetching live prices:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch prices');
+      // Only log if this is the final attempt
+      if (retryCount >= maxRetries) {
+        console.error('Error fetching live prices:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch prices');
+      }
     } finally {
       setIsLoading(false);
       fetchInProgress.current = false;
