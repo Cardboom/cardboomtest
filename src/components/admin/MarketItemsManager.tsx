@@ -356,7 +356,13 @@ export const MarketItemsManager = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map(cat => (
+                      {/* Include all known categories plus existing from DB */}
+                      {[...new Set([
+                        'pokemon', 'mtg', 'yugioh', 'onepiece', 'lorcana', 'digimon', 
+                        'dragon-ball', 'star-wars', 'nba', 'fifa', 'baseball', 'football',
+                        'sports-nba', 'sports-nfl', 'sports-mlb', 'figures', 'gaming', 'tcg',
+                        ...categories
+                      ])].sort().map(cat => (
                         <SelectItem key={cat} value={cat}>{formatCategoryName(cat)}</SelectItem>
                       ))}
                     </SelectContent>

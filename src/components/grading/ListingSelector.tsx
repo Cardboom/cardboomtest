@@ -45,6 +45,7 @@ export function ListingSelector({ onSelect, selectedListing, className }: Listin
           .select('id, title, category, condition, price, image_url, front_image_url, back_image_url, status, grading_order_id, cbgi_score')
           .eq('seller_id', user.id)
           .eq('status', 'active')
+          .neq('category', 'coaching') // Exclude coaching listings from grading
           .is('cbgi_score', null) // Not yet graded
           .order('created_at', { ascending: false })
           .limit(20);
