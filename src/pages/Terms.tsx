@@ -4,14 +4,20 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { legalTranslations } from '@/translations/legal';
 
 const Terms = () => {
+  const { locale } = useLanguage();
+  // Always use English for full content, get localized title from locale if available
+  const legal = legalTranslations.en.legal;
+  const localizedTitle = (legalTranslations as any)[locale]?.legal?.terms?.title || legal.terms.title;
+  
   return (
     <>
       <Helmet>
-        <title>Terms of Service | CardBoom</title>
-        <meta name="description" content="CardBoom Terms of Service - Read our terms and conditions for using the CardBoom collectibles marketplace operated by Brainbaby Bilişim A.Ş." />
-      </Helmet>
+        <title>{localizedTitle} | CardBoom</title>
+        <meta name="description" content="CardBoom Terms of Service - Read our terms and conditions for using the CardBoom collectibles marketplace." />
       
       <div className="min-h-screen bg-background">
         <Header cartCount={0} onCartClick={() => {}} />
@@ -19,12 +25,12 @@ const Terms = () => {
         <main className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <Badge className="mb-4">Legal</Badge>
+              <Badge className="mb-4">{t.badge || 'Legal'}</Badge>
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                Terms of Service
+                {t.title}
               </h1>
-              <p className="text-muted-foreground">Last updated: January 13, 2026</p>
-              <p className="text-sm text-muted-foreground mt-2">Effective Date: January 13, 2026</p>
+              <p className="text-muted-foreground">{legal.lastUpdated}: January 13, 2026</p>
+              <p className="text-sm text-muted-foreground mt-2">{legal.effectiveDate}: January 13, 2026</p>
             </div>
 
             <Card>
@@ -32,14 +38,15 @@ const Terms = () => {
                 <section>
                   <h2 className="text-xl font-semibold mb-4">1. Company Information & Legal Entity</h2>
                   <p className="text-muted-foreground mb-4">
-                    CardBoom is a digital marketplace platform operated by <strong>Brainbaby Bilişim Anonim Şirketi</strong> ("Brainbaby Bilişim A.Ş.", "Company", "we", "us", or "our"), a company duly incorporated and registered under the laws of the Republic of Turkey.
+                    CardBoom is a digital marketplace platform operated by <strong>{legal.companyName}</strong> ("{legal.companyShort}", "Company", "we", "us", or "our"), a company duly incorporated and registered under the laws of the Republic of Turkey.
                   </p>
                   <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                    <li><strong>Company Name:</strong> Brainbaby Bilişim Anonim Şirketi</li>
-                    <li><strong>Trade Registry:</strong> Istanbul Trade Registry</li>
-                    <li><strong>Registered Address:</strong> Istanbul, Turkey</li>
-                    <li><strong>Email:</strong> legal@cardboom.com</li>
-                    <li><strong>Customer Service:</strong> support@cardboom.com</li>
+                    <li><strong>Company Name:</strong> {legal.companyName}</li>
+                    <li><strong>MERSIS No:</strong> {legal.mersis}</li>
+                    <li><strong>Tax ID (VKN):</strong> {legal.taxId}</li>
+                    <li><strong>Registered Address:</strong> {legal.address}</li>
+                    <li><strong>Email:</strong> {legal.legalEmail}</li>
+                    <li><strong>Customer Service:</strong> {legal.supportEmail}</li>
                   </ul>
                 </section>
 
@@ -163,7 +170,7 @@ const Terms = () => {
                     <strong>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:</strong>
                   </p>
                   <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                    <li>Brainbaby Bilişim A.Ş. provides the Platform "AS IS" and "AS AVAILABLE" without warranties of any kind, express or implied.</li>
+                    <li>{legal.companyShort} provides the Platform "AS IS" and "AS AVAILABLE" without warranties of any kind, express or implied.</li>
                     <li>We do not guarantee the authenticity, quality, or condition of items listed by third-party sellers.</li>
                     <li>We are not responsible for losses arising from user-to-user transactions, shipping damage, or third-party service failures.</li>
                     <li>Our total aggregate liability shall not exceed the fees paid by you to CardBoom in the 12 months preceding the claim.</li>
@@ -174,14 +181,14 @@ const Terms = () => {
                 <section>
                   <h2 className="text-xl font-semibold mb-4">11. Indemnification</h2>
                   <p className="text-muted-foreground">
-                    You agree to indemnify, defend, and hold harmless Brainbaby Bilişim A.Ş., its officers, directors, employees, and agents from any claims, damages, losses, liabilities, costs, and expenses (including reasonable legal fees) arising from: (a) your use of the Platform; (b) your violation of these Terms; (c) your violation of any third-party rights; or (d) your conduct in connection with the Platform.
+                    You agree to indemnify, defend, and hold harmless {legal.companyShort}, its officers, directors, employees, and agents from any claims, damages, losses, liabilities, costs, and expenses (including reasonable legal fees) arising from: (a) your use of the Platform; (b) your violation of these Terms; (c) your violation of any third-party rights; or (d) your conduct in connection with the Platform.
                   </p>
                 </section>
 
                 <section>
                   <h2 className="text-xl font-semibold mb-4">12. Intellectual Property</h2>
                   <p className="text-muted-foreground mb-4">
-                    The CardBoom name, logo, and all related marks, graphics, and software are the property of Brainbaby Bilişim A.Ş. All rights reserved.
+                    The CardBoom name, logo, and all related marks, graphics, and software are the property of {legal.companyShort}. All rights reserved.
                   </p>
                   <p className="text-muted-foreground">
                     <strong>Third-Party Trademarks:</strong> Pokémon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Disney Lorcana, and all related names and images are trademarks of their respective owners. CardBoom is an independent marketplace and is not affiliated with, endorsed by, or sponsored by any of these trademark owners.
@@ -219,25 +226,27 @@ const Terms = () => {
                 <section>
                   <h2 className="text-xl font-semibold mb-4">16. Amendments</h2>
                   <p className="text-muted-foreground">
-                    Brainbaby Bilişim A.Ş. reserves the right to modify these Terms at any time. Material changes will be notified via email or prominent notice on the Platform at least 30 days before taking effect. Continued use of the Platform after changes become effective constitutes acceptance of the modified Terms.
+                    {legal.companyShort} reserves the right to modify these Terms at any time. Material changes will be notified via email or prominent notice on the Platform at least 30 days before taking effect. Continued use of the Platform after changes become effective constitutes acceptance of the modified Terms.
                   </p>
                 </section>
 
                 <section>
                   <h2 className="text-xl font-semibold mb-4">17. Contact Information</h2>
                   <div className="text-muted-foreground">
-                    <p className="font-semibold mb-2">Brainbaby Bilişim Anonim Şirketi</p>
+                    <p className="font-semibold mb-2">{legal.companyName}</p>
                     <ul className="space-y-1">
-                      <li><strong>Legal Inquiries:</strong> legal@cardboom.com</li>
-                      <li><strong>Customer Support:</strong> support@cardboom.com</li>
-                      <li><strong>Data Protection:</strong> privacy@cardboom.com</li>
-                      <li><strong>Address:</strong> Istanbul, Turkey</li>
+                      <li><strong>MERSIS No:</strong> {legal.mersis}</li>
+                      <li><strong>Tax ID (VKN):</strong> {legal.taxId}</li>
+                      <li><strong>Legal Inquiries:</strong> {legal.legalEmail}</li>
+                      <li><strong>Customer Support:</strong> {legal.supportEmail}</li>
+                      <li><strong>Data Protection:</strong> {legal.privacyEmail}</li>
+                      <li><strong>Address:</strong> {legal.address}</li>
                     </ul>
                   </div>
                 </section>
 
                 <section className="border-t border-border pt-6">
-                  <h2 className="text-xl font-semibold mb-4">Related Legal Documents</h2>
+                  <h2 className="text-xl font-semibold mb-4">{t.relatedDocsTitle || "Related Legal Documents"}</h2>
                   <ul className="space-y-2">
                     <li>
                       <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>
