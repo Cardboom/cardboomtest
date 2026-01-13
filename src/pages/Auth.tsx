@@ -5,10 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { User, ShoppingBag, Store, ArrowLeft, Phone, CreditCard, Shield, Sparkles, TrendingUp, Star, Smartphone, Mail, Link, Fingerprint, Loader2 } from 'lucide-react';
+import { ArrowLeft, Phone, CreditCard, Sparkles, TrendingUp, Star, Smartphone, Mail, Link, Loader2 } from 'lucide-react';
 import { PhoneInputWithCountry } from '@/components/ui/phone-input';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
@@ -31,7 +30,6 @@ const phoneSchema = z.string().regex(/^\+[1-9]\d{6,14}$/, 'Please enter a valid 
 const nationalIdSchema = z.string().regex(/^[A-Za-z0-9]{5,20}$/, 'Please enter a valid ID (5-20 alphanumeric characters)');
 const otpSchema = z.string().length(6, 'OTP must be 6 digits');
 
-type AccountType = 'buyer' | 'seller' | 'both';
 type LoginMethod = 'email' | 'phone' | 'magic-link';
 
 const Auth = () => {
@@ -45,11 +43,9 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [phone, setPhone] = useState('');
   const [nationalId, setNationalId] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [accountType, setAccountType] = useState<AccountType>('buyer');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedFees, setAcceptedFees] = useState(false);
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('email');
@@ -327,8 +323,8 @@ const Auth = () => {
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          display_name: displayName || email.split('@')[0],
-          account_type: accountType,
+          display_name: email.split('@')[0],
+          account_type: 'both', // Default to both buyer and seller
           phone: phone,
           national_id: nationalId,
           referred_by_code: referralCode || null,
@@ -1057,69 +1053,60 @@ const Auth = () => {
                       </div>
                     </div>
 
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    {/* Early Access Benefits Banner */}
-                    <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-xl p-4 space-y-3">
-                      <div className="flex items-center gap-2 text-purple-400 font-semibold">
-                        <Sparkles className="w-5 h-5" />
-                        {t.auth.earlyAccessBenefits}
-                      </div>
-                      <ul className="grid grid-cols-2 gap-2 text-xs">
-                        <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-primary">✓</span>
-                          <strong>{t.auth.xpBonus}</strong>
-                        </li>
-                        <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-primary">✓</span>
-                          <strong>{t.auth.betaTesterBadge}</strong>
-                        </li>
-                        <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-primary">✓</span>
-                          <strong>{t.auth.reducedFees}</strong>
-                        </li>
-                        <li className="flex items-center gap-2 text-foreground/80">
-                          <span className="text-primary">✓</span>
-                          <strong>{t.auth.dailyStreakBonuses}</strong>
-                        </li>
-                      </ul>
+                  <form onSubmit={handleSignUp} className="space-y-5">
+                    {/* Welcome Message */}
+                    <div className="text-center space-y-1">
+                      <h3 className="text-lg font-semibold text-foreground">Create Your Account</h3>
+                      <p className="text-sm text-muted-foreground">Join the #1 TCG marketplace</p>
                     </div>
 
-                    {/* Security Notice */}
-                    <div className="bg-primary/10 border border-primary/30 rounded-xl p-3 flex items-start gap-3">
-                      <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                      <p className="text-foreground/80 text-xs">
-                        {t.auth.securityNotice}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="register-name" className="text-foreground font-medium">{t.auth.displayName}</Label>
-                        <Input
-                          id="register-name"
-                          type="text"
-                          placeholder={t.auth.displayNamePlaceholder}
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="register-email" className="text-foreground font-medium">{t.auth.email}</Label>
-                        <Input
-                          id="register-email"
-                          type="email"
-                          placeholder="your@email.com"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                          required
-                        />
-                        {errors.email && <p className="text-destructive text-xs">{errors.email}</p>}
+                    {/* Early Access Badge */}
+                    <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-3">
+                      <div className="flex items-center justify-center gap-4 text-xs">
+                        <span className="flex items-center gap-1.5 text-foreground/80">
+                          <span className="text-primary">✓</span> 500 XP Bonus
+                        </span>
+                        <span className="flex items-center gap-1.5 text-foreground/80">
+                          <span className="text-primary">✓</span> Beta Badge
+                        </span>
+                        <span className="flex items-center gap-1.5 text-foreground/80">
+                          <span className="text-primary">✓</span> Reduced Fees
+                        </span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* Email Field */}
+                    <div className="space-y-2">
+                      <Label htmlFor="register-email" className="text-foreground font-medium">{t.auth.email}</Label>
+                      <Input
+                        id="register-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                        required
+                      />
+                      {errors.email && <p className="text-destructive text-xs">{errors.email}</p>}
+                    </div>
+
+                    {/* Password Field */}
+                    <div className="space-y-2">
+                      <Label htmlFor="register-password" className="text-foreground font-medium">{t.auth.password}</Label>
+                      <Input
+                        id="register-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                        required
+                      />
+                      {errors.password && <p className="text-destructive text-xs">{errors.password}</p>}
+                    </div>
+
+                    {/* Phone and National ID in a row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="register-phone" className="text-foreground font-medium flex items-center gap-2">
                           <Phone className="w-3.5 h-3.5" />
@@ -1143,7 +1130,7 @@ const Auth = () => {
                           placeholder={t.auth.nationalIdPlaceholder}
                           value={nationalId}
                           onChange={(e) => setNationalId(e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 20))}
-                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                          className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
                           maxLength={20}
                           required
                         />
@@ -1151,73 +1138,25 @@ const Auth = () => {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="register-password" className="text-foreground font-medium">{t.auth.password}</Label>
-                        <Input
-                          id="register-password"
-                          type="password"
-                          placeholder="••••••••"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                          required
-                        />
-                        {errors.password && <p className="text-destructive text-xs">{errors.password}</p>}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="register-referral" className="text-foreground font-medium flex items-center gap-2">
-                          <Sparkles className="w-3.5 h-3.5 text-accent" />
-                          Referral Code
-                        </Label>
-                        <Input
-                          id="register-referral"
-                          type="text"
-                          placeholder="Optional"
-                          value={referralCode}
-                          onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
-                          className="h-11 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                          maxLength={12}
-                        />
-                        <p className="text-xs text-muted-foreground">Get bonus rewards!</p>
-                      </div>
-                    </div>
-
-                    {/* Account Type Selection */}
-                    <div className="space-y-3">
-                      <Label className="text-foreground font-medium">{t.auth.accountType}:</Label>
-                      <RadioGroup
-                        value={accountType}
-                        onValueChange={(value) => setAccountType(value as AccountType)}
-                        className="grid grid-cols-3 gap-3"
-                      >
-                        {[
-                          { value: 'buyer', icon: ShoppingBag, label: t.auth.buyer, desc: t.auth.buyerDesc },
-                          { value: 'seller', icon: Store, label: t.auth.seller, desc: t.auth.sellerDesc },
-                          { value: 'both', icon: User, label: t.auth.both, desc: t.auth.bothDesc },
-                        ].map((option) => (
-                          <label
-                            key={option.value}
-                            htmlFor={option.value}
-                            className={`flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all text-center ${
-                              accountType === option.value
-                                ? 'border-primary bg-primary/10 shadow-lg'
-                                : 'border-border/50 hover:border-primary/50 bg-secondary/30'
-                            }`}
-                          >
-                            <RadioGroupItem value={option.value} id={option.value} className="sr-only" />
-                            <option.icon className={`w-6 h-6 ${accountType === option.value ? 'text-primary' : 'text-muted-foreground'}`} />
-                            <div>
-                              <p className="text-foreground font-medium text-sm">{option.label}</p>
-                              <p className="text-muted-foreground text-xs">{option.desc}</p>
-                            </div>
-                          </label>
-                        ))}
-                      </RadioGroup>
+                    {/* Referral Code - Collapsible style */}
+                    <div className="space-y-2">
+                      <Label htmlFor="register-referral" className="text-foreground font-medium flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5 text-accent" />
+                        Referral Code <span className="text-muted-foreground font-normal">(optional)</span>
+                      </Label>
+                      <Input
+                        id="register-referral"
+                        type="text"
+                        placeholder="Enter code for bonus rewards"
+                        value={referralCode}
+                        onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
+                        className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
+                        maxLength={12}
+                      />
                     </div>
 
                     {/* Terms Checkbox */}
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input
                           type="checkbox"
@@ -1256,9 +1195,9 @@ const Auth = () => {
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-lg rounded-xl shadow-lg hover:shadow-glow transition-all mt-2"
+                      className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-lg rounded-xl shadow-lg hover:shadow-glow transition-all"
                     >
-                      {loading ? t.auth.creatingAccount : t.auth.createAccount}
+                      {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Account...</> : 'Create Account'}
                     </Button>
                   </form>
                   </div>
