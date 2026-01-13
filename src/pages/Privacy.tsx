@@ -4,14 +4,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { legalTranslations } from '@/translations/legal';
 
 const Privacy = () => {
+  const { locale } = useLanguage();
+  const legal = legalTranslations.en.legal;
+  const localizedTitle = (legalTranslations as any)[locale]?.legal?.privacy?.title || legal.privacy.title;
+  
   return (
     <>
       <Helmet>
-        <title>Privacy Policy | CardBoom</title>
-        <meta name="description" content="CardBoom Privacy Policy - Learn how Brainbaby Bilişim A.Ş. collects, uses, and protects your personal information in compliance with GDPR and KVKK." />
-      </Helmet>
+        <title>{localizedTitle} | CardBoom</title>
+        <meta name="description" content="CardBoom Privacy Policy - Learn how we collect, use, and protect your personal information." />
       
       <div className="min-h-screen bg-background">
         <Header cartCount={0} onCartClick={() => {}} />
@@ -19,12 +24,12 @@ const Privacy = () => {
         <main className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <Badge className="mb-4">Legal</Badge>
+              <Badge className="mb-4">{t.badge || 'Legal'}</Badge>
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">
-                Privacy Policy
+                {t.title}
               </h1>
-              <p className="text-muted-foreground">Last updated: January 13, 2026</p>
-              <p className="text-sm text-muted-foreground mt-2">Effective Date: January 13, 2026</p>
+              <p className="text-muted-foreground">{legal.lastUpdated}: January 13, 2026</p>
+              <p className="text-sm text-muted-foreground mt-2">{legal.effectiveDate}: January 13, 2026</p>
             </div>
 
             <Card>
@@ -32,12 +37,14 @@ const Privacy = () => {
                 <section>
                   <h2 className="text-xl font-semibold mb-4">1. Data Controller</h2>
                   <p className="text-muted-foreground mb-4">
-                    <strong>Brainbaby Bilişim Anonim Şirketi</strong> ("Brainbaby Bilişim A.Ş.", "Company", "we", "us", or "CardBoom") is the data controller responsible for your personal data under the EU General Data Protection Regulation (GDPR) and Turkish Personal Data Protection Law No. 6698 (KVKK).
+                    <strong>{legal.companyName}</strong> ("{legal.companyShort}", "Company", "we", "us", or "CardBoom") is the data controller responsible for your personal data under the EU General Data Protection Regulation (GDPR) and Turkish Personal Data Protection Law No. 6698 (KVKK).
                   </p>
                   <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                    <li><strong>Company Name:</strong> Brainbaby Bilişim Anonim Şirketi</li>
-                    <li><strong>Data Protection Officer:</strong> privacy@cardboom.com</li>
-                    <li><strong>Registered Address:</strong> Istanbul, Turkey</li>
+                    <li><strong>Company Name:</strong> {legal.companyName}</li>
+                    <li><strong>MERSIS No:</strong> {legal.mersis}</li>
+                    <li><strong>Tax ID (VKN):</strong> {legal.taxId}</li>
+                    <li><strong>Data Protection Officer:</strong> {legal.privacyEmail}</li>
+                    <li><strong>Registered Address:</strong> {legal.address}</li>
                   </ul>
                 </section>
 
@@ -75,7 +82,7 @@ const Privacy = () => {
 
                 <section>
                   <h2 className="text-xl font-semibold mb-4">4. How We Use Your Information</h2>
-                  <p className="text-muted-foreground mb-4">Brainbaby Bilişim A.Ş. uses your data to:</p>
+                  <p className="text-muted-foreground mb-4">{legal.companyShort} uses your data to:</p>
                   <ul className="list-disc pl-6 text-muted-foreground space-y-1">
                     <li>Provide, maintain, and improve our Platform and services</li>
                     <li>Process transactions, payments, and withdrawals</li>
@@ -152,7 +159,7 @@ const Privacy = () => {
                     <li><strong>Withdraw Consent:</strong> Revoke consent at any time (without affecting prior processing)</li>
                   </ul>
                   <p className="text-muted-foreground mt-4">
-                    Contact privacy@cardboom.com to exercise these rights. You also have the right to lodge a complaint with your local data protection authority.
+                    Contact {legal.privacyEmail} to exercise these rights. You also have the right to lodge a complaint with your local data protection authority.
                   </p>
                 </section>
 
@@ -191,7 +198,7 @@ const Privacy = () => {
                 <section>
                   <h2 className="text-xl font-semibold mb-4">12. Children's Privacy</h2>
                   <p className="text-muted-foreground">
-                    CardBoom is not intended for users under 18 years of age. We do not knowingly collect personal data from children. If we learn that we have collected data from a child without parental consent, we will delete it promptly. Parents or guardians who believe their child has provided data should contact us at privacy@cardboom.com.
+                    CardBoom is not intended for users under 18 years of age. We do not knowingly collect personal data from children. If we learn that we have collected data from a child without parental consent, we will delete it promptly. Parents or guardians who believe their child has provided data should contact us at {legal.privacyEmail}.
                   </p>
                 </section>
 
@@ -205,12 +212,14 @@ const Privacy = () => {
                 <section>
                   <h2 className="text-xl font-semibold mb-4">14. Contact Us</h2>
                   <div className="text-muted-foreground">
-                    <p className="font-semibold mb-2">Brainbaby Bilişim Anonim Şirketi</p>
+                    <p className="font-semibold mb-2">{legal.companyName}</p>
                     <ul className="space-y-1">
-                      <li><strong>Data Protection Officer:</strong> privacy@cardboom.com</li>
-                      <li><strong>Legal Inquiries:</strong> legal@cardboom.com</li>
-                      <li><strong>Customer Support:</strong> support@cardboom.com</li>
-                      <li><strong>Address:</strong> Istanbul, Turkey</li>
+                      <li><strong>MERSIS No:</strong> {legal.mersis}</li>
+                      <li><strong>Tax ID (VKN):</strong> {legal.taxId}</li>
+                      <li><strong>Data Protection Officer:</strong> {legal.privacyEmail}</li>
+                      <li><strong>Legal Inquiries:</strong> {legal.legalEmail}</li>
+                      <li><strong>Customer Support:</strong> {legal.supportEmail}</li>
+                      <li><strong>Address:</strong> {legal.address}</li>
                     </ul>
                   </div>
                 </section>

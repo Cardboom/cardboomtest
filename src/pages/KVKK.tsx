@@ -2,14 +2,18 @@ import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { legalTranslations } from "@/translations/legal";
 
 const KVKK = () => {
+  // KVKK is always in Turkish as it's Turkish law
+  const legal = legalTranslations.en.legal;
+  const t = legalTranslations.tr.legal.kvkk;
 
   return (
     <>
       <Helmet>
-        <title>KVKK Aydınlatma Metni | CardBoom</title>
-        <meta name="description" content="CardBoom KVKK Aydınlatma Metni - 6698 Sayılı Kişisel Verilerin Korunması Kanunu kapsamında kişisel verilerinizin işlenmesi hakkında bilgilendirme." />
+        <title>{t.title} | CardBoom</title>
+        <meta name="description" content={t.metaDescription} />
       </Helmet>
       
       <div className="min-h-screen bg-background">
@@ -19,86 +23,69 @@ const KVKK = () => {
           <Card className="bg-card/50 backdrop-blur-sm border-border/50">
             <CardHeader>
               <CardTitle className="text-3xl font-bold text-foreground">
-                KVKK Aydınlatma Metni
+                {t.title}
               </CardTitle>
-              <p className="text-muted-foreground">Son Güncelleme: 16 Aralık 2024</p>
+              <p className="text-muted-foreground">Son Güncelleme: 13 Ocak 2026</p>
             </CardHeader>
             <CardContent className="prose prose-invert max-w-none space-y-6">
               <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">1. Veri Sorumlusu</h2>
-                <p className="text-muted-foreground">
-                  6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında, CardBoom olarak kişisel verilerinizi aşağıda açıklanan amaçlar doğrultusunda, hukuka ve dürüstlük kurallarına uygun şekilde işleyebilecek, kaydedebilecek, saklayabilecek, güncelleyebilecek, üçüncü kişilere açıklayabilecek ve aktarabileceğimizi bildiririz.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">2. İşlenen Kişisel Veriler</h2>
-                <p className="text-muted-foreground mb-2">Platformumuz aracılığıyla aşağıdaki kişisel verileriniz işlenmektedir:</p>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section1Title}</h2>
+                <p className="text-muted-foreground mb-4">{t.section1Text}</p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                  <li><strong>Kimlik Bilgileri:</strong> Ad, soyad, T.C. kimlik numarası</li>
-                  <li><strong>İletişim Bilgileri:</strong> E-posta adresi, telefon numarası, adres</li>
-                  <li><strong>Finansal Bilgiler:</strong> IBAN, banka hesap bilgileri, ödeme bilgileri</li>
-                  <li><strong>İşlem Güvenliği:</strong> IP adresi, cihaz bilgileri, çerez verileri</li>
-                  <li><strong>Kullanıcı Bilgileri:</strong> Kullanıcı adı, profil fotoğrafı, işlem geçmişi</li>
+                  <li><strong>Veri Sorumlusu:</strong> {legal.companyName}</li>
+                  <li><strong>{t.mersisNo}:</strong> {legal.mersis}</li>
+                  <li><strong>{t.taxIdLabel}:</strong> {legal.taxId}</li>
+                  <li><strong>Adres:</strong> {legal.address}</li>
+                  <li><strong>E-posta:</strong> {legal.kvkkEmail}</li>
                 </ul>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">3. Kişisel Verilerin İşlenme Amaçları</h2>
-                <p className="text-muted-foreground mb-2">Kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:</p>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section2Title}</h2>
+                <p className="text-muted-foreground mb-2">{t.section2Text}</p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                  <li>Üyelik işlemlerinin gerçekleştirilmesi</li>
-                  <li>Alım-satım işlemlerinin yürütülmesi</li>
-                  <li>Ödeme ve para transferi işlemlerinin gerçekleştirilmesi</li>
-                  <li>Müşteri hizmetleri ve destek sağlanması</li>
-                  <li>Yasal yükümlülüklerin yerine getirilmesi</li>
-                  <li>Dolandırıcılık ve güvenlik önlemlerinin alınması</li>
-                  <li>Pazarlama ve iletişim faaliyetleri (onayınız dahilinde)</li>
+                  {t.section2Items.map((item, i) => (
+                    <li key={i}><strong>{item.name}:</strong> {item.desc}</li>
+                  ))}
                 </ul>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">4. Kişisel Verilerin Aktarılması</h2>
-                <p className="text-muted-foreground">
-                  Kişisel verileriniz, yukarıda belirtilen amaçların gerçekleştirilmesi için gerekli olduğu ölçüde; iş ortaklarımıza, tedarikçilerimize, ödeme hizmeti sağlayıcılarına, kargo şirketlerine ve yasal zorunluluk halinde yetkili kamu kurum ve kuruluşlarına aktarılabilecektir.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">5. Kişisel Verilerin Toplanma Yöntemi ve Hukuki Sebebi</h2>
-                <p className="text-muted-foreground">
-                  Kişisel verileriniz, web sitemiz, mobil uygulamalarımız ve fiziksel iletişim kanalları aracılığıyla otomatik veya otomatik olmayan yöntemlerle toplanmaktadır. Verileriniz KVKK'nın 5. ve 6. maddelerinde belirtilen hukuki sebeplere dayanılarak işlenmektedir.
-                </p>
-              </section>
-
-              <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">6. İlgili Kişinin Hakları (KVKK m.11)</h2>
-                <p className="text-muted-foreground mb-2">KVKK'nın 11. maddesi uyarınca aşağıdaki haklara sahipsiniz:</p>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section3Title}</h2>
+                <p className="text-muted-foreground mb-2">{t.section3Text}</p>
                 <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                  <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
-                  <li>Kişisel verileriniz işlenmişse buna ilişkin bilgi talep etme</li>
-                  <li>Kişisel verilerinizin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme</li>
-                  <li>Yurt içinde veya yurt dışında kişisel verilerinizin aktarıldığı üçüncü kişileri bilme</li>
-                  <li>Kişisel verilerinizin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme</li>
-                  <li>KVKK'nın 7. maddesinde öngörülen şartlar çerçevesinde kişisel verilerinizin silinmesini veya yok edilmesini isteme</li>
-                  <li>Düzeltme, silme veya yok etme işlemlerinin kişisel verilerinizin aktarıldığı üçüncü kişilere bildirilmesini isteme</li>
-                  <li>İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme</li>
-                  <li>Kişisel verilerinizin kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme</li>
+                  {t.section3Items.map((item, i) => (<li key={i}>{item}</li>))}
                 </ul>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">7. Başvuru Yöntemi</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section4Title}</h2>
+                <p className="text-muted-foreground">{t.section4Text}</p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section5Title}</h2>
+                <p className="text-muted-foreground">{t.section5Text}</p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section6Title}</h2>
+                <p className="text-muted-foreground mb-2">{t.section6Text}</p>
+                <ul className="list-disc pl-6 text-muted-foreground space-y-1">
+                  {t.section6Items.map((item, i) => (<li key={i}>{item}</li>))}
+                </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section7Title}</h2>
                 <p className="text-muted-foreground">
-                  Yukarıda belirtilen haklarınızı kullanmak için <strong>kvkk@cardboom.com</strong> adresine e-posta gönderebilir veya yazılı olarak şirket adresimize başvurabilirsiniz. Başvurularınız en geç 30 gün içinde sonuçlandırılacaktır.
+                  {t.section7Text} <strong>{legal.kvkkEmail}</strong> {t.section7Text2}
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">8. Veri Güvenliği</h2>
-                <p className="text-muted-foreground">
-                  Kişisel verilerinizin güvenliği için gerekli her türlü teknik ve idari tedbirler alınmaktadır. Verileriniz şifreli bağlantılar (SSL/TLS) üzerinden iletilmekte ve güvenli sunucularda saklanmaktadır.
-                </p>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t.section8Title}</h2>
+                <p className="text-muted-foreground">{t.section8Text}</p>
               </section>
             </CardContent>
           </Card>
