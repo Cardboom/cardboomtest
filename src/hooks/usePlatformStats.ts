@@ -27,11 +27,12 @@ export const usePlatformStats = (): PlatformStats => {
           .select('current_price')
           .gt('current_price', 0);
 
-        // Fetch active listings count
+        // Fetch active listings count (exclude deleted/cancelled listings)
         const { data: listingsData, error: listingsError } = await supabase
           .from('listings')
           .select('id, price_cents')
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .neq('category', 'coaching'); // Exclude coaching from stats
 
         // Fetch completed orders for volume
         const { data: ordersData, error: ordersError } = await supabase

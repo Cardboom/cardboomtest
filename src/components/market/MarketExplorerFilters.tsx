@@ -30,6 +30,9 @@ const CATEGORIES = [
   { value: 'sports-nfl', label: 'NFL Cards' },
   { value: 'sports-mlb', label: 'MLB Cards' },
   { value: 'sports-soccer', label: 'Soccer Cards' },
+  { value: 'fifa', label: 'FIFA' },
+  { value: 'nba', label: 'NBA' },
+  { value: 'baseball', label: 'Baseball' },
   { value: 'figures', label: 'Figures & Collectibles' },
   { value: 'gaming', label: 'Gaming Points' },
 ];

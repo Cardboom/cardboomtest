@@ -61,7 +61,7 @@ interface Listing {
   image_url: string | null;
 }
 
-const categories = ['nba', 'football', 'tcg', 'figures', 'pokemon', 'mtg', 'yugioh', 'onepiece', 'lorcana', 'gamepoints'];
+const categories = ['nba', 'fifa', 'baseball', 'football', 'tcg', 'figures', 'pokemon', 'mtg', 'yugioh', 'onepiece', 'lorcana', 'gamepoints'];
 const conditions = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Fair', 'Poor'];
 
 const SellPage = () => {

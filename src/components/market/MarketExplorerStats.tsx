@@ -26,10 +26,11 @@ export const MarketExplorerStats = () => {
 
       if (marketError) throw marketError;
 
-      // Fetch active listings count and total value
+      // Fetch active listings count and total value (exclude coaching)
       const { data: listings, error: listingsError } = await supabase
         .from('listings')
-        .select('price, status');
+        .select('price, status')
+        .neq('category', 'coaching');
 
       if (listingsError) throw listingsError;
 
