@@ -172,20 +172,20 @@ export const LiveMarketPanel = () => {
       <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
       
       {/* Header */}
-      <div className="absolute top-3 left-4 right-4 flex items-center justify-between z-10">
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Activity className="w-4 h-4 text-primary" />
-            <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+      <div className="absolute top-2 left-3 right-3 flex items-center justify-between z-10">
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center relative">
+            <Activity className="w-2.5 h-2.5 text-primary" />
+            <span className="absolute -top-0.5 -right-0.5 flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gain opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-gain"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gain"></span>
             </span>
           </div>
-          <span className="text-xs font-semibold text-white tracking-wide">
+          <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
             {t.home.liveMarket}
           </span>
         </div>
-        <span className="text-[10px] text-white/60">
+        <span className="text-[9px] text-gray-500 font-sans font-medium">
           {t.home.realTimeUpdates}
         </span>
       </div>
