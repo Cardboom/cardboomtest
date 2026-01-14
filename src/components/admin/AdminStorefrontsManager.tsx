@@ -150,67 +150,22 @@ export function AdminStorefrontsManager() {
 
     setIsCreating(true);
     try {
-      // 1. Create the profile (fake user account)
-      const profileId = crypto.randomUUID();
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: profileId,
-          display_name: newDisplayName,
+      // Use edge function to create system account with proper auth user
+      const { data, error } = await supabase.functions.invoke('create-system-account', {
+        body: {
           email: newAccountEmail,
-          bio: newBio,
-          account_type: 'seller',
-          is_fan_account: true,
-          is_verified_seller: true, // Pre-verify admin storefronts
-          system_account_role: 'seller',
-          system_account_wallet_balance: parseFloat(fundAmount) || 0,
-          auto_actions_count: 0,
-          account_status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-
-      if (profileError) throw profileError;
-
-      // 2. Create the creator profile
-      const creatorProfileId = crypto.randomUUID();
-      const { error: creatorError } = await supabase
-        .from('creator_profiles')
-        .insert({
-          id: creatorProfileId,
-          user_id: profileId,
-          creator_name: newDisplayName,
+          displayName: newDisplayName,
           bio: newBio || null,
-          platform: 'cardboom',
-          is_verified: true,
-          is_public: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
+          walletBalance: parseFloat(fundAmount) || 0,
+          createCreatorProfile: true,
+          createStorefront: true,
+          storefrontSlug: newSlug,
+          storefrontTagline: newTagline || null,
+        },
+      });
 
-      if (creatorError) throw creatorError;
-
-      // 3. Create the storefront
-      const { error: storefrontError } = await supabase
-        .from('creator_storefronts')
-        .insert({
-          creator_id: creatorProfileId,
-          user_id: profileId,
-          slug: newSlug,
-          display_name: newDisplayName,
-          tagline: newTagline || null,
-          logo_url: newLogoUrl || null,
-          banner_url: newBannerUrl || null,
-          is_active: true,
-          is_featured: false,
-          total_sales: 0,
-          total_revenue: 0,
-          follower_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-
-      if (storefrontError) throw storefrontError;
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast.success(`Storefront "${newDisplayName}" created!`);
       setShowCreateDialog(false);
