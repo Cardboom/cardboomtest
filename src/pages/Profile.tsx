@@ -144,7 +144,7 @@ const Profile = () => {
   const { data: portfolioData, refetch: refetchPortfolio } = useQuery({
     queryKey: ['user-portfolio-full', profile?.id],
     queryFn: async () => {
-      if (!profile?.id) return { items: [], listings: [], stats: { totalItems: 0, totalValue: 0, totalCost: 0, pnl: 0, pnlPercent: 0 } };
+      if (!profile?.id) return { items: [], listings: [], stats: { totalItems: 0, totalValue: 0, totalCashIn: 0, pnl: 0, pnlPercent: 0 } };
       
       // Fetch portfolio items
       const { data: portfolioItems, error: portfolioError } = await supabase
@@ -171,30 +171,50 @@ const Profile = () => {
         .order('created_at', { ascending: false });
       if (listingsError) console.error('Error fetching listings:', listingsError);
       
+      // Fetch wallet to get wallet_id
+      const { data: wallet } = await supabase
+        .from('wallets')
+        .select('id, balance')
+        .eq('user_id', profile.id)
+        .maybeSingle();
+      
+      // Fetch total cash inflows (deposits/top-ups + sale proceeds)
+      let totalCashIn = 0;
+      if (wallet?.id) {
+        const { data: inflows } = await supabase
+          .from('transactions')
+          .select('amount, type')
+          .eq('wallet_id', wallet.id)
+          .in('type', ['topup', 'sale', 'admin_credit']);
+        
+        totalCashIn = (inflows || []).reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+      }
+      
       const items = portfolioItems || [];
       const instances = cardInstancesData || [];
       const listings = userListings || [];
       
-      // Calculate totals from portfolio items
+      // Calculate current portfolio value
       const portfolioValue = items.reduce((sum, item) => {
         const price = item.market_item?.current_price || item.purchase_price || 0;
         return sum + (price * (item.quantity || 1));
       }, 0);
-      const portfolioCost = items.reduce((sum, item) => {
-        return sum + ((item.purchase_price || 0) * (item.quantity || 1));
-      }, 0);
       
       // Add card instances values
       const instancesValue = instances.reduce((sum, inst) => sum + (inst.current_value || 0), 0);
-      const instancesCost = instances.reduce((sum, inst) => sum + (inst.acquisition_price || 0), 0);
       
-      // Add listings values (price is both current value and cost basis for listings)
+      // Add listings values
       const listingsValue = listings.reduce((sum, listing) => sum + (listing.price || 0), 0);
       
-      const totalValue = portfolioValue + instancesValue + listingsValue;
-      const totalCost = portfolioCost + instancesCost + listingsValue; // Use listing price as cost basis
-      const pnl = totalValue - totalCost;
-      const pnlPercent = totalCost > 0 ? ((pnl / totalCost) * 100) : 0;
+      // Add current wallet balance to total value
+      const walletBalance = wallet?.balance || 0;
+      
+      // Total value = portfolio + instances + listings + wallet balance
+      const totalValue = portfolioValue + instancesValue + listingsValue + walletBalance;
+      
+      // PnL = Current total value - Total cash deposited/earned into platform
+      const pnl = totalValue - totalCashIn;
+      const pnlPercent = totalCashIn > 0 ? ((pnl / totalCashIn) * 100) : 0;
       
       return {
         items,
@@ -202,7 +222,7 @@ const Profile = () => {
         stats: {
           totalItems: items.length + instances.length + listings.length,
           totalValue,
-          totalCost,
+          totalCashIn,
           pnl,
           pnlPercent,
         }
