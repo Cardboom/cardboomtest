@@ -138,9 +138,51 @@ function calculateRobustPrice(prices: number[]): { price: number; confidence: st
   return { price, confidence, sampleSize: filtered.length };
 }
 
-async function searchEbay(query: string): Promise<EbayProduct[]> {
+// Search eBay for SOLD listings (most accurate for pricing)
+async function searchEbaySold(query: string): Promise<EbayProduct[]> {
   if (!EBAY_RAPIDAPI_KEY) {
     console.log('eBay RapidAPI key not configured');
+    return [];
+  }
+
+  try {
+    // Use sold listings endpoint for accurate market pricing
+    const url = `https://ebay-search-result.p.rapidapi.com/search/${encodeURIComponent(query)}?page=1&type=sold`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-RapidAPI-Key': EBAY_RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'ebay-search-result.p.rapidapi.com',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`eBay Sold API error: ${response.status}`);
+      // Fallback to active listings
+      return searchEbayActive(query);
+    }
+
+    const data = await response.json();
+    const soldProducts: EbayProduct[] = (data.results || []).map((item: any) => ({
+      title: item.title || '',
+      image: item.image || item.thumbnail,
+      images: item.images || [item.image].filter(Boolean),
+      price: { value: String(item.price || item.sold_price || 0), currency: 'USD' },
+      condition: item.condition,
+      itemId: item.item_id || item.id,
+    }));
+    
+    console.log(`[Riftbound eBay Sold] Found ${soldProducts.length} completed sales for: ${query}`);
+    return soldProducts;
+  } catch (error) {
+    console.error('Error searching eBay sold:', error);
+    return searchEbayActive(query);
+  }
+}
+
+// Fallback to active listings
+async function searchEbayActive(query: string): Promise<EbayProduct[]> {
+  if (!EBAY_RAPIDAPI_KEY) {
     return [];
   }
 
@@ -155,16 +197,20 @@ async function searchEbay(query: string): Promise<EbayProduct[]> {
     });
 
     if (!response.ok) {
-      console.error(`eBay API error: ${response.status}`);
       return [];
     }
 
     const data: EbaySearchResponse = await response.json();
     return data.products || [];
   } catch (error) {
-    console.error('Error searching eBay:', error);
+    console.error('Error searching eBay active:', error);
     return [];
   }
+}
+
+// Main search function - prioritizes sold data
+async function searchEbay(query: string): Promise<EbayProduct[]> {
+  return searchEbaySold(query);
 }
 
 // Create URL-friendly slug

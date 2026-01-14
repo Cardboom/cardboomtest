@@ -237,11 +237,12 @@ Deno.serve(async (req) => {
           }
         }
         
-        // Strategy 3: eBay for special categories or additional validation
+        // Strategy 3: eBay SOLD listings for special categories (most accurate pricing)
         if (!newPrice && ebayKey && (category === 'lol-riftbound' || category === 'figures')) {
           try {
+            // Use SOLD listings endpoint for accurate market pricing
             const response = await fetch(
-              `https://ebay-search-result.p.rapidapi.com/search/${encodeURIComponent(item.name)}?page=1`,
+              `https://ebay-search-result.p.rapidapi.com/search/${encodeURIComponent(item.name)}?page=1&type=sold`,
               {
                 headers: {
                   'X-RapidAPI-Key': ebayKey,
@@ -252,17 +253,19 @@ Deno.serve(async (req) => {
             
             if (response.ok) {
               const data = await response.json()
-              // Get median of recent sold prices
-              const prices = data.results
-                ?.filter((r: any) => r.price && r.price > 0)
-                ?.map((r: any) => parseFloat(r.price))
-                ?.sort((a: number, b: number) => a - b) || []
+              // Get median of recent SOLD prices (real transaction data)
+              const prices = (data.results || [])
+                .filter((r: any) => (r.price || r.sold_price) && (r.price > 0 || r.sold_price > 0))
+                .map((r: any) => parseFloat(r.sold_price || r.price))
+                .filter((p: number) => !isNaN(p) && p > 0)
+                .sort((a: number, b: number) => a - b)
               
               if (prices.length >= 3) {
-                // Use median price
+                // Use median price from sold data
                 newPrice = prices[Math.floor(prices.length / 2)]
-                source = 'ebay'
+                source = 'ebay_sold'
                 results.sources.ebay++
+                console.log(`[price-scheduler] 💰 eBay SOLD price for ${item.name}: $${newPrice} (${prices.length} sales)`)
               }
             }
           } catch (e) {
