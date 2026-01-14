@@ -1168,6 +1168,527 @@ export const legalTranslations = {
       kvkk: { title: "KVKK 개인정보 보호 고지" },
       distanceSales: { title: "원격 판매 계약" }
     }
+  },
+
+  nl: {
+    legal: {
+      // Common legal info
+      companyName: "Brainbaby Bilişim Anonim Şirketi",
+      companyShort: "Brainbaby Bilişim A.Ş.",
+      mersis: "0187173385800001",
+      taxId: "1871733858",
+      address: "Iran Caddesi 55/9, Gaziosmanpaşa Mahallesi, Çankaya, Ankara, Türkiye",
+      jurisdiction: "Istanbul, Turkije",
+      lastUpdated: "Laatst bijgewerkt",
+      effectiveDate: "Ingangsdatum",
+      
+      // Contact emails
+      legalEmail: "legal@cardboom.com",
+      supportEmail: "support@cardboom.com",
+      privacyEmail: "privacy@cardboom.com",
+      kvkkEmail: "kvkk@cardboom.com",
+      
+      // Terms of Service
+      terms: {
+        title: "Servicevoorwaarden",
+        badge: "Juridisch",
+        metaDescription: "CardBoom Servicevoorwaarden - Lees onze algemene voorwaarden voor het gebruik van de CardBoom verzamelmarktplaats.",
+        
+        section1Title: "1. Bedrijfsinformatie & Rechtspersoon",
+        section1Text: "CardBoom is een digitaal marktplaatsplatform beheerd door",
+        section1CompanyInfo: "een vennootschap die naar behoren is opgericht en geregistreerd volgens de wetten van de Republiek Turkije.",
+        tradeRegistry: "Handelsregister",
+        registeredAddress: "Geregistreerd Adres",
+        customerService: "Klantenservice",
+        
+        section2Title: "2. Aanvaarding van Voorwaarden",
+        section2Text1: "Door toegang te krijgen tot, te bladeren door of gebruik te maken van CardBoom (het \"Platform\"), erkent u dat u deze Servicevoorwaarden (\"Voorwaarden\"), ons",
+        section2Text2: "ALS U NIET AKKOORD GAAT MET DEZE VOORWAARDEN, MAG U HET PLATFORM NIET OPENEN OF GEBRUIKEN.",
+        section2Text3: "Uw voortgezet gebruik van het Platform vormt uw voortdurende aanvaarding van deze Voorwaarden zoals van tijd tot tijd gewijzigd.",
+        
+        section3Title: "3. Geschiktheid & Gebruikersaccounts",
+        section3Text: "Om CardBoom te gebruiken, moet u:",
+        section3Items: [
+          "Minimaal 18 jaar oud zijn, of de leeftijd van wettelijke meerderjarigheid in uw rechtsgebied",
+          "De wettelijke bevoegdheid hebben om bindende contracten aan te gaan",
+          "Niet verboden zijn om het Platform te gebruiken onder toepasselijke wetgeving",
+          "Nauwkeurige, actuele en volledige registratie-informatie verstrekken",
+          "De veiligheid en vertrouwelijkheid van uw accountgegevens handhaven"
+        ],
+        section3Footer: "U bent als enige verantwoordelijk voor alle activiteiten die plaatsvinden onder uw account. U moet ons onmiddellijk op de hoogte stellen van ongeoorloofd gebruik van uw account.",
+        
+        section4Title: "4. Platformdiensten",
+        section4Text: "CardBoom biedt de volgende diensten:",
+        section4Items: [
+          { name: "Marktplaats", desc: "Koop en verkoop verzamelkaarten, verzamelobjecten en gerelateerde items" },
+          { name: "Kluisopslag", desc: "Veilige opslag voor verzamelobjecten in onze verzekerde faciliteiten" },
+          { name: "Portfoliotracking", desc: "Volg de waarde van uw collectie" },
+          { name: "Gradeerdiensten", desc: "Dien kaarten in voor professionele gradering" },
+          { name: "Fractioneel Eigendom", desc: "Koop aandelen in hoogwaardige verzamelobjecten" },
+          { name: "Gamingdiensten", desc: "Digitale gameproducten en coachingdiensten" },
+          { name: "Veilingen", desc: "Bied op verzamelobjecten in getimede veilingen" }
+        ],
+        
+        section5Title: "5. Kosten, Commissies & Betalingsvoorwaarden",
+        section5Text: "Door CardBoom te gebruiken, gaat u akkoord met de volgende kostenstructuur:",
+        section5Items: [
+          { name: "Creditcard Opladen Kosten", value: "6,5% + €0,50 per transactie" },
+          { name: "Bankoverschrijving Opladen Kosten", value: "3% + €0,50 per transactie" },
+          { name: "Verkoperscommissie", value: "5% van de verkoopprijs bij voltooide transacties" },
+          { name: "Opnamekosten", value: "Varieert per methode en bestemming" }
+        ],
+        section5Footer: "Alle kosten zijn onder voorbehoud van wijziging met 30 dagen voorafgaande kennisgeving. Huidige kostenschema's zijn beschikbaar op onze Prijzenpagina. Kosten zijn niet-restitueerbaar tenzij anders vermeld.",
+        
+        section6Title: "6. Verkopersverplichtingen",
+        section6Text: "Als u items verkoopt op CardBoom, gaat u akkoord met:",
+        section6Items: [
+          "Nauwkeurige beschrijvingen, afbeeldingen en conditiebeoordelingen verstrekken",
+          "Alleen items aanbieden die u bezit en het wettelijke recht hebt om te verkopen",
+          "Items verzenden binnen de gespecificeerde termijn (standaard: 5 werkdagen)",
+          "Geschikte verpakking gebruiken om schade tijdens verzending te voorkomen",
+          "Niet deelnemen aan nep-biedingen, prijsmanipulatie of frauduleuze activiteiten",
+          "Binnen 48 uur reageren op vragen van kopers",
+          "Retouren accepteren voor items die aanzienlijk afwijken van de beschrijving"
+        ],
+        
+        section7Title: "7. Kopersverplichtingen",
+        section7Text: "Als u items koopt op CardBoom, gaat u akkoord met:",
+        section7Items: [
+          "Items snel betalen na aankoopbevestiging",
+          "Nauwkeurige verzendinformatie verstrekken",
+          "Items bij ontvangst inspecteren en problemen binnen 72 uur melden",
+          "Geen frauduleuze geschillen of chargebacks indienen",
+          "Te goeder trouw communiceren met verkopers"
+        ],
+        
+        section8Title: "8. Verboden Activiteiten",
+        section8Text: "U mag CardBoom NIET gebruiken om:",
+        section8Items: [
+          "Namaak-, gestolen of illegaal verkregen items te verkopen",
+          "Itemauthenticiteit, conditie of gradering verkeerd voor te stellen",
+          "Deel te nemen aan witwaspraktijken of terrorismefinanciering",
+          "Prijzen, biedingen of marktgegevens te manipuleren",
+          "Platformkosten te omzeilen via off-platform transacties",
+          "Andere gebruikers te intimideren, bedreigen of belasteren",
+          "Intellectuele eigendomsrechten te schenden",
+          "Bots, scrapers of geautomatiseerde tools zonder toestemming te gebruiken",
+          "De platformbeveiliging of infrastructuur te verstoren"
+        ],
+        
+        section9Title: "9. Geschillenbeslechting",
+        section9Text: "In geval van een geschil tussen kopers en verkopers:",
+        section9Items: [
+          "Gebruikers moeten eerst proberen geschillen rechtstreeks op te lossen",
+          "Indien onopgelost, kan elke partij CardBoom-bemiddeling aanvragen",
+          "CardBoom kan fondsen in escrow houden tijdens geschillenbeslechting",
+          "CardBoom's beslissingen in geschilzaken zijn definitief en bindend",
+          "Geschillenbeslechtingstermijn: tot 30 dagen vanaf indiening"
+        ],
+        section9Footer: "Voor geschillen die niet via ons interne proces worden opgelost, hebben de Turkse rechtbanken in Istanbul exclusieve jurisdictie.",
+        
+        section10Title: "10. Beperking van Aansprakelijkheid",
+        section10Text: "VOOR ZOVER MAXIMAAL TOEGESTAAN DOOR TOEPASSELIJK RECHT:",
+        section10Items: [
+          "biedt het Platform \"ZOALS HET IS\" en \"ZOALS BESCHIKBAAR\" zonder enige garanties, expliciet of impliciet.",
+          "Wij garanderen niet de authenticiteit, kwaliteit of conditie van items die door externe verkopers worden aangeboden.",
+          "Wij zijn niet verantwoordelijk voor verliezen voortvloeiend uit transacties tussen gebruikers, verzendschade of storingen bij diensten van derden.",
+          "Onze totale gecumuleerde aansprakelijkheid zal de door u aan CardBoom betaalde kosten in de 12 maanden voorafgaand aan de claim niet overschrijden.",
+          "Wij zijn niet aansprakelijk voor indirecte, incidentele, speciale, gevolgschade of punitieve schade."
+        ],
+        
+        section11Title: "11. Vrijwaring",
+        section11Text: "U stemt ermee in om",
+        section11Text2: "haar functionarissen, directeuren, werknemers en agenten te vrijwaren, verdedigen en schadeloos te stellen van alle claims, schade, verliezen, aansprakelijkheden, kosten en uitgaven (inclusief redelijke juridische kosten) voortvloeiend uit: (a) uw gebruik van het Platform; (b) uw schending van deze Voorwaarden; (c) uw schending van rechten van derden; of (d) uw gedrag in verband met het Platform.",
+        
+        section12Title: "12. Intellectueel Eigendom",
+        section12Text1: "De CardBoom-naam, logo en alle gerelateerde merken, graphics en software zijn eigendom van",
+        section12Text2: "Alle rechten voorbehouden.",
+        section12Trademarks: "Handelsmerken van Derden:",
+        section12TrademarksText: "Pokémon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Disney Lorcana en alle gerelateerde namen en afbeeldingen zijn handelsmerken van hun respectieve eigenaren. CardBoom is een onafhankelijke marktplaats en is niet gelieerd aan, goedgekeurd door of gesponsord door een van deze merkhouders.",
+        
+        section13Title: "13. Accountbeëindiging",
+        section13Text: "Wij kunnen uw account op elk moment opschorten of beëindigen wegens:",
+        section13Items: [
+          "Schending van deze Voorwaarden",
+          "Frauduleuze of illegale activiteit",
+          "Herhaalde geschillen of chargebacks",
+          "Niet-nakoming van transacties",
+          "Verzoek van wetshandhaving of regelgevende autoriteiten"
+        ],
+        
+        section14Title: "14. Toepasselijk Recht & Jurisdictie",
+        section14Text: "Deze Voorwaarden worden beheerst door en geïnterpreteerd in overeenstemming met de wetten van de Republiek Turkije, zonder rekening te houden met conflicterende rechtsprincipes. Alle geschillen voortvloeiend uit deze Voorwaarden vallen onder de exclusieve jurisdictie van de rechtbanken van Istanbul, Turkije. Partijen komen overeen dat de Istanbul Consumentenarbitragecommissies en Istanbul Rechtbanken bevoegd zijn voor consumentengeschillen.",
+        
+        section15Title: "15. Scheidbaarheid & Afstand",
+        section15Text: "Als enige bepaling van deze Voorwaarden onuitvoerbaar of ongeldig wordt bevonden, wordt die bepaling beperkt of geëlimineerd tot het minimaal noodzakelijke, en blijven de overige bepalingen volledig van kracht. Ons niet afdwingen van enig recht of bepaling van deze Voorwaarden vormt geen afstand van dat recht of die bepaling.",
+        
+        section16Title: "16. Wijzigingen",
+        section16Text: "behoudt zich het recht voor om deze Voorwaarden op elk moment te wijzigen. Materiële wijzigingen worden ten minste 30 dagen voor inwerkingtreding per e-mail of via een prominente kennisgeving op het Platform gemeld. Voortgezet gebruik van het Platform nadat wijzigingen van kracht worden, vormt aanvaarding van de gewijzigde Voorwaarden.",
+        
+        section17Title: "17. Contactinformatie",
+        legalInquiries: "Juridische Vragen",
+        dataProtection: "Gegevensbescherming",
+        
+        relatedDocsTitle: "Gerelateerde Juridische Documenten",
+      },
+      
+      // Privacy Policy
+      privacy: {
+        title: "Privacybeleid",
+        badge: "Juridisch",
+        metaDescription: "CardBoom Privacybeleid - Leer hoe wij uw persoonlijke gegevens verzamelen, gebruiken en beschermen in overeenstemming met AVG en KVKK.",
+        
+        section1Title: "1. Verwerkingsverantwoordelijke",
+        section1Text: "is de verwerkingsverantwoordelijke die verantwoordelijk is voor uw persoonlijke gegevens onder de EU Algemene Verordening Gegevensbescherming (AVG) en de Turkse Wet Bescherming Persoonsgegevens nr. 6698 (KVKK).",
+        dataProtectionOfficer: "Functionaris Gegevensbescherming",
+        
+        section2Title: "2. Informatie die Wij Verzamelen",
+        section2_1Title: "2.1 Informatie die U Verstrekt",
+        section2_1Items: [
+          { name: "Identiteitsgegevens", desc: "Volledige naam, gebruikersnaam, geboortedatum, T.C. Kimlik No (Turks ID), paspoortnummer" },
+          { name: "Contactgegevens", desc: "E-mailadres, telefoonnummer, verzendadres, factuuradres" },
+          { name: "Financiële Gegevens", desc: "Bankrekeninggegevens (IBAN), betaalkaartinformatie (verwerkt door betalingsproviders)" },
+          { name: "Profielgegevens", desc: "Avatar, bio, voorkeuren, transactiegeschiedenis" },
+          { name: "Communicatiegegevens", desc: "Berichten, supporttickets, feedback" }
+        ],
+        section2_2Title: "2.2 Automatisch Verzamelde Informatie",
+        section2_2Items: [
+          { name: "Apparaatgegevens", desc: "IP-adres, browsertype, besturingssysteem, apparaatidentificaties" },
+          { name: "Gebruiksgegevens", desc: "Bezochte pagina's, gebruikte functies, bestede tijd, klikpatronen" },
+          { name: "Locatiegegevens", desc: "Geschatte locatie op basis van IP-adres" },
+          { name: "Cookiegegevens", desc: "Sessie-identificaties, voorkeuren, analytics (zie Sectie 8)" }
+        ],
+        
+        section3Title: "3. Rechtsgrondslag voor Verwerking",
+        section3Text: "Wij verwerken uw persoonlijke gegevens op basis van:",
+        section3Items: [
+          { name: "Contractuitvoering", desc: "Om onze marktplaatsdiensten te leveren" },
+          { name: "Wettelijke Verplichting", desc: "Belastingnaleving, anti-witwassen, fraudepreventie" },
+          { name: "Gerechtvaardigd Belang", desc: "Beveiliging, analytics, serviceverbetering" },
+          { name: "Toestemming", desc: "Marketingcommunicatie (indien van toepassing)" }
+        ],
+        
+        section4Title: "4. Hoe Wij Uw Informatie Gebruiken",
+        section4Text: "gebruikt uw gegevens om:",
+        section4Items: [
+          "Ons Platform en diensten te leveren, onderhouden en verbeteren",
+          "Transacties, betalingen en opnames te verwerken",
+          "Uw identiteit te verifiëren en fraude te voorkomen",
+          "Transactionele meldingen te verzenden (bestellingen, verzending, accountbeveiliging)",
+          "Klantenondersteuning te bieden en op vragen te reageren",
+          "Onze Servicevoorwaarden en beleid te handhaven",
+          "Te voldoen aan wettelijke verplichtingen (belasting, AML, regelgeving)",
+          "Gebruikspatronen te analyseren om de gebruikerservaring te verbeteren",
+          "Marketingcommunicatie te verzenden (met uw toestemming)"
+        ],
+        
+        section5Title: "5. Delen van Informatie & Openbaarmaking",
+        section5Text: "Wij verkopen uw persoonlijke gegevens NIET.",
+        section5Text2: "Wij kunnen uw informatie delen met:",
+        section5Items: [
+          { name: "Andere Gebruikers", desc: "Verkopers zien verzendinfo van kopers; kopers zien winkelinfo van verkopers" },
+          { name: "Betalingsverwerkers", desc: "Om transacties te verwerken (Stripe, bankpartners)" },
+          { name: "Verzendpartners", desc: "Vervoerdersinformatie voor levering" },
+          { name: "Gradeerdiensten", desc: "Wanneer u kaarten indient voor authenticatie" },
+          { name: "Dienstverleners", desc: "Hosting, analytics, klantenondersteuningstools" },
+          { name: "Juridische Autoriteiten", desc: "Indien wettelijk verplicht, gerechtelijk bevel, of om rechten te beschermen" },
+          { name: "Bedrijfsoverdrachten", desc: "In verband met fusie, overname of verkoop van activa" }
+        ],
+        
+        section6Title: "6. Internationale Gegevensoverdrachten",
+        section6Text: "Uw gegevens kunnen worden overgedragen naar en verwerkt in landen buiten Turkije of de EU/EER. Wij zorgen voor passende waarborgen via Standaard Contractclausules (SCC's), adequaatheidsbesluiten of andere rechtmatige overdrachtsmechanismen. Door CardBoom te gebruiken, stemt u in met dergelijke overdrachten.",
+        
+        section7Title: "7. Gegevensbeveiliging",
+        section7Text: "Wij implementeren industriestandaard beveiligingsmaatregelen:",
+        section7Items: [
+          "256-bit TLS/SSL-versleuteling voor gegevens in transit",
+          "AES-256-versleuteling voor gevoelige gegevens in rust",
+          "Regelmatige beveiligingsaudits en penetratietesten",
+          "Rolgebaseerde toegangscontroles voor werknemerstoegang",
+          "Multi-factor authenticatie voor accountbeveiliging",
+          "Veilige, gecertificeerde datacenters"
+        ],
+        
+        section8Title: "8. Cookies & Trackingtechnologieën",
+        section8Text: "Wij gebruiken cookies en vergelijkbare technologieën voor:",
+        section8Items: [
+          { name: "Essentiële Cookies", desc: "Authenticatie, beveiliging, winkelmandenfunctionaliteit" },
+          { name: "Voorkeurscookies", desc: "Taal, valuta, weergave-instellingen" },
+          { name: "Analytische Cookies", desc: "Gebruikspatronen, prestatiemonitoring" },
+          { name: "Marketingcookies", desc: "Reclame-effectiviteit (met toestemming)" }
+        ],
+        section8Footer: "U kunt cookievoorkeuren beheren via onze cookiebanner of uw browserinstellingen. Let op dat het uitschakelen van essentiële cookies de platformfunctionaliteit kan beïnvloeden.",
+        
+        section9Title: "9. Uw Rechten (AVG)",
+        section9Text: "Als u in de EU/EER bent, heeft u het recht om:",
+        section9Items: [
+          { name: "Toegang", desc: "Een kopie van uw persoonlijke gegevens verkrijgen" },
+          { name: "Rectificatie", desc: "Onjuiste of onvolledige gegevens corrigeren" },
+          { name: "Wissing", desc: "Verwijdering van uw gegevens verzoeken ('recht om vergeten te worden')" },
+          { name: "Beperking", desc: "Beperken hoe wij uw gegevens verwerken" },
+          { name: "Overdraagbaarheid", desc: "Uw gegevens ontvangen in een gestructureerd, machineleesbaar formaat" },
+          { name: "Bezwaar", desc: "Bezwaar maken tegen verwerking op basis van gerechtvaardigde belangen" },
+          { name: "Toestemming Intrekken", desc: "Toestemming op elk moment intrekken (zonder invloed op eerdere verwerking)" }
+        ],
+        section9Footer: "om deze rechten uit te oefenen. U heeft ook het recht om een klacht in te dienen bij uw lokale gegevensbeschermingsautoriteit.",
+        
+        section10Title: "10. Uw Rechten (KVKK - Turkije)",
+        section10Text: "Onder Turkse Wet nr. 6698 (KVKK), heeft u het recht om:",
+        section10Items: [
+          "Te weten of uw persoonlijke gegevens worden verwerkt",
+          "Informatie over gegevensverwerking op te vragen",
+          "Het doel van verwerking te kennen en of gegevens dienovereenkomstig worden gebruikt",
+          "Derden te kennen aan wie gegevens worden overgedragen",
+          "Rectificatie van onvolledige of onjuiste gegevens te verzoeken",
+          "Verwijdering of vernietiging van gegevens te verzoeken",
+          "Bezwaar te maken tegen geautomatiseerde besluitvorming",
+          "Schadevergoeding te eisen voor schade door onrechtmatige verwerking"
+        ],
+        section10Footer: "Zie onze volledige KVKK Privacyverklaring voor gedetailleerde informatie.",
+        
+        section11Title: "11. Gegevensbewaring",
+        section11Text: "Wij bewaren uw gegevens voor:",
+        section11Items: [
+          { name: "Accountgegevens", duration: "Duur van account + 5 jaar" },
+          { name: "Transactiegegevens", duration: "10 jaar (Turkse handelsrechtelijke vereiste)" },
+          { name: "Belastinggegevens", duration: "5 jaar (vereisten belastingautoriteit)" },
+          { name: "Communicatielogs", duration: "3 jaar" },
+          { name: "Analytische Gegevens", duration: "26 maanden (daarna geanonimiseerd)" }
+        ],
+        
+        section12Title: "12. Privacy van Kinderen",
+        section12Text: "CardBoom is niet bedoeld voor gebruikers jonger dan 18 jaar. Wij verzamelen niet bewust persoonlijke gegevens van kinderen. Als wij vernemen dat wij gegevens hebben verzameld van een kind zonder ouderlijke toestemming, zullen wij deze onmiddellijk verwijderen. Ouders of voogden die geloven dat hun kind gegevens heeft verstrekt, dienen contact met ons op te nemen.",
+        
+        section13Title: "13. Wijzigingen in dit Beleid",
+        section13Text: "Wij kunnen dit Privacybeleid van tijd tot tijd bijwerken. Materiële wijzigingen worden ten minste 30 dagen voor inwerkingtreding per e-mail of via een prominente kennisgeving op het Platform gemeld. De datum 'Laatst bijgewerkt' bovenaan geeft aan wanneer het beleid voor het laatst is herzien.",
+        
+        section14Title: "14. Neem Contact Op",
+      },
+      
+      // KVKK
+      kvkk: {
+        title: "KVKK Privacyverklaring",
+        metaDescription: "CardBoom KVKK Privacyverklaring - Informatie over de verwerking van uw persoonlijke gegevens onder de Turkse Wet Bescherming Persoonsgegevens nr. 6698.",
+        
+        section1Title: "1. Verwerkingsverantwoordelijke",
+        section1Text: "Binnen het kader van de Wet Bescherming Persoonsgegevens nr. 6698 (\"KVKK\"), informeren wij u als CardBoom dat wij uw persoonlijke gegevens kunnen verwerken, vastleggen, opslaan, bijwerken, openbaar maken aan en overdragen aan derden voor de hieronder beschreven doeleinden, in overeenstemming met de wet en de regels van eerlijkheid.",
+        mersisNo: "MERSIS Nr.",
+        taxIdLabel: "Belasting-ID Nr.",
+        
+        section2Title: "2. Verwerkte Persoonlijke Gegevens",
+        section2Text: "Via ons Platform worden de volgende persoonlijke gegevens verwerkt:",
+        section2Items: [
+          { name: "Identiteitsgegevens", desc: "Naam, achternaam, T.C. identiteitsnummer, paspoortnummer" },
+          { name: "Contactgegevens", desc: "E-mailadres, telefoonnummer, adres" },
+          { name: "Financiële Gegevens", desc: "IBAN, bankrekeninggegevens, betalingsgegevens" },
+          { name: "Transactiebeveiliging", desc: "IP-adres, apparaatinformatie, cookiegegevens" },
+          { name: "Gebruikersgegevens", desc: "Gebruikersnaam, profielfoto, transactiegeschiedenis" }
+        ],
+        
+        section3Title: "3. Doeleinden van Gegevensverwerking",
+        section3Text: "Uw persoonlijke gegevens worden verwerkt voor de volgende doeleinden:",
+        section3Items: [
+          "Uitvoering van lidmaatschapsoperaties",
+          "Beheer van koop-verkooptransacties",
+          "Uitvoering van betalings- en geldoverdrachtstransacties",
+          "Levering van klantenservice en ondersteuning",
+          "Nakoming van wettelijke verplichtingen",
+          "Nemen van fraude- en beveiligingsmaatregelen",
+          "Marketing- en communicatieactiviteiten (met uw toestemming)"
+        ],
+        
+        section4Title: "4. Overdracht van Persoonlijke Gegevens",
+        section4Text: "Uw persoonlijke gegevens kunnen worden overgedragen aan zakenpartners, leveranciers, betalingsdienstaanbieders, koeriersbedrijven en bevoegde overheidsinstanties in geval van wettelijke verplichting, voor zover nodig om de hierboven vermelde doeleinden te bereiken.",
+        
+        section5Title: "5. Methode en Rechtsgrondslag voor Gegevensverzameling",
+        section5Text: "Uw persoonlijke gegevens worden verzameld via onze website, mobiele applicaties en fysieke communicatiekanalen via automatische of niet-automatische methoden. Uw gegevens worden verwerkt op basis van de rechtsgronden vermeld in artikelen 5 en 6 van de KVKK.",
+        
+        section6Title: "6. Rechten van de Betrokkene (KVKK art. 11)",
+        section6Text: "Volgens artikel 11 van de KVKK heeft u de volgende rechten:",
+        section6Items: [
+          "Te weten of uw persoonlijke gegevens worden verwerkt",
+          "Informatie op te vragen als uw persoonlijke gegevens zijn verwerkt",
+          "Het doel van de verwerking te kennen en of ze dienovereenkomstig worden gebruikt",
+          "De derden te kennen aan wie uw persoonlijke gegevens in binnen- of buitenland worden overgedragen",
+          "Rectificatie te verzoeken als uw persoonlijke gegevens onvolledig of onjuist zijn verwerkt",
+          "Verwijdering of vernietiging van uw persoonlijke gegevens te verzoeken binnen het kader van artikel 7 van de KVKK",
+          "Te verzoeken dat rectificatie-, verwijderings- of vernietigingsoperaties worden gemeld aan derden aan wie uw persoonlijke gegevens zijn overgedragen",
+          "Bezwaar te maken tegen een resultaat dat ontstaat tegen u door analyse van verwerkte gegevens uitsluitend via geautomatiseerde systemen",
+          "Schadevergoeding te eisen als u schade lijdt door onrechtmatige verwerking van uw persoonlijke gegevens"
+        ],
+        
+        section7Title: "7. Aanvraagmethode",
+        section7Text: "Om bovengenoemde rechten uit te oefenen, kunt u een e-mail sturen naar",
+        section7Text2: "of schriftelijk contact opnemen met ons bedrijfsadres. Uw aanvragen worden binnen maximaal 30 dagen afgehandeld.",
+        
+        section8Title: "8. Gegevensbeveiliging",
+        section8Text: "Alle noodzakelijke technische en administratieve maatregelen worden genomen voor de beveiliging van uw persoonlijke gegevens. Uw gegevens worden overgedragen via versleutelde verbindingen (SSL/TLS) en opgeslagen op beveiligde servers.",
+      },
+      
+      // Distance Sales Contract
+      distanceSales: {
+        title: "Verkoop op Afstand Overeenkomst",
+        metaDescription: "CardBoom Verkoop op Afstand Overeenkomst - Voorwaarden voor verkoop op afstand onder de Turkse Wet Consumentenbescherming nr. 6502.",
+        
+        section1Title: "ARTIKEL 1 - PARTIJEN",
+        section1_1Title: "1.1 VERKOPERSINFORMATIE",
+        sellerTitle: "Handelsnaam",
+        sellerAddress: "Adres",
+        sellerEmail: "E-mail",
+        sellerPhone: "Telefoon",
+        section1_2Title: "1.2 KOPERSINFORMATIE",
+        buyerInfoText: "Kopersinformatie is de informatie die door de Koper in het Platform wordt ingevoerd tijdens het bestellen.",
+        
+        section2Title: "ARTIKEL 2 - ONDERWERP",
+        section2Text: "Het onderwerp van deze Overeenkomst is de bepaling van de rechten en plichten van de partijen met betrekking tot de verkoop en levering van het product waarvan de specificaties en verkoopprijs hieronder zijn vermeld, dat de Koper elektronisch heeft besteld via de website van de Verkoper, in overeenstemming met de bepalingen van de Wet Consumentenbescherming nr. 6502 en de Verordening inzake Verkoop op Afstand.",
+        
+        section3Title: "ARTIKEL 3 - ONDERWERP VAN DE OVEREENKOMST - PRODUCT",
+        section3Text: "De basiskenmerken, verkoopprijs, betalingsmethode en leveringsinformatie van het product/de dienst zijn vermeld op het Platform. Producten die via het Platform te koop worden aangeboden:",
+        section3Items: [
+          "Verzamelkaarten (Pokemon, Yu-Gi-Oh!, One Piece, Lorcana, enz.)",
+          "Sportkaarten (NBA, NFL, enz.)",
+          "Verzamelfiguren en kunstwerken",
+          "Digitale gamingdiensten",
+          "Kaartaandelen (fractioneel eigendom)"
+        ],
+        
+        section4Title: "ARTIKEL 4 - ALGEMENE BEPALINGEN",
+        section4Items: [
+          "De Koper erkent dat hij/zij de voorlopige informatie over de basiskenmerken, verkoopprijs, betalingsmethode en levering van de producten die op het Platform worden getoond, heeft gelezen en hiervan op de hoogte is, en de noodzakelijke elektronische bevestiging heeft gegeven.",
+          "Het product wordt geleverd op het adres dat de Koper op het bestelformulier heeft opgegeven.",
+          "Het product dat onderwerp is van de overeenkomst wordt zo snel mogelijk geleverd op het door de Koper opgegeven adres voor elk product, op voorwaarde dat de wettelijke termijn van 30 dagen niet wordt overschreden."
+        ],
+        
+        section5Title: "ARTIKEL 5 - LEVERING",
+        section5_1Title: "5.1 Leveringsopties",
+        section5_1Items: [
+          { name: "Koerierlevering", desc: "Het product wordt via een gecontracteerd koeriersbedrijf naar het adres van de Koper verzonden." },
+          { name: "Kluislevering", desc: "Het product wordt veilig opgeslagen in de CardBoom-kluis en op verzoek verzonden." },
+          { name: "Ruil", desc: "Bij ruilingen tussen gebruikers worden producten via het Platform uitgewisseld." }
+        ],
+        section5_2Title: "5.2 Levertijd",
+        section5_2Text: "Producten worden uiterlijk 30 (dertig) dagen na orderbevestiging geleverd. Leveringen via koerier duren gemiddeld 3-7 werkdagen.",
+        
+        section6Title: "ARTIKEL 6 - HERROEPINGSRECHT",
+        section6Text: "De Koper kan zijn/haar herroepingsrecht uitoefenen binnen 14 (veertien) dagen na levering van het product dat onderwerp is van de overeenkomst aan hem/haar of aan de persoon/organisatie op het door hem/haar aangegeven adres. Om het herroepingsrecht uit te oefenen:",
+        section6Items: [
+          "Schriftelijke kennisgeving aan de Verkoper binnen deze periode",
+          "Het product moet ongebruikt zijn, de verpakking ongeopend en onbeschadigd",
+          "De originele factuur moet worden geretourneerd"
+        ],
+        section6_1Title: "6.1 Uitzonderingen op het Herroepingsrecht",
+        section6_1Text: "In de volgende gevallen kan het herroepingsrecht niet worden uitgeoefend:",
+        section6_1Items: [
+          "Producten die zijn voorbereid volgens de wensen of persoonlijke behoeften van de consument",
+          "Producten die snel kunnen bederven of waarvan de houdbaarheidsdatum kan verstrijken",
+          "Digitale inhoudverkoop (Valorant VP, PUBG UC, enz.)",
+          "Kaartaandelen/fractionele eigendomstransacties"
+        ],
+        
+        section7Title: "ARTIKEL 7 - BETALING EN TERUGBETALING",
+        section7Items: [
+          "De productprijs kan worden betaald met creditcard, betaalkaart, bankoverschrijving of Platform Portemonnee.",
+          "Bij uitoefening van het herroepingsrecht wordt de productprijs binnen 14 dagen aan de Koper terugbetaald.",
+          "Bij betalingen met creditcard wordt de terugbetaling uitgevoerd volgens de procedures van de betreffende bank.",
+          "Verzendkosten zijn voor rekening van de Koper bij retournering (met uitzondering van defecte of gebrekkige producten)."
+        ],
+        
+        section8Title: "ARTIKEL 8 - GARANTIE",
+        section8Text: "Producten die via het Platform worden verkocht, vallen onder de authenticiteigsgarantie. Voor producten die als nep of namaak worden geïdentificeerd, wordt volledige terugbetaling verleend. Voor gegradeerde kaarten (PSA, BGS, CGC) geldt de originaliteitsgarantie.",
+        
+        section9Title: "ARTIKEL 9 - BEVOEGDE RECHTBANK",
+        section9Text: "In geschillen die voortvloeien uit deze overeenkomst zijn Consumentenarbitragecommissies bevoegd tot de waarde aangekondigd door het Ministerie van Douane en Handel, en Consumentenrechtbanken in gevallen die deze waarde overschrijden.",
+        
+        section10Title: "ARTIKEL 10 - INWERKINGTREDING",
+        section10Text: "Door bevestiging van zijn/haar bestelling wordt de Koper geacht alle voorwaarden van deze Overeenkomst te hebben aanvaard. De Verkoper verkrijgt elektronische bevestiging dat deze Overeenkomst is gelezen en aanvaard door de Koper op de site voordat de bestelling wordt geplaatst.",
+        
+        section11Title: "ARTIKEL 11 - CONTACT",
+        section11Text: "Voor al uw vragen, suggesties en klachten kunt u een e-mail sturen naar",
+        section11Text2: "of het in-Platform ondersteuningssysteem gebruiken.",
+      },
+      
+      // User Agreement
+      userAgreement: {
+        title: "Gebruikersovereenkomst",
+        metaDescription: "CardBoom Gebruikersovereenkomst - Gebruiksvoorwaarden, rechten en verplichtingen van het Platform.",
+        section1Title: "1. Partijen",
+        section1Text: "Deze Gebruikersovereenkomst (\"Overeenkomst\") is gesloten tussen het CardBoom platform (\"Platform\") en de gebruiker die lid wordt van het Platform (\"Gebruiker\") om de gebruiksvoorwaarden van het Platform te regelen.",
+        section2Title: "2. Definities",
+        section2Items: [
+          { name: "Platform", desc: "CardBoom website en mobiele applicaties" },
+          { name: "Gebruiker", desc: "Natuurlijke of rechtspersonen die zich registreren op het Platform en gebruik maken van de diensten" },
+          { name: "Verkoper", desc: "Gebruikers die producten verkopen op het Platform" },
+          { name: "Koper", desc: "Gebruikers die producten kopen op het Platform" },
+          { name: "Portemonnee", desc: "Het systeem waar gebruikers hun in-Platform saldi beheren" }
+        ],
+        section3Title: "3. Lidmaatschapsvoorwaarden",
+        section3Text: "Om lid te worden van het Platform:",
+        section3Items: [
+          "Ouder dan 18 jaar zijn of toestemming van wettelijke voogd hebben",
+          "Een geldig e-mailadres en telefoonnummer hebben",
+          "Nauwkeurige en actuele persoonlijke informatie verstrekken",
+          "Deze Overeenkomst aanvaarden"
+        ],
+        section4Title: "4. Gebruikersrechten en Verplichtingen",
+        section4_1Title: "4.1 Rechten",
+        section4_1Items: [
+          "Platformdiensten gebruiken",
+          "Producten kopen en verkopen",
+          "Het Portefeuillesysteem gebruiken",
+          "Profiteren van klantenondersteuning"
+        ],
+        section4_2Title: "4.2 Verplichtingen",
+        section4_2Items: [
+          "Nauwkeurige en actuele informatie verstrekken",
+          "Accountbeveiliging handhaven",
+          "Voldoen aan wettelijke voorschriften",
+          "Platformregels volgen",
+          "Geen namaak- of gestolen producten verkopen"
+        ],
+        section5Title: "5. Handelsregels",
+        section5Items: [
+          "Verkopers zijn verplicht hun producten nauwkeurig en volledig te beschrijven",
+          "Verkoop van namaak-, gestolen of illegale producten is verboden",
+          "Het Platform behoudt zich het recht voor om verdachte transacties te stoppen en accounts op te schorten",
+          "Transactiekosten worden bepaald door het Platform en kunnen worden gewijzigd"
+        ],
+        section6Title: "6. Betalings- en Portefeuillesysteem",
+        section6Items: [
+          "Gebruikers kunnen saldo toevoegen aan Portemonnee via creditcard of bankoverschrijving",
+          "Verkoopopbrengsten worden na voltooiing van de transactie overgemaakt naar de Portemonnee",
+          "Opnametransacties worden verwerkt na identiteitsverificatie",
+          "Het Platform houdt transactiekosten in op het verkoopbedrag"
+        ],
+        section7Title: "7. Verboden Activiteiten",
+        section7Text: "De volgende activiteiten zijn strikt verboden:",
+        section7Items: [
+          "Verkoop van namaak- of neproducten",
+          "Witwasactiviteiten",
+          "Aanmoediging van off-platform communicatie en betaling",
+          "Openen van meerdere accounts",
+          "Prijsmanipulatie",
+          "Andere gebruikers misleiden"
+        ],
+        section8Title: "8. Platformrechten en Verplichtingen",
+        section8Items: [
+          "Een veilige transactieomgeving bieden",
+          "Gebruikersgegevens beschermen",
+          "Klantenondersteuning bieden",
+          "Bemiddelen bij geschillen",
+          "Accounts opschorten/sluiten bij regelovertredingen"
+        ],
+        section9Title: "9. Beperking van Aansprakelijkheid",
+        section9Text: "Het Platform fungeert als tussenpersoon in transacties tussen gebruikers. Het aanvaardt geen directe verantwoordelijkheid voor de kwaliteit, authenticiteit en conditie van producten die te koop worden aangeboden. Het bemiddelt bij geschillen maar de uiteindelijke beslissing behoort toe aan de gerechtelijke autoriteiten.",
+        section10Title: "10. Intellectueel Eigendom",
+        section10Text: "Het logo, ontwerp, software en alle inhoud van het Platform zijn intellectueel eigendom van CardBoom. Ongeoorloofd gebruik is verboden.",
+        section11Title: "11. Overeenkomstwijzigingen",
+        section11Text: "Het Platform behoudt zich het recht voor om deze Overeenkomst te wijzigen met voorafgaande kennisgeving. Wijzigingen worden van kracht op de datum dat ze op het Platform worden gepubliceerd.",
+        section12Title: "12. Toepasselijk Recht en Jurisdictie",
+        section12Text: "Deze Overeenkomst is onderworpen aan de wetten van de Republiek Turkije. Istanbul Rechtbanken en Executiekantoren zijn bevoegd in geschillen.",
+        section13Title: "13. Contact",
+        section13Text: "Voor uw vragen kunt u ons bereiken via"
+      }
+    }
   }
 };
 
