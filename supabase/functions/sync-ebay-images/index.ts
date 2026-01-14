@@ -22,10 +22,12 @@ interface EbayProduct {
   itemWebUrl?: string;
   soldDate?: string;
   isSold?: boolean;
+  soldPrice?: string;
 }
 
 interface EbaySearchResponse {
   products?: EbayProduct[];
+  soldProducts?: EbayProduct[];
   total?: number;
 }
 
@@ -185,7 +187,8 @@ function getCategoryConfig(category: string): { searchTerm: string; categoryId?:
   return categoryMap[category] || { searchTerm: 'trading card' };
 }
 
-async function searchEbay(query: string, category: string, options: { soldOnly?: boolean } = {}): Promise<EbayProduct[]> {
+// Search eBay for SOLD/completed listings (best for pricing) or active listings (for images)
+async function searchEbaySold(query: string, category: string): Promise<EbayProduct[]> {
   if (!EBAY_RAPIDAPI_KEY) {
     console.log('eBay RapidAPI key not configured');
     return [];
@@ -195,7 +198,54 @@ async function searchEbay(query: string, category: string, options: { soldOnly?:
     const config = getCategoryConfig(category);
     const searchQuery = `${query} ${config.searchTerm}`;
     
-    // Build URL with parameters
+    // Use the sold items endpoint for accurate market pricing
+    const url = `https://ebay-search-result.p.rapidapi.com/search/${encodeURIComponent(searchQuery)}?page=1&type=sold`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'X-RapidAPI-Key': EBAY_RAPIDAPI_KEY,
+        'X-RapidAPI-Host': 'ebay-search-result.p.rapidapi.com',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`eBay Sold API error: ${response.status}`);
+      return [];
+    }
+
+    const data = await response.json();
+    
+    // Map the sold results to our EbayProduct interface
+    const soldProducts: EbayProduct[] = (data.results || []).map((item: any) => ({
+      title: item.title || '',
+      image: item.image || item.thumbnail,
+      images: item.images || [item.image].filter(Boolean),
+      price: { value: String(item.price || item.sold_price || 0), currency: 'USD' },
+      condition: item.condition,
+      itemId: item.item_id || item.id,
+      isSold: true,
+      soldDate: item.sold_date || item.date,
+      soldPrice: String(item.price || item.sold_price || 0),
+    }));
+    
+    console.log(`[eBay Sold] Found ${soldProducts.length} completed sales for: ${query}`);
+    return soldProducts;
+  } catch (error) {
+    console.error('Error searching eBay sold:', error);
+    return [];
+  }
+}
+
+// Fallback to active listings (useful for images when sold data is sparse)
+async function searchEbayActive(query: string, category: string): Promise<EbayProduct[]> {
+  if (!EBAY_RAPIDAPI_KEY) {
+    return [];
+  }
+
+  try {
+    const config = getCategoryConfig(category);
+    const searchQuery = `${query} ${config.searchTerm}`;
+    
     let url = `https://api-for-ebay.p.rapidapi.com/searchProducts?query=${encodeURIComponent(searchQuery)}&page=1`;
     if (config.categoryId) {
       url += `&category=${config.categoryId}`;
@@ -209,16 +259,31 @@ async function searchEbay(query: string, category: string, options: { soldOnly?:
     });
 
     if (!response.ok) {
-      console.error(`eBay API error: ${response.status}`);
       return [];
     }
 
     const data: EbaySearchResponse = await response.json();
     return data.products || [];
   } catch (error) {
-    console.error('Error searching eBay:', error);
+    console.error('Error searching eBay active:', error);
     return [];
   }
+}
+
+// Combined search: prioritize SOLD listings for pricing, active for images
+async function searchEbay(query: string, category: string, options: { soldOnly?: boolean } = {}): Promise<{ sold: EbayProduct[]; active: EbayProduct[] }> {
+  // Always try to get sold listings first (best for pricing)
+  const soldProducts = await searchEbaySold(query, category);
+  
+  // If soldOnly requested or we have enough sold data, skip active listings
+  if (options.soldOnly || soldProducts.length >= 5) {
+    return { sold: soldProducts, active: [] };
+  }
+  
+  // Also fetch active listings for images if sold data is sparse
+  const activeProducts = await searchEbayActive(query, category);
+  
+  return { sold: soldProducts, active: activeProducts };
 }
 
 function parsePrice(priceStr: string | undefined): number | null {
@@ -283,25 +348,37 @@ Deno.serve(async (req) => {
         const searchQuery = cleanSearchQuery(item.name);
         console.log(`Searching eBay for: ${searchQuery} (${item.category})`);
 
-        const products = await searchEbay(searchQuery, item.category, { soldOnly: soldListingsOnly });
+        const { sold: soldProducts, active: activeProducts } = await searchEbay(searchQuery, item.category, { soldOnly: soldListingsOnly });
         results.processed++;
 
-        if (products.length === 0) {
+        // Combine sold and active - prioritize sold for pricing
+        const allProducts = [...soldProducts, ...activeProducts];
+        
+        if (allProducts.length === 0) {
           results.notFound++;
           console.log(`No eBay results for: ${item.name}`);
           continue;
         }
 
-        // Find best matching products
-        const scoredProducts = products
-          .map(p => ({
+        // Score all products for matching
+        interface ScoredProduct {
+          product: EbayProduct;
+          score: number;
+          gradeInfo: GradeInfo;
+          variantInfo: VariantInfo;
+          isSold: boolean;
+        }
+        
+        const scoredProducts: ScoredProduct[] = allProducts
+          .map((p: EbayProduct) => ({
             product: p,
             score: calculateMatchScore(item.name, p.title),
             gradeInfo: parseGradingInfo(p.title),
             variantInfo: parseVariantInfo(p.title),
+            isSold: p.isSold || false,
           }))
-          .filter(sp => sp.score >= minMatchScore)
-          .sort((a, b) => b.score - a.score);
+          .filter((sp: ScoredProduct) => sp.score >= minMatchScore)
+          .sort((a: ScoredProduct, b: ScoredProduct) => b.score - a.score);
 
         if (scoredProducts.length === 0) {
           results.lowMatch++;
@@ -313,7 +390,7 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         };
 
-        // Best match for image
+        // Best match for image (prefer any with good image)
         const bestMatch = scoredProducts[0];
         
         // Update image if found and current is missing/placeholder
@@ -345,14 +422,27 @@ Deno.serve(async (req) => {
           results.variantsDetected++;
         }
 
-        // Calculate robust price from multiple listings
+        // Calculate robust price - PRIORITIZE SOLD LISTINGS for accurate market value
         if (updatePrices) {
-          const prices = scoredProducts
-            .map(sp => parsePrice(sp.product.price?.value))
+          // Separate sold vs active prices
+          const soldPrices = scoredProducts
+            .filter((sp: ScoredProduct) => sp.isSold)
+            .map((sp: ScoredProduct) => parsePrice(sp.product.soldPrice || sp.product.price?.value))
             .filter((p): p is number => p !== null && p > 0);
+          
+          const activePrices = scoredProducts
+            .filter((sp: ScoredProduct) => !sp.isSold)
+            .map((sp: ScoredProduct) => parsePrice(sp.product.price?.value))
+            .filter((p): p is number => p !== null && p > 0);
+          
+          // Use sold prices if we have enough (better market accuracy), otherwise fall back to active
+          const pricesToUse = soldPrices.length >= 3 ? soldPrices : [...soldPrices, ...activePrices];
+          const priceSource = soldPrices.length >= 3 ? 'ebay_sold' : 'ebay';
+          
+          console.log(`[eBay] ${item.name}: ${soldPrices.length} sold prices, ${activePrices.length} active prices`);
 
-          if (prices.length > 0) {
-            const { price: robustPrice, confidence, sampleSize } = calculateRobustPrice(prices);
+          if (pricesToUse.length > 0) {
+            const { price: robustPrice, confidence, sampleSize } = calculateRobustPrice(pricesToUse);
             
             // Only update if we don't have a trusted source or current price is very different
             const shouldUpdate = !item.data_source || 
@@ -363,9 +453,10 @@ Deno.serve(async (req) => {
 
             if (shouldUpdate && robustPrice > 0) {
               updates.current_price = Math.round(robustPrice * 100) / 100;
-              updates.data_source = 'ebay';
+              updates.data_source = priceSource; // 'ebay_sold' or 'ebay'
               updates.price_confidence = confidence;
               updates.ebay_sample_size = sampleSize;
+              updates.ebay_sold_count = soldPrices.length;
               updates.ebay_last_sync = new Date().toISOString();
               results.pricesUpdated++;
 
@@ -374,12 +465,12 @@ Deno.serve(async (req) => {
                 product_id: item.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 100) || item.id,
                 market_item_id: item.id,
                 price: robustPrice,
-                source: 'ebay',
+                source: priceSource,
                 sample_size: sampleSize,
                 recorded_at: new Date().toISOString(),
               });
               
-              console.log(`[sync-ebay] Recorded price history for ${item.name}: $${robustPrice} (${sampleSize} samples, ${confidence} confidence)`);
+              console.log(`[sync-ebay] ${priceSource === 'ebay_sold' ? '💰 SOLD' : '📋 Active'} price for ${item.name}: $${robustPrice} (${soldPrices.length} sold, ${sampleSize} total samples, ${confidence} confidence)`);
             }
           }
         }
