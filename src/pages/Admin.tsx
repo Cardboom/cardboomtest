@@ -61,6 +61,7 @@ import { BountyManager } from '@/components/admin/BountyManager';
 import { MarketItemsManager } from '@/components/admin/MarketItemsManager';
 import { GradingCalibrationDashboard } from '@/components/admin/GradingCalibrationDashboard';
 import { AdminListingsManager } from '@/components/admin/AdminListingsManager';
+import { CreatorManagement } from '@/components/admin/CreatorManagement';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -242,6 +243,8 @@ const Admin = () => {
         return <DisputeManagement />;
       case 'users':
         return <UserManagement />;
+      case 'creators':
+        return <CreatorManagement />;
       case 'verification':
         return <SellerVerificationQueue />;
       case 'whale':

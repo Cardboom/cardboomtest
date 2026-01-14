@@ -83,6 +83,7 @@ const navGroups: NavGroup[] = [
     icon: Users,
     items: [
       { id: "users", label: "User Management", icon: Users },
+      { id: "creators", label: "Creator Management", icon: Crown },
       { id: "verification", label: "Seller KYC", icon: Shield },
       { id: "whale", label: "Whale Program", icon: Crown },
       { id: "system-accounts", label: "System Accounts", icon: Bot },
