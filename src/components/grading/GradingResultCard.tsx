@@ -10,6 +10,14 @@ interface GradingResultCardProps {
 }
 
 export function GradingResultCard({ order }: GradingResultCardProps) {
+  // Normalize any score to 0-10 scale
+  const normalizeScore = (score: number | null | undefined): number | null => {
+    if (score === null || score === undefined) return null;
+    return score > 10 ? score / 10 : score;
+  };
+
+  const normalizedFinalGrade = normalizeScore(order.final_grade);
+
   const getGradeColor = (grade: number | null) => {
     if (!grade) return 'bg-muted';
     if (grade >= 9.5) return 'bg-gradient-to-r from-amber-400 to-yellow-500';
@@ -20,19 +28,19 @@ export function GradingResultCard({ order }: GradingResultCardProps) {
   };
 
   const subgrades = [
-    { name: 'Corners', value: order.corners_grade, icon: CornerDownRight },
-    { name: 'Edges', value: order.edges_grade, icon: Layers },
-    { name: 'Surface', value: order.surface_grade, icon: Target },
-    { name: 'Centering', value: order.centering_grade, icon: Maximize2 },
+    { name: 'Corners', value: normalizeScore(order.corners_grade), icon: CornerDownRight },
+    { name: 'Edges', value: normalizeScore(order.edges_grade), icon: Layers },
+    { name: 'Surface', value: normalizeScore(order.surface_grade), icon: Target },
+    { name: 'Centering', value: normalizeScore(order.centering_grade), icon: Maximize2 },
   ];
 
   return (
     <Card className="overflow-hidden border-border/50 bg-card/80 backdrop-blur">
       <CardContent className="p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className={`w-20 h-20 rounded-2xl ${getGradeColor(order.final_grade)} flex items-center justify-center shadow-lg relative`}>
+          <div className={`w-20 h-20 rounded-2xl ${getGradeColor(normalizedFinalGrade)} flex items-center justify-center shadow-lg relative`}>
             <span className="text-3xl font-bold text-white drop-shadow">
-              {order.final_grade?.toFixed(1) || '—'}
+              {normalizedFinalGrade?.toFixed(1) || '—'}
             </span>
             <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 shadow-md">
               <Shield className="w-4 h-4 text-primary" />

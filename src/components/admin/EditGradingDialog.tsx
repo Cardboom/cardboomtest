@@ -37,14 +37,20 @@ interface EditGradingDialogProps {
 
 export function EditGradingDialog({ open, onOpenChange, order, onSaved }: EditGradingDialogProps) {
   const [saving, setSaving] = useState(false);
+  // Normalize score to 0-10 scale for display/editing
+  const normalizeScore = (score: number | null | undefined): number => {
+    if (!score) return 0;
+    return score > 10 ? score / 10 : score;
+  };
+
   const [formData, setFormData] = useState({
-    cbgi_score_0_100: order.cbgi_score_0_100 || 0,
+    cbgi_score: normalizeScore(order.cbgi_score_0_100), // Store as 0-10 for editing
     estimated_psa_range: order.estimated_psa_range || '',
-    corners_grade: order.corners_grade || 0,
-    edges_grade: order.edges_grade || 0,
-    surface_grade: order.surface_grade || 0,
-    centering_grade: order.centering_grade || 0,
-    eye_appeal_grade: order.eye_appeal_grade || 0,
+    corners_grade: normalizeScore(order.corners_grade),
+    edges_grade: normalizeScore(order.edges_grade),
+    surface_grade: normalizeScore(order.surface_grade),
+    centering_grade: normalizeScore(order.centering_grade),
+    eye_appeal_grade: normalizeScore(order.eye_appeal_grade),
     grading_notes: order.grading_notes || '',
     grade_label: order.grade_label || '',
   });
@@ -52,10 +58,13 @@ export function EditGradingDialog({ open, onOpenChange, order, onSaved }: EditGr
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Convert 0-10 score back to 0-100 for storage
+      const scoreFor100Scale = formData.cbgi_score * 10;
+      
       const { error } = await supabase
         .from('grading_orders')
         .update({
-          cbgi_score_0_100: formData.cbgi_score_0_100,
+          cbgi_score_0_100: scoreFor100Scale,
           estimated_psa_range: formData.estimated_psa_range,
           corners_grade: formData.corners_grade,
           edges_grade: formData.edges_grade,
@@ -80,11 +89,11 @@ export function EditGradingDialog({ open, onOpenChange, order, onSaved }: EditGr
           target_id: order.id,
           details: {
             original: {
-              cbgi_score_0_100: order.cbgi_score_0_100,
+              cbgi_score: normalizeScore(order.cbgi_score_0_100),
               estimated_psa_range: order.estimated_psa_range,
             },
             updated: {
-              cbgi_score_0_100: formData.cbgi_score_0_100,
+              cbgi_score: formData.cbgi_score,
               estimated_psa_range: formData.estimated_psa_range,
             },
           },
@@ -125,19 +134,19 @@ export function EditGradingDialog({ open, onOpenChange, order, onSaved }: EditGr
           {/* Main Score */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>CBGI Score (0-100)</Label>
+              <Label>CBGI Score (0-10)</Label>
               <Input
                 type="number"
                 min="0"
-                max="100"
+                max="10"
                 step="0.1"
-                value={formData.cbgi_score_0_100}
+                value={formData.cbgi_score}
                 onChange={(e) => {
                   const score = parseFloat(e.target.value) || 0;
                   setFormData(prev => ({
                     ...prev,
-                    cbgi_score_0_100: score,
-                    grade_label: `CBGI ${(score / 10).toFixed(1)} - ${getPSALabel(score / 10)}`,
+                    cbgi_score: score,
+                    grade_label: `CB ${score.toFixed(1)} - ${getPSALabel(score)}`,
                   }));
                 }}
               />
