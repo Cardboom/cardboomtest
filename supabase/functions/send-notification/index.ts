@@ -8,7 +8,7 @@ const corsHeaders = {
 
 interface NotificationPayload {
   user_id: string;
-  type: 'price_alert' | 'new_offer' | 'message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee' | 'sale' | 'daily_xp' | 'donation_complete' | 'donation_refund' | 'vault_shipping_required' | 'gift';
+  type: 'price_alert' | 'new_offer' | 'message' | 'new_message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee' | 'sale' | 'daily_xp' | 'donation_complete' | 'donation_refund' | 'vault_shipping_required' | 'gift';
   title: string;
   body: string;
   data?: Record<string, unknown>;
@@ -38,6 +38,7 @@ serve(async (req) => {
       'price_alert': 'price_alerts',
       'new_offer': 'new_offers',
       'message': 'messages',
+      'new_message': 'messages',
       'order_update': 'order_updates',
       'follower': 'follower_activity',
       'review': 'new_offers',
@@ -83,6 +84,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    console.error('send-notification error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
