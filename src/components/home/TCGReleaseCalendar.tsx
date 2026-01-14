@@ -81,12 +81,12 @@ export const TCGReleaseCalendar = () => {
 
   if (loading) {
     return (
-      <div className="h-[140px] rounded-[18px] bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820] border border-white/5 animate-pulse" />
+      <div className="h-[120px] md:h-[160px] rounded-[18px] bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820] border border-white/5 animate-pulse" />
     );
   }
 
   return (
-    <div className="h-[140px] rounded-[18px] overflow-hidden bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820] border border-white/5 flex flex-col">
+    <div className="h-[120px] md:h-[160px] rounded-[18px] overflow-hidden bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820] border border-white/5 flex flex-col">
       {/* Header */}
       <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
