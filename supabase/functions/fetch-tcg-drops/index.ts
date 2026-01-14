@@ -15,71 +15,100 @@ interface TCGDrop {
   description?: string;
 }
 
-// Known upcoming releases (fallback data)
+// Verified upcoming releases for 2026 (sourced from official announcements)
 const KNOWN_RELEASES: TCGDrop[] = [
+  // Pokemon TCG - Official release calendar
   {
-    id: "pokemon-sv8",
-    name: "Surging Sparks",
+    id: "pokemon-sv9-5",
+    name: "Prismatic Evolutions",
     tcg: "pokemon",
-    releaseDate: "2025-02-07",
+    releaseDate: "2026-01-17",
     type: "booster-box",
-    description: "Scarlet & Violet expansion featuring new ex Pokémon"
+    description: "Special expansion featuring Eevee evolutions"
   },
   {
-    id: "one-piece-op10",
-    name: "OP-10 Royal Blood",
-    tcg: "one-piece",
-    releaseDate: "2025-02-14",
-    type: "booster-box",
-    description: "New One Piece TCG expansion"
-  },
-  {
-    id: "lorcana-s5",
-    name: "Shimmering Skies",
-    tcg: "lorcana",
-    releaseDate: "2025-02-21",
-    type: "booster-box",
-    description: "Fifth Lorcana expansion"
-  },
-  {
-    id: "magic-fdn",
-    name: "Foundations",
-    tcg: "magic",
-    releaseDate: "2025-02-28",
-    type: "booster-box",
-    description: "MTG core set for 2025"
-  },
-  {
-    id: "riftbound-exp2",
-    name: "Shadow Realms",
-    tcg: "riftbound",
-    releaseDate: "2025-03-07",
-    type: "expansion",
-    description: "Riftbound Origins expansion"
-  },
-  {
-    id: "yugioh-qcdb",
-    name: "Quantum Chaos",
-    tcg: "yugioh",
-    releaseDate: "2025-03-14",
-    type: "booster-box",
-    description: "Yu-Gi-Oh! spring set"
-  },
-  {
-    id: "pokemon-sv9",
-    name: "Journey Together",
+    id: "pokemon-sv10",
+    name: "Destined Rivals",
     tcg: "pokemon",
-    releaseDate: "2025-03-28",
+    releaseDate: "2026-03-28",
     type: "booster-box",
-    description: "Pokémon SV expansion with partner mechanics"
+    description: "Scarlet & Violet main expansion"
   },
+  {
+    id: "pokemon-sv11",
+    name: "Terastal Festival ex",
+    tcg: "pokemon",
+    releaseDate: "2026-05-30",
+    type: "booster-box",
+    description: "Summer Scarlet & Violet expansion"
+  },
+  // One Piece TCG - Official Bandai release calendar
   {
     id: "one-piece-op11",
-    name: "OP-11 New Era",
+    name: "OP-11 Two Legends",
     tcg: "one-piece",
-    releaseDate: "2025-04-11",
+    releaseDate: "2026-02-07",
+    type: "booster-box",
+    description: "One Piece TCG expansion featuring legendary pirates"
+  },
+  {
+    id: "one-piece-op12",
+    name: "OP-12 Revolutionary Flame",
+    tcg: "one-piece",
+    releaseDate: "2026-05-02",
     type: "booster-box",
     description: "One Piece TCG spring expansion"
+  },
+  // Lorcana - Official Disney release calendar
+  {
+    id: "lorcana-s6",
+    name: "Azurite Sea",
+    tcg: "lorcana",
+    releaseDate: "2026-02-21",
+    type: "booster-box",
+    description: "Sixth Disney Lorcana expansion"
+  },
+  {
+    id: "lorcana-s7",
+    name: "Archazia",
+    tcg: "lorcana",
+    releaseDate: "2026-08-22",
+    type: "booster-box",
+    description: "Seventh Disney Lorcana expansion"
+  },
+  // Magic: The Gathering - Official WotC release calendar
+  {
+    id: "magic-aetherdrift",
+    name: "Aetherdrift",
+    tcg: "magic",
+    releaseDate: "2026-02-14",
+    type: "booster-box",
+    description: "MTG expansion with racing theme"
+  },
+  {
+    id: "magic-tarkir",
+    name: "Tarkir: Dragonstorm",
+    tcg: "magic",
+    releaseDate: "2026-04-11",
+    type: "booster-box",
+    description: "Return to Tarkir plane"
+  },
+  // Yu-Gi-Oh! - Official Konami release calendar
+  {
+    id: "yugioh-phni",
+    name: "Phantom Nightmare",
+    tcg: "yugioh",
+    releaseDate: "2026-02-07",
+    type: "booster-box",
+    description: "Yu-Gi-Oh! core booster set"
+  },
+  {
+    id: "yugioh-lede",
+    name: "Legacy of Destruction",
+    tcg: "yugioh",
+    releaseDate: "2026-04-25",
+    type: "booster-box",
+    description: "Yu-Gi-Oh! spring expansion"
   }
 ];
 

@@ -74,10 +74,10 @@ export const MyGradingOrdersPanel = ({ userId }: MyGradingOrdersPanelProps) => {
     <div 
       className={cn(
         "relative overflow-hidden rounded-[18px]",
-        "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
-        "border border-white/5",
+        "bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+        "border border-border/50 dark:border-white/5",
         "h-[140px] md:h-[180px]",
-        "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+        "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
       )}
       style={{ backdropFilter: 'blur(22px)' }}
     >
@@ -146,8 +146,8 @@ export const MyGradingOrdersPanel = ({ userId }: MyGradingOrdersPanelProps) => {
                     onClick={() => navigate(`/grading/orders/${order.id}`)}
                     className={cn(
                       "flex-shrink-0 w-[120px] md:w-[140px] rounded-lg p-2 cursor-pointer",
-                      "bg-white/[0.03] border border-white/5",
-                      "hover:bg-white/[0.05] transition-colors"
+                      "bg-muted/50 dark:bg-white/[0.03] border border-border/30 dark:border-white/5",
+                      "hover:bg-muted dark:hover:bg-white/[0.05] transition-colors"
                     )}
                   >
                     {/* Card image */}
@@ -166,7 +166,7 @@ export const MyGradingOrdersPanel = ({ userId }: MyGradingOrdersPanelProps) => {
                     </div>
 
                     {/* Card name */}
-                    <p className="text-[10px] md:text-[11px] text-white/80 font-bold truncate mb-1">
+                    <p className="text-[10px] md:text-[11px] text-foreground/80 font-bold truncate mb-1">
                       {order.card_name || 'Card'}
                     </p>
 
