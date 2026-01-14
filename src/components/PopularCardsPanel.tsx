@@ -34,22 +34,43 @@ interface PopularCard {
 }
 
 export function PopularCardsPanel() {
-  // Fetch user listings first
+  // Fetch user listings first - prioritize real seller listings
   const { data: userListings, isLoading: listingsLoading } = useQuery({
     queryKey: ['user-listings-panel'],
     queryFn: async () => {
+      // Use simple query for reliability, then fetch seller names separately
       const { data, error } = await supabase
         .from('listings')
-        .select('id, title, category, image_url, price, condition, created_at, cbgi_score, grade, seller:profiles!seller_id(display_name)')
+        .select('id, title, category, image_url, price, condition, created_at, cbgi_score, grade, seller_id')
         .eq('status', 'active')
         .not('image_url', 'is', null)
         .order('created_at', { ascending: false })
-        .limit(8);
+        .limit(12);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching listings:', error);
+        return [];
+      }
+      
+      // Fetch seller names for listings
+      const sellerIds = [...new Set((data || []).map(l => l.seller_id).filter(Boolean))];
+      let sellerMap: Record<string, string> = {};
+      
+      if (sellerIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name')
+          .in('id', sellerIds);
+        
+        sellerMap = (profiles || []).reduce((acc, p) => {
+          acc[p.id] = p.display_name || 'Seller';
+          return acc;
+        }, {} as Record<string, string>);
+      }
+      
       return (data || []).map((item: any) => ({
         ...item,
-        seller_username: item.seller?.display_name || 'Seller'
+        seller_username: sellerMap[item.seller_id] || 'Seller'
       })) as ListingItem[];
     },
     staleTime: 30000,
