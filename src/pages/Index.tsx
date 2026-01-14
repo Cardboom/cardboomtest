@@ -299,12 +299,9 @@ const Index = () => {
             </div>
           )}
           
-          {/* Two column layout for market panels - only for logged in users at top */}
+          {/* Live Market panel - full width for logged in users */}
           {user && (
-            <div className="grid md:grid-cols-2 gap-3">
-              <LiveMarketPanel />
-              <PersonalizedInsightsPanel userId={user?.id} />
-            </div>
+            <LiveMarketPanel />
           )}
           
           {/* TCG Release Calendar + News - only for logged in users */}
@@ -325,11 +322,8 @@ const Index = () => {
         {/* Panels for non-logged-in users - shown after Why CardBoom section */}
         {!user && (
           <div className="container mx-auto px-4 py-6 space-y-3">
-            {/* Two column layout for market panels */}
-            <div className="grid md:grid-cols-2 gap-3">
-              <LiveMarketPanel />
-              <PersonalizedInsightsPanel userId={undefined} />
-            </div>
+            {/* Live Market panel - full width */}
+            <LiveMarketPanel />
             
             {/* TCG Release Calendar + News */}
             <div className="grid md:grid-cols-2 gap-3">
