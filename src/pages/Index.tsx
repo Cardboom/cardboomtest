@@ -37,6 +37,7 @@ import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
 import { CardWarsSection } from '@/components/CardWarsSection';
 import { TopListingsChart } from '@/components/TopListingsChart';
 import { TCGReleaseCalendar } from '@/components/home/TCGReleaseCalendar';
+import { LiveMarketPanel } from '@/components/home/LiveMarketPanel';
 import { PersonalizedInsightsPanel } from '@/components/home/PersonalizedInsightsPanel';
 import { NewsPanel } from '@/components/home/NewsPanel';
 import { BountiesPanel } from '@/components/home/BountiesPanel';
@@ -301,13 +302,18 @@ const Index = () => {
           {/* Two column layout for market panels - only for logged in users at top */}
           {user && (
             <div className="grid md:grid-cols-2 gap-3">
-              <TCGReleaseCalendar />
+              <LiveMarketPanel />
               <PersonalizedInsightsPanel userId={user?.id} />
             </div>
           )}
           
-          {/* Full-width News Panel - only for logged in users at top */}
-          {user && <NewsPanel />}
+          {/* TCG Release Calendar + News - only for logged in users */}
+          {user && (
+            <div className="grid md:grid-cols-2 gap-3">
+              <TCGReleaseCalendar />
+              <NewsPanel />
+            </div>
+          )}
         </div>
         
         {/* Global Stats Bar - Hero at top (hide hero for logged in users) */}
@@ -321,12 +327,15 @@ const Index = () => {
           <div className="container mx-auto px-4 py-6 space-y-3">
             {/* Two column layout for market panels */}
             <div className="grid md:grid-cols-2 gap-3">
-              <TCGReleaseCalendar />
+              <LiveMarketPanel />
               <PersonalizedInsightsPanel userId={undefined} />
             </div>
             
-            {/* Full-width News Panel */}
-            <NewsPanel />
+            {/* TCG Release Calendar + News */}
+            <div className="grid md:grid-cols-2 gap-3">
+              <TCGReleaseCalendar />
+              <NewsPanel />
+            </div>
           </div>
         )}
 
