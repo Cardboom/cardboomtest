@@ -71,20 +71,29 @@ export function WhatsNewPanel() {
             onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title }))}
             className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all group"
           >
-            {/* Image */}
-            <div className="aspect-square relative overflow-hidden bg-gradient-to-b from-secondary/30 to-transparent flex items-center justify-center p-2">
+            {/* Image with mini pedestal effect */}
+            <div className="aspect-square relative overflow-hidden bg-gradient-to-b from-primary/5 via-transparent to-secondary/20 flex flex-col items-center justify-end p-3">
+              {/* Ambient glow */}
+              <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
               {listing.image_url ? (
-                <BackgroundRemovedImage 
-                  src={listing.image_url} 
-                  alt={listing.title}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-lg"
-                  enabled={true}
-                />
+                <div className="relative flex-1 w-full flex items-center justify-center">
+                  <BackgroundRemovedImage 
+                    src={listing.image_url} 
+                    alt={listing.title}
+                    className="max-h-[85%] w-auto object-contain group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_8px_16px_rgba(0,0,0,0.3)]"
+                    enabled={true}
+                  />
+                </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                <div className="flex-1 w-full flex items-center justify-center text-muted-foreground">
                   <ShoppingCart className="w-10 h-10" />
                 </div>
               )}
+              
+              {/* Glass pedestal base */}
+              <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white/10 via-white/5 to-transparent backdrop-blur-[2px] border-t border-white/10" />
+              <div className="absolute bottom-0 left-1/4 right-1/4 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               
               {/* Grade Badge - Show grading info or Ungraded */}
               <div className="absolute top-2 right-2">
