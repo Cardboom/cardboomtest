@@ -119,7 +119,7 @@ export const MarketExplorerStats = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.1 }}
-          className="bg-[#f5f5f7] dark:bg-card/80 rounded-xl p-4 border border-black/[0.04] dark:border-white/5 shadow-sm"
+          className="bg-white dark:bg-card/80 rounded-xl p-4 border border-black/[0.04] dark:border-white/5 shadow-sm"
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
