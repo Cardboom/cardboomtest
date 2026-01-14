@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ChevronLeft, ChevronRight, Sparkles, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -127,34 +128,36 @@ export const TCGReleaseCalendar = () => {
         )}
 
         {/* Upcoming List - Right side */}
-        <div className="flex-1 p-2 overflow-hidden">
-          <p className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1.5">Upcoming</p>
-          <div className="space-y-1">
-            <AnimatePresence mode="popLayout">
-              {upcomingDrops.slice(0, 3).map((drop, index) => (
-                <motion.div
-                  key={drop.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={cn(
-                    "flex items-center gap-1.5 p-1 rounded-md transition-all",
-                    TCG_COLORS[drop.tcg].bg
-                  )}
-                >
-                  <span className="text-xs shrink-0">{TCG_COLORS[drop.tcg].icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-medium text-white truncate">{drop.name}</p>
-                  </div>
-                  <div className="shrink-0 flex items-center gap-1 text-[9px] text-muted-foreground">
-                    <Clock className="w-2.5 h-2.5" />
-                    {formatDate(drop.releaseDate)}
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+        <div className="flex-1 p-2 overflow-hidden flex flex-col">
+          <p className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1.5 shrink-0">Upcoming</p>
+          <ScrollArea className="flex-1">
+            <div className="space-y-1 pr-2">
+              <AnimatePresence mode="popLayout">
+                {upcomingDrops.map((drop, index) => (
+                  <motion.div
+                    key={drop.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={cn(
+                      "flex items-center gap-1.5 p-1 rounded-md transition-all",
+                      TCG_COLORS[drop.tcg].bg
+                    )}
+                  >
+                    <span className="text-xs shrink-0">{TCG_COLORS[drop.tcg].icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-medium text-white truncate">{drop.name}</p>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-1 text-[9px] text-muted-foreground">
+                      <Clock className="w-2.5 h-2.5" />
+                      {formatDate(drop.releaseDate)}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </ScrollArea>
         </div>
       </div>
 
