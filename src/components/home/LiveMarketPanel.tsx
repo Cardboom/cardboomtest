@@ -155,8 +155,8 @@ export const LiveMarketPanel = () => {
   return (
     <div className={cn(
       "relative overflow-hidden rounded-[18px]",
-      "bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
-      "border border-border/50 dark:border-white/5",
+      "bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+      "border border-black/[0.04] dark:border-white/5",
       "h-[120px] md:h-[160px]",
       "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
     )} style={{ backdropFilter: 'blur(22px)' }}>
@@ -191,14 +191,14 @@ export const LiveMarketPanel = () => {
       </div>
 
       {/* Ticker strip */}
-      <div className="absolute top-10 md:top-11 left-0 right-0 h-6 overflow-hidden bg-muted/50 dark:bg-white/5">
+      <div className="absolute top-10 md:top-11 left-0 right-0 h-6 overflow-hidden bg-black/[0.03] dark:bg-white/5">
         <div 
           ref={tickerRef}
           className="flex items-center h-full whitespace-nowrap"
           style={{ animation: 'marquee 60s linear infinite' }}
         >
           {marketTicks.map((tick, i) => (
-            <div key={i} className="flex items-center gap-2 px-4 border-r border-border/30 dark:border-white/10">
+            <div key={i} className="flex items-center gap-2 px-4 border-r border-black/[0.06] dark:border-white/10">
               <span className="text-[11px] font-medium text-foreground/70">
                 {tick.symbol}
               </span>

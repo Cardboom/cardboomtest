@@ -159,10 +159,10 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
   return (
     <div className={cn(
       "relative overflow-hidden rounded-[18px]",
-      "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
-      "border border-white/5",
+      "bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+      "border border-black/[0.04] dark:border-white/5",
       "h-[120px] md:h-[160px]",
-      "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+      "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
     )} style={{ backdropFilter: 'blur(22px)' }}>
       {/* Noise texture */}
       <div 
@@ -226,7 +226,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
               
               {/* Message */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white leading-relaxed line-clamp-2">
+                <p className="text-sm font-medium text-foreground dark:text-white leading-relaxed line-clamp-2">
                   {currentInsight.message}
                 </p>
               </div>
@@ -246,7 +246,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
       {/* Footer with progress */}
       <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
         {/* Progress bar */}
-        <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden mr-4">
+        <div className="flex-1 h-1 bg-black/[0.06] dark:bg-white/10 rounded-full overflow-hidden mr-4">
           <motion.div
             className={cn("h-full rounded-full", 
               currentInsight?.type === 'bullish' && "bg-gain",
@@ -262,7 +262,7 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
         </div>
         
         {/* Counter */}
-        <span className="text-[10px] text-white/60 font-medium">
+        <span className="text-[10px] text-foreground/50 dark:text-white/60 font-medium">
           {currentIndex + 1}/{insights.length}
         </span>
       </div>

@@ -82,14 +82,14 @@ export const TCGReleaseCalendar = () => {
 
   if (loading) {
     return (
-      <div className="h-[120px] md:h-[160px] rounded-[18px] bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820] border border-border/50 dark:border-white/5 animate-pulse" />
+      <div className="h-[120px] md:h-[160px] rounded-[18px] bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820] border border-black/[0.04] dark:border-white/5 animate-pulse" />
     );
   }
 
   return (
-    <div className="h-[120px] md:h-[160px] rounded-[18px] overflow-hidden bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820] border border-border/50 dark:border-white/5 flex flex-col">
+    <div className="h-[120px] md:h-[160px] rounded-[18px] overflow-hidden bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820] border border-black/[0.04] dark:border-white/5 flex flex-col">
       {/* Header */}
-      <div className="px-3 py-1.5 border-b border-border/30 dark:border-white/5 flex items-center justify-between shrink-0">
+      <div className="px-3 py-1.5 border-b border-black/[0.04] dark:border-white/5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
             <Calendar className="w-2.5 h-2.5 text-primary" />
@@ -108,7 +108,7 @@ export const TCGReleaseCalendar = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Next Drop - Left side */}
         {nextDrop && (
-          <div className="w-1/4 p-2 border-r border-border/30 dark:border-white/5 flex flex-col justify-center">
+          <div className="w-1/4 p-2 border-r border-black/[0.04] dark:border-white/5 flex flex-col justify-center">
             <p className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Next</p>
             <div className={cn(
               "w-8 h-8 rounded-lg flex items-center justify-center text-base mb-1",
@@ -164,7 +164,7 @@ export const TCGReleaseCalendar = () => {
       </div>
 
       {/* TCG Legend Footer */}
-      <div className="px-2 py-1 border-t border-border/30 dark:border-white/5 shrink-0">
+      <div className="px-2 py-1 border-t border-black/[0.04] dark:border-white/5 shrink-0">
         <div className="flex gap-2 justify-center overflow-x-auto">
           {Object.entries(TCG_COLORS).filter(([key]) => key !== 'other').slice(0, 5).map(([tcg, colors]) => (
             <div key={tcg} className="flex items-center gap-0.5 shrink-0">
