@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GradeBadge } from '@/components/ui/grade-badge';
-import { BackgroundRemovedImage } from '@/components/ui/background-removed-image';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Clock, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -78,11 +77,11 @@ export function WhatsNewPanel() {
               
               {listing.image_url ? (
                 <div className="relative flex-1 w-full flex items-center justify-center">
-                  <BackgroundRemovedImage 
+                  <img 
                     src={listing.image_url} 
                     alt={listing.title}
                     className="max-h-[85%] w-auto object-contain group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_8px_16px_rgba(0,0,0,0.3)]"
-                    enabled={true}
+                    loading="lazy"
                   />
                 </div>
               ) : (

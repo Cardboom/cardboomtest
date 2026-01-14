@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { generateCardSlug, normalizeCategory } from '@/lib/seoSlug';
 import { Badge } from '@/components/ui/badge';
-import { BackgroundRemovedImage } from '@/components/ui/background-removed-image';
 import { formatCategoryName } from '@/lib/categoryFormatter';
 import { generateListingUrl } from '@/lib/listingUrl';
 
@@ -186,11 +185,11 @@ export function PopularCardsPanel() {
                   
                   {item.image_url ? (
                     <div className="relative flex-1 w-full flex items-center justify-center">
-                      <BackgroundRemovedImage
+                      <img
                         src={item.image_url}
                         alt={item.name}
                         className="max-h-[85%] w-auto object-contain group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_8px_16px_rgba(0,0,0,0.3)]"
-                        enabled={true}
+                        loading="lazy"
                       />
                     </div>
                   ) : (
