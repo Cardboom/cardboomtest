@@ -1,5 +1,8 @@
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2 } from 'lucide-react';
 
 interface CardPedestalDisplayProps {
   imageUrl: string;
@@ -7,6 +10,7 @@ interface CardPedestalDisplayProps {
   grade?: string | null;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  autoRemoveBackground?: boolean;
 }
 
 export const CardPedestalDisplay = ({ 
@@ -14,19 +18,55 @@ export const CardPedestalDisplay = ({
   cardName = 'Card',
   grade,
   className,
-  size = 'md'
+  size = 'md',
+  autoRemoveBackground = false
 }: CardPedestalDisplayProps) => {
+  const [processedImage, setProcessedImage] = useState<string>(imageUrl);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingError, setProcessingError] = useState<string | null>(null);
+
   const sizeClasses = {
-    sm: 'w-[180px]',
-    md: 'w-[280px]',
-    lg: 'w-[380px]'
+    sm: 'w-[200px]',
+    md: 'w-[320px]',
+    lg: 'w-[420px]'
   };
 
   const cardSizes = {
-    sm: 'w-[120px]',
-    md: 'w-[200px]',
-    lg: 'w-[280px]'
+    sm: 'w-[140px]',
+    md: 'w-[220px]',
+    lg: 'w-[300px]'
   };
+
+  // Auto-remove background if enabled
+  useEffect(() => {
+    if (autoRemoveBackground && imageUrl) {
+      const removeBackground = async () => {
+        setIsProcessing(true);
+        setProcessingError(null);
+        try {
+          const { data, error } = await supabase.functions.invoke('remove-card-background', {
+            body: { imageUrl }
+          });
+          
+          if (error) throw error;
+          
+          if (data?.processedImageUrl) {
+            setProcessedImage(data.processedImageUrl);
+          }
+        } catch (err) {
+          console.error('Background removal failed:', err);
+          setProcessingError('Could not process image');
+          setProcessedImage(imageUrl); // Fallback to original
+        } finally {
+          setIsProcessing(false);
+        }
+      };
+      
+      removeBackground();
+    } else {
+      setProcessedImage(imageUrl);
+    }
+  }, [imageUrl, autoRemoveBackground]);
 
   return (
     <motion.div 
@@ -39,107 +79,145 @@ export const CardPedestalDisplay = ({
         className
       )}
     >
+      {/* Processing overlay */}
+      {isProcessing && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-xl">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="text-sm text-muted-foreground">Processing...</span>
+          </div>
+        </div>
+      )}
+
       {/* Card with floating animation and glow */}
       <motion.div
         animate={{ 
-          y: [0, -8, 0],
+          y: [0, -12, 0],
+          rotateY: [0, 2, 0, -2, 0],
         }}
         transition={{
-          duration: 3,
+          duration: 4,
           repeat: Infinity,
           ease: 'easeInOut'
         }}
         className="relative z-10"
+        style={{ perspective: '1000px' }}
       >
-        {/* Card glow effect */}
-        <div className="absolute inset-0 blur-2xl opacity-40 bg-gradient-to-b from-primary/30 via-transparent to-transparent -z-10 scale-110" />
+        {/* Ambient glow behind card */}
+        <div className="absolute inset-0 blur-3xl opacity-30 bg-gradient-radial from-primary/40 via-primary/10 to-transparent -z-10 scale-150" />
         
-        {/* PSA Slab frame */}
-        <div className="relative rounded-lg overflow-hidden bg-gradient-to-b from-gray-200/20 to-gray-400/20 p-1 backdrop-blur-sm border border-white/10 shadow-2xl">
-          {/* Inner slab */}
-          <div className="rounded-md overflow-hidden bg-gradient-to-b from-gray-100/10 to-gray-300/10 p-2">
-            {/* Card image */}
-            <div className="relative rounded overflow-hidden shadow-lg">
-              <img 
-                src={imageUrl} 
-                alt={cardName}
-                className={cn(
-                  "aspect-[2.5/3.5] object-cover",
-                  cardSizes[size]
-                )}
-              />
-              
-              {/* Holographic shine overlay */}
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent"
-                animate={{
-                  opacity: [0.1, 0.3, 0.1],
-                  x: ['-100%', '100%'],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  repeatDelay: 2,
-                }}
-              />
-            </div>
+        {/* Card container with subtle 3D tilt */}
+        <motion.div 
+          className="relative"
+          whileHover={{ 
+            rotateY: 5,
+            rotateX: -5,
+            scale: 1.02,
+          }}
+          transition={{ duration: 0.3 }}
+          style={{ transformStyle: 'preserve-3d' }}
+        >
+          {/* Card image */}
+          <div className="relative rounded-lg overflow-hidden shadow-2xl shadow-black/50">
+            <img 
+              src={processedImage} 
+              alt={cardName}
+              className={cn(
+                "aspect-[2.5/3.5] object-contain",
+                cardSizes[size]
+              )}
+            />
+            
+            {/* Holographic shine overlay */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/25 to-transparent pointer-events-none"
+              animate={{
+                opacity: [0, 0.4, 0],
+                x: ['-150%', '150%'],
+              }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                repeatDelay: 3,
+              }}
+            />
+            
+            {/* Edge highlight */}
+            <div className="absolute inset-0 rounded-lg ring-1 ring-white/10 pointer-events-none" />
           </div>
           
           {/* Grade badge */}
           {grade && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
-              <div className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold text-xs shadow-lg">
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: 'spring' }}
+              className="absolute -bottom-2 left-1/2 -translate-x-1/2"
+            >
+              <div className="px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold text-sm shadow-lg shadow-amber-500/30">
                 {grade}
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
       </motion.div>
 
-      {/* Glass pedestal / reflection platform */}
-      <div className="relative w-full mt-4">
-        {/* Main pedestal surface */}
+      {/* Premium glass pedestal */}
+      <div className="relative w-full mt-8">
         <motion.div 
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
           className="relative mx-auto"
         >
-          {/* Ellipse shadow under pedestal */}
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[80%] h-4 bg-black/40 blur-xl rounded-full" />
+          {/* Soft shadow under pedestal */}
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[90%] h-8 bg-black/60 blur-2xl rounded-full" />
           
-          {/* Glass pedestal top surface */}
-          <div className="relative h-8 bg-gradient-to-b from-white/10 via-white/5 to-transparent rounded-t-full border-t border-l border-r border-white/20 backdrop-blur-sm">
-            {/* Highlight line */}
-            <div className="absolute top-1 left-1/2 -translate-x-1/2 w-[60%] h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-          </div>
-          
-          {/* Pedestal base */}
-          <div className="h-6 bg-gradient-to-b from-gray-800/80 via-gray-900/90 to-black rounded-b-lg border border-white/5 overflow-hidden">
-            {/* Metallic highlights */}
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            
-            {/* Subtle logo area */}
-            <div className="flex items-center justify-center h-full">
-              <div className="text-[8px] text-white/30 font-bold tracking-[0.3em] uppercase">
-                CardBoom
+          {/* Top elliptical surface with reflection */}
+          <div className="relative">
+            {/* Glass surface */}
+            <div className="h-10 bg-gradient-to-b from-white/15 via-white/5 to-transparent rounded-t-[100%] border-t border-l border-r border-white/20 backdrop-blur-sm overflow-hidden">
+              {/* Surface highlight */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[70%] h-[2px] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+              
+              {/* Reflection of card on surface */}
+              <div className="absolute inset-0 opacity-20 overflow-hidden">
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 scale-y-[-0.2] scale-x-[0.6] blur-[1px]">
+                  <img 
+                    src={processedImage} 
+                    alt=""
+                    className={cn(
+                      "aspect-[2.5/3.5] object-contain opacity-40",
+                      cardSizes[size]
+                    )}
+                  />
+                </div>
               </div>
             </div>
           </div>
+          
+          {/* Pedestal base - metallic look */}
+          <div className="h-8 bg-gradient-to-b from-neutral-700 via-neutral-800 to-neutral-900 rounded-b-xl border border-white/5 overflow-hidden relative">
+            {/* Metallic ridges */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-12 h-4 rounded-sm bg-gradient-to-b from-neutral-600 to-neutral-800 border border-white/10 flex items-center justify-center">
+                {/* Logo indent */}
+                <svg viewBox="0 0 24 12" className="w-8 h-4 text-white/20">
+                  <path 
+                    d="M2 6 L6 2 L10 6 L14 2 L18 6 L22 2" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+            </div>
+            
+            {/* Bottom highlight */}
+            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+          </div>
         </motion.div>
-        
-        {/* Card reflection on pedestal */}
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 opacity-20 blur-[2px] scale-y-[-0.3] scale-x-[0.9] overflow-hidden pointer-events-none">
-          <img 
-            src={imageUrl} 
-            alt=""
-            className={cn(
-              "aspect-[2.5/3.5] object-cover",
-              cardSizes[size]
-            )}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
-        </div>
       </div>
     </motion.div>
   );
