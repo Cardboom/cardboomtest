@@ -407,24 +407,6 @@ export function AdminStorefrontsManager() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Logo URL</Label>
-                    <Input
-                      placeholder="https://..."
-                      value={newLogoUrl}
-                      onChange={(e) => setNewLogoUrl(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Banner URL</Label>
-                    <Input
-                      placeholder="https://..."
-                      value={newBannerUrl}
-                      onChange={(e) => setNewBannerUrl(e.target.value)}
-                    />
-                  </div>
-                </div>
 
                 <div className="space-y-2">
                   <Label>Initial Wallet Balance ($)</Label>
