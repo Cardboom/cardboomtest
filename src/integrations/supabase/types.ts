@@ -318,6 +318,95 @@ export type Database = {
           },
         ]
       }
+      alert_history: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          created_at: string
+          id: string
+          message: string
+          metric_name: string
+          metric_value: number
+          resolved_at: string | null
+          severity: string
+          threshold_id: string | null
+          threshold_value: number
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          metric_name: string
+          metric_value: number
+          resolved_at?: string | null
+          severity: string
+          threshold_id?: string | null
+          threshold_value: number
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          metric_name?: string
+          metric_value?: number
+          resolved_at?: string | null
+          severity?: string
+          threshold_id?: string | null
+          threshold_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_history_threshold_id_fkey"
+            columns: ["threshold_id"]
+            isOneToOne: false
+            referencedRelation: "alert_thresholds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alert_thresholds: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          last_triggered_at: string | null
+          metric_name: string
+          notification_channels: string[]
+          severity: string
+          threshold_value: number
+          threshold_window_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          last_triggered_at?: string | null
+          metric_name: string
+          notification_channels?: string[]
+          severity?: string
+          threshold_value: number
+          threshold_window_minutes?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          last_triggered_at?: string | null
+          metric_name?: string
+          notification_channels?: string[]
+          severity?: string
+          threshold_value?: number
+          threshold_window_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       api_request_logs: {
         Row: {
           api_key: string
@@ -3036,11 +3125,16 @@ export type Database = {
       }
       email_logs: {
         Row: {
+          bounce_reason: string | null
+          bounce_type: string | null
+          clicked_at: string | null
           created_at: string | null
+          delivery_status: string | null
           email: string
           error_message: string | null
           id: string
           metadata: Json | null
+          opened_at: string | null
           resend_id: string | null
           status: string | null
           subject: string
@@ -3048,11 +3142,16 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          bounce_reason?: string | null
+          bounce_type?: string | null
+          clicked_at?: string | null
           created_at?: string | null
+          delivery_status?: string | null
           email: string
           error_message?: string | null
           id?: string
           metadata?: Json | null
+          opened_at?: string | null
           resend_id?: string | null
           status?: string | null
           subject: string
@@ -3060,11 +3159,16 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          bounce_reason?: string | null
+          bounce_type?: string | null
+          clicked_at?: string | null
           created_at?: string | null
+          delivery_status?: string | null
           email?: string
           error_message?: string | null
           id?: string
           metadata?: Json | null
+          opened_at?: string | null
           resend_id?: string | null
           status?: string | null
           subject?: string
@@ -3318,6 +3422,39 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          allowed_user_ids: string[] | null
+          created_at: string
+          description: string | null
+          flag_key: string
+          flag_value: boolean
+          id: string
+          rollout_percentage: number | null
+          updated_at: string
+        }
+        Insert: {
+          allowed_user_ids?: string[] | null
+          created_at?: string
+          description?: string | null
+          flag_key: string
+          flag_value?: boolean
+          id?: string
+          rollout_percentage?: number | null
+          updated_at?: string
+        }
+        Update: {
+          allowed_user_ids?: string[] | null
+          created_at?: string
+          description?: string | null
+          flag_key?: string
+          flag_value?: boolean
+          id?: string
+          rollout_percentage?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       featured_items: {
         Row: {
           created_at: string | null
@@ -3374,6 +3511,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      file_uploads: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size_bytes: number
+          id: string
+          is_validated: boolean
+          mime_type: string
+          scan_status: string | null
+          source: string | null
+          storage_path: string
+          user_id: string
+          validation_errors: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size_bytes: number
+          id?: string
+          is_validated?: boolean
+          mime_type: string
+          scan_status?: string | null
+          source?: string | null
+          storage_path: string
+          user_id: string
+          validation_errors?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number
+          id?: string
+          is_validated?: boolean
+          mime_type?: string
+          scan_status?: string | null
+          source?: string | null
+          storage_path?: string
+          user_id?: string
+          validation_errors?: string[] | null
+        }
+        Relationships: []
       }
       first_purchase_discounts: {
         Row: {
@@ -5249,6 +5428,7 @@ export type Database = {
           created_at: string
           data: Json | null
           id: string
+          idempotency_key: string | null
           is_read: boolean | null
           title: string
           type: string
@@ -5259,6 +5439,7 @@ export type Database = {
           created_at?: string
           data?: Json | null
           id?: string
+          idempotency_key?: string | null
           is_read?: boolean | null
           title: string
           type: string
@@ -5269,6 +5450,7 @@ export type Database = {
           created_at?: string
           data?: Json | null
           id?: string
+          idempotency_key?: string | null
           is_read?: boolean | null
           title?: string
           type?: string
@@ -6612,6 +6794,42 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_hits: {
+        Row: {
+          blocked_at: string | null
+          created_at: string
+          endpoint: string
+          hit_count: number
+          id: string
+          identifier: string
+          identifier_type: string
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          blocked_at?: string | null
+          created_at?: string
+          endpoint: string
+          hit_count?: number
+          id?: string
+          identifier: string
+          identifier_type: string
+          window_end: string
+          window_start?: string
+        }
+        Update: {
+          blocked_at?: string | null
+          created_at?: string
+          endpoint?: string
+          hit_count?: number
+          id?: string
+          identifier?: string
+          identifier_type?: string
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       receipts: {
         Row: {
           card_image_url: string | null
@@ -7303,6 +7521,60 @@ export type Database = {
           points_change?: number
           reference_id?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      request_logs: {
+        Row: {
+          correlation_id: string | null
+          created_at: string
+          endpoint: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          latency_ms: number | null
+          method: string
+          request_body: Json | null
+          request_id: string | null
+          response_body: Json | null
+          session_id: string | null
+          status_code: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          correlation_id?: string | null
+          created_at?: string
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          latency_ms?: number | null
+          method: string
+          request_body?: Json | null
+          request_id?: string | null
+          response_body?: Json | null
+          session_id?: string | null
+          status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          correlation_id?: string | null
+          created_at?: string
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          latency_ms?: number | null
+          method?: string
+          request_body?: Json | null
+          request_id?: string | null
+          response_body?: Json | null
+          session_id?: string | null
+          status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -8230,31 +8502,37 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
+          correlation_id: string | null
           created_at: string
           description: string | null
           fee: number | null
           id: string
           reference_id: string | null
+          request_id: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           wallet_id: string
         }
         Insert: {
           amount: number
+          correlation_id?: string | null
           created_at?: string
           description?: string | null
           fee?: number | null
           id?: string
           reference_id?: string | null
+          request_id?: string | null
           type: Database["public"]["Enums"]["transaction_type"]
           wallet_id: string
         }
         Update: {
           amount?: number
+          correlation_id?: string | null
           created_at?: string
           description?: string | null
           fee?: number | null
           id?: string
           reference_id?: string | null
+          request_id?: string | null
           type?: Database["public"]["Enums"]["transaction_type"]
           wallet_id?: string
         }
@@ -9584,6 +9862,14 @@ export type Database = {
         Args: { war_id: string }
         Returns: undefined
       }
+      calculate_error_rate: {
+        Args: { p_endpoint?: string; p_window_minutes?: number }
+        Returns: {
+          error_count: number
+          error_rate_percent: number
+          total_requests: number
+        }[]
+      }
       calculate_level: { Args: { xp_amount: number }; Returns: number }
       calculate_payout_schedule: {
         Args: { p_user_id: string }
@@ -9604,6 +9890,21 @@ export type Database = {
         Returns: Json
       }
       check_inventory_integrity: { Args: never; Returns: Json }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_identifier: string
+          p_identifier_type: string
+          p_limit: number
+          p_window_seconds: number
+        }
+        Returns: {
+          current_count: number
+          is_limited: boolean
+          remaining: number
+          reset_at: string
+        }[]
+      }
       claim_bounty_reward:
         | { Args: { p_bounty_id: string }; Returns: Json }
         | { Args: { p_bounty_id: string; p_user_id?: string }; Returns: Json }
@@ -9618,6 +9919,7 @@ export type Database = {
       }
       cleanup_expired_2fa_codes: { Args: never; Returns: undefined }
       cleanup_old_health_reports: { Args: never; Returns: undefined }
+      cleanup_old_logs: { Args: never; Returns: undefined }
       complete_sale_transfer: {
         Args: {
           p_actor_user_id: string
