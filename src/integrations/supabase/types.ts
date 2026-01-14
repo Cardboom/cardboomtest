@@ -8579,6 +8579,42 @@ export type Database = {
           },
         ]
       }
+      tweet_reward_claims: {
+        Row: {
+          claimed_at: string
+          gems_awarded: number
+          id: string
+          status: string
+          tweet_author_handle: string | null
+          tweet_id: string
+          tweet_url: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          claimed_at?: string
+          gems_awarded?: number
+          id?: string
+          status?: string
+          tweet_author_handle?: string | null
+          tweet_id: string
+          tweet_url: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          claimed_at?: string
+          gems_awarded?: number
+          id?: string
+          status?: string
+          tweet_author_handle?: string | null
+          tweet_id?: string
+          tweet_url?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       two_factor_codes: {
         Row: {
           code: string
