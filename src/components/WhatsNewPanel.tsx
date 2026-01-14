@@ -8,6 +8,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { Clock, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 const getCountryFlag = (countryCode: string): string => {
   if (!countryCode || countryCode.length !== 2) return '🌍';
@@ -66,7 +67,7 @@ export function WhatsNewPanel() {
         {listings.slice(0, 8).map((listing) => (
           <div
             key={listing.id}
-            onClick={() => navigate(`/listing/${listing.id}`)}
+            onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title }))}
             className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all group"
           >
             {/* Image */}

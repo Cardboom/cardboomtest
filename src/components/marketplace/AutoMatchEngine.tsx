@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface MatchedListing {
   id: string;
@@ -114,7 +115,7 @@ export const AutoMatchEngine = () => {
   };
 
   const handleBuyNow = (listing: MatchedListing) => {
-    navigate(`/listing/${listing.id}`);
+    navigate(generateListingUrl({ id: listing.id, category: (listing as any).category || 'other', title: listing.title }));
   };
 
   const handleMakeOffer = async (listing: MatchedListing, offerAmount: number) => {
@@ -151,7 +152,7 @@ export const AutoMatchEngine = () => {
     setTimeout(() => {
       if (listing.autoAcceptEnabled) {
         toast.success('Offer accepted! Proceeding to checkout...');
-        navigate(`/listing/${listing.id}?autoAccepted=true`);
+        navigate(generateListingUrl({ id: listing.id, category: (listing as any).category || 'other', title: listing.title }) + '?autoAccepted=true');
       } else {
         toast.info('Counter-offer received. Check your offers.');
       }

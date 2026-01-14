@@ -189,26 +189,36 @@ const Portfolio = () => {
   const pnlPercent = totalCost > 0 ? ((totalPnL / totalCost) * 100) : 0;
   const netWorth = totalValue + fractionalCurrentValue;
 
-  // Generate mock historical data for portfolio chart
+  // Fetch real historical data from portfolio_snapshots
+  const { data: snapshotData } = useQuery({
+    queryKey: ['portfolio-snapshots', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
+      const { data, error } = await supabase
+        .from('portfolio_snapshots')
+        .select('total_value, recorded_at')
+        .eq('user_id', user.id)
+        .gte('recorded_at', thirtyDaysAgo)
+        .order('recorded_at', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Generate chart data from real snapshots or fallback to current value
   const chartData = useMemo(() => {
-    const data = [];
-    const baseValue = netWorth * 0.85; // Start from 85% of current value
-    const volatility = 0.03; // 3% daily volatility
-    
-    for (let i = 30; i >= 0; i--) {
-      const date = subDays(new Date(), i);
-      const randomChange = 1 + (Math.random() - 0.45) * volatility;
-      const previousValue = i === 30 ? baseValue : data[data.length - 1]?.value || baseValue;
-      const value = i === 0 ? netWorth : previousValue * randomChange;
-      
-      data.push({
-        date: format(date, 'MMM dd'),
-        fullDate: format(date, 'MMM dd, yyyy'),
-        value: Math.round(value),
-      });
+    if (snapshotData && snapshotData.length > 0) {
+      return snapshotData.map(s => ({
+        date: format(new Date(s.recorded_at), 'MMM dd'),
+        fullDate: format(new Date(s.recorded_at), 'MMM dd, yyyy'),
+        value: Math.round(Number(s.total_value)),
+      }));
     }
-    return data;
-  }, [netWorth]);
+    // Fallback: just show current value as single point
+    return [{ date: format(new Date(), 'MMM dd'), fullDate: format(new Date(), 'MMM dd, yyyy'), value: Math.round(netWorth) }];
+  }, [snapshotData, netWorth]);
 
   const chartChange = chartData.length > 1 ? netWorth - chartData[0].value : 0;
   const chartChangePercent = chartData.length > 1 && chartData[0].value > 0 

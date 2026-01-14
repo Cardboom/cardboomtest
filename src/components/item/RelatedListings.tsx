@@ -8,6 +8,7 @@ import { Users, ShoppingCart, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { cn } from '@/lib/utils';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface RelatedListingsProps {
   marketItemId: string;
@@ -31,7 +32,7 @@ export const RelatedListings = ({
       // First try to find listings by market_item_id
       let query = supabase
         .from('listings')
-        .select('id, title, price, condition, image_url, seller_id, created_at')
+        .select('id, title, price, condition, image_url, seller_id, created_at, category')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(10);
@@ -116,7 +117,7 @@ export const RelatedListings = ({
         {listings.map(listing => (
           <div 
             key={listing.id}
-            onClick={() => navigate(`/listing/${listing.id}`)}
+            onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, title: listing.title }))}
             className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors group"
           >
             {/* Card Image */}

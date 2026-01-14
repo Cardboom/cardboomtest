@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { AutoMatch } from '@/hooks/useAutoMatches';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface AutoMatchNotificationProps {
   match: AutoMatch;

@@ -28,6 +28,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowRight, Brain, Trophy, Bell, Users, PieChart, Sparkles, Clock } from 'lucide-react';
+import { generateListingUrl } from '@/lib/listingUrl';
 import { PopularCardsPanel } from '@/components/PopularCardsPanel';
 import { WhatsNewPanel } from '@/components/WhatsNewPanel';
 import { GradingCTA } from '@/components/GradingCTA';
@@ -211,9 +212,9 @@ const Index = () => {
   };
 
   // Handle click on collectible - navigate to listing page for user listings, modal for market items
-  const handleCollectibleClick = (collectible: Collectible & { source?: string; listingId?: string }) => {
+  const handleCollectibleClick = (collectible: Collectible & { source?: string; listingId?: string; category?: string }) => {
     if (collectible.source === 'listing' && collectible.listingId) {
-      navigate(`/listing/${collectible.listingId}`);
+      navigate(generateListingUrl({ id: collectible.listingId, category: collectible.category || 'other', title: collectible.name }));
     } else {
       setSelectedCollectible(collectible);
     }

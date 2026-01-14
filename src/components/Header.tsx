@@ -74,7 +74,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const { isPro } = useSubscription(user?.id);
+  const { isPro, isEnterprise } = useSubscription(user?.id);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -459,19 +459,21 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <Flame className="w-4 h-4 mr-2 text-amber-500" />
                     <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 bg-clip-text text-transparent font-semibold">CardBoom Pass</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/pricing')} className="text-primary">
-                    {isPro ? (
-                      <>
-                        <Rocket className="w-4 h-4 mr-2" />
-                        Upgrade to Enterprise
-                      </>
-                    ) : (
-                      <>
-                        <Crown className="w-4 h-4 mr-2" />
-                        {t.nav.upgradePro}
-                      </>
-                    )}
-                  </DropdownMenuItem>
+                  {!isEnterprise && (
+                    <DropdownMenuItem onClick={() => navigate('/pricing')} className="text-primary">
+                      {isPro ? (
+                        <>
+                          <Rocket className="w-4 h-4 mr-2" />
+                          Upgrade to Enterprise
+                        </>
+                      ) : (
+                        <>
+                          <Crown className="w-4 h-4 mr-2" />
+                          {t.nav.upgradePro}
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => navigate('/messages')} className="relative">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     {t.nav.messages}

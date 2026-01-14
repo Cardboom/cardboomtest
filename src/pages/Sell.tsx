@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCategoryName } from '@/lib/categoryFormatter';
+import { generateListingUrl } from '@/lib/listingUrl';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -495,8 +496,12 @@ const SellPage = () => {
     }
   };
 
-  const handleViewListing = (listingId: string) => {
-    navigate(`/listing/${listingId}`);
+  const handleViewListing = (listingId: string, listing?: any) => {
+    if (listing) {
+      navigate(generateListingUrl({ id: listingId, category: listing.category, title: listing.title }));
+    } else {
+      navigate(`/listing/${listingId}`);
+    }
   };
 
   const formatCurrency = (amount: number) => {

@@ -9,6 +9,7 @@ import { Plus, Upload, Loader2, Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface ListThisCardDialogProps {
   cardName: string;
@@ -116,7 +117,7 @@ export const ListThisCardDialog = ({
 
       toast.success('Card listed successfully!');
       setOpen(false);
-      navigate(`/listing/${listing.id}`);
+      navigate(generateListingUrl({ id: listing.id, category: listing.category, title: listing.title }));
     } catch (error: any) {
       console.error('Error listing card:', error);
       toast.error(error.message || 'Failed to list card');

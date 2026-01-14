@@ -17,6 +17,7 @@ import { CardDiscussionPanel } from '@/components/discussions/CardDiscussionPane
 import { GradingDonationPanel } from '@/components/listing/GradingDonationPanel';
 import { generateCardUrl } from '@/lib/seoSlug';
 import { useCartAbandonment } from '@/hooks/useCartAbandonment';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 const CardSalePage = () => {
   const { id } = useParams();
@@ -154,9 +155,11 @@ const CardSalePage = () => {
         sellerRating: 4.5,
         sellerVerified: false,
         totalSales: 0,
-        estimatedDelivery: '3-5 days'
+        estimatedDelivery: '3-5 days',
+        category: l.category,
+        title: l.title
       }))
-    : [{ id: item.id, condition: 'Near Mint', price: item.current_price || 100, sellerId: '', sellerName: 'No listings', sellerRating: 0, sellerVerified: false, totalSales: 0, estimatedDelivery: '-' }];
+    : [{ id: item.id, condition: 'Near Mint', price: item.current_price || 100, sellerId: '', sellerName: 'No listings', sellerRating: 0, sellerVerified: false, totalSales: 0, estimatedDelivery: '-', category: item.category, title: item.name }];
 
   const mockSeller = hasListings && cheapestListing
     ? { id: cheapestListing.seller_id, username: 'Seller', isVerified: false, rating: 4.5, totalSales: 0, avgDeliveryDays: 3, memberSince: '2024', responseTime: '< 1 hour' }
@@ -171,7 +174,7 @@ const CardSalePage = () => {
     
     // If there are real listings, navigate to the listing detail page
     if (cheapestListing) {
-      navigate(`/listing/${cheapestListing.id}`);
+      navigate(generateListingUrl({ id: cheapestListing.id, category: cheapestListing.category, title: cheapestListing.title }));
     } else {
       toast.info('No active listings available. Check back later or create a Buy Order!');
       navigate('/buy-orders');
@@ -217,7 +220,10 @@ const CardSalePage = () => {
               <BuyBox
                 listings={displayListings}
                 selectedListingId={cheapestListing?.id || item.id}
-                onSelectListing={(listingId) => navigate(`/listing/${listingId}`)}
+                onSelectListing={(listingId) => {
+                  const listing = displayListings.find(l => l.id === listingId);
+                  if (listing) navigate(generateListingUrl({ id: listing.id, category: listing.category, title: listing.title }));
+                }}
                 onBuyNow={handleBuyNow}
                 onMakeOffer={() => hasListings ? toast.info('Make an offer feature coming soon') : navigate('/buy-orders')}
                 userBalance={250}

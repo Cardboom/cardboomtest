@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { generateCardSlug, normalizeCategory } from '@/lib/seoSlug';
 import { Badge } from '@/components/ui/badge';
 import { formatCategoryName } from '@/lib/categoryFormatter';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface ListingItem {
   id: string;
@@ -162,7 +163,7 @@ export function PopularCardsPanel() {
         {displayItems.map((item, index) => {
           const isListing = item.type === 'listing';
           const linkPath = isListing 
-            ? `/listing/${item.id}`
+            ? generateListingUrl({ id: item.id, category: item.category, slug: (item as any).slug, title: item.name })
             : `/cards/${normalizeCategory(item.category)}/${generateCardSlug({ name: item.name, category: item.category })}`;
           
           return (

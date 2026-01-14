@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Link } from 'react-router-dom';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface TickerItem {
   id: string;

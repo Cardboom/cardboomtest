@@ -22,6 +22,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { AchievementsShowcase } from '@/components/achievements/AchievementsShowcase';
 import { AppRatingReward } from '@/components/rewards/AppRatingReward';
 import { BulkGradingPanel } from '@/components/listings/BulkGradingPanel';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 const Profile = () => {
   const { userId } = useParams<{ userId?: string }>();
@@ -405,7 +406,7 @@ const Profile = () => {
                       <div 
                         key={listing.id} 
                         className="relative rounded-lg overflow-hidden group cursor-pointer"
-                        onClick={() => navigate(`/listing/${listing.id}`)}
+                        onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: listing.slug, title: listing.title }))}
                       >
                         <img 
                           src={listing.image_url || '/placeholder.svg'} 
@@ -517,7 +518,7 @@ const Profile = () => {
                       <div 
                         key={listing.id} 
                         className="p-4 rounded-lg bg-muted/50 hover:bg-muted/70 cursor-pointer transition-colors"
-                        onClick={() => navigate(`/listing/${listing.id}`)}
+                        onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: listing.slug, title: listing.title }))}
                       >
                         {listing.image_url && (
                           <img src={listing.image_url} alt={listing.title} className="w-full h-32 object-cover rounded-lg mb-3" />
@@ -622,7 +623,10 @@ const Profile = () => {
                 {portfolioData?.listings && portfolioData.listings.length > 0 && (
                   <BulkGradingPanel 
                     listings={portfolioData.listings}
-                    onNavigateToListing={(id) => navigate(`/listing/${id}`)}
+                    onNavigateToListing={(id) => {
+                      const listing = portfolioData.listings.find((l: any) => l.id === id);
+                      if (listing) navigate(generateListingUrl({ id: listing.id, category: listing.category, title: listing.title }));
+                    }}
                     onGradingSubmitted={() => refetchPortfolio()}
                   />
                 )}
