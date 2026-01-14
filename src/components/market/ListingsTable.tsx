@@ -24,11 +24,13 @@ interface Listing {
   image_url: string | null;
   seller_name?: string;
   seller_country_code?: string;
-  // Grading fields
+  // Grading fields from listings table
   certification_status?: string | null;
   grading_order_id?: string | null;
   grading_company?: string | null;
   grade?: string | null;
+  cbgi_score?: number | null;
+  cbgi_grade_label?: string | null;
   // Market info
   market_item_id?: string | null;
   source?: string | null;
@@ -67,7 +69,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
     try {
       let query = supabase
         .from('listings')
-        .select('id, title, description, category, condition, price, status, allows_vault, allows_trade, allows_shipping, created_at, seller_id, image_url, certification_status, grading_order_id, market_item_id, source')
+        .select('id, title, description, category, condition, price, status, allows_vault, allows_trade, allows_shipping, created_at, seller_id, image_url, certification_status, grading_order_id, market_item_id, source, grading_company, grade, cbgi_score, cbgi_grade_label')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
@@ -140,11 +142,35 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
       // Enrich listings with seller info and grade
       const enrichedListings = (data || []).map(listing => {
         const profile = profileMap.get(listing.seller_id);
+        
+        // Priority 1: Use listing's direct grading fields (grading_company + grade)
+        if (listing.grading_company && listing.grade) {
+          return {
+            ...listing,
+            seller_name: profile?.display_name || 'Seller',
+            seller_country_code: profile?.country_code || 'TR',
+            // Already has grading_company and grade from listing
+          };
+        }
+
+        // Priority 2: Use listing's cbgi_score if available (CardBoom grading)
+        if (listing.cbgi_score) {
+          const score = listing.cbgi_score > 10 ? listing.cbgi_score / 10 : listing.cbgi_score;
+          return {
+            ...listing,
+            seller_name: profile?.display_name || 'Seller',
+            seller_country_code: profile?.country_code || 'TR',
+            grading_company: 'CardBoom',
+            grade: score.toFixed(1),
+          };
+        }
+
+        // Priority 3: Check grading_orders by grading_order_id
         let gradingInfo = listing.grading_order_id 
           ? gradeMap.get(listing.grading_order_id) 
           : null;
 
-        // Fallback: Try to find matching grading order by seller and card name
+        // Priority 4: Fallback - match by seller and card name from completed grading orders
         if (!gradingInfo && allGradingOrders && listing.title) {
           const normalizedTitle = normalizeCardName(listing.title);
           const matchingOrder = allGradingOrders.find(go => 
@@ -162,7 +188,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
           }
         }
 
-        // Determine grading display values
+        // Determine grading display values from grading_orders
         let gradingCompany: string | null = null;
         let grade: string | null = null;
         
