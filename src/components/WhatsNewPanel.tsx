@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GradeBadge } from '@/components/ui/grade-badge';
+import { BackgroundRemovedImage } from '@/components/ui/background-removed-image';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Clock, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -71,12 +72,13 @@ export function WhatsNewPanel() {
             className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all group"
           >
             {/* Image */}
-            <div className="aspect-square relative overflow-hidden bg-secondary/50">
+            <div className="aspect-square relative overflow-hidden bg-gradient-to-b from-secondary/30 to-transparent flex items-center justify-center p-2">
               {listing.image_url ? (
-                <img 
+                <BackgroundRemovedImage 
                   src={listing.image_url} 
                   alt={listing.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-lg"
+                  enabled={true}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground">
