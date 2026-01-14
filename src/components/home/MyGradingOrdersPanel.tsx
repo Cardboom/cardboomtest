@@ -93,24 +93,31 @@ export const MyGradingOrdersPanel = ({ userId }: MyGradingOrdersPanelProps) => {
       <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
 
       {/* Header */}
-      <div className="absolute top-2 left-3 flex items-center gap-3 z-10">
+      <div className="absolute top-2 left-3 right-3 flex items-center justify-between z-10">
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
-            <Award className="w-3 h-3 text-primary" />
+          <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
+            <Award className="w-2.5 h-2.5 text-primary" />
           </div>
-          <span className="font-sans text-[11px] md:text-xs text-primary uppercase tracking-widest font-bold">
+          <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
             MY GRADINGS
           </span>
         </div>
-      </div>
 
-      {/* View all button */}
-      <button
-        onClick={() => navigate('/grading/orders')}
-        className="absolute top-2 right-3 flex items-center gap-0.5 text-[9px] text-gray-500 hover:text-gray-300 transition-colors font-sans font-bold z-10"
-      >
-        ALL <ChevronRight className="w-2.5 h-2.5" />
-      </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/grading')}
+            className="px-2 py-0.5 rounded bg-primary/20 text-primary text-[9px] font-bold hover:bg-primary/30 transition-colors"
+          >
+            Grade Now
+          </button>
+          <button
+            onClick={() => navigate('/grading/orders')}
+            className="flex items-center gap-0.5 text-[9px] text-gray-500 hover:text-gray-300 transition-colors font-sans font-bold"
+          >
+            ALL <ChevronRight className="w-2.5 h-2.5" />
+          </button>
+        </div>
+      </div>
 
       {/* Orders list */}
       <div className="absolute inset-x-0 top-10 bottom-2 px-3">
