@@ -58,14 +58,30 @@ serve(async (req) => {
 
     const tweetId = tweetIdMatch[1];
 
-    // Check if this tweet has already been claimed
-    const { data: existingClaim } = await supabase
+    // Check if user has already claimed ANY tweet reward (one per account)
+    const { data: existingUserClaim } = await supabase
       .from('tweet_reward_claims')
-      .select('id, status')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('status', 'awarded')
+      .limit(1)
+      .single();
+
+    if (existingUserClaim) {
+      return new Response(
+        JSON.stringify({ error: 'You have already claimed your tweet reward. One reward per account.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if this specific tweet has already been claimed by anyone
+    const { data: existingTweetClaim } = await supabase
+      .from('tweet_reward_claims')
+      .select('id')
       .eq('tweet_id', tweetId)
       .single();
 
-    if (existingClaim) {
+    if (existingTweetClaim) {
       return new Response(
         JSON.stringify({ error: 'This tweet has already been claimed' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

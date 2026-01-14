@@ -1,15 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Brain, TrendingUp, TrendingDown, AlertCircle, 
-  Sparkles, Target, Zap, ChevronRight, Lightbulb
+  Sparkles, Target, Zap, ChevronRight, Lightbulb, Loader2, RefreshCw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCurrency } from '@/contexts/CurrencyContext';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIInsight {
   id: string;
@@ -22,39 +21,52 @@ interface AIInsight {
   action?: string;
 }
 
-const MOCK_INSIGHTS: AIInsight[] = [
-  {
-    id: '1',
-    type: 'bullish',
-    title: 'Pokémon Base Set Momentum',
-    description: 'Charizard prices showing strong upward momentum. Historical patterns suggest 15-20% increase potential.',
-    confidence: 87,
-    impact: 'high',
-    relatedItems: ['Charizard 1st Ed', 'Blastoise Holo'],
-    action: 'Consider buying before next price surge',
-  },
-  {
-    id: '2',
-    type: 'opportunity',
-    title: 'Undervalued NBA Rookies',
-    description: 'Luka Doncic PSA 10s trading below 30-day average. Potential arbitrage opportunity.',
-    confidence: 73,
-    impact: 'medium',
-    action: 'Set price alert at $2,800',
-  },
-  {
-    id: '3',
-    type: 'bearish',
-    title: 'One Piece Correction Expected',
-    description: 'OP-01 prices showing signs of overextension. Short-term pullback likely.',
-    confidence: 65,
-    impact: 'medium',
-  },
-];
-
 export const AIInsightsPanel = () => {
-  const { formatPrice } = useCurrency();
+  const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expandedInsight, setExpandedInsight] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  useEffect(() => {
+    fetchInsights();
+  }, []);
+
+  const fetchInsights = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-ai-insights');
+      
+      if (error) throw error;
+      
+      if (data?.insights && Array.isArray(data.insights)) {
+        setInsights(data.insights);
+        setLastUpdated(new Date());
+      }
+    } catch (err) {
+      console.error('Failed to fetch AI insights:', err);
+      // Fallback to generic insights
+      setInsights([
+        {
+          id: '1',
+          type: 'neutral',
+          title: 'Market Analysis Loading',
+          description: 'AI is analyzing current market conditions. Check back shortly for fresh insights.',
+          confidence: 50,
+          impact: 'medium',
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTimeSinceUpdate = () => {
+    if (!lastUpdated) return 'Just now';
+    const mins = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins === 1) return '1m ago';
+    return `${mins}m ago`;
+  };
 
   const typeStyles = {
     bullish: {
@@ -91,6 +103,27 @@ export const AIInsightsPanel = () => {
     },
   };
 
+  if (loading) {
+    return (
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent border-b border-border/50">
+          <CardTitle className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Brain className="w-4 h-4 text-primary" />
+            </div>
+            <span>AI Market Insights</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-8 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Analyzing market conditions...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent border-b border-border/50">
@@ -102,17 +135,27 @@ export const AIInsightsPanel = () => {
             <span>AI Market Insights</span>
             <Badge variant="secondary" className="gap-1 text-xs">
               <Sparkles className="w-3 h-3" />
-              Powered by AI
+              Live AI
             </Badge>
           </div>
-          <Badge variant="outline" className="text-xs">
-            Updated 5m ago
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {getTimeSinceUpdate()}
+            </Badge>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-7 w-7"
+              onClick={fetchInsights}
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 space-y-3">
-        {MOCK_INSIGHTS.map((insight, index) => {
-          const style = typeStyles[insight.type];
+        {insights.map((insight, index) => {
+          const style = typeStyles[insight.type] || typeStyles.neutral;
           const isExpanded = expandedInsight === insight.id;
           
           return (
@@ -137,7 +180,7 @@ export const AIInsightsPanel = () => {
                   <style.icon className={cn("w-5 h-5", style.iconColor)} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <Badge className={cn("text-xs", style.labelBg)}>
                       {style.label}
                     </Badge>
@@ -166,7 +209,7 @@ export const AIInsightsPanel = () => {
                           <span className="text-sm font-medium">{insight.action}</span>
                         </div>
                       )}
-                      {insight.relatedItems && (
+                      {insight.relatedItems && insight.relatedItems.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
                           {insight.relatedItems.map(item => (
                             <Badge key={item} variant="secondary" className="text-xs">
