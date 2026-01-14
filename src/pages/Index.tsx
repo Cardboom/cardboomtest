@@ -246,8 +246,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
-      {/* Sticky header that follows scroll */}
+      {/* Fixed header that follows scroll */}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
+      
+      {/* Spacer for fixed header */}
+      <div className="h-16" />
       
       {/* Refined ambient background */}
       <div className="fixed inset-0 pointer-events-none -z-10">
