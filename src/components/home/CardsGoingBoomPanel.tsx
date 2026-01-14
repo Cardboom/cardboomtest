@@ -1,9 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { Flame, Heart, MessageCircle, Repeat2, ExternalLink } from 'lucide-react';
+import { Flame, Heart, MessageCircle, Repeat2, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-// Mock X posts data - in production this would come from X API
-const mockPosts = [
+interface XPost {
+  id: string;
+  author: { name: string; handle: string; avatar: string };
+  content: string;
+  image?: string | null;
+  likes: number;
+  retweets: number;
+  comments: number;
+  timestamp: string;
+}
+
+// Fallback mock posts when API is unavailable
+const mockPosts: XPost[] = [
   {
     id: '1',
     author: { name: 'PokéCollector', handle: '@pokecollector', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=poke' },
@@ -64,13 +76,43 @@ const mockPosts = [
 
 export const CardsGoingBoomPanel = () => {
   const [isPaused, setIsPaused] = useState(false);
+  const [posts, setPosts] = useState<XPost[]>(mockPosts);
+  const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('fetch-x-posts');
+        
+        if (error) {
+          console.error('Error fetching X posts:', error);
+          return;
+        }
+        
+        if (data?.posts && data.posts.length > 0) {
+          setPosts(data.posts);
+        }
+        // If no posts returned, keep mock data
+      } catch (err) {
+        console.error('Failed to fetch X posts:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPosts();
+    
+    // Refresh posts every 5 minutes
+    const interval = setInterval(fetchPosts, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Create three columns with different posts
   const columns = [
-    mockPosts.filter((_, i) => i % 3 === 0),
-    mockPosts.filter((_, i) => i % 3 === 1),
-    mockPosts.filter((_, i) => i % 3 === 2),
+    posts.filter((_, i) => i % 3 === 0),
+    posts.filter((_, i) => i % 3 === 1),
+    posts.filter((_, i) => i % 3 === 2),
   ];
 
   return (
@@ -113,22 +155,28 @@ export const CardsGoingBoomPanel = () => {
           <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent z-10 pointer-events-none" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-full overflow-hidden">
-            {columns.map((columnPosts, colIndex) => (
-              <div 
-                key={colIndex}
-                className="flex flex-col gap-4"
-                style={{
-                  animation: isPaused ? 'none' : `scrollColumn${colIndex % 2 === 0 ? 'Up' : 'Down'} ${20 + colIndex * 5}s linear infinite`,
-                }}
-              >
-                {/* Duplicate posts for seamless loop */}
-                {[...columnPosts, ...columnPosts].map((post, idx) => (
-                  <PostCard key={`${post.id}-${idx}`} post={post} />
-                ))}
-              </div>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-full overflow-hidden">
+              {columns.map((columnPosts, colIndex) => (
+                <div 
+                  key={colIndex}
+                  className="flex flex-col gap-4"
+                  style={{
+                    animation: isPaused ? 'none' : `scrollColumn${colIndex % 2 === 0 ? 'Up' : 'Down'} ${20 + colIndex * 5}s linear infinite`,
+                  }}
+                >
+                  {/* Duplicate posts for seamless loop */}
+                  {[...columnPosts, ...columnPosts].map((post, idx) => (
+                    <PostCard key={`${post.id}-${idx}`} post={post} />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -148,7 +196,7 @@ export const CardsGoingBoomPanel = () => {
 };
 
 interface PostCardProps {
-  post: typeof mockPosts[0];
+  post: XPost;
 }
 
 const PostCard = ({ post }: PostCardProps) => (
