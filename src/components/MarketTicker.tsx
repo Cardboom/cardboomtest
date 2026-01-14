@@ -123,32 +123,32 @@ export const MarketTicker = () => {
           <Link
             key={`${item.id}-${index}`}
             to={item.type === 'listing' && item.listing_id ? `/listing/${item.listing_id}` : `/item/${item.id}`}
-            className="flex items-center gap-2 px-6 py-2.5 whitespace-nowrap border-r border-border/20 hover:bg-muted/50 transition-colors flex-shrink-0"
+            className="flex items-center gap-1.5 px-4 py-1.5 whitespace-nowrap border-r border-border/20 hover:bg-muted/50 transition-colors flex-shrink-0"
           >
             {item.type === 'listing' && (
-              <Tag className="w-3 h-3 text-primary" />
+              <Tag className="w-2.5 h-2.5 text-primary" />
             )}
-            <span className="text-sm text-muted-foreground font-medium">
-              {item.name.slice(0, 25)}{item.name.length > 25 ? '...' : ''}
+            <span className="text-xs text-muted-foreground font-medium">
+              {item.name.slice(0, 22)}{item.name.length > 22 ? '...' : ''}
             </span>
-            <span className="text-sm font-semibold">
+            <span className="text-xs font-semibold">
               {formatPrice(item.current_price)}
             </span>
             {item.change_24h !== null && (
               <span className={cn(
-                "text-xs font-medium flex items-center gap-0.5",
+                "text-[10px] font-medium flex items-center gap-0.5",
                 item.change_24h >= 0 ? "text-gain" : "text-loss"
               )}>
                 {item.change_24h >= 0 ? (
-                  <TrendingUp className="w-3 h-3" />
+                  <TrendingUp className="w-2.5 h-2.5" />
                 ) : (
-                  <TrendingDown className="w-3 h-3" />
+                  <TrendingDown className="w-2.5 h-2.5" />
                 )}
                 {item.change_24h >= 0 ? '+' : ''}{item.change_24h.toFixed(1)}%
               </span>
             )}
             {item.type === 'listing' && (
-              <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-semibold">
+              <span className="text-[9px] bg-primary/20 text-primary px-1 py-0.5 rounded font-semibold">
                 FOR SALE
               </span>
             )}
