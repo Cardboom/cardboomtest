@@ -74,7 +74,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
     try {
       let query = supabase
         .from('listings')
-        .select('id, title, description, category, condition, price, status, allows_vault, allows_trade, allows_shipping, created_at, seller_id, image_url, certification_status, grading_order_id, market_item_id, source, grading_company, grade, cbgi_score, cbgi_grade_label')
+        .select('id, title, description, category, condition, price, status, allows_vault, allows_trade, allows_shipping, created_at, seller_id, image_url, certification_status, grading_order_id, market_item_id, source, grading_company, grade, cbgi_score, cbgi_grade_label, slug')
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 

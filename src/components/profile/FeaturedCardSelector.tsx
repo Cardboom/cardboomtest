@@ -69,7 +69,7 @@ export const FeaturedCardSelector = ({
       // Fetch user's listings
       const { data: listingsData } = await supabase
         .from('listings')
-        .select('id, title, image_url, category')
+        .select('id, title, image_url, category, slug')
         .eq('seller_id', userId)
         .in('status', ['active', 'reserved'])
         .order('created_at', { ascending: false });

@@ -40,7 +40,7 @@ export const useUserHoldings = (userId: string | undefined): UseUserHoldingsResu
       // Fetch active listings
       const { data: listingsData } = await supabase
         .from('listings')
-        .select('id, title, image_url, category, condition, certification_status, price, status, created_at')
+        .select('id, title, image_url, category, condition, certification_status, price, status, created_at, slug')
         .eq('seller_id', userId)
         .eq('status', 'active')
         .order('created_at', { ascending: false });

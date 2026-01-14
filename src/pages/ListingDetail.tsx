@@ -173,9 +173,9 @@ const ListingDetail = () => {
       let error = null;
 
       if (isSlugRoute && category && slug) {
-        // SEO route: fetch by slug (category in URL is for SEO only)
-        // Query just by slug since it's unique
-        const result = await supabase
+        // SEO route: fetch by slug
+        // First try exact match
+        let result = await supabase
           .from('listings')
           .select('*')
           .eq('slug', slug)
@@ -183,7 +183,24 @@ const ListingDetail = () => {
         data = result.data;
         error = result.error;
         
-        // If not found by exact slug, try partial match (slug might have ID suffix)
+        // If not found, try matching by the ID suffix at the end of the slug
+        // URL might be shortened (e.g., nami-cf5d22bd) but DB has full slug
+        if (!data && !error) {
+          // Extract ID suffix from the end of the URL slug (last 8 chars after hyphen)
+          const idSuffixMatch = slug.match(/-([a-f0-9]{8})$/i);
+          if (idSuffixMatch) {
+            const idSuffix = idSuffixMatch[1];
+            const partialResult = await supabase
+              .from('listings')
+              .select('*')
+              .ilike('slug', `%-${idSuffix}`)
+              .maybeSingle();
+            data = partialResult.data;
+            error = partialResult.error;
+          }
+        }
+        
+        // Last resort: try partial match from start
         if (!data && !error) {
           const partialResult = await supabase
             .from('listings')

@@ -42,7 +42,7 @@ export function PopularCardsPanel() {
       // Use simple query for reliability, then fetch seller names separately
       const { data, error } = await supabase
         .from('listings')
-        .select('id, title, category, image_url, price, condition, created_at, cbgi_score, grade, seller_id')
+        .select('id, title, category, image_url, price, condition, created_at, cbgi_score, grade, seller_id, slug')
         .eq('status', 'active')
         .not('image_url', 'is', null)
         .order('created_at', { ascending: false })

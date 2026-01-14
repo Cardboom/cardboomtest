@@ -32,7 +32,7 @@ export const RelatedListings = ({
       // First try to find listings by market_item_id
       let query = supabase
         .from('listings')
-        .select('id, title, price, condition, image_url, seller_id, created_at, category')
+        .select('id, title, price, condition, image_url, seller_id, created_at, category, slug')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(10);
