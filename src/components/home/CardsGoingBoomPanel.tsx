@@ -75,7 +75,6 @@ const mockPosts: XPost[] = [
 ];
 
 export const CardsGoingBoomPanel = () => {
-  const [isPaused, setIsPaused] = useState(false);
   const [posts, setPosts] = useState<XPost[]>(mockPosts);
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -148,8 +147,6 @@ export const CardsGoingBoomPanel = () => {
         <div 
           className="relative overflow-hidden rounded-2xl bg-card/30 border border-border/50"
           style={{ height: '500px' }}
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
         >
           {/* Gradient overlays for smooth fade */}
           <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-background to-transparent z-10 pointer-events-none" />
@@ -166,7 +163,7 @@ export const CardsGoingBoomPanel = () => {
                   key={colIndex}
                   className="flex flex-col gap-4"
                   style={{
-                    animation: isPaused ? 'none' : `scrollColumn${colIndex % 2 === 0 ? 'Up' : 'Down'} ${20 + colIndex * 5}s linear infinite`,
+                    animation: `scrollColumn${colIndex % 2 === 0 ? 'Up' : 'Down'} ${20 + colIndex * 5}s linear infinite`,
                   }}
                 >
                   {/* Duplicate posts for seamless loop */}
