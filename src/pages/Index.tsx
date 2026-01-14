@@ -292,14 +292,16 @@ const Index = () => {
           {/* Full-width Bounties Panel with explanation - only for logged in users */}
           {user && <BountiesPanel userId={user.id} />}
           
-          {/* Two column layout for market panels - visible to all */}
-          <div className="grid md:grid-cols-2 gap-3">
-            <LiveMarketPanel />
-            <PersonalizedInsightsPanel userId={user?.id} />
-          </div>
+          {/* Two column layout for market panels - only for logged in users at top */}
+          {user && (
+            <div className="grid md:grid-cols-2 gap-3">
+              <LiveMarketPanel />
+              <PersonalizedInsightsPanel userId={user?.id} />
+            </div>
+          )}
           
-          {/* Full-width News Panel - visible to all */}
-          <NewsPanel />
+          {/* Full-width News Panel - only for logged in users at top */}
+          {user && <NewsPanel />}
         </div>
         
         {/* Global Stats Bar - Hero at top (hide hero for logged in users) */}
@@ -307,6 +309,20 @@ const Index = () => {
 
         {/* Feature Showcase - Why CardBoom (only for non-logged-in users) */}
         {!user && <FeatureShowcase />}
+
+        {/* Panels for non-logged-in users - shown after Why CardBoom section */}
+        {!user && (
+          <div className="container mx-auto px-4 py-6 space-y-3">
+            {/* Two column layout for market panels */}
+            <div className="grid md:grid-cols-2 gap-3">
+              <LiveMarketPanel />
+              <PersonalizedInsightsPanel userId={undefined} />
+            </div>
+            
+            {/* Full-width News Panel */}
+            <NewsPanel />
+          </div>
+        )}
 
         {/* Grading CTA Section (only for non-logged-in users) */}
         {!user && <GradingCTA />}
