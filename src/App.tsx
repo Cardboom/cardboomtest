@@ -75,6 +75,7 @@ import CardWars from "./pages/CardWars";
 import CardBoomPass from "./pages/CardBoomPass";
 import BuyOrders from "./pages/BuyOrders";
 import StorefrontPage from "./pages/StorefrontPage";
+import MyStorefrontPage from "./pages/MyStorefrontPage";
 import Cardswap from "./pages/Cardswap";
 import OrderDetail from "./pages/OrderDetail";
 import Purchases from "./pages/Purchases";
@@ -176,6 +177,7 @@ const AppContent = () => {
           <Route path="/@:username" element={<CreatorPage />} />
           <Route path="/creators" element={<CreatorInvite />} />
           <Route path="/store/:slug" element={<StorefrontPage />} />
+          <Route path="/my-storefront" element={<MyStorefrontPage />} />
           {/* SEO Category Pages */}
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/buy/:category" element={<BuyCategoryPage />} />

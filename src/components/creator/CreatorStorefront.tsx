@@ -17,6 +17,9 @@ import {
   ExternalLink,
   Share2,
   Award,
+  Crown,
+  Megaphone,
+  Shield,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { SellerTrustScore } from '@/components/seller/SellerTrustScore';
@@ -128,20 +131,46 @@ export const CreatorStorefront = ({ slug: propSlug }: CreatorStorefrontProps) =>
   }
 
   const creator = storefront.creator;
+  const isEnterpriseStore = storefront.store_type === 'enterprise';
+  const themeColor = storefront.theme_color || undefined;
+  const accentColor = storefront.accent_color || undefined;
 
   return (
     <div className="space-y-6">
+      {/* Enterprise Announcement Banner */}
+      {storefront.announcement_active && storefront.announcement_text && (
+        <div 
+          className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 flex items-center gap-3"
+          style={themeColor ? { borderColor: themeColor } : {}}
+        >
+          <Megaphone className="w-5 h-5 text-amber-500 flex-shrink-0" />
+          <p className="text-sm font-medium">{storefront.announcement_text}</p>
+        </div>
+      )}
+
       {/* Banner & Profile */}
       <div className="relative">
         {/* Banner */}
         <div
-          className="h-48 md:h-64 rounded-xl bg-gradient-to-r from-primary/20 to-purple-500/20"
+          className="h-48 md:h-64 rounded-xl bg-gradient-to-r from-primary/20 to-purple-500/20 relative overflow-hidden"
           style={storefront.banner_url ? { 
             backgroundImage: `url(${storefront.banner_url})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center'
+          } : themeColor ? {
+            background: `linear-gradient(135deg, ${themeColor}20, ${accentColor || themeColor}40)`
           } : {}}
-        />
+        >
+          {/* Enterprise Badge Overlay */}
+          {isEnterpriseStore && (
+            <div className="absolute top-4 right-4">
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg">
+                <Crown className="w-3 h-3 mr-1" />
+                Enterprise Seller
+              </Badge>
+            </div>
+          )}
+        </div>
 
         {/* Profile Card */}
         <Card className="mx-4 -mt-16 relative z-10">
