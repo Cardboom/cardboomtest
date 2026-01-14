@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -16,7 +16,7 @@ import { useCardWars, CardWar } from "@/hooks/useCardWars";
 import { formatDistanceToNow, format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-
+import { CardWarsSchema } from "@/components/seo/CardWarsSchema";
 interface CompletedWar extends CardWar {
   total_votes?: number;
   total_pro_pool?: number;
@@ -102,9 +102,11 @@ const CardWars = () => {
     
     setUserHistory(data || []);
   };
+  const totalPrizePool = useMemo(() => activeWars.reduce((sum, w) => sum + w.prize_pool, 0), [activeWars]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <CardWarsSchema activeBattleCount={activeWars.length} totalPrizePool={totalPrizePool} />
       <Header cartCount={0} onCartClick={() => {}} />
       
       <main className="flex-1">

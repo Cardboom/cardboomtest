@@ -5,3 +5,4 @@ export { CategorySchema } from './CategorySchema';
 export { PaginationSEO } from './PaginationSEO';
 export { FilteredPageSEO } from './FilteredPageSEO';
 export { GlobalSEO } from './GlobalSEO';
+export { CardWarsSchema } from './CardWarsSchema';
