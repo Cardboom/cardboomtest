@@ -175,9 +175,37 @@ export const CATEGORY_SLUG_MAP: Record<string, string> = {
 };
 
 /**
+ * Reverse mapping from URL slugs to database category values
+ */
+export const URL_TO_DB_CATEGORY: Record<string, string> = {
+  'one-piece': 'onepiece',
+  'pokemon': 'pokemon',
+  'mtg': 'mtg',
+  'yugioh': 'yugioh',
+  'sports': 'sports',
+  'lorcana': 'lorcana',
+  'figures': 'figures',
+  'sealed': 'sealed',
+  'nba': 'nba',
+  'nfl': 'nfl',
+  'mlb': 'mlb',
+  'videogames': 'videogames',
+  'coaching': 'coaching',
+  'lol-riftbound': 'lol-riftbound',
+};
+
+/**
  * Normalizes category for URLs
  */
 export const normalizeCategory = (category: string): string => {
   const normalized = normalizeSlug(category);
   return CATEGORY_SLUG_MAP[normalized] || normalized;
+};
+
+/**
+ * Converts URL category slug back to database category
+ */
+export const urlCategoryToDbCategory = (urlCategory: string): string => {
+  const normalized = urlCategory.toLowerCase();
+  return URL_TO_DB_CATEGORY[normalized] || normalized;
 };
