@@ -67,10 +67,10 @@ export const TCGReleaseCalendar = () => {
     } catch (error) {
       console.error('Failed to fetch TCG drops:', error);
       setDrops([
-        { id: '1', name: 'Surging Sparks', tcg: 'pokemon', releaseDate: '2025-02-07', type: 'booster-box' },
-        { id: '2', name: 'OP-10 Royal Blood', tcg: 'one-piece', releaseDate: '2025-02-14', type: 'booster-box' },
-        { id: '3', name: 'Shimmering Skies', tcg: 'lorcana', releaseDate: '2025-02-21', type: 'booster-box' },
-        { id: '4', name: 'Foundations', tcg: 'magic', releaseDate: '2025-02-28', type: 'booster-box' },
+        { id: '1', name: 'Prismatic Evolutions', tcg: 'pokemon', releaseDate: '2026-01-17', type: 'booster-box' },
+        { id: '2', name: 'OP-11 Two Legends', tcg: 'one-piece', releaseDate: '2026-02-07', type: 'booster-box' },
+        { id: '3', name: 'Aetherdrift', tcg: 'magic', releaseDate: '2026-02-14', type: 'booster-box' },
+        { id: '4', name: 'Azurite Sea', tcg: 'lorcana', releaseDate: '2026-02-21', type: 'booster-box' },
       ]);
     } finally {
       setLoading(false);
@@ -82,14 +82,14 @@ export const TCGReleaseCalendar = () => {
 
   if (loading) {
     return (
-      <div className="h-[120px] md:h-[160px] rounded-[18px] bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820] border border-white/5 animate-pulse" />
+      <div className="h-[120px] md:h-[160px] rounded-[18px] bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820] border border-border/50 dark:border-white/5 animate-pulse" />
     );
   }
 
   return (
-    <div className="h-[120px] md:h-[160px] rounded-[18px] overflow-hidden bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820] border border-white/5 flex flex-col">
+    <div className="h-[120px] md:h-[160px] rounded-[18px] overflow-hidden bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820] border border-border/50 dark:border-white/5 flex flex-col">
       {/* Header */}
-      <div className="px-3 py-1.5 border-b border-white/5 flex items-center justify-between shrink-0">
+      <div className="px-3 py-1.5 border-b border-border/30 dark:border-white/5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1.5">
           <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
             <Calendar className="w-2.5 h-2.5 text-primary" />
@@ -108,7 +108,7 @@ export const TCGReleaseCalendar = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Next Drop - Left side */}
         {nextDrop && (
-          <div className="w-1/4 p-2 border-r border-white/5 flex flex-col justify-center">
+          <div className="w-1/4 p-2 border-r border-border/30 dark:border-white/5 flex flex-col justify-center">
             <p className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Next</p>
             <div className={cn(
               "w-8 h-8 rounded-lg flex items-center justify-center text-base mb-1",
@@ -116,7 +116,7 @@ export const TCGReleaseCalendar = () => {
             )}>
               {TCG_COLORS[nextDrop.tcg].icon}
             </div>
-            <p className="text-[10px] font-medium text-white truncate">{nextDrop.name}</p>
+            <p className="text-[10px] font-medium text-foreground truncate">{nextDrop.name}</p>
             <div className="flex items-center gap-1 mt-0.5">
               <span className={cn(
                 "text-lg font-bold",
@@ -149,7 +149,7 @@ export const TCGReleaseCalendar = () => {
                   >
                     <span className="text-xs shrink-0">{TCG_COLORS[drop.tcg].icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-medium text-white truncate">{drop.name}</p>
+                      <p className="text-[10px] font-medium text-foreground truncate">{drop.name}</p>
                     </div>
                     <div className="shrink-0 flex items-center gap-1 text-[9px] text-muted-foreground">
                       <Clock className="w-2.5 h-2.5" />
@@ -164,7 +164,7 @@ export const TCGReleaseCalendar = () => {
       </div>
 
       {/* TCG Legend Footer */}
-      <div className="px-2 py-1 border-t border-white/5 shrink-0">
+      <div className="px-2 py-1 border-t border-border/30 dark:border-white/5 shrink-0">
         <div className="flex gap-2 justify-center overflow-x-auto">
           {Object.entries(TCG_COLORS).filter(([key]) => key !== 'other').slice(0, 5).map(([tcg, colors]) => (
             <div key={tcg} className="flex items-center gap-0.5 shrink-0">

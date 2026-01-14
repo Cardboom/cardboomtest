@@ -68,10 +68,10 @@ export const NewsPanel = () => {
     <div 
       className={cn(
         "relative overflow-hidden rounded-[18px]",
-        "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
-        "border border-white/5",
+        "bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+        "border border-border/50 dark:border-white/5",
         "h-[120px] md:h-[160px]",
-        "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+        "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
       )}
       style={{ backdropFilter: 'blur(22px)' }}
     >
@@ -111,9 +111,9 @@ export const NewsPanel = () => {
               onClick={() => navigate(`/news/${item.slug}`)}
               className={cn(
                 "flex-shrink-0 w-[220px] md:w-[280px] h-full",
-                "rounded-lg bg-white/[0.03] border border-white/5",
+                "rounded-lg bg-muted/50 dark:bg-white/[0.03] border border-border/30 dark:border-white/5",
                 "overflow-hidden cursor-pointer group",
-                "hover:bg-white/[0.06] hover:border-white/10 transition-all duration-200"
+                "hover:bg-muted dark:hover:bg-white/[0.06] hover:border-border dark:hover:border-white/10 transition-all duration-200"
               )}
             >
               <div className="flex h-full items-center">
@@ -138,7 +138,7 @@ export const NewsPanel = () => {
                       {formatCategoryName(item.category)}
                     </span>
                   )}
-                  <h3 className="font-sans font-bold text-[10px] md:text-[11px] text-white/90 leading-tight line-clamp-2 group-hover:text-white transition-colors">
+                  <h3 className="font-sans font-bold text-[10px] md:text-[11px] text-foreground/90 leading-tight line-clamp-2 group-hover:text-foreground transition-colors">
                     {item.title}
                   </h3>
                   <p className="font-sans text-[8px] text-gray-500 mt-1">

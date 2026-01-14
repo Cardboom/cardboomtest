@@ -155,10 +155,10 @@ export const LiveMarketPanel = () => {
   return (
     <div className={cn(
       "relative overflow-hidden rounded-[18px]",
-      "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
-      "border border-white/5",
+      "bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+      "border border-border/50 dark:border-white/5",
       "h-[120px] md:h-[160px]",
-      "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+      "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
     )} style={{ backdropFilter: 'blur(22px)' }}>
       {/* Noise texture */}
       <div 
@@ -191,18 +191,18 @@ export const LiveMarketPanel = () => {
       </div>
 
       {/* Ticker strip */}
-      <div className="absolute top-10 md:top-11 left-0 right-0 h-6 overflow-hidden bg-white/5">
+      <div className="absolute top-10 md:top-11 left-0 right-0 h-6 overflow-hidden bg-muted/50 dark:bg-white/5">
         <div 
           ref={tickerRef}
           className="flex items-center h-full whitespace-nowrap"
           style={{ animation: 'marquee 60s linear infinite' }}
         >
           {marketTicks.map((tick, i) => (
-            <div key={i} className="flex items-center gap-2 px-4 border-r border-white/10">
-              <span className="text-[11px] font-medium text-white/70">
+            <div key={i} className="flex items-center gap-2 px-4 border-r border-border/30 dark:border-white/10">
+              <span className="text-[11px] font-medium text-foreground/70">
                 {tick.symbol}
               </span>
-              <span className="text-[11px] font-semibold text-white">
+              <span className="text-[11px] font-semibold text-foreground">
                 ${tick.price.toLocaleString()}
               </span>
               <span className={cn(
@@ -247,7 +247,7 @@ export const LiveMarketPanel = () => {
               {/* Event content */}
               <div className="flex items-center gap-2">
                 <span className="text-lg">{currentEvent.icon}</span>
-                <span className="text-sm font-medium text-white">
+                <span className="text-sm font-medium text-foreground">
                   {currentEvent.message}
                 </span>
                 {currentEvent.highlight && (
@@ -276,7 +276,7 @@ export const LiveMarketPanel = () => {
               "h-1 rounded-full transition-all duration-300",
               i === currentEventIndex % Math.min(5, events.length)
                 ? "bg-primary w-6"
-                : "bg-white/20 w-1"
+                : "bg-muted-foreground/30 w-1"
             )}
             layout
           />
