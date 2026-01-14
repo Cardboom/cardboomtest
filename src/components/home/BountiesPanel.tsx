@@ -168,8 +168,8 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       <div 
         className={cn(
           "relative overflow-hidden rounded-[18px]",
-          "bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
-          "border border-border/50 dark:border-white/5",
+          "bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+          "border border-black/[0.04] dark:border-white/5",
           "h-[140px] md:h-[180px]",
           "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
         )}
@@ -196,8 +196,8 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
     <div 
       className={cn(
         "relative overflow-hidden rounded-[18px]",
-        "bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
-        "border border-border/50 dark:border-white/5",
+        "bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+        "border border-black/[0.04] dark:border-white/5",
         "h-[140px] md:h-[180px]",
         "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
       )}
@@ -249,8 +249,8 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                   key={bounty.id}
                   className={cn(
                     "flex-shrink-0 w-[140px] md:w-[160px] rounded-lg p-2 flex flex-col justify-between",
-                    "bg-muted/50 dark:bg-white/[0.03] border border-border/30 dark:border-white/5",
-                    "hover:bg-muted dark:hover:bg-white/[0.05] transition-colors",
+                    "bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/5",
+                    "hover:bg-black/[0.04] dark:hover:bg-white/[0.05] transition-colors",
                     bounty.is_featured && "border-amber-500/30 bg-amber-500/5",
                     isGloballyExhausted && "opacity-50"
                   )}

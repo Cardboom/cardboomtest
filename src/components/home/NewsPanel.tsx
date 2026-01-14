@@ -68,8 +68,8 @@ export const NewsPanel = () => {
     <div 
       className={cn(
         "relative overflow-hidden rounded-[18px]",
-        "bg-white dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
-        "border border-border/50 dark:border-white/5",
+        "bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+        "border border-black/[0.04] dark:border-white/5",
         "h-[120px] md:h-[160px]",
         "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
       )}
@@ -111,9 +111,9 @@ export const NewsPanel = () => {
               onClick={() => navigate(`/news/${item.slug}`)}
               className={cn(
                 "flex-shrink-0 w-[220px] md:w-[280px] h-full",
-                "rounded-lg bg-muted/50 dark:bg-white/[0.03] border border-border/30 dark:border-white/5",
+                "rounded-lg bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.04] dark:border-white/5",
                 "overflow-hidden cursor-pointer group",
-                "hover:bg-muted dark:hover:bg-white/[0.06] hover:border-border dark:hover:border-white/10 transition-all duration-200"
+                "hover:bg-black/[0.04] dark:hover:bg-white/[0.06] hover:border-black/[0.06] dark:hover:border-white/10 transition-all duration-200"
               )}
             >
               <div className="flex h-full items-center">
