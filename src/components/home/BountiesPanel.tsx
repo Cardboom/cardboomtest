@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Target, Gift, Clock, ChevronRight, Check, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 
 interface Bounty {
@@ -158,11 +159,38 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
 
   if (loading) {
     return (
-      <div className="h-[100px] md:h-[140px] rounded-[18px] bg-card/50 animate-pulse" />
+      <div className="h-[140px] md:h-[180px] rounded-[18px] bg-card/50 animate-pulse" />
     );
   }
 
-  if (bounties.length === 0) return null;
+  if (bounties.length === 0) {
+    return (
+      <div 
+        className={cn(
+          "relative overflow-hidden rounded-[18px]",
+          "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
+          "border border-white/5",
+          "h-[140px] md:h-[180px]",
+          "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+        )}
+        style={{ backdropFilter: 'blur(22px)' }}
+      >
+        <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+        <div className="absolute top-2 left-3 flex items-center gap-1.5">
+          <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
+            <Target className="w-3 h-3 text-primary" />
+          </div>
+          <span className="font-sans text-[11px] md:text-xs text-primary uppercase tracking-widest font-bold">
+            BOOM CHALLENGES
+          </span>
+        </div>
+        <div className="h-full flex flex-col items-center justify-center text-center pt-4">
+          <Target className="w-8 h-8 text-gray-600 mb-2" />
+          <p className="text-xs text-gray-500 font-medium">No active challenges</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -209,96 +237,99 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
         ALL <ChevronRight className="w-2.5 h-2.5" />
       </button>
 
-      {/* Bounties grid - full width */}
-      <div className="absolute inset-x-0 top-10 bottom-2 px-3 overflow-hidden">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 h-full">
-          {bounties.slice(0, 6).map((bounty) => {
-            const prog = progress[bounty.id];
-            const currentCount = prog?.current_count || 0;
-            const percentage = Math.min((currentCount / bounty.target_count) * 100, 100);
-            const isCompleted = prog?.is_completed;
-            const isClaimed = prog?.reward_claimed;
-            const maxClaims = bounty.max_claims || 1;
-            const totalClaimed = bounty.total_claimed || 0;
-            const isGloballyExhausted = totalClaimed >= maxClaims && !isClaimed;
+      {/* Bounties horizontal scroll */}
+      <div className="absolute inset-x-0 top-10 bottom-2 px-3">
+        <ScrollArea className="h-full w-full">
+          <div className="flex gap-2 pb-2">
+            {bounties.slice(0, 6).map((bounty) => {
+              const prog = progress[bounty.id];
+              const currentCount = prog?.current_count || 0;
+              const percentage = Math.min((currentCount / bounty.target_count) * 100, 100);
+              const isCompleted = prog?.is_completed;
+              const isClaimed = prog?.reward_claimed;
+              const maxClaims = bounty.max_claims || 1;
+              const totalClaimed = bounty.total_claimed || 0;
+              const isGloballyExhausted = totalClaimed >= maxClaims && !isClaimed;
 
-            return (
-              <div
-                key={bounty.id}
-                className={cn(
-                  "rounded-lg p-2 flex flex-col justify-between",
-                  "bg-white/[0.03] border border-white/5",
-                  "hover:bg-white/[0.05] transition-colors",
-                  bounty.is_featured && "border-amber-500/30 bg-amber-500/5",
-                  isGloballyExhausted && "opacity-50"
-                )}
-              >
-                <div>
-                  <div className="flex items-start justify-between mb-1">
-                    <span className="text-base">{bounty.icon}</span>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-2 h-2 text-gray-500" />
-                      <span className="text-[8px] text-gray-500 font-sans font-medium">
-                        {formatTimeLeft(bounty.ends_at)}
+              return (
+                <div
+                  key={bounty.id}
+                  className={cn(
+                    "flex-shrink-0 w-[140px] md:w-[160px] rounded-lg p-2 flex flex-col justify-between",
+                    "bg-white/[0.03] border border-white/5",
+                    "hover:bg-white/[0.05] transition-colors",
+                    bounty.is_featured && "border-amber-500/30 bg-amber-500/5",
+                    isGloballyExhausted && "opacity-50"
+                  )}
+                >
+                  <div>
+                    <div className="flex items-start justify-between mb-1">
+                      <span className="text-base">{bounty.icon}</span>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-2 h-2 text-gray-500" />
+                        <span className="text-[8px] text-gray-500 font-sans font-medium">
+                          {formatTimeLeft(bounty.ends_at)}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] md:text-xs text-white/80 leading-tight line-clamp-2 font-sans font-bold">
+                      {bounty.title}
+                    </p>
+                  </div>
+
+                  <div className="mt-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[9px] md:text-[10px] text-gray-500 font-sans font-medium">
+                        {currentCount}/{bounty.target_count}
+                      </span>
+                      <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-sans">
+                        ${(bounty.reward_gems / 100).toFixed(0)}
                       </span>
                     </div>
-                  </div>
-                  <p className="text-[11px] md:text-xs text-white/80 leading-tight line-clamp-2 font-sans font-bold">
-                    {bounty.title}
-                  </p>
-                </div>
-
-                <div className="mt-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] md:text-[10px] text-gray-500 font-sans font-medium">
-                      {currentCount}/{bounty.target_count}
-                    </span>
-                    <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-sans">
-                      ${(bounty.reward_gems / 100).toFixed(0)}
-                    </span>
-                  </div>
-                  
-                  {isGloballyExhausted ? (
-                    <div className="w-full h-5 flex flex-col items-center justify-center text-[8px] text-gray-500 font-sans">
-                      <div className="flex items-center gap-1 font-bold">
-                        <Check className="w-2.5 h-2.5" />
-                        TAKEN
+                    
+                    {isGloballyExhausted ? (
+                      <div className="w-full h-5 flex flex-col items-center justify-center text-[8px] text-gray-500 font-sans">
+                        <div className="flex items-center gap-1 font-bold">
+                          <Check className="w-2.5 h-2.5" />
+                          TAKEN
+                        </div>
+                        {bounty.claimed_by_name && (
+                          <span className="text-[7px] text-gray-600 truncate max-w-full">
+                            by {bounty.claimed_by_name}
+                          </span>
+                        )}
                       </div>
-                      {bounty.claimed_by_name && (
-                        <span className="text-[7px] text-gray-600 truncate max-w-full">
-                          by {bounty.claimed_by_name}
-                        </span>
-                      )}
-                    </div>
-                  ) : isCompleted && !isClaimed ? (
-                    <Button
-                      size="sm"
-                      onClick={() => claimReward(bounty.id)}
-                      disabled={claiming === bounty.id}
-                      className="w-full h-5 text-[8px] bg-amber-500 hover:bg-amber-600 text-black font-bold"
-                    >
-                      {claiming === bounty.id ? (
-                        <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                      ) : (
-                        <>
-                          <Gift className="w-2.5 h-2.5 mr-1" />
-                          CLAIM
-                        </>
-                      )}
-                    </Button>
-                  ) : isClaimed ? (
-                    <div className="w-full h-5 flex items-center justify-center gap-1 text-[9px] text-emerald-400 font-sans font-bold">
-                      <Check className="w-2.5 h-2.5" />
-                      CLAIMED
-                    </div>
-                  ) : (
-                    <Progress value={percentage} className="h-1.5" />
-                  )}
+                    ) : isCompleted && !isClaimed ? (
+                      <Button
+                        size="sm"
+                        onClick={() => claimReward(bounty.id)}
+                        disabled={claiming === bounty.id}
+                        className="w-full h-5 text-[8px] bg-amber-500 hover:bg-amber-600 text-black font-bold"
+                      >
+                        {claiming === bounty.id ? (
+                          <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                        ) : (
+                          <>
+                            <Gift className="w-2.5 h-2.5 mr-1" />
+                            CLAIM
+                          </>
+                        )}
+                      </Button>
+                    ) : isClaimed ? (
+                      <div className="w-full h-5 flex items-center justify-center gap-1 text-[9px] text-emerald-400 font-sans font-bold">
+                        <Check className="w-2.5 h-2.5" />
+                        CLAIMED
+                      </div>
+                    ) : (
+                      <Progress value={percentage} className="h-1.5" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
     </div>
   );

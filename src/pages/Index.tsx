@@ -40,6 +40,7 @@ import { LiveMarketPanel } from '@/components/home/LiveMarketPanel';
 import { PersonalizedInsightsPanel } from '@/components/home/PersonalizedInsightsPanel';
 import { NewsPanel } from '@/components/home/NewsPanel';
 import { BountiesPanel } from '@/components/home/BountiesPanel';
+import { MyGradingOrdersPanel } from '@/components/home/MyGradingOrdersPanel';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -289,8 +290,13 @@ const Index = () => {
       <main>
         {/* Boom Challenges - Full width at top */}
         <div className="container mx-auto px-4 pt-6 space-y-3">
-          {/* Full-width Bounties Panel with explanation - only for logged in users */}
-          {user && <BountiesPanel userId={user.id} />}
+          {/* Boom Challenges + My Gradings side by side - only for logged in users */}
+          {user && (
+            <div className="grid md:grid-cols-2 gap-3">
+              <BountiesPanel userId={user.id} />
+              <MyGradingOrdersPanel userId={user.id} />
+            </div>
+          )}
           
           {/* Two column layout for market panels - only for logged in users at top */}
           {user && (
