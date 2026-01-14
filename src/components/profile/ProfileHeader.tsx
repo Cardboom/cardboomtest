@@ -253,16 +253,16 @@ export const ProfileHeader = ({
                   )}
                 </div>
 
-                {/* Guru Expertise Tags */}
+                {/* Guru Expertise Tags - Compact inline */}
                 {(profile.guru_expertise?.length > 0 || profile.custom_guru) && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap items-center gap-1.5 mt-1">
                     {profile.guru_expertise?.map((guru) => (
-                      <Badge key={guru} variant="secondary" className="bg-primary/20 text-primary">
+                      <Badge key={guru} variant="secondary" className="bg-primary/20 text-primary text-xs px-2 py-0.5 h-5">
                         {t.profile.expertiseCategories[guru as keyof typeof t.profile.expertiseCategories] || guru}
                       </Badge>
                     ))}
                     {profile.custom_guru && (
-                      <Badge variant="secondary" className="bg-purple-500/20 text-purple-400">
+                      <Badge variant="secondary" className="bg-purple-500/20 text-purple-400 text-xs px-2 py-0.5 h-5">
                         {profile.custom_guru === 'gaming_coach' ? 'Gaming Coach' : profile.custom_guru}
                       </Badge>
                     )}

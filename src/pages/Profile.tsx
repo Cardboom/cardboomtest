@@ -360,8 +360,8 @@ const Profile = () => {
           isOwnProfile={isOwnProfile}
         />
 
-        {/* Featured Card + Showcase Grid */}
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* Featured Card + Listings Grid */}
+        <div className="grid md:grid-cols-5 gap-6">
           <div className="md:col-span-1">
             <FeaturedCardPreview
               card={featuredCard || null}
@@ -369,13 +369,73 @@ const Profile = () => {
               onSelectCard={() => setFeaturedSelectorOpen(true)}
             />
           </div>
-          <div className="md:col-span-2">
-            <ProfileShowcase
-              userId={profile.id}
-              showcaseItems={profile.showcase_items}
-              isOwnProfile={isOwnProfile}
-              onUpdateShowcase={handleUpdateShowcase}
-            />
+          <div className="md:col-span-4">
+            {/* Listings Section replacing Featured Collection */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Store className="h-5 w-5" />
+                  Listings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {userListings && userListings.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {userListings.slice(0, 8).map((listing: any) => (
+                      <div 
+                        key={listing.id} 
+                        className="relative rounded-lg overflow-hidden group cursor-pointer"
+                        onClick={() => navigate(`/listing/${listing.id}`)}
+                      >
+                        <img 
+                          src={listing.image_url || '/placeholder.svg'} 
+                          alt={listing.title} 
+                          className="aspect-square object-cover transition-transform group-hover:scale-105" 
+                        />
+                        {/* Grading badge on top */}
+                        {listing.certification_status && (
+                          <div className="absolute top-2 left-2">
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs px-1.5 py-0.5 ${
+                                listing.certification_status === 'completed' 
+                                  ? 'bg-primary/90 text-primary-foreground' 
+                                  : 'bg-amber-500/90 text-white'
+                              }`}
+                            >
+                              {listing.certification_status === 'completed' ? 'CB Graded' : 'Grading...'}
+                            </Badge>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-2">
+                          <p className="text-xs text-white font-medium truncate">{listing.title}</p>
+                          <p className="text-xs text-primary font-semibold">{formatPrice(listing.price)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground py-6 text-sm">
+                    {isOwnProfile
+                      ? 'No active listings yet. Start selling your cards!'
+                      : 'This user hasn\'t listed any items yet.'}
+                  </p>
+                )}
+                {userListings && userListings.length > 8 && (
+                  <Button 
+                    variant="ghost" 
+                    className="w-full mt-3 text-sm"
+                    onClick={() => {
+                      const tabsList = document.querySelector('[value="listings"]');
+                      if (tabsList) (tabsList as HTMLButtonElement).click();
+                    }}
+                  >
+                    View all {userListings.length} listings
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
 
