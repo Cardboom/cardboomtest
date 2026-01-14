@@ -72,7 +72,9 @@ serve(async (req) => {
       });
     }
 
-    // 1. Create auth user using admin API
+    // 1. Try to create auth user, or get existing one
+    let userId: string;
+    
     const randomPassword = crypto.randomUUID() + crypto.randomUUID();
     const { data: authUser, error: createUserError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -85,14 +87,39 @@ serve(async (req) => {
     });
 
     if (createUserError) {
-      console.error("Error creating auth user:", createUserError);
-      return new Response(JSON.stringify({ error: createUserError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      // Check if user already exists
+      if (createUserError.message?.includes("already been registered")) {
+        // Find existing user by email
+        const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) {
+          console.error("Error listing users:", listError);
+          return new Response(JSON.stringify({ error: "Failed to find existing user" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        
+        const existingUser = existingUsers.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (!existingUser) {
+          return new Response(JSON.stringify({ error: "User exists but could not be found" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        
+        userId = existingUser.id;
+        console.log("Using existing user:", userId);
+      } else {
+        console.error("Error creating auth user:", createUserError);
+        return new Response(JSON.stringify({ error: createUserError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      userId = authUser.user.id;
+      console.log("Created new user:", userId);
     }
-
-    const userId = authUser.user.id;
 
     // 2. Create/update profile
     const { error: profileError } = await supabaseAdmin
