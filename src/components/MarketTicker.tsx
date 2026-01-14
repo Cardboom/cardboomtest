@@ -13,6 +13,8 @@ interface TickerItem {
   change_24h: number | null;
   type: 'market' | 'listing';
   listing_id?: string;
+  category?: string;
+  slug?: string;
 }
 
 export const MarketTicker = () => {
@@ -28,7 +30,7 @@ export const MarketTicker = () => {
       // Fetch recent active listings (user listings)
       const { data: listings } = await supabase
         .from('listings')
-        .select('id, title, price, created_at')
+        .select('id, title, price, created_at, category, slug')
         .eq('status', 'active')
         .not('price', 'is', null)
         .gt('price', 0)
@@ -54,6 +56,8 @@ export const MarketTicker = () => {
         change_24h: null,
         type: 'listing' as const,
         listing_id: l.id,
+        category: l.category,
+        slug: l.slug,
       }));
 
       const marketTickerItems: TickerItem[] = (marketItems || []).map(m => ({
@@ -123,7 +127,7 @@ export const MarketTicker = () => {
         {duplicatedItems.map((item, index) => (
           <Link
             key={`${item.id}-${index}`}
-            to={item.type === 'listing' && item.listing_id ? `/listing/${item.listing_id}` : `/item/${item.id}`}
+            to={item.type === 'listing' && item.listing_id ? generateListingUrl({ id: item.listing_id, category: item.category || 'other', slug: item.slug, title: item.name }) : `/item/${item.id}`}
             className="flex items-center gap-1.5 px-4 py-1.5 whitespace-nowrap border-r border-border/20 hover:bg-muted/50 transition-colors flex-shrink-0"
           >
             {item.type === 'listing' && (

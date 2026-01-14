@@ -86,7 +86,7 @@ export const TopListingsChart = () => {
       // Fetch active listings - ONLY with images
       const { data: listingsData, error } = await supabase
         .from('listings')
-        .select('id, title, price, image_url, category, created_at, seller_id, market_item_id, certification_status, grading_order_id')
+        .select('id, title, price, image_url, category, created_at, seller_id, market_item_id, certification_status, grading_order_id, slug')
         .eq('status', 'active')
         .not('image_url', 'is', null)
         .order('created_at', { ascending: false })
