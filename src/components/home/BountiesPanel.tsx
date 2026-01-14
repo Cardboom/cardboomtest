@@ -229,13 +229,6 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
         </span>
       </div>
 
-      {/* View all button */}
-      <button
-        onClick={() => navigate('/rewards')}
-        className="absolute top-2 right-3 flex items-center gap-0.5 text-[9px] text-gray-500 hover:text-gray-300 transition-colors font-sans font-bold"
-      >
-        ALL <ChevronRight className="w-2.5 h-2.5" />
-      </button>
 
       {/* Bounties horizontal scroll */}
       <div className="absolute inset-x-0 top-10 bottom-2 px-3">
