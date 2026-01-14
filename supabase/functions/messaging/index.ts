@@ -96,6 +96,28 @@ serve(async (req) => {
     const { action, conversationId, recipientId, listingId, content, messageId } = await req.json();
 
     switch (action) {
+      case 'filter': {
+        // Just filter content without sending
+        if (!content) {
+          return new Response(
+            JSON.stringify({ error: 'Content required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const { filtered, filteredContent, reason } = filterMessage(content);
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            isFiltered: filtered,
+            filteredContent,
+            reason 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       case 'send_message': {
         if (!conversationId || !content) {
           return new Response(
