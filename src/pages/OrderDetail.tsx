@@ -18,7 +18,8 @@ import {
   User,
   DollarSign,
   Calendar,
-  Shield
+  Shield,
+  Star
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -27,6 +28,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { OrderReviewSection } from '@/components/OrderReviewSection';
 import { useState as useCartState } from 'react';
 
 interface OrderAction {
@@ -496,6 +498,20 @@ export default function OrderDetail() {
                       {order.escalation_reason || 'This order is under review by our support team.'}
                     </p>
                   </div>
+                )}
+
+                {/* Review Section - Show after completion */}
+                {isCompleted && currentUserId && (
+                  <OrderReviewSection
+                    orderId={order.id}
+                    currentUserId={currentUserId}
+                    isBuyer={isBuyer}
+                    counterpartyId={isBuyer ? order.seller_id : order.buyer_id}
+                    counterpartyName={isBuyer 
+                      ? (order.seller_profile?.username || 'the seller')
+                      : (order.buyer_profile?.username || 'the buyer')
+                    }
+                  />
                 )}
               </CardContent>
             </Card>
