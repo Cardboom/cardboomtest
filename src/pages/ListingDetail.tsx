@@ -37,6 +37,8 @@ import { MakeOfferDialog } from '@/components/trading/MakeOfferDialog';
 import { EditListingDialog } from '@/components/listing/EditListingDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Pencil } from 'lucide-react';
+import { isUUID, generateListingUrl } from '@/lib/listingUrl';
+import { normalizeCategory } from '@/lib/seoSlug';
 
 interface Listing {
   id: string;
@@ -74,6 +76,7 @@ interface Listing {
   // Donations
   accepts_grading_donations?: boolean;
   donation_goal_cents?: number;
+  slug?: string | null;
 }
 
 interface GradingInfo {
@@ -128,7 +131,7 @@ const getCategoryLabel = (cat: string) => {
 };
 
 const ListingDetail = () => {
-  const { id } = useParams();
+  const { id, category, slug } = useParams();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [listing, setListing] = useState<Listing | null>(null);
@@ -152,21 +155,76 @@ const ListingDetail = () => {
     });
   }, []);
 
+  // Determine if we're using UUID or slug-based URL
+  const isSlugRoute = Boolean(category && slug);
+  const listingIdentifier = isSlugRoute ? slug : id;
+
   useEffect(() => {
-    if (id) {
+    if (listingIdentifier) {
       fetchListing();
       fetchComments();
       fetchVotes();
     }
-  }, [id, user]);
+  }, [listingIdentifier, user]);
 
   const fetchListing = async () => {
     try {
-      const { data, error } = await supabase
-        .from('listings')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+      let data = null;
+      let error = null;
+
+      if (isSlugRoute && category && slug) {
+        // SEO route: fetch by category + slug
+        const normalizedCategory = normalizeCategory(category);
+        const result = await supabase
+          .from('listings')
+          .select('*')
+          .ilike('category', normalizedCategory)
+          .eq('slug', slug)
+          .maybeSingle();
+        data = result.data;
+        error = result.error;
+        
+        // If not found by exact slug, try partial match (slug might have ID suffix)
+        if (!data && !error) {
+          const partialResult = await supabase
+            .from('listings')
+            .select('*')
+            .ilike('category', normalizedCategory)
+            .ilike('slug', `${slug}%`)
+            .maybeSingle();
+          data = partialResult.data;
+          error = partialResult.error;
+        }
+      } else if (id && isUUID(id)) {
+        // Legacy UUID route
+        const result = await supabase
+          .from('listings')
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        data = result.data;
+        error = result.error;
+
+        // If found via UUID, redirect to SEO URL
+        if (data && data.slug) {
+          const seoUrl = generateListingUrl({
+            id: data.id,
+            category: data.category,
+            slug: data.slug,
+          });
+          navigate(seoUrl, { replace: true });
+          return;
+        }
+      } else if (id) {
+        // Might be a slug passed as id (edge case)
+        const result = await supabase
+          .from('listings')
+          .select('*')
+          .eq('slug', id)
+          .maybeSingle();
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
       setListing(data);

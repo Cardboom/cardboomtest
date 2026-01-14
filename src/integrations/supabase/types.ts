@@ -4856,6 +4856,7 @@ export type Database = {
           seller_id: string
           set_code: string | null
           set_name: string | null
+          slug: string | null
           source: string
           status: Database["public"]["Enums"]["listing_status"]
           title: string
@@ -4907,6 +4908,7 @@ export type Database = {
           seller_id: string
           set_code?: string | null
           set_name?: string | null
+          slug?: string | null
           source?: string
           status?: Database["public"]["Enums"]["listing_status"]
           title: string
@@ -4958,6 +4960,7 @@ export type Database = {
           seller_id?: string
           set_code?: string | null
           set_name?: string | null
+          slug?: string | null
           source?: string
           status?: Database["public"]["Enums"]["listing_status"]
           title?: string
@@ -9958,6 +9961,10 @@ export type Database = {
       finalize_community_poll: {
         Args: { poll_uuid: string }
         Returns: undefined
+      }
+      generate_listing_slug: {
+        Args: { p_card_number?: string; p_set_name?: string; p_title: string }
+        Returns: string
       }
       get_current_user_email: { Args: never; Returns: string }
       get_current_user_phone: { Args: never; Returns: string }

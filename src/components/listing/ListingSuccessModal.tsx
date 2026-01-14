@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { getCategoryLabel } from '@/lib/categoryLabels';
 
+import { generateListingUrl } from '@/lib/listingUrl';
+
 interface ListingSuccessModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -16,6 +18,9 @@ interface ListingSuccessModalProps {
     price: number;
     imageUrl?: string | null;
     category: string;
+    slug?: string | null;
+    set_name?: string | null;
+    card_number?: string | null;
   } | null;
   onListAnother: () => void;
 }
@@ -30,13 +35,22 @@ export const ListingSuccessModal = ({
 
   if (!listing) return null;
 
+  const listingUrl = generateListingUrl({
+    id: listing.id,
+    category: listing.category,
+    slug: listing.slug,
+    title: listing.title,
+    set_name: listing.set_name,
+    card_number: listing.card_number,
+  });
+
   const handleViewListing = () => {
     onOpenChange(false);
-    navigate(`/listing/${listing.id}`);
+    navigate(listingUrl);
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/listing/${listing.id}`;
+    const url = `${window.location.origin}${listingUrl}`;
     const text = `Check out "${listing.title}" on CardBoom!`;
 
     try {

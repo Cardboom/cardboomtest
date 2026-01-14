@@ -119,6 +119,9 @@ const AppContent = () => {
           <Route path="/explorer" element={<Markets />} />
           <Route path="/item/:id" element={<ItemDetail />} />
           <Route path="/card/:id" element={<CardSalePage />} />
+          {/* SEO-friendly listing URLs */}
+          <Route path="/listing/:category/:slug" element={<ListingDetail />} />
+          {/* Legacy UUID-based listing URLs (redirects to SEO URL) */}
           <Route path="/listing/:id" element={<ListingDetail />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/portfolio" element={<Portfolio />} />

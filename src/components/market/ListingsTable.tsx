@@ -7,6 +7,7 @@ import { GradeBadge } from '@/components/ui/grade-badge';
 import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface Listing {
   id: string;
@@ -34,6 +35,10 @@ interface Listing {
   // Market info
   market_item_id?: string | null;
   source?: string | null;
+  // SEO
+  slug?: string | null;
+  set_name?: string | null;
+  card_number?: string | null;
 }
 
 const getCountryFlag = (countryCode: string): string => {
@@ -298,7 +303,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         {listings.map((listing, index) => (
             <div
               key={listing.id}
-              onClick={() => navigate(`/listing/${listing.id}`)}
+              onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: listing.slug, title: listing.title }))}
               className="grid grid-cols-12 gap-4 p-3 items-center hover:bg-secondary/30 transition-colors cursor-pointer"
             >
               {/* Rank */}
