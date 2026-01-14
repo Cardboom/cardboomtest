@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Flame, Heart, MessageCircle, Repeat2, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { TweetRewardClaim } from '@/components/TweetRewardClaim';
 
 interface XPost {
   id: string;
@@ -130,17 +131,20 @@ export const CardsGoingBoomPanel = () => {
               <p className="text-sm text-muted-foreground">What collectors are saying</p>
             </div>
           </div>
-          <a 
-            href="https://x.com/cardboomcom" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            <span className="hidden sm:inline">Follow us on</span>
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-          </a>
+          <div className="flex items-center gap-3">
+            <TweetRewardClaim />
+            <a 
+              href="https://x.com/cardboomcom" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              <span className="hidden sm:inline">Follow us on</span>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+          </div>
         </div>
 
         {/* Masonry-style scrolling posts */}
