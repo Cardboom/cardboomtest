@@ -9657,6 +9657,8 @@ export type Database = {
         Args: { poll_uuid: string }
         Returns: undefined
       }
+      get_current_user_email: { Args: never; Returns: string }
+      get_current_user_phone: { Args: never; Returns: string }
       get_seller_rating: {
         Args: { seller_uuid: string }
         Returns: {
