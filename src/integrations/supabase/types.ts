@@ -2407,67 +2407,97 @@ export type Database = {
       }
       creator_storefronts: {
         Row: {
+          accent_color: string | null
+          analytics_enabled: boolean | null
+          announcement_active: boolean | null
+          announcement_text: string | null
           banner_url: string | null
           created_at: string
           creator_id: string
+          custom_css: string | null
           description: string | null
           display_name: string
           featured_items: string[] | null
+          featured_listing_ids: string[] | null
           follower_count: number | null
           id: string
           is_active: boolean | null
           is_featured: boolean | null
           logo_url: string | null
+          priority_placement: boolean | null
+          show_trust_badge: boolean | null
           slug: string
           social_links: Json | null
+          store_type: string | null
           tagline: string | null
           theme_color: string | null
           total_revenue: number | null
           total_sales: number | null
           updated_at: string
           user_id: string
+          verified_seller_since: string | null
         }
         Insert: {
+          accent_color?: string | null
+          analytics_enabled?: boolean | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
           banner_url?: string | null
           created_at?: string
           creator_id: string
+          custom_css?: string | null
           description?: string | null
           display_name: string
           featured_items?: string[] | null
+          featured_listing_ids?: string[] | null
           follower_count?: number | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
+          priority_placement?: boolean | null
+          show_trust_badge?: boolean | null
           slug: string
           social_links?: Json | null
+          store_type?: string | null
           tagline?: string | null
           theme_color?: string | null
           total_revenue?: number | null
           total_sales?: number | null
           updated_at?: string
           user_id: string
+          verified_seller_since?: string | null
         }
         Update: {
+          accent_color?: string | null
+          analytics_enabled?: boolean | null
+          announcement_active?: boolean | null
+          announcement_text?: string | null
           banner_url?: string | null
           created_at?: string
           creator_id?: string
+          custom_css?: string | null
           description?: string | null
           display_name?: string
           featured_items?: string[] | null
+          featured_listing_ids?: string[] | null
           follower_count?: number | null
           id?: string
           is_active?: boolean | null
           is_featured?: boolean | null
           logo_url?: string | null
+          priority_placement?: boolean | null
+          show_trust_badge?: boolean | null
           slug?: string
           social_links?: Json | null
+          store_type?: string | null
           tagline?: string | null
           theme_color?: string | null
           total_revenue?: number | null
           total_sales?: number | null
           updated_at?: string
           user_id?: string
+          verified_seller_since?: string | null
         }
         Relationships: [
           {
