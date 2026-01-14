@@ -38,7 +38,7 @@ import { EditListingDialog } from '@/components/listing/EditListingDialog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Pencil } from 'lucide-react';
 import { isUUID, generateListingUrl } from '@/lib/listingUrl';
-import { normalizeCategory } from '@/lib/seoSlug';
+import { normalizeCategory, urlCategoryToDbCategory } from '@/lib/seoSlug';
 
 interface Listing {
   id: string;
@@ -173,12 +173,11 @@ const ListingDetail = () => {
       let error = null;
 
       if (isSlugRoute && category && slug) {
-        // SEO route: fetch by category + slug
-        const normalizedCategory = normalizeCategory(category);
+        // SEO route: fetch by slug (category in URL is for SEO only)
+        // Query just by slug since it's unique
         const result = await supabase
           .from('listings')
           .select('*')
-          .ilike('category', normalizedCategory)
           .eq('slug', slug)
           .maybeSingle();
         data = result.data;
@@ -189,7 +188,6 @@ const ListingDetail = () => {
           const partialResult = await supabase
             .from('listings')
             .select('*')
-            .ilike('category', normalizedCategory)
             .ilike('slug', `${slug}%`)
             .maybeSingle();
           data = partialResult.data;
