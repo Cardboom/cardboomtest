@@ -39,7 +39,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { Pencil } from 'lucide-react';
 import { isUUID, generateListingUrl } from '@/lib/listingUrl';
 import { normalizeCategory, urlCategoryToDbCategory } from '@/lib/seoSlug';
-import { BackgroundRemovedImage } from '@/components/ui/background-removed-image';
+import { CardShowcase } from '@/components/ui/card-showcase';
 
 interface Listing {
   id: string;
@@ -584,19 +584,12 @@ const ListingDetail = () => {
               </div>
               
               {listing.image_url ? (
-                <div className="relative w-full max-w-md mx-auto">
-                  <BackgroundRemovedImage 
-                    src={listing.image_url}
-                    alt={listing.title}
-                    className="w-full h-auto rounded-xl drop-shadow-2xl"
-                    enabled={true}
-                  />
-                  {(listing.grade || gradingInfo?.final_grade) && (
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-bold text-sm shadow-lg">
-                      {listing.grade || `CBGI ${gradingInfo?.final_grade?.toFixed(1)}`}
-                    </div>
-                  )}
-                </div>
+                <CardShowcase 
+                  src={listing.image_url}
+                  alt={listing.title}
+                  grade={listing.grade || (gradingInfo?.final_grade ? `CBGI ${gradingInfo.final_grade.toFixed(1)}` : null)}
+                  size="lg"
+                />
               ) : (
                 <div className="w-full h-[400px] flex items-center justify-center bg-secondary/50 rounded-xl glass">
                   <ShoppingCart className="w-16 h-16 text-muted-foreground" />
