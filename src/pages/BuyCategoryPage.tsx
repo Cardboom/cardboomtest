@@ -23,40 +23,62 @@ import {
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ScrollReveal';
 
+// Map URL slugs to database category values
+const CATEGORY_URL_TO_DB: Record<string, string> = {
+  'pokemon': 'pokemon',
+  'one-piece': 'onepiece',
+  'onepiece': 'onepiece',
+  'mtg': 'mtg',
+  'magic': 'mtg',
+  'yugioh': 'yugioh',
+  'yu-gi-oh': 'yugioh',
+  'lorcana': 'lorcana',
+  'nba': 'nba',
+  'nfl': 'nfl',
+  'mlb': 'mlb',
+  'baseball': 'mlb',
+  'football': 'nfl',
+  'basketball': 'nba',
+  'lol-riftbound': 'lol-riftbound',
+  'riftbound': 'lol-riftbound',
+  'figures': 'figures',
+  'videogames': 'videogames',
+};
+
 const BuyCategoryPage = () => {
   const { category } = useParams<{ category: string }>();
   const [searchParams] = useSearchParams();
   const [cartOpen, setCartOpen] = useState(false);
 
-  // Extract category from URL pattern like "pokemon-cards"
-  const normalizedCategory = category?.replace(/-cards$/, '') || 'pokemon';
-  const categoryData = CATEGORY_SEO_DATA[normalizedCategory];
+  // Extract category from URL pattern like "pokemon-cards" and map to DB value
+  const urlCategory = category?.replace(/-cards$/, '') || 'pokemon';
+  const dbCategory = CATEGORY_URL_TO_DB[urlCategory] || urlCategory;
+  const categoryData = CATEGORY_SEO_DATA[urlCategory] || CATEGORY_SEO_DATA[dbCategory];
 
   // Fetch category item count
   const { data: itemCount } = useQuery({
-    queryKey: ['category-count', normalizedCategory],
+    queryKey: ['category-count', dbCategory],
     queryFn: async () => {
       const { count } = await supabase
         .from('market_items')
         .select('id', { count: 'exact', head: true })
-        .ilike('category', `%${normalizedCategory}%`);
+        .eq('category', dbCategory);
       return count || 0;
     },
   });
 
   // Fetch active listings count
   const { data: listingCount } = useQuery({
-    queryKey: ['category-listings', normalizedCategory],
+    queryKey: ['category-listings', dbCategory],
     queryFn: async () => {
       const { count } = await supabase
         .from('listings')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'active')
-        .ilike('category', `%${normalizedCategory}%`);
+        .eq('category', dbCategory);
       return count || 0;
     },
   });
-
   // Category-specific FAQs
   const categoryFaqs = [
     {
@@ -87,7 +109,7 @@ const BuyCategoryPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <CategorySchema 
-        category={normalizedCategory} 
+        category={dbCategory} 
         itemCount={itemCount || 0}
       />
 
@@ -98,7 +120,7 @@ const BuyCategoryPage = () => {
         <BreadcrumbSchema
           items={[
             { name: 'Marketplace', href: '/markets' },
-            { name: categoryData?.pluralName || `${normalizedCategory} Cards` },
+            { name: categoryData?.pluralName || `${urlCategory} Cards` },
           ]}
           className="mb-6"
         />
@@ -108,10 +130,10 @@ const BuyCategoryPage = () => {
           <section className="text-center py-12 mb-8">
             <Badge className="mb-4">{listingCount || 0} Active Listings</Badge>
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Buy {categoryData?.pluralName || `${normalizedCategory} Cards`} Online
+              Buy {categoryData?.pluralName || `${urlCategory} Cards`} Online
             </h1>
             <p className="text-muted-foreground text-lg max-w-3xl mx-auto mb-8">
-              {categoryData?.description || `Shop ${normalizedCategory} trading cards and collectibles from verified sellers. Best prices, buyer protection, and secure shipping.`}
+              {categoryData?.description || `Shop ${urlCategory} trading cards and collectibles from verified sellers. Best prices, buyer protection, and secure shipping.`}
             </p>
 
             {/* Feature Pills */}
@@ -130,7 +152,7 @@ const BuyCategoryPage = () => {
             {/* CTA Buttons */}
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
-                <Link to={`/markets?category=${normalizedCategory}`}>
+                <Link to={`/markets?category=${dbCategory}`}>
                   Browse Listings
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Link>
@@ -179,10 +201,10 @@ const BuyCategoryPage = () => {
           <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-2xl font-bold">
-                {categoryData?.pluralName || `${normalizedCategory} Cards`} For Sale
+                {categoryData?.pluralName || `${urlCategory} Cards`} For Sale
               </h2>
               <Link 
-                to={`/markets?category=${normalizedCategory}`}
+                to={`/markets?category=${dbCategory}`}
                 className="text-primary hover:underline text-sm font-medium flex items-center gap-1"
               >
                 View All <ChevronRight className="w-4 h-4" />
@@ -191,7 +213,7 @@ const BuyCategoryPage = () => {
             
             <ListingsTable 
               search=""
-              category={normalizedCategory}
+              category={dbCategory}
             />
           </section>
         </ScrollReveal>
@@ -226,17 +248,17 @@ const BuyCategoryPage = () => {
         <ScrollReveal delay={0.4}>
           <section className="bg-muted rounded-2xl p-8 mb-12">
             <h2 className="font-display text-2xl font-bold mb-4">
-              About Buying {categoryData?.pluralName || `${normalizedCategory} Cards`}
+              About Buying {categoryData?.pluralName || `${urlCategory} Cards`}
             </h2>
             <div className="prose prose-sm max-w-none text-muted-foreground">
               <p>
-                CardBoom is the premier marketplace for {categoryData?.pluralName?.toLowerCase() || `${normalizedCategory} cards`}. 
+                CardBoom is the premier marketplace for {categoryData?.pluralName?.toLowerCase() || `${urlCategory} cards`}. 
                 Whether you're looking for rare vintage cards, tournament staples, or the latest releases, 
                 our verified sellers offer competitive prices with full buyer protection.
               </p>
               <p>
-                Every {categoryData?.name || normalizedCategory} card sold on CardBoom comes with our guarantee. 
-                We verify seller authenticity, provide secure payment processing, and offer dispute resolution 
+                Every {categoryData?.name || urlCategory} card sold on CardBoom comes with our guarantee. 
+                We verify seller authenticity, provide secure payment processing, and offer dispute resolution
                 if anything goes wrong. Shop with confidence knowing your purchase is protected.
               </p>
               {categoryData?.keywords && (
@@ -256,7 +278,7 @@ const BuyCategoryPage = () => {
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {Object.entries(CATEGORY_SEO_DATA)
-                .filter(([slug]) => slug !== normalizedCategory)
+                .filter(([slug]) => slug !== urlCategory && slug !== dbCategory)
                 .slice(0, 5)
                 .map(([slug, data]) => (
                   <Link
