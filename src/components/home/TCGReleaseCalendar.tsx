@@ -106,7 +106,7 @@ export const TCGReleaseCalendar = () => {
       <div className="flex-1 flex overflow-hidden">
         {/* Next Drop - Left side */}
         {nextDrop && (
-          <div className="w-1/3 p-2 border-r border-white/5 flex flex-col justify-center">
+          <div className="w-1/4 p-2 border-r border-white/5 flex flex-col justify-center">
             <p className="text-[9px] text-muted-foreground uppercase tracking-wide mb-1">Next</p>
             <div className={cn(
               "w-8 h-8 rounded-lg flex items-center justify-center text-base mb-1",
