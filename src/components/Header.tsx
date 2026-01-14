@@ -191,21 +191,21 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           </Popover>
 
           {/* Desktop Nav with Grouped Menus */}
-          <nav className="hidden lg:flex items-center gap-0">
+          <nav className="hidden lg:flex items-center gap-1">
             <Link 
               to="/card-wars" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Swords className="w-3.5 h-3.5" />
+              <Swords className="w-4 h-4" />
               {t.nav.cardWars}
             </Link>
             
             {/* Reels Link */}
             <Link 
               to="/reels" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Film className="w-3.5 h-3.5" />
+              <Film className="w-4 h-4" />
               {t.nav.reels}
             </Link>
             
@@ -213,8 +213,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-8 px-2">
-                    <TrendingUp className="w-3.5 h-3.5 mr-1" />
+                  <NavigationMenuTrigger className="text-sm font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-9 px-3">
+                    <TrendingUp className="w-4 h-4 mr-1.5" />
                     {t.nav.trading}
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -278,13 +278,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               </NavigationMenuList>
             </NavigationMenu>
 
-            {/* Community Dropdown */}
+            {/* Explore Dropdown (was Community) */}
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-8 px-2">
-                    <Users className="w-3.5 h-3.5 mr-1" />
-                    {t.nav.community}
+                  <NavigationMenuTrigger className="text-sm font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-9 px-3">
+                    <Sparkles className="w-4 h-4 mr-1.5" />
+                    Explore
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[260px] gap-1 p-2">
@@ -374,35 +374,38 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
             <Link 
               to="/grading" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Award className="w-3.5 h-3.5" />
+              <Award className="w-4 h-4" />
               {t.nav.grading}
             </Link>
             
             
             <Link 
               to="/gaming" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Gamepad2 className="w-3.5 h-3.5" />
+              <Gamepad2 className="w-4 h-4" />
               {t.nav.gaming}
             </Link>
             
             <Link 
               to="/vault" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-2 py-1.5 rounded-md flex items-center gap-1"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Vault className="w-3.5 h-3.5" />
+              <Vault className="w-4 h-4" />
               {t.nav.myVault}
             </Link>
           </nav>
           
-          {/* Sell Button - Compact */}
+          {/* Spacer to push Sell button right */}
+          <div className="hidden lg:block flex-1" />
+          
+          {/* Sell Button - Positioned more to the right */}
           <Button 
             size="sm"
             onClick={() => navigate('/sell')}
-            className="hidden lg:flex gap-1.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md shadow-primary/20 text-sm"
+            className="hidden lg:flex gap-1.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md shadow-primary/20 text-sm ml-4"
           >
             <span className="font-bold">+</span>
             {t.nav.sell}

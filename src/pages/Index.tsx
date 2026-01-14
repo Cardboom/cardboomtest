@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { MarketTicker } from '@/components/MarketTicker';
 import { HeroSection } from '@/components/HeroSection';
-import { TrendingSection } from '@/components/TrendingSection';
+import { CardsGoingBoomPanel } from '@/components/home/CardsGoingBoomPanel';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { CollectibleCard } from '@/components/CollectibleCard';
 import { CollectibleModal } from '@/components/CollectibleModal';
@@ -416,49 +416,13 @@ const Index = () => {
           </section>
         </ScrollReveal>
         
-        {/* Live Market Section */}
+        {/* Cards Going Boom - X Posts Panel */}
         <ScrollReveal>
-          <section ref={marketRef} className="py-8 sm:py-12 border-t border-border/20 bg-transparent">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between mb-4 sm:mb-8">
-                <div>
-                  <h2 className="font-display text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-                    {t.market.popularCollections}
-                  </h2>
-                  <LiveUpdateIndicator 
-                    lastUpdated={lastUpdated} 
-                    updateCount={updateCount}
-                    className="mt-1"
-                  />
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/markets')}
-                  className="hidden sm:flex"
-                >
-                  {t.market.seeAllMarkets}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-              
-              <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
-                <ScrollReveal delay={100}>
-                  <LiveMarketTable items={topGainers} title={`${t.market.topGainers} 📈`} />
-                </ScrollReveal>
-                <ScrollReveal delay={200}>
-                  <LiveMarketTable items={topLosers} title={`${t.market.topLosers} 📉`} />
-                </ScrollReveal>
-              </div>
-            </div>
-          </section>
+          <CardsGoingBoomPanel />
         </ScrollReveal>
 
         {/* Recently Viewed Section - personalized for logged in users */}
         {user && <RecentlyViewedSection />}
-
-        <ScrollReveal>
-          <TrendingSection />
-        </ScrollReveal>
 
         {/* Reels Preview Section */}
         <ScrollReveal>
