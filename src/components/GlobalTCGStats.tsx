@@ -202,9 +202,9 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
         <div 
           className={cn(
             "relative overflow-hidden rounded-[18px] mt-3",
-            "bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820]",
-            "border border-white/5",
-            "shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
+            "bg-[#f5f5f7] dark:bg-gradient-to-br dark:from-[#0a0f1a] dark:via-[#0d1321] dark:to-[#101820]",
+            "border border-black/[0.04] dark:border-white/5",
+            "shadow-sm dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_0_40px_rgba(0,0,0,0.3)]"
           )}
           style={{ backdropFilter: 'blur(22px)' }}
         >
@@ -217,7 +217,8 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
           />
 
           {/* Accent line - Tiffany brand color */}
-          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent dark:block hidden" />
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary/30 via-primary/20 to-transparent dark:hidden" />
 
           {/* Header - Tiffany branding */}
           <div className="absolute top-2 left-3 flex items-center gap-1.5 z-10">
@@ -229,8 +230,8 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
             </span>
           </div>
 
-          {/* Top glow */}
-          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none" />
+          {/* Top glow - only in dark mode */}
+          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white/[0.02] pointer-events-none dark:block hidden" />
 
           {/* Stats Row */}
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 pt-8">
@@ -240,22 +241,22 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
                 className={cn(
                   "flex flex-col items-center justify-center text-center py-4 px-3 md:py-5 md:px-4",
                   // Vertical dividers between columns
-                  i < statItems.length - 1 && "md:border-r md:border-white/10",
+                  i < statItems.length - 1 && "md:border-r md:border-black/[0.06] dark:md:border-white/10",
                   // On mobile: right border for left column, bottom border for top row
-                  i % 2 === 0 && "border-r border-white/10 md:border-r-0",
-                  i < 2 && "border-b border-white/10 md:border-b-0",
+                  i % 2 === 0 && "border-r border-black/[0.06] dark:border-white/10 md:border-r-0",
+                  i < 2 && "border-b border-black/[0.06] dark:border-white/10 md:border-b-0",
                   // Re-add md border-r
-                  i < 3 && "md:border-r md:border-white/10"
+                  i < 3 && "md:border-r md:border-black/[0.06] dark:md:border-white/10"
                 )}
               >
-                <div className="font-mono text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
+                <div className="font-mono text-lg sm:text-xl md:text-2xl font-bold text-foreground tracking-tight">
                   {isLoading ? (
-                    <span className="inline-block w-20 h-6 bg-white/10 rounded animate-pulse" />
+                    <span className="inline-block w-20 h-6 bg-muted rounded animate-pulse" />
                   ) : (
                     <AnimatedCounter value={item.value} prefix={item.prefix} />
                   )}
                 </div>
-                <div className="font-mono text-[8px] sm:text-[9px] md:text-[10px] text-gray-400 uppercase tracking-widest mt-1">
+                <div className="font-mono text-[8px] sm:text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
                   {item.label}
                 </div>
               </div>
