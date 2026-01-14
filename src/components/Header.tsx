@@ -154,10 +154,6 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   return (
     <>
     <header className="sticky top-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
-      {/* AI Insight Banner */}
-      <div className="hidden md:flex items-center justify-center py-1.5 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b border-border/20">
-        <AIMarketInsight />
-      </div>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 gap-4 overflow-visible">
           {/* Logo */}
