@@ -89,15 +89,17 @@ export const TCGReleaseCalendar = () => {
   return (
     <div className="h-[120px] md:h-[160px] rounded-[18px] overflow-hidden bg-gradient-to-br from-[#0a0f1a] via-[#0d1321] to-[#101820] border border-white/5 flex flex-col">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-primary/20 flex items-center justify-center">
-            <Calendar className="w-3 h-3 text-primary" />
+      <div className="px-3 py-1.5 border-b border-white/5 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
+            <Calendar className="w-2.5 h-2.5 text-primary" />
           </div>
-          <h3 className="font-semibold text-xs text-white">TCG Drops</h3>
+          <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
+            TCG DROPS
+          </span>
         </div>
-        <Badge variant="outline" className="text-[9px] h-5 gap-1 border-primary/30 text-primary px-1.5">
-          <Sparkles className="w-2.5 h-2.5" />
+        <Badge variant="outline" className="text-[8px] h-4 gap-0.5 border-primary/30 text-primary px-1">
+          <Sparkles className="w-2 h-2" />
           AI
         </Badge>
       </div>

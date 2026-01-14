@@ -185,18 +185,18 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
       )} />
       
       {/* Header */}
-      <div className="absolute top-3 left-4 right-4 flex items-center justify-between z-10">
-        <div className="flex items-center gap-2">
-          <div className={cn("p-1 rounded", typeConfig.bg)}>
-            <Sparkles className={cn("w-3.5 h-3.5", typeConfig.color)} />
+      <div className="absolute top-2 left-3 right-3 flex items-center justify-between z-10">
+        <div className="flex items-center gap-1.5">
+          <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
+            <Sparkles className="w-2.5 h-2.5 text-primary" />
           </div>
-          <span className="text-xs font-semibold text-white tracking-wide">
+          <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
             {t.home.aiInsights}
           </span>
         </div>
         {currentInsight?.category && (
           <span className={cn(
-            "text-[10px] font-medium px-2 py-0.5 rounded-full",
+            "text-[9px] font-bold px-1.5 py-0.5 rounded",
             typeConfig.bg, typeConfig.color
           )}>
             {getCategoryLabel(currentInsight.category)}

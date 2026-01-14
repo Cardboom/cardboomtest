@@ -215,17 +215,17 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
 
       {/* Header with explanation - Tiffany branding */}
-      <div className="absolute top-2 left-3 flex items-center gap-3 z-10">
+      <div className="absolute top-2 left-3 right-3 flex items-center justify-between z-10">
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
-            <Target className="w-3 h-3 text-primary" />
+          <div className="w-4 h-4 rounded bg-primary/20 flex items-center justify-center">
+            <Target className="w-2.5 h-2.5 text-primary" />
           </div>
-          <span className="font-sans text-[11px] md:text-xs text-primary uppercase tracking-widest font-bold">
+          <span className="font-sans text-[10px] md:text-[11px] text-primary uppercase tracking-widest font-bold">
             BOOM CHALLENGES
           </span>
         </div>
-        <span className="hidden md:inline text-[10px] text-gray-500 font-sans font-medium">
-          Complete tasks, earn gems. First come, first served!
+        <span className="hidden md:inline text-[9px] text-gray-500 font-sans font-medium">
+          First come, first served!
         </span>
       </div>
 
