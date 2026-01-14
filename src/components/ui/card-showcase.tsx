@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 interface CardShowcaseProps {
   src: string;
   alt: string;
-  grade?: string | null;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -12,7 +11,6 @@ interface CardShowcaseProps {
 export const CardShowcase = ({ 
   src, 
   alt, 
-  grade,
   className,
   size = 'lg'
 }: CardShowcaseProps) => {
@@ -87,19 +85,6 @@ export const CardShowcase = ({
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
           </div>
           
-          {/* Grade badge */}
-          {grade && (
-            <motion.div 
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
-              className="absolute -bottom-1 left-1/2 -translate-x-1/2 z-10"
-            >
-              <div className="px-5 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-black font-bold text-sm shadow-lg shadow-amber-500/30 border border-amber-300/50">
-                {grade}
-              </div>
-            </motion.div>
-          )}
         </motion.div>
       </motion.div>
     </div>

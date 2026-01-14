@@ -274,17 +274,19 @@ NO text in the image.`
             }
           } catch (imgError) {
             console.error('Image generation error:', imgError);
-            // Use fallback image based on category
+            // Use fallback image based on category - TCG-themed images only
             const fallbackImages: Record<string, string> = {
               pokemon: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=1200&h=630&fit=crop',
-              'one-piece': 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&h=630&fit=crop',
+              'one-piece': 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=1200&h=630&fit=crop',
               mtg: 'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?w=1200&h=630&fit=crop',
+              yugioh: 'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?w=1200&h=630&fit=crop',
               sports: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1200&h=630&fit=crop',
-              education: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&h=630&fit=crop',
+              education: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=1200&h=630&fit=crop',
+              grading: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=1200&h=630&fit=crop',
               'market-analysis': 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&h=630&fit=crop',
-              platform: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&h=630&fit=crop',
+              platform: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=1200&h=630&fit=crop',
             };
-            imageUrl = fallbackImages[contentType] || fallbackImages.education;
+            imageUrl = fallbackImages[contentType] || fallbackImages.pokemon;
           }
 
           const finalSlug = `${slug}-${Date.now().toString(36)}`;

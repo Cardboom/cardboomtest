@@ -587,7 +587,6 @@ const ListingDetail = () => {
                 <CardShowcase 
                   src={listing.image_url}
                   alt={listing.title}
-                  grade={listing.grade || (gradingInfo?.final_grade ? `CBGI ${gradingInfo.final_grade.toFixed(1)}` : null)}
                   size="lg"
                 />
               ) : (
