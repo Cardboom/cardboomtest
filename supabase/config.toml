@@ -113,3 +113,6 @@ verify_jwt = false
 
 [functions.health-monitor]
 verify_jwt = false
+
+[functions.create-system-account]
+verify_jwt = false
