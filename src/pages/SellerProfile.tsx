@@ -20,6 +20,7 @@ import {
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { FollowButton } from '@/components/FollowButton';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface SellerStats {
   totalSales: number;
@@ -344,7 +345,7 @@ const SellerProfile = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Link to={`/listing/${listing.id}`}>
+                    <Link to={generateListingUrl({ id: listing.id, category: listing.category, title: listing.title })}>
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
                         <div className="aspect-square bg-secondary/30 p-4">
                           <img

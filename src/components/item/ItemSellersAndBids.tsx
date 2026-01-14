@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Gavel, ShoppingCart, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface Seller {
   id: string;

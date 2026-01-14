@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import { getCategoryLabel } from '@/lib/categoryLabels';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface TopListing {
   id: string;
@@ -354,7 +355,7 @@ export const TopListingsChart = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       className="grid grid-cols-[40px_1.5fr_80px_100px_100px_100px_100px] gap-3 px-4 py-3 items-center hover:bg-muted/20 transition-colors cursor-pointer group"
-                      onClick={() => navigate(`/listing/${listing.id}`)}
+                      onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title }))}
                     >
                       {/* Rank */}
                       <div className="text-sm font-medium text-muted-foreground">
@@ -432,7 +433,7 @@ export const TopListingsChart = () => {
                           className="h-8 px-3 text-xs font-medium hover:bg-primary/10 hover:text-primary"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/listing/${listing.id}`);
+                            navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title }));
                           }}
                         >
                           View
