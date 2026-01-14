@@ -245,33 +245,37 @@ const Index = () => {
   // Platform features now handled by FeatureShowcase component
 
   return (
-    <div className="min-h-screen relative">
-      {/* Refined ambient background */}
-      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
-        <div className="absolute inset-0 bg-background" />
-        
-        {/* Single subtle gradient wash - GPU accelerated */}
-        <div 
-          className="absolute inset-0 opacity-40 dark:opacity-30"
-          style={{
-            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent)',
-            willChange: 'transform'
-          }}
-        />
-        
-        {/* Minimal accent glow */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 h-[60vh] opacity-20 dark:opacity-15"
-          style={{
-            background: 'radial-gradient(ellipse 60% 40% at 50% 100%, hsl(var(--accent) / 0.1), transparent)',
-            willChange: 'transform'
-          }}
-        />
-      </div>
+    <>
+      {/* Fixed header that follows scroll */}
+      <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       
-      {/* Main content with transparent/semi-transparent backgrounds */}
-      <div className="relative z-0">
-      <Helmet>
+      <div className="min-h-screen relative">
+        {/* Refined ambient background */}
+        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -1 }}>
+          <div className="absolute inset-0 bg-background" />
+          
+          {/* Single subtle gradient wash - GPU accelerated */}
+          <div 
+            className="absolute inset-0 opacity-40 dark:opacity-30"
+            style={{
+              background: 'radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent)',
+              willChange: 'transform'
+            }}
+          />
+          
+          {/* Minimal accent glow */}
+          <div 
+            className="absolute bottom-0 left-0 right-0 h-[60vh] opacity-20 dark:opacity-15"
+            style={{
+              background: 'radial-gradient(ellipse 60% 40% at 50% 100%, hsl(var(--accent) / 0.1), transparent)',
+              willChange: 'transform'
+            }}
+          />
+        </div>
+        
+        {/* Main content with transparent/semi-transparent backgrounds */}
+        <div className="relative z-0">
+        <Helmet>
         <title>Cardboom - Premier Collectibles Trading Exchange | Buy & Sell Trading Cards</title>
         <meta name="description" content="Trade NBA cards, football cards, Pokemon TCG, Yu-Gi-Oh!, and rare collectible figures with real-time pricing, secure transactions, and instant settlements. Join 10,000+ collectors on Cardboom." />
         <meta name="keywords" content="trading cards, NBA cards, football cards, TCG, Pokemon cards, Yu-Gi-Oh cards, collectibles, figures, marketplace, live prices, card grading, PSA, BGS, sports cards" />
@@ -285,7 +289,6 @@ const Index = () => {
       <ActivityAnnouncementBanner />
       {user && <DailyXPClaimNotification />}
       {user && <DailyCardVotePopup />}
-      <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       <MarketTicker />
       {/* TrustBadgesBar removed - stats shown elsewhere */}
       
@@ -509,6 +512,7 @@ const Index = () => {
       />
       </div>
     </div>
+    </>
   );
 };
 
