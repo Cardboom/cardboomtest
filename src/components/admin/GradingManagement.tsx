@@ -238,11 +238,14 @@ export function GradingManagement() {
                       <TableCell>
                         {(order as any).cbgi_score_0_100 ? (
                           <span className="font-bold text-primary">
-                            {(order as any).cbgi_score_0_100}/100
+                            CB {((order as any).cbgi_score_0_100 > 10 
+                              ? (order as any).cbgi_score_0_100 / 10 
+                              : (order as any).cbgi_score_0_100
+                            ).toFixed(1)}
                           </span>
                         ) : order.final_grade ? (
                           <span className="text-muted-foreground">
-                            {order.final_grade.toFixed(1)} (legacy)
+                            CB {(order.final_grade > 10 ? order.final_grade / 10 : order.final_grade).toFixed(1)} (legacy)
                           </span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
