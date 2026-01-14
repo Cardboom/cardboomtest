@@ -160,7 +160,7 @@ serve(async (req) => {
           user_id: userId,
           creator_name: displayName,
           bio: bio || null,
-          platform: "cardboom",
+          platform: "other",
           is_verified: true,
           is_public: true,
         })
