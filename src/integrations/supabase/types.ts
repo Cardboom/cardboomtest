@@ -2184,6 +2184,73 @@ export type Database = {
           },
         ]
       }
+      creator_earnings: {
+        Row: {
+          created_at: string | null
+          creator_earnings_cents: number
+          creator_id: string
+          creator_share_percent: number
+          credited_at: string | null
+          gross_revenue_cents: number
+          id: string
+          platform_fee_cents: number
+          source_id: string | null
+          source_type: string
+          source_user_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_earnings_cents: number
+          creator_id: string
+          creator_share_percent: number
+          credited_at?: string | null
+          gross_revenue_cents: number
+          id?: string
+          platform_fee_cents: number
+          source_id?: string | null
+          source_type: string
+          source_user_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_earnings_cents?: number
+          creator_id?: string
+          creator_share_percent?: number
+          credited_at?: string | null
+          gross_revenue_cents?: number
+          id?: string
+          platform_fee_cents?: number
+          source_id?: string | null
+          source_type?: string
+          source_user_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_earnings_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_earnings_source_user_id_fkey"
+            columns: ["source_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_earnings_source_user_id_fkey"
+            columns: ["source_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_followers: {
         Row: {
           creator_id: string
@@ -2337,6 +2404,8 @@ export type Database = {
         Row: {
           accuracy_rate: number | null
           accurate_calls: number | null
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           bio: string | null
           cover_image_url: string | null
@@ -2344,14 +2413,18 @@ export type Database = {
           creator_name: string
           follower_count: number | null
           id: string
+          is_approved: boolean | null
           is_public: boolean | null
           is_verified: boolean | null
+          pending_earnings_cents: number | null
           platform: string
           platform_handle: string | null
           portfolio_public: boolean | null
           referral_clicks: number | null
+          revenue_share_percent: number | null
           specialty_categories: string[] | null
           total_calls: number | null
+          total_earnings_cents: number | null
           total_views: number | null
           updated_at: string
           user_id: string
@@ -2361,6 +2434,8 @@ export type Database = {
         Insert: {
           accuracy_rate?: number | null
           accurate_calls?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           bio?: string | null
           cover_image_url?: string | null
@@ -2368,14 +2443,18 @@ export type Database = {
           creator_name: string
           follower_count?: number | null
           id?: string
+          is_approved?: boolean | null
           is_public?: boolean | null
           is_verified?: boolean | null
+          pending_earnings_cents?: number | null
           platform: string
           platform_handle?: string | null
           portfolio_public?: boolean | null
           referral_clicks?: number | null
+          revenue_share_percent?: number | null
           specialty_categories?: string[] | null
           total_calls?: number | null
+          total_earnings_cents?: number | null
           total_views?: number | null
           updated_at?: string
           user_id: string
@@ -2385,6 +2464,8 @@ export type Database = {
         Update: {
           accuracy_rate?: number | null
           accurate_calls?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           bio?: string | null
           cover_image_url?: string | null
@@ -2392,21 +2473,40 @@ export type Database = {
           creator_name?: string
           follower_count?: number | null
           id?: string
+          is_approved?: boolean | null
           is_public?: boolean | null
           is_verified?: boolean | null
+          pending_earnings_cents?: number | null
           platform?: string
           platform_handle?: string | null
           portfolio_public?: boolean | null
           referral_clicks?: number | null
+          revenue_share_percent?: number | null
           specialty_categories?: string[] | null
           total_calls?: number | null
+          total_earnings_cents?: number | null
           total_views?: number | null
           updated_at?: string
           user_id?: string
           username?: string | null
           watchlist_public?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "creator_profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       creator_storefronts: {
         Row: {
@@ -9999,6 +10099,17 @@ export type Database = {
           p_order_id: string
         }
         Returns: Json
+      }
+      credit_creator_earnings: {
+        Args: {
+          p_creator_profile_id: string
+          p_gross_revenue_cents: number
+          p_platform_fee_cents: number
+          p_source_id: string
+          p_source_type: string
+          p_source_user_id: string
+        }
+        Returns: string
       }
       determine_sale_lane: {
         Args: {
