@@ -27,7 +27,7 @@ serve(async (req) => {
 
     console.log("Processing image for background removal:", imageUrl);
 
-    // Use Gemini image editing to remove background and create transparent card
+    // Use Gemini flash image model for editing
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -42,7 +42,7 @@ serve(async (req) => {
             content: [
               {
                 type: "text",
-                text: "Remove the background from this trading card image completely. Keep only the card itself with clean edges. Make the background fully transparent. Output only the isolated card with no background."
+                text: "Remove the background from this image. Keep only the trading card with clean crisp edges. Replace the background with pure transparency. The card should appear to float with no background at all."
               },
               {
                 type: "image_url",
@@ -59,41 +59,69 @@ serve(async (req) => {
 
     if (!response.ok) {
       if (response.status === 429) {
+        console.log("Rate limited, returning original image");
         return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ 
+            processedImageUrl: imageUrl,
+            originalUsed: true,
+            error: "Rate limit exceeded"
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       if (response.status === 402) {
+        console.log("Credits required, returning original image");
         return new Response(
-          JSON.stringify({ error: "AI credits required. Please add funds." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ 
+            processedImageUrl: imageUrl,
+            originalUsed: true,
+            error: "AI credits required"
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("AI response received");
-
-    // Extract the processed image from response
-    const processedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-
-    if (!processedImageUrl) {
-      // If AI couldn't process, return original image
-      console.log("No processed image returned, using original");
+      // Return original image on any error instead of failing
       return new Response(
         JSON.stringify({ 
           processedImageUrl: imageUrl,
           originalUsed: true,
-          message: "Background removal not available, using original image"
+          error: `AI error: ${response.status}`
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const data = await response.json();
+    console.log("AI response structure:", JSON.stringify(Object.keys(data)));
+
+    // Extract the processed image from response - check multiple locations
+    let processedImageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    
+    // Alternative locations the image might be
+    if (!processedImageUrl) {
+      processedImageUrl = data.choices?.[0]?.message?.content?.[0]?.image_url?.url;
+    }
+    if (!processedImageUrl && Array.isArray(data.choices?.[0]?.message?.content)) {
+      const imageContent = data.choices[0].message.content.find((c: any) => c.type === 'image_url' || c.image_url);
+      processedImageUrl = imageContent?.image_url?.url;
+    }
+
+    if (!processedImageUrl) {
+      console.log("No processed image in response, structure:", JSON.stringify(data.choices?.[0]?.message));
+      // Return original image when AI doesn't return an image
+      return new Response(
+        JSON.stringify({ 
+          processedImageUrl: imageUrl,
+          originalUsed: true,
+          message: "AI did not return processed image"
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log("Successfully processed image");
     return new Response(
       JSON.stringify({ 
         processedImageUrl,
@@ -105,9 +133,15 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("Error processing image:", error);
+    // Return original image on error instead of failing
+    const { imageUrl } = await req.json().catch(() => ({ imageUrl: null }));
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ 
+        processedImageUrl: imageUrl || null,
+        originalUsed: true,
+        error: error instanceof Error ? error.message : "Unknown error"
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
