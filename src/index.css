@@ -77,56 +77,56 @@
   }
 
   .dark {
-    /* Dark Theme - Refined Slate */
-    --background: 220 18% 12%;
-    --foreground: 220 10% 98%;
+    /* Dark Theme - Premium Black (phygitals-inspired) */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 16% 16%;
-    --card-foreground: 220 10% 98%;
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 16% 18%;
-    --popover-foreground: 220 10% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
     /* CardBoom Light Blue - matching logo */
     --primary: 182 58% 55%;
-    --primary-foreground: 220 20% 4%;
+    --primary-foreground: 0 0% 4%;
 
-    --secondary: 220 14% 22%;
-    --secondary-foreground: 220 10% 88%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 88%;
 
-    --muted: 220 14% 18%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 55%;
 
     --accent: 182 58% 50%;
-    --accent-foreground: 220 20% 4%;
+    --accent-foreground: 0 0% 4%;
 
     --destructive: 0 72% 55%;
-    --destructive-foreground: 220 10% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 18%;
+    --border: 0 0% 14%;
+    --input: 0 0% 10%;
     --ring: 182 58% 55%;
 
     /* Dark mode custom tokens */
     --gain: 160 70% 45%;
     --loss: 0 72% 55%;
 
-    /* Dark mode shadows */
-    --shadow-2xs: 0 1px 2px hsl(0 0% 0% / 0.3);
-    --shadow-xs: 0 1px 3px hsl(0 0% 0% / 0.4);
-    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.4);
-    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.5);
-    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.6);
-    --shadow-xl: 0 16px 48px hsl(0 0% 0% / 0.7);
-    --shadow-glow: 0 4px 32px hsl(182 58% 55% / 0.3);
+    /* Dark mode shadows - deeper for true black */
+    --shadow-2xs: 0 1px 2px hsl(0 0% 0% / 0.5);
+    --shadow-xs: 0 1px 3px hsl(0 0% 0% / 0.6);
+    --shadow-sm: 0 2px 8px hsl(0 0% 0% / 0.6);
+    --shadow-md: 0 4px 16px hsl(0 0% 0% / 0.7);
+    --shadow-lg: 0 8px 32px hsl(0 0% 0% / 0.8);
+    --shadow-xl: 0 16px 48px hsl(0 0% 0% / 0.9);
+    --shadow-glow: 0 4px 32px hsl(182 58% 55% / 0.25);
 
-    --sidebar-background: 220 18% 8%;
-    --sidebar-foreground: 220 10% 98%;
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 182 58% 55%;
-    --sidebar-primary-foreground: 220 20% 4%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 220 10% 85%;
-    --sidebar-border: 220 15% 20%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 85%;
+    --sidebar-border: 0 0% 14%;
     --sidebar-ring: 182 58% 55%;
 
     --gradient-primary: linear-gradient(135deg, hsl(182 58% 55%), hsl(182 58% 45%));
