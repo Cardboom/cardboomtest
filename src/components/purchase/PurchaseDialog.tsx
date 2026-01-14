@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Vault, Truck, ArrowLeftRight, ShoppingCart, Loader2, MapPin, Package, Wallet, Sparkles, Plus, AlertCircle, Home, Building2, ChevronDown } from 'lucide-react';
+import { FeeUpgradeNudge } from './FeeUpgradeNudge';
 import { usePurchase } from '@/hooks/usePurchase';
 import { useGeliverShipping } from '@/hooks/useGeliverShipping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -614,6 +615,12 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
               </div>
             )}
 
+            {/* Fee Upgrade Nudge - Show savings for Free/Pro users */}
+            <FeeUpgradeNudge 
+              currentBuyerFee={fees.buyerFee} 
+              itemPrice={listing.price} 
+            />
+
             {/* Price Breakdown */}
             <div className="space-y-2 text-sm border-t border-border pt-4">
               <div className="flex justify-between">
@@ -621,7 +628,7 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
                 <span>{formatCurrency(listing.price)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Buyer Fee (5%)</span>
+                <span className="text-muted-foreground">Buyer Fee</span>
                 <span>{formatCurrency(fees.buyerFee)}</span>
               </div>
               {deliveryOption === 'ship' && shippingCostTRY > 0 && (

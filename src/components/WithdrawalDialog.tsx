@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowDownLeft, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { PayoutSpeedTiers } from './withdrawal/PayoutSpeedTiers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -322,13 +323,8 @@ export const WithdrawalDialog = ({ open, onOpenChange, currentBalance, onSuccess
               <p className="text-xs text-muted-foreground">Only Turkish IBANs (starting with TR) are accepted</p>
             </div>
 
-            {/* Info Box */}
-            <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
-              <p className="text-sm text-warning-foreground">
-                <strong>Processing Time:</strong> Withdrawals are typically processed within 1-3 business days. 
-                You will receive an email notification when your withdrawal is complete.
-              </p>
-            </div>
+            {/* Payout Speed Tiers - Shows current tier and upgrade options */}
+            <PayoutSpeedTiers />
 
             <div className="flex gap-3 pt-2">
               <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
