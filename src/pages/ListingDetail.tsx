@@ -39,6 +39,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { Pencil } from 'lucide-react';
 import { isUUID, generateListingUrl } from '@/lib/listingUrl';
 import { normalizeCategory, urlCategoryToDbCategory } from '@/lib/seoSlug';
+import { CardPedestalDisplay } from '@/components/animations/CardPedestalDisplay';
 
 interface Listing {
   id: string;
@@ -556,11 +557,11 @@ const ListingDetail = () => {
         </Button>
 
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          {/* Image */}
+          {/* Card Image with Pedestal Display */}
           <div className="lg:col-span-1">
-            <div className="glass rounded-2xl p-4 aspect-square relative">
-              {/* Grading Badges Overlay - CBGI first (tiffany), then external */}
-              <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
+            <div className="relative flex flex-col items-center justify-center py-8">
+              {/* Grading Badges Overlay - positioned above pedestal */}
+              <div className="absolute top-2 left-4 z-20 flex flex-col gap-2">
                 {/* CBGI Badge first - CardBoom's grading with tiffany color */}
                 {gradingInfo?.final_grade && (
                   <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
@@ -581,14 +582,17 @@ const ListingDetail = () => {
                   </div>
                 )}
               </div>
+              
               {listing.image_url ? (
-                <img 
-                  src={listing.image_url} 
-                  alt={listing.title}
-                  className="w-full h-full object-contain rounded-xl"
+                <CardPedestalDisplay 
+                  imageUrl={listing.image_url}
+                  cardName={listing.title}
+                  grade={listing.grade || (gradingInfo?.final_grade ? `CBGI ${gradingInfo.final_grade.toFixed(1)}` : null)}
+                  size="lg"
+                  autoRemoveBackground={true}
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-secondary rounded-xl">
+                <div className="w-full h-[400px] flex items-center justify-center bg-secondary/50 rounded-xl glass">
                   <ShoppingCart className="w-16 h-16 text-muted-foreground" />
                 </div>
               )}
