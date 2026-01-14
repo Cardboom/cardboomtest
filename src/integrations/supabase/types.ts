@@ -996,6 +996,7 @@ export type Database = {
           id: string
           is_active: boolean
           is_featured: boolean | null
+          is_starter_bounty: boolean | null
           max_claims: number | null
           period_type: string
           reward_gems: number
@@ -1016,6 +1017,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_featured?: boolean | null
+          is_starter_bounty?: boolean | null
           max_claims?: number | null
           period_type?: string
           reward_gems?: number
@@ -1036,6 +1038,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           is_featured?: boolean | null
+          is_starter_bounty?: boolean | null
           max_claims?: number | null
           period_type?: string
           reward_gems?: number
