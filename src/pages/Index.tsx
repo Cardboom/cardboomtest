@@ -36,7 +36,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ReelsPreviewSection } from '@/components/reels/ReelsPreviewSection';
 import { CardWarsSection } from '@/components/CardWarsSection';
 import { TopListingsChart } from '@/components/TopListingsChart';
-import { LiveMarketPanel } from '@/components/home/LiveMarketPanel';
+import { TCGReleaseCalendar } from '@/components/home/TCGReleaseCalendar';
 import { PersonalizedInsightsPanel } from '@/components/home/PersonalizedInsightsPanel';
 import { NewsPanel } from '@/components/home/NewsPanel';
 import { BountiesPanel } from '@/components/home/BountiesPanel';
@@ -301,7 +301,7 @@ const Index = () => {
           {/* Two column layout for market panels - only for logged in users at top */}
           {user && (
             <div className="grid md:grid-cols-2 gap-3">
-              <LiveMarketPanel />
+              <TCGReleaseCalendar />
               <PersonalizedInsightsPanel userId={user?.id} />
             </div>
           )}
@@ -321,7 +321,7 @@ const Index = () => {
           <div className="container mx-auto px-4 py-6 space-y-3">
             {/* Two column layout for market panels */}
             <div className="grid md:grid-cols-2 gap-3">
-              <LiveMarketPanel />
+              <TCGReleaseCalendar />
               <PersonalizedInsightsPanel userId={undefined} />
             </div>
             
