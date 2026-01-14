@@ -16,12 +16,14 @@ import { ItemListings } from '@/components/item/ItemListings';
 import { CardDiscussionPanel } from '@/components/discussions/CardDiscussionPanel';
 import { GradingDonationPanel } from '@/components/listing/GradingDonationPanel';
 import { generateCardUrl } from '@/lib/seoSlug';
+import { useCartAbandonment } from '@/hooks/useCartAbandonment';
 
 const CardSalePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [user, setUser] = useState<any>(null);
+  const { trackListingView } = useCartAbandonment();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
@@ -128,6 +130,18 @@ const CardSalePage = () => {
 
   const hasListings = activeListings && activeListings.length > 0;
   const cheapestListing = hasListings ? activeListings[0] : null;
+
+  // Track listing view for abandoned cart recovery ("similar cards" emails)
+  useEffect(() => {
+    if (cheapestListing && item) {
+      trackListingView({
+        listingId: cheapestListing.id,
+        listingTitle: item.name,
+        listingPrice: cheapestListing.price,
+        listingImage: item.image_url,
+      });
+    }
+  }, [cheapestListing, item, trackListingView]);
   
   // For display purposes - show real listings or placeholder info
   const displayListings = hasListings 

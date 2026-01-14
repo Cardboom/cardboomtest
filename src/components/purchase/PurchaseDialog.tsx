@@ -16,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Vault, Truck, ArrowLeftRight, ShoppingCart, Loader2, MapPin, Package, Wallet, Sparkles, Plus, AlertCircle, Home, Building2, ChevronDown } from 'lucide-react';
 import { FeeUpgradeNudge } from './FeeUpgradeNudge';
 import { usePurchase } from '@/hooks/usePurchase';
+import { useCartAbandonment } from '@/hooks/useCartAbandonment';
 import { useGeliverShipping } from '@/hooks/useGeliverShipping';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,8 +88,21 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
   const [loadingBalances, setLoadingBalances] = useState(true);
   
   const { purchase, loading, calculateFeesSync } = usePurchase();
+  const { trackCartAbandonment, markCartRecovered } = useCartAbandonment();
   const { loading: shippingLoading, offers, getShippingPrices } = useGeliverShipping();
 
+  // Track cart abandonment when dialog opens
+  useEffect(() => {
+    if (open) {
+      trackCartAbandonment({
+        listingId: listing.id,
+        listingTitle: listing.title,
+        listingPrice: listing.price,
+        listingImage: listing.image_url,
+        status: 'checkout_started',
+      });
+    }
+  }, [open, listing, trackCartAbandonment]);
   const fees = calculateFeesSync(listing.price);
   const selectedOffer = offers.find(o => o.id === selectedCarrier);
   const shippingCostTRY = selectedOffer?.price || 0;
@@ -255,7 +269,9 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
       gemsUsed: useGems ? gemAmount : 0,
     });
 
-    if (result.success) {
+    if (result.success && result.orderId) {
+      // Mark cart as recovered on successful purchase
+      markCartRecovered(listing.id, result.orderId);
       onOpenChange(false);
     }
   };
