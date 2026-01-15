@@ -1,11 +1,25 @@
+import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, ArrowRight, Sparkles, Clock, Zap, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const GradingHero = () => {
   const navigate = useNavigate();
+
+  // Auth-aware navigation to grading flow
+  const handleStartGrading = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.info("Please sign in to grade your cards");
+      navigate('/auth?returnTo=/grading/new');
+      return;
+    }
+    navigate('/grading/new');
+  }, [navigate]);
 
   return (
     <section className="relative py-20 lg:py-28 overflow-hidden">
@@ -83,7 +97,7 @@ export const GradingHero = () => {
             >
               <Button 
                 size="lg"
-                onClick={() => navigate('/grading')}
+                onClick={handleStartGrading}
                 className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/25 text-base px-8 group"
               >
                 <Shield className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />

@@ -166,12 +166,24 @@ export default function GradingNew() {
     }
   }, [searchParams]);
 
-  // Fetch user ID
+  // Check authentication and redirect if not logged in
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUserId(user?.id);
-    });
-  }, []);
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // Store the intended destination for redirect after login
+        const returnPath = window.location.pathname + window.location.search;
+        toast({
+          title: "Login Required",
+          description: "Please sign in to grade your cards",
+        });
+        navigate(`/auth?returnTo=${encodeURIComponent(returnPath)}`);
+        return;
+      }
+      setUserId(user.id);
+    };
+    checkAuth();
+  }, [navigate, toast]);
 
   const { creditsRemaining } = useGradingCredits(userId);
 
