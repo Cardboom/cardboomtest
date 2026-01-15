@@ -9,6 +9,7 @@ import { LiveTickerPrice } from './LiveTickerPrice';
 import { formatGrade } from '@/hooks/useGradePrices';
 import { CardPlaceholder } from './market/CardPlaceholder';
 import { MiniSparkline } from './market/MiniSparkline';
+import { getThumbnailUrl } from '@/lib/imageUtils';
 
 // Convert ISO country code to flag emoji
 const getCountryFlag = (countryCode: string): string => {
@@ -126,9 +127,12 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
         <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent z-10" />
         {collectible.image ? (
           <img
-            src={collectible.image}
+            src={getThumbnailUrl(collectible.image)}
             alt={collectible.name}
+            width={300}
+            height={300}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            loading="lazy"
             onError={(e) => {
               // Hide broken image and show placeholder
               e.currentTarget.style.display = 'none';

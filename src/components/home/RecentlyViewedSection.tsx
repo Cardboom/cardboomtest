@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useNavigate } from 'react-router-dom';
 import { generateCardSlug, normalizeSlug } from '@/lib/seoSlug';
+import { getSmallThumbnailUrl } from '@/lib/imageUtils';
 
 export const RecentlyViewedSection = () => {
   const { items, isLoading, clearAll } = useRecentlyViewed();
@@ -58,8 +59,10 @@ export const RecentlyViewedSection = () => {
               <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-muted mb-2 border border-border/50 group-hover:border-primary/50 transition-colors">
                 {item.image_url ? (
                   <img
-                    src={item.image_url}
+                    src={getSmallThumbnailUrl(item.image_url)}
                     alt={item.name}
+                    width={128}
+                    height={170}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
