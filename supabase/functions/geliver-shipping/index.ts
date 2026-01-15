@@ -6,14 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Try multiple possible base URLs
-const GELIVER_API_BASES = [
-  "https://api.geliver.com/v1",
-  "https://api.geliver.io/v1", 
-  "https://geliver.io/api/v1",
-  "https://geliver.com/api/v1",
-  "https://api.geliver.io/api/v1",
-];
+// Geliver API base URL from docs
 const GELIVER_API_BASE = "https://api.geliver.io/api/v1";
 
 interface ShippingAddress {
@@ -26,15 +19,6 @@ interface ShippingAddress {
   country?: string;
 }
 
-interface GetPricesRequest {
-  senderAddress: ShippingAddress;
-  receiverAddress: ShippingAddress;
-  packageWeight: number; // in kg
-  packageWidth?: number; // in cm
-  packageHeight?: number; // in cm
-  packageLength?: number; // in cm
-}
-
 interface CreateShipmentRequest {
   orderId: string;
   senderAddress: ShippingAddress;
@@ -43,7 +27,7 @@ interface CreateShipmentRequest {
   packageWidth?: number;
   packageHeight?: number;
   packageLength?: number;
-  selectedOfferId?: string;
+  providerServiceCode?: string;
 }
 
 serve(async (req) => {
@@ -54,6 +38,8 @@ serve(async (req) => {
 
   try {
     const GELIVER_API_KEY = Deno.env.get('GELIVER_API_KEY');
+    const GELIVER_ORG_ID = Deno.env.get('GELIVER_ORGANIZATION_ID');
+    
     if (!GELIVER_API_KEY) {
       console.error('GELIVER_API_KEY not configured');
       return new Response(
@@ -72,226 +58,264 @@ serve(async (req) => {
 
     console.log(`Geliver shipping action: ${action}`, body);
 
-    // Get balance
+    const headers = {
+      'Authorization': `Bearer ${GELIVER_API_KEY}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+
+    // Get balance - requires organization ID
     if (action === 'balance') {
-      // Try multiple base URLs with common balance endpoints
-      const endpoints: string[] = [];
-      for (const base of GELIVER_API_BASES) {
-        endpoints.push(`${base}/balance`);
-        endpoints.push(`${base}/account/balance`);
-        endpoints.push(`${base}/user/balance`);
-      }
-      
-      let lastError = null;
-      
-      for (const endpoint of endpoints) {
-        try {
-          console.log(`Trying Geliver endpoint: ${endpoint}`);
-          const response = await fetch(endpoint, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${GELIVER_API_KEY}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-          });
-
-          const rawText = await response.text();
-          console.log(`Geliver response from ${endpoint}:`, response.status, rawText.substring(0, 200));
-          
-          if (response.ok) {
-            try {
-              const data = JSON.parse(rawText);
-              return new Response(
-                JSON.stringify(data),
-                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-              );
-            } catch {
-              // Continue to next endpoint if JSON parse fails
-            }
-          }
-        } catch (e) {
-          lastError = e;
-          continue;
-        }
-      }
-
-      // If all endpoints failed, return error with debug info
-      return new Response(
-        JSON.stringify({ 
-          error: 'Could not connect to Geliver API',
-          debug: {
-            apiKeyPresent: !!GELIVER_API_KEY,
-            apiKeyLength: GELIVER_API_KEY?.length,
-            testedEndpoints: endpoints,
-          }
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Get shipping prices
-    if (action === 'prices') {
-      const { senderAddress, receiverAddress, packageWeight, packageWidth, packageHeight, packageLength } = body as GetPricesRequest;
-
-      const payload = {
-        sender: {
-          name: senderAddress.name,
-          phone: senderAddress.phone,
-          address: senderAddress.address,
-          city: senderAddress.city,
-          district: senderAddress.district,
-          postalCode: senderAddress.postalCode,
-          countryCode: "TR",
-        },
-        receiver: {
-          name: receiverAddress.name,
-          phone: receiverAddress.phone,
-          address: receiverAddress.address,
-          city: receiverAddress.city,
-          district: receiverAddress.district,
-          postalCode: receiverAddress.postalCode,
-          countryCode: receiverAddress.country || "TR",
-        },
-        packages: [{
-          weight: packageWeight || 0.5,
-          width: packageWidth || 20,
-          height: packageHeight || 15,
-          length: packageLength || 5,
-        }],
-      };
-
-      console.log('Requesting Geliver prices with payload:', payload);
-
-      const response = await fetch(`${GELIVER_API_BASE}/prices/list_prices`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GELIVER_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-      console.log('Geliver prices response:', data);
-
-      return new Response(
-        JSON.stringify(data),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Create shipment
-    if (action === 'create') {
-      const { orderId, senderAddress, receiverAddress, packageWeight, packageWidth, packageHeight, packageLength, selectedOfferId } = body as CreateShipmentRequest;
-
-      const payload = {
-        sender: {
-          name: senderAddress.name,
-          phone: senderAddress.phone,
-          address: senderAddress.address,
-          city: senderAddress.city,
-          district: senderAddress.district,
-          postalCode: senderAddress.postalCode,
-          countryCode: "TR",
-        },
-        receiver: {
-          name: receiverAddress.name,
-          phone: receiverAddress.phone,
-          address: receiverAddress.address,
-          city: receiverAddress.city,
-          district: receiverAddress.district,
-          postalCode: receiverAddress.postalCode,
-          countryCode: receiverAddress.country || "TR",
-        },
-        packages: [{
-          weight: packageWeight || 0.5,
-          width: packageWidth || 20,
-          height: packageHeight || 15,
-          length: packageLength || 5,
-        }],
-        reference: orderId,
-      };
-
-      console.log('Creating Geliver shipment with payload:', payload);
-
-      // First create shipment to get offers
-      const response = await fetch(`${GELIVER_API_BASE}/shipments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GELIVER_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const shipmentData = await response.json();
-      console.log('Geliver shipment created:', shipmentData);
-
-      // If we have offers and a selected offer, accept it
-      if (shipmentData.offers && selectedOfferId) {
-        const acceptResponse = await fetch(`${GELIVER_API_BASE}/shipments/accept_offer`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${GELIVER_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            shipmentId: shipmentData.id,
-            offerId: selectedOfferId,
-          }),
-        });
-
-        const acceptData = await acceptResponse.json();
-        console.log('Geliver offer accepted:', acceptData);
-
-        // Update order with tracking number
-        if (acceptData.trackingNumber && orderId) {
-          await supabase
-            .from('orders')
-            .update({ 
-              tracking_number: acceptData.trackingNumber,
-              status: 'shipped'
-            })
-            .eq('id', orderId);
-        }
-
+      if (!GELIVER_ORG_ID) {
         return new Response(
-          JSON.stringify({ ...shipmentData, accepted: acceptData }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'GELIVER_ORGANIZATION_ID not configured' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      return new Response(
-        JSON.stringify(shipmentData),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      const endpoint = `${GELIVER_API_BASE}/organizations/${GELIVER_ORG_ID}/balance`;
+      console.log(`Fetching balance from: ${endpoint}`);
+      
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers,
+      });
+
+      const rawText = await response.text();
+      console.log(`Geliver balance response [${response.status}]:`, rawText.substring(0, 500));
+      
+      if (!response.ok) {
+        return new Response(
+          JSON.stringify({ error: 'Geliver API error', status: response.status, details: rawText }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      try {
+        const data = JSON.parse(rawText);
+        return new Response(
+          JSON.stringify(data),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON from Geliver', raw: rawText }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Get shipping prices using priceList endpoint
+    if (action === 'prices') {
+      const { packageWeight = 0.5, packageWidth = 20, packageHeight = 15, packageLength = 5 } = body;
+
+      const queryParams = new URLSearchParams({
+        paramType: 'parcel',
+        length: String(packageLength),
+        width: String(packageWidth),
+        height: String(packageHeight),
+        weight: String(packageWeight),
+      });
+
+      const endpoint = `${GELIVER_API_BASE}/priceList?${queryParams}`;
+      console.log(`Fetching prices from: ${endpoint}`);
+
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers,
+      });
+
+      const rawText = await response.text();
+      console.log(`Geliver prices response [${response.status}]:`, rawText.substring(0, 500));
+
+      if (!response.ok) {
+        return new Response(
+          JSON.stringify({ error: 'Geliver API error', status: response.status, details: rawText }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      try {
+        const data = JSON.parse(rawText);
+        
+        // Geliver returns nested structure: priceList[].offers[]
+        const allOffers: any[] = [];
+        const priceList = data.priceList || [];
+        
+        for (const desiGroup of priceList) {
+          const groupOffers = desiGroup.offers || [];
+          for (const offer of groupOffers) {
+            allOffers.push({
+              id: offer.providerServiceCode,
+              carrierName: offer.providerCode || 'Unknown',
+              price: parseFloat(offer.totalAmount) || 0,
+              currency: offer.currency === 'TL' ? 'TRY' : offer.currency,
+              estimatedDays: offer.transportType || '2-5 days',
+              serviceName: offer.providerServiceCode,
+              providerServiceCode: offer.providerServiceCode,
+            });
+          }
+        }
+
+        // Deduplicate by providerServiceCode (keep first/cheapest)
+        const uniqueOffers = allOffers.filter((offer, index, self) =>
+          index === self.findIndex(o => o.providerServiceCode === offer.providerServiceCode)
+        );
+
+        return new Response(
+          JSON.stringify({ offers: uniqueOffers, success: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON from Geliver', raw: rawText }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Create shipment via transactions endpoint
+    if (action === 'create') {
+      const { 
+        orderId, 
+        senderAddress, 
+        receiverAddress, 
+        packageWeight = 0.5,
+        packageWidth = 20,
+        packageHeight = 15,
+        packageLength = 5,
+        providerServiceCode = 'GELIVER_STANDART'
+      } = body as CreateShipmentRequest;
+
+      // Build transaction payload per Geliver docs
+      const payload = {
+        providerServiceCode,
+        shipment: {
+          sender: {
+            name: senderAddress.name,
+            phone: senderAddress.phone,
+            address: senderAddress.address,
+            city: senderAddress.city,
+            district: senderAddress.district,
+            postalCode: senderAddress.postalCode,
+            countryCode: 'TR',
+          },
+          receiver: {
+            name: receiverAddress.name,
+            phone: receiverAddress.phone,
+            address: receiverAddress.address,
+            city: receiverAddress.city,
+            district: receiverAddress.district,
+            postalCode: receiverAddress.postalCode,
+            countryCode: receiverAddress.country || 'TR',
+          },
+          parcels: [{
+            weight: packageWeight,
+            width: packageWidth,
+            height: packageHeight,
+            length: packageLength,
+          }],
+        },
+        order: {
+          referenceId: orderId,
+          note: `CardBoom Order ${orderId?.slice(0, 8)}`,
+        },
+      };
+
+      console.log('Creating Geliver transaction:', JSON.stringify(payload));
+
+      const response = await fetch(`${GELIVER_API_BASE}/transactions`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      const rawText = await response.text();
+      console.log(`Geliver create response [${response.status}]:`, rawText.substring(0, 500));
+
+      if (!response.ok) {
+        return new Response(
+          JSON.stringify({ error: 'Geliver shipment creation failed', status: response.status, details: rawText }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      try {
+        const data = JSON.parse(rawText);
+        
+        // Extract tracking number from response
+        const trackingNumber = data.trackingNumber || data.shipment?.trackingNumber || data.awb;
+        
+        // Update order with tracking info
+        if (trackingNumber && orderId) {
+          await supabase
+            .from('orders')
+            .update({ 
+              tracking_number: trackingNumber,
+              status: 'shipped'
+            })
+            .eq('id', orderId);
+          
+          console.log(`Updated order ${orderId} with tracking: ${trackingNumber}`);
+        }
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            trackingNumber,
+            transactionId: data.id,
+            raw: data 
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON from Geliver', raw: rawText }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Track shipment
     if (action === 'track') {
-      const shipmentId = url.searchParams.get('shipmentId');
-      if (!shipmentId) {
+      const trackingNumber = url.searchParams.get('trackingNumber') || body.trackingNumber;
+      if (!trackingNumber) {
         return new Response(
-          JSON.stringify({ error: 'shipmentId required' }),
+          JSON.stringify({ error: 'trackingNumber required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      const response = await fetch(`${GELIVER_API_BASE}/shipments/${shipmentId}`, {
-        headers: {
-          'Authorization': `Bearer ${GELIVER_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
+      const endpoint = `${GELIVER_API_BASE}/shipments/tracking/${trackingNumber}`;
+      console.log(`Tracking shipment: ${endpoint}`);
+
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers,
       });
 
-      const data = await response.json();
-      console.log('Geliver tracking response:', data);
+      const rawText = await response.text();
+      console.log(`Geliver tracking response [${response.status}]:`, rawText.substring(0, 500));
 
-      return new Response(
-        JSON.stringify(data),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (!response.ok) {
+        return new Response(
+          JSON.stringify({ error: 'Geliver tracking failed', status: response.status, details: rawText }),
+          { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      try {
+        const data = JSON.parse(rawText);
+        return new Response(
+          JSON.stringify(data),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON from Geliver', raw: rawText }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     return new Response(
