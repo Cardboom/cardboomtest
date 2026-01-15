@@ -42,7 +42,7 @@ export const useGeliverShipping = () => {
   const getShippingPrices = async (receiverAddress: ShippingAddress, packageWeight: number = 0.5) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('geliver-shipping', {
+      const { data, error } = await supabase.functions.invoke('geliver-shipping?action=prices', {
         body: {
           senderAddress,
           receiverAddress,
@@ -50,9 +50,6 @@ export const useGeliverShipping = () => {
           packageWidth: 20,
           packageHeight: 15,
           packageLength: 5,
-        },
-        headers: {
-          'Content-Type': 'application/json',
         },
       });
 
@@ -86,7 +83,7 @@ export const useGeliverShipping = () => {
   ) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('geliver-shipping', {
+      const { data, error } = await supabase.functions.invoke('geliver-shipping?action=create', {
         body: {
           orderId,
           senderAddress,
@@ -96,9 +93,6 @@ export const useGeliverShipping = () => {
           packageHeight: 15,
           packageLength: 5,
           selectedOfferId,
-        },
-        headers: {
-          'Content-Type': 'application/json',
         },
       });
 
@@ -117,11 +111,8 @@ export const useGeliverShipping = () => {
   const trackShipment = async (shipmentId: string) => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('geliver-shipping', {
+      const { data, error } = await supabase.functions.invoke(`geliver-shipping?action=track&shipmentId=${shipmentId}`, {
         body: {},
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (error) throw error;
@@ -136,11 +127,8 @@ export const useGeliverShipping = () => {
 
   const getBalance = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('geliver-shipping', {
+      const { data, error } = await supabase.functions.invoke('geliver-shipping?action=balance', {
         body: {},
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
 
       if (error) throw error;
