@@ -28,6 +28,10 @@ export interface OptimizedImageProps {
   priority?: boolean;
   onLoad?: () => void;
   onError?: () => void;
+  /** Explicit width for layout stability */
+  width?: number;
+  /** Explicit height for layout stability */
+  height?: number;
 }
 
 // Use a transparent pixel as absolute last resort - prefer official images from sync
@@ -48,6 +52,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   priority = false,
   onLoad,
   onError,
+  width,
+  height,
 }) => {
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [currentSrc, setCurrentSrc] = useState(src);
@@ -167,6 +173,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         <img
           src={currentSrc}
           alt={alt}
+          width={width || 400}
+          height={height || (aspectRatio === '3/4' ? 533 : aspectRatio === '4/3' ? 300 : aspectRatio === '16/9' ? 225 : 400)}
           className={cn(
             'w-full h-full object-cover transition-opacity duration-300',
             status === 'loaded' ? 'opacity-100' : 'opacity-0'

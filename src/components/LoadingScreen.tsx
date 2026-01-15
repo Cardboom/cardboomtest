@@ -27,6 +27,8 @@ export const LoadingScreen = () => {
         <img 
           src={isDark ? cardboomLogoDark : cardboomLogo} 
           alt="Cardboom" 
+          width={208}
+          height={208}
           className="h-32 md:h-44 lg:h-52 w-auto object-contain"
         />
       </motion.div>

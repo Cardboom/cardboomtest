@@ -208,6 +208,8 @@ const PostCard = ({ post }: PostCardProps) => (
         <img 
           src={post.author.avatar} 
           alt={post.author.name}
+          width={40}
+          height={40}
           className="w-10 h-10 rounded-full bg-muted"
         />
         <div>
@@ -229,6 +231,8 @@ const PostCard = ({ post }: PostCardProps) => (
         <img 
           src={post.image} 
           alt="Post image"
+          width={400}
+          height={128}
           className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </div>
