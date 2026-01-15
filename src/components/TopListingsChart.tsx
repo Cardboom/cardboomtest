@@ -34,8 +34,8 @@ const MiniSparkline = ({ data, positive }: { data: number[]; positive: boolean }
   const gradientId = `gradient-${positive ? 'up' : 'down'}-${Math.random().toString(36).substr(2, 9)}`;
 
   return (
-    <div className="w-20 h-10">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-20 h-10 min-w-[80px] min-h-[40px]">
+      <ResponsiveContainer width="100%" height="100%" minWidth={80} minHeight={40}>
         <AreaChart data={chartData}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
