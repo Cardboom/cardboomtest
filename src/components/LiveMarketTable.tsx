@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { LiveTickerPrice } from './LiveTickerPrice';
 import { Badge } from '@/components/ui/badge';
 import { formatCategoryName } from '@/lib/categoryFormatter';
+import { getSmallThumbnailUrl } from '@/lib/imageUtils';
 
 interface MarketItem {
   id: string;
@@ -100,7 +101,7 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
               <div className="flex sm:hidden items-center gap-3">
                 {/* Image */}
                 <div className="relative w-11 h-11 rounded-lg overflow-hidden bg-secondary/50 shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                  <img src={getSmallThumbnailUrl(item.image)} alt={item.name} width={44} height={44} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   {index === 0 && (
                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-gold rounded-full flex items-center justify-center">
                       <Sparkles className="w-2.5 h-2.5 text-background" />
@@ -156,7 +157,7 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
               <div className="hidden sm:grid grid-cols-12 gap-3 items-center">
                 <div className="col-span-5 flex items-center gap-3">
                   <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-secondary/50 shrink-0 ring-2 ring-border/50 group-hover:ring-primary/30 transition-all">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    <img src={getSmallThumbnailUrl(item.image)} alt={item.name} width={40} height={40} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                     {index === 0 && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 bg-gold rounded-full flex items-center justify-center">
                         <Sparkles className="w-2.5 h-2.5 text-background" />

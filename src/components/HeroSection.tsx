@@ -113,6 +113,9 @@ export const HeroSection = ({ isLoggedIn = false }: HeroSectionProps) => {
           muted
           playsInline
           className="w-full h-full object-cover"
+          // @ts-ignore - fetchpriority is a valid attribute for video
+          fetchpriority="high"
+          preload="auto"
         >
           <source src="/videos/hero-video.mp4" type="video/mp4" />
         </video>
