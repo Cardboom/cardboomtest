@@ -211,7 +211,9 @@ const App = () => (
             <QueryClientProvider client={queryClient}>
               <TooltipProvider>
                 <AchievementProvider>
-                  <AppContent />
+                  <DebugProvider>
+                    <AppContent />
+                  </DebugProvider>
                 </AchievementProvider>
               </TooltipProvider>
             </QueryClientProvider>
