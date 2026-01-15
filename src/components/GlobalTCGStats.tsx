@@ -149,9 +149,10 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
           >
             <source src="/videos/hero-video.mp4" type="video/mp4" />
           </video>
-          {/* Overlay gradients */}
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+          {/* Overlay gradients - smooth blending */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background" />
         </div>
       )}
       

@@ -14,15 +14,15 @@ export const GradingCTA = () => {
 
   return (
     <section className="relative py-12 sm:py-16 md:py-20 overflow-hidden">
-      {/* Flowing gradient using primary color */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
+      {/* Subtle gradient that blends with page background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.03] to-transparent" />
       <motion.div 
-        className="absolute inset-0"
+        className="absolute inset-0 opacity-30"
         animate={{ 
           background: [
-            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(182 58% 50% / 0.08) 0%, transparent 50%)',
-            'radial-gradient(ellipse 60% 40% at 70% 50%, hsl(182 58% 55% / 0.08) 0%, transparent 50%)',
-            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(182 58% 50% / 0.08) 0%, transparent 50%)',
+            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(var(--primary) / 0.04) 0%, transparent 50%)',
+            'radial-gradient(ellipse 60% 40% at 70% 50%, hsl(var(--primary) / 0.04) 0%, transparent 50%)',
+            'radial-gradient(ellipse 60% 40% at 30% 50%, hsl(var(--primary) / 0.04) 0%, transparent 50%)',
           ]
         }}
         transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
