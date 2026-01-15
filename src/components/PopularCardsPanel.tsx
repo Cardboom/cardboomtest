@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { TrendingUp, Eye, DollarSign, Flame, ShoppingBag, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { Link } from 'react-router-dom';
+
 import { generateCardSlug, normalizeCategory } from '@/lib/seoSlug';
 import { Badge } from '@/components/ui/badge';
 import { formatCategoryName } from '@/lib/categoryFormatter';
@@ -173,8 +173,10 @@ export function PopularCardsPanel() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Link
-                to={linkPath}
+              <a
+                href={linkPath}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group block rounded-xl bg-card/60 border border-border/50 hover:border-primary/30 transition-all overflow-hidden"
               >
                 {/* Card Image */}
@@ -272,7 +274,7 @@ export function PopularCardsPanel() {
                     </span>
                   </div>
                 </div>
-              </Link>
+              </a>
             </motion.div>
           );
         })}

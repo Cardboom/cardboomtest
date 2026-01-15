@@ -65,10 +65,12 @@ export function WhatsNewPanel() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {listings.slice(0, 8).map((listing) => (
-          <div
+          <a
             key={listing.id}
-            onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title }))}
-            className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all group"
+            href={generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all group block"
           >
             {/* Image with mini pedestal effect */}
             <div className="aspect-[3/4] relative overflow-hidden bg-gradient-to-b from-muted/30 to-muted/10 flex items-center justify-center">
@@ -145,7 +147,7 @@ export function WhatsNewPanel() {
                 </Badge>
               </div>
             </div>
-          </div>
+          </a>
         ))}
       </div>
     </div>

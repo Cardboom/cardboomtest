@@ -211,10 +211,11 @@ const Index = () => {
     toast.info(t.cart.removed);
   };
 
-  // Handle click on collectible - navigate to listing page for user listings, modal for market items
+  // Handle click on collectible - open in new tab for listings, modal for market items
   const handleCollectibleClick = (collectible: Collectible & { source?: string; listingId?: string; category?: string }) => {
     if (collectible.source === 'listing' && collectible.listingId) {
-      navigate(generateListingUrl({ id: collectible.listingId, category: collectible.category || 'other', title: collectible.name }));
+      const url = generateListingUrl({ id: collectible.listingId, category: collectible.category || 'other', title: collectible.name });
+      window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       setSelectedCollectible(collectible);
     }

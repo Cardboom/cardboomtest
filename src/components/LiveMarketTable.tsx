@@ -85,13 +85,15 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
         {items.slice(0, 5).map((item, index) => {
           const isPositive = item.priceChange >= 0;
           return (
-            <div 
+            <a 
               key={item.id}
+              href={`/item/${item.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
               className={cn(
-                "px-3 sm:px-5 py-3 sm:py-4 hover:bg-muted/20 transition-all cursor-pointer group",
+                "block px-3 sm:px-5 py-3 sm:py-4 hover:bg-muted/20 transition-all cursor-pointer group",
                 item.priceUpdated && "row-updated"
               )}
-              onClick={() => navigate(`/item/${item.id}`)}
               style={{ animationDelay: `${index * 50}ms` }}
             >
               {/* Mobile Layout */}
@@ -197,7 +199,7 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </a>
           );
         })}
       </div>

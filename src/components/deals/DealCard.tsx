@@ -31,13 +31,19 @@ export const DealCard = ({ deal, index, onClick }: DealCardProps) => {
     return `$${price.toLocaleString()}`;
   };
 
+  const handleClick = () => {
+    // Open in new tab
+    window.open(`/listing/${deal.id}`, '_blank', 'noopener,noreferrer');
+    onClick();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
       className="glass rounded-xl overflow-hidden hover:shadow-glow transition-all duration-300 cursor-pointer group"
-      onClick={onClick}
+      onClick={handleClick}
     >
       {/* Deal Badge */}
       <div className="relative">
