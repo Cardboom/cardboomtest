@@ -7,6 +7,7 @@ import { generateCardSlug, normalizeCategory } from '@/lib/seoSlug';
 import { Badge } from '@/components/ui/badge';
 import { formatCategoryName } from '@/lib/categoryFormatter';
 import { generateListingUrl } from '@/lib/listingUrl';
+import { getThumbnailUrl } from '@/lib/imageUtils';
 
 interface ListingItem {
   id: string;
@@ -188,7 +189,7 @@ export function PopularCardsPanel() {
                   {item.image_url ? (
                     <div className="relative w-full h-full flex items-center justify-center p-2">
                       <img
-                        src={item.image_url}
+                        src={getThumbnailUrl(item.image_url)}
                         alt={item.name}
                         width={300}
                         height={400}
