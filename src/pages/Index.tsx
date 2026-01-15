@@ -261,7 +261,7 @@ const Index = () => {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover pointer-events-none"
         >
           <source src="/videos/hero-video.mp4" type="video/mp4" />
         </video>
