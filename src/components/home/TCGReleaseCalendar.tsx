@@ -44,12 +44,52 @@ export const TCGReleaseCalendar = () => {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Defer fetch to reduce initial page load critical path
+  // Fetch from cached database table (populated by background job)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchDrops();
-    }, 2000); // 2 second delay
-    return () => clearTimeout(timer);
+    const fetchDrops = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('cached_tcg_drops')
+          .select('id, name, tcg, release_date, type, description')
+          .eq('is_active', true)
+          .gte('release_date', new Date().toISOString().split('T')[0])
+          .order('release_date', { ascending: true })
+          .limit(8);
+
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          setDrops(data.map(d => ({
+            id: d.id,
+            name: d.name,
+            tcg: d.tcg as TCGDrop['tcg'],
+            releaseDate: d.release_date,
+            type: d.type as TCGDrop['type'],
+            description: d.description || undefined,
+          })));
+        } else {
+          // Fallback if no cached data yet
+          setDrops([
+            { id: '1', name: 'Prismatic Evolutions', tcg: 'pokemon', releaseDate: '2026-01-17', type: 'booster-box' },
+            { id: '2', name: 'OP-11 Two Legends', tcg: 'one-piece', releaseDate: '2026-02-07', type: 'booster-box' },
+            { id: '3', name: 'Aetherdrift', tcg: 'magic', releaseDate: '2026-02-14', type: 'booster-box' },
+            { id: '4', name: 'Azurite Sea', tcg: 'lorcana', releaseDate: '2026-02-21', type: 'booster-box' },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch TCG drops:', error);
+        setDrops([
+          { id: '1', name: 'Prismatic Evolutions', tcg: 'pokemon', releaseDate: '2026-01-17', type: 'booster-box' },
+          { id: '2', name: 'OP-11 Two Legends', tcg: 'one-piece', releaseDate: '2026-02-07', type: 'booster-box' },
+          { id: '3', name: 'Aetherdrift', tcg: 'magic', releaseDate: '2026-02-14', type: 'booster-box' },
+          { id: '4', name: 'Azurite Sea', tcg: 'lorcana', releaseDate: '2026-02-21', type: 'booster-box' },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrops();
   }, []);
 
   // Cycle through drops
@@ -60,26 +100,6 @@ export const TCGReleaseCalendar = () => {
     }, 5000);
     return () => clearInterval(interval);
   }, [drops.length]);
-
-  const fetchDrops = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('fetch-tcg-drops');
-      if (error) throw error;
-      if (data?.releases) {
-        setDrops(data.releases.slice(0, 8));
-      }
-    } catch (error) {
-      console.error('Failed to fetch TCG drops:', error);
-      setDrops([
-        { id: '1', name: 'Prismatic Evolutions', tcg: 'pokemon', releaseDate: '2026-01-17', type: 'booster-box' },
-        { id: '2', name: 'OP-11 Two Legends', tcg: 'one-piece', releaseDate: '2026-02-07', type: 'booster-box' },
-        { id: '3', name: 'Aetherdrift', tcg: 'magic', releaseDate: '2026-02-14', type: 'booster-box' },
-        { id: '4', name: 'Azurite Sea', tcg: 'lorcana', releaseDate: '2026-02-21', type: 'booster-box' },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const nextDrop = drops.find(drop => getDaysUntil(drop.releaseDate) >= 0);
   const upcomingDrops = drops.filter(drop => getDaysUntil(drop.releaseDate) >= 0).slice(0, 4);

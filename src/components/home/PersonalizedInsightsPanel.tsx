@@ -33,12 +33,9 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Defer fetch to reduce initial page load critical path
+  // Fetch from cached database (no delay needed - DB reads are fast)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchInsights();
-    }, 3000); // 3 second delay
-    return () => clearTimeout(timer);
+    fetchInsights();
   }, [userId]);
 
   useEffect(() => {
@@ -63,42 +60,47 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
     }
   };
 
+  // Fetch from cached database table (populated by background job)
   const fetchInsights = async () => {
     const newInsights: Insight[] = [];
 
     try {
-      const { data: aiSummary, error: aiError } = await supabase.functions.invoke('ai-market-summary', {
-        body: { userId }
-      });
+      // Read from cached market summary table
+      const { data: summaryData, error } = await supabase
+        .from('cached_market_summary')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
 
-      if (!aiError && aiSummary) {
-        const summary = aiSummary as AIMarketSummary;
+      if (!error && summaryData) {
+        const sentiment = summaryData.sentiment as 'bullish' | 'bearish' | 'mixed';
         
-        if (summary.communityBuzz) {
+        if (summaryData.community_buzz) {
           newInsights.push({
             id: 'buzz',
-            icon: summary.sentiment === 'bullish' ? '🚀' : summary.sentiment === 'bearish' ? '📉' : '💬',
-            message: summary.communityBuzz,
-            type: summary.sentiment === 'bullish' ? 'bullish' : summary.sentiment === 'bearish' ? 'bearish' : 'neutral',
+            icon: sentiment === 'bullish' ? '🚀' : sentiment === 'bearish' ? '📉' : '💬',
+            message: summaryData.community_buzz,
+            type: sentiment === 'bullish' ? 'bullish' : sentiment === 'bearish' ? 'bearish' : 'neutral',
             category: 'Market Pulse',
           });
         }
 
-        if (summary.hotTake) {
+        if (summaryData.hot_take) {
           newInsights.push({
             id: 'hot-take',
             icon: '🎯',
-            message: summary.hotTake,
+            message: summaryData.hot_take,
             type: 'tip',
             category: 'Hot Take',
           });
         }
 
-        if (summary.sleeper) {
+        if (summaryData.sleeper) {
           newInsights.push({
             id: 'sleeper',
             icon: '💎',
-            message: summary.sleeper,
+            message: summaryData.sleeper,
             type: 'bullish',
             category: 'Hidden Gem',
           });

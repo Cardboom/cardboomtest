@@ -80,40 +80,56 @@ export const CardsGoingBoomPanel = () => {
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Defer fetch to reduce initial page load critical path
+  // Fetch from cached database table (populated by background job)
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('fetch-x-posts');
+        const { data, error } = await supabase
+          .from('cached_social_posts')
+          .select('*')
+          .eq('is_active', true)
+          .order('posted_at', { ascending: false })
+          .limit(12);
+
+        if (error) throw error;
         
-        if (error) {
-          console.error('Error fetching X posts:', error);
-          return;
-        }
-        
-        if (data?.posts && data.posts.length > 0) {
-          setPosts(data.posts);
+        if (data && data.length > 0) {
+          setPosts(data.map(p => ({
+            id: p.id,
+            author: {
+              name: p.author_name,
+              handle: p.author_handle || '',
+              avatar: p.author_avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.author_name}`,
+            },
+            content: p.content,
+            image: null,
+            likes: p.engagement_count || 0,
+            retweets: Math.floor((p.engagement_count || 0) * 0.3),
+            comments: Math.floor((p.engagement_count || 0) * 0.15),
+            timestamp: p.posted_at ? getRelativeTime(new Date(p.posted_at)) : '1h',
+          })));
         }
         // If no posts returned, keep mock data
       } catch (err) {
-        console.error('Failed to fetch X posts:', err);
+        console.error('Failed to fetch social posts:', err);
       } finally {
         setIsLoading(false);
       }
     };
 
-    // 2.5 second delay to break critical path chain
-    const timer = setTimeout(() => {
-      fetchPosts();
-    }, 2500);
-    
-    // Refresh posts every 5 minutes
-    const interval = setInterval(fetchPosts, 5 * 60 * 1000);
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
+    fetchPosts();
   }, []);
+
+  // Helper to format relative time
+  const getRelativeTime = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours}h`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d`;
+  };
 
   // Create three columns with different posts
   const columns = [
