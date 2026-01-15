@@ -82,6 +82,8 @@ export function WhatsNewPanel() {
                   <img 
                     src={listing.image_url} 
                     alt={listing.title}
+                    width={300}
+                    height={400}
                     className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_4px_12px_rgba(0,0,0,0.25)]"
                     loading="lazy"
                   />

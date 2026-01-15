@@ -534,6 +534,8 @@ const Auth = () => {
                 <img 
                   src={isDark ? cardboomLogoDark : cardboomLogo} 
                   alt="Cardboom" 
+                  width={384}
+                  height={384}
                   className="h-64 lg:h-80 xl:h-96 w-auto object-contain"
                 />
               </div>
@@ -619,6 +621,8 @@ const Auth = () => {
               <img 
                 src={isDark ? cardboomLogoDark : cardboomLogo} 
                 alt="Cardboom" 
+                width={80}
+                height={80}
                 className="h-16 md:h-20 w-auto object-contain mx-auto"
               />
             </div>

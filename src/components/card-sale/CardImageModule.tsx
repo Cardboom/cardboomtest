@@ -68,6 +68,8 @@ export const CardImageModule = ({
             <img 
               src={currentImage} 
               alt={name}
+              width={600}
+              height={600}
               className={cn(
                 "w-full h-full object-contain rounded-xl transition-transform duration-500",
                 isZoomed && "scale-125"
@@ -171,6 +173,8 @@ export const CardImageModule = ({
             <img 
               src={currentImage || '/placeholder.svg'} 
               alt={name}
+              width={800}
+              height={800}
               className="max-w-full max-h-full object-contain"
             />
             
