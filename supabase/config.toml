@@ -116,3 +116,6 @@ verify_jwt = false
 
 [functions.create-system-account]
 verify_jwt = false
+
+[functions.sync-homepage-cache]
+verify_jwt = false
