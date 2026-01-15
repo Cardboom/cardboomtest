@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
@@ -25,6 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import {
   Play,
   TrendingUp,
@@ -54,6 +55,7 @@ import {
 
 const CreatorInvite = () => {
   const { toast } = useToast();
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     creatorName: "",
@@ -66,6 +68,48 @@ const CreatorInvite = () => {
     portfolioUrl: "",
     agreeTerms: false,
   });
+
+  // Fetch real platform stats
+  const { data: platformStats } = useQuery({
+    queryKey: ['creator-platform-stats'],
+    queryFn: async () => {
+      // Get active user count
+      const { count: userCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      // Get monthly volume (completed orders in last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('price')
+        .eq('status', 'completed')
+        .gte('created_at', thirtyDaysAgo.toISOString());
+
+      const monthlyVolume = orders?.reduce((sum, o) => sum + (o.price || 0), 0) || 0;
+
+      return {
+        activeCollectors: userCount || 0,
+        monthlyVolume,
+      };
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Format stats for display
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M+`;
+    if (num >= 1000) return `${(num / 1000).toFixed(0)}K+`;
+    return num.toString();
+  };
+
+  const formatCurrency = (num: number) => {
+    if (num >= 1000000) return `$${(num / 1000000).toFixed(1)}M+`;
+    if (num >= 1000) return `$${(num / 1000).toFixed(0)}K+`;
+    return `$${num}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,14 +173,14 @@ const CreatorInvite = () => {
     {
       icon: DollarSign,
       title: "Revenue Share",
-      description: "Earn up to 70% revenue share on tips, subscriptions, and referral commissions from your audience.",
-      highlight: "Up to 70%",
+      description: "Earn up to 30% revenue share on tips, subscriptions, and referral commissions from your audience.",
+      highlight: "Up to 30%",
     },
     {
       icon: Users,
       title: "TCG-Focused Audience",
-      description: "Access 50,000+ passionate collectors actively looking for trusted voices in the TCG space.",
-      highlight: "50K+ Collectors",
+      description: "Access passionate collectors actively looking for trusted voices in the TCG space.",
+      highlight: "Growing Community",
     },
     {
       icon: BarChart3,
@@ -209,7 +253,7 @@ const CreatorInvite = () => {
     },
     {
       question: "How does the revenue share work?",
-      answer: "Creators earn through multiple streams: 70% of tips received, 50% of subscription fees from your followers, and 10% commission on sales generated through your referral links. Payments are processed monthly with a minimum threshold of $50.",
+      answer: "Creators earn through multiple streams: up to 30% of tips received, 20% of subscription fees from your followers, and 10% commission on sales generated through your referral links. Payments are processed monthly with a minimum threshold of $50.",
     },
     {
       question: "Do I need to post exclusively on CardBoom?",
@@ -264,76 +308,102 @@ const CreatorInvite = () => {
       <div className="min-h-screen bg-background">
         <Header cartCount={0} onCartClick={() => {}} />
 
-        {/* Hero Section */}
-        <section className="relative pt-24 pb-16 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+        {/* Video Hero Section - Phygitals Style */}
+        <section className="relative min-h-[80vh] flex items-center overflow-hidden">
+          {/* Video Background */}
+          <div className="absolute inset-0 z-0">
+            <video
+              ref={videoRef}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+            >
+              <source src="/videos/creator-hero.mp4" type="video/mp4" />
+            </video>
+            {/* Overlay gradients */}
+            <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+          </div>
           
-          <div className="container relative z-10 mx-auto px-4">
+          <div className="container relative z-10 mx-auto px-4 py-24">
+            <div className="max-w-xl">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Badge variant="secondary" className="mb-6 px-4 py-1.5 bg-background/80 backdrop-blur-sm">
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  Creator Program Now Open
+                </Badge>
+
+                <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+                  Turn Your TCG Passion Into{" "}
+                  <span className="text-primary">Income</span>
+                </h1>
+
+                <p className="text-lg md:text-xl text-muted-foreground mb-8">
+                  Join CardBoom's creator community. Share your collection, market insights,
+                  and pack openings with collectors who value your expertise.
+                </p>
+
+                <div className="flex flex-wrap gap-4 mb-8">
+                  <Button size="lg" className="gap-2" onClick={() => document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" })}>
+                    Apply Now
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                  <Button size="lg" variant="outline" className="gap-2 bg-background/50 backdrop-blur-sm" onClick={() => document.getElementById("benefits")?.scrollIntoView({ behavior: "smooth" })}>
+                    <Play className="w-4 h-4" />
+                    See Benefits
+                  </Button>
+                </div>
+
+                {/* Platform Icons */}
+                <div className="flex items-center gap-6 text-muted-foreground">
+                  <span className="text-sm">Cross-post from:</span>
+                  <div className="flex gap-4">
+                    <Youtube className="w-6 h-6 hover:text-red-500 transition-colors cursor-pointer" />
+                    <Instagram className="w-6 h-6 hover:text-pink-500 transition-colors cursor-pointer" />
+                    <Twitch className="w-6 h-6 hover:text-purple-500 transition-colors cursor-pointer" />
+                    <Video className="w-6 h-6 hover:text-primary transition-colors cursor-pointer" />
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section - Separate from hero for clarity */}
+        <section className="py-12 bg-muted/30 border-y border-border/50">
+          <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center max-w-4xl mx-auto"
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto"
             >
-              <Badge variant="secondary" className="mb-4 px-4 py-1.5">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                Creator Program Now Open
-              </Badge>
-
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-                Turn Your TCG Passion Into{" "}
-                <span className="text-primary">Income</span>
-              </h1>
-
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join CardBoom's creator community. Share your collection, market insights,
-                and pack openings with 50,000+ collectors who value your expertise.
-              </p>
-
-              <div className="flex flex-wrap justify-center gap-4 mb-12">
-                <Button size="lg" className="gap-2" onClick={() => document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" })}>
-                  Apply Now
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-                <Button size="lg" variant="outline" className="gap-2" onClick={() => document.getElementById("benefits")?.scrollIntoView({ behavior: "smooth" })}>
-                  <Play className="w-4 h-4" />
-                  See Benefits
-                </Button>
-              </div>
-
-              {/* Platform Icons */}
-              <div className="flex justify-center items-center gap-6 text-muted-foreground">
-                <span className="text-sm">Cross-post from:</span>
-                <div className="flex gap-4">
-                  <Youtube className="w-6 h-6 hover:text-red-500 transition-colors" />
-                  <Instagram className="w-6 h-6 hover:text-pink-500 transition-colors" />
-                  <Twitch className="w-6 h-6 hover:text-purple-500 transition-colors" />
-                  <Video className="w-6 h-6 hover:text-primary transition-colors" />
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary">
+                  {platformStats ? formatNumber(platformStats.activeCollectors) : '—'}
                 </div>
+                <div className="text-sm text-muted-foreground mt-1">Active Collectors</div>
               </div>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto"
-            >
-              {[
-                { value: "50K+", label: "Active Collectors" },
-                { value: "$2M+", label: "Monthly Volume" },
-                { value: "70%", label: "Revenue Share" },
-                { value: "48hrs", label: "Approval Time" },
-              ].map((stat, i) => (
-                <Card key={i} className="bg-card/50 border-border/50 backdrop-blur-sm">
-                  <CardContent className="p-4 text-center">
-                    <div className="text-2xl md:text-3xl font-bold text-primary">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
-                  </CardContent>
-                </Card>
-              ))}
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary">
+                  {platformStats ? formatCurrency(platformStats.monthlyVolume) : '—'}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Monthly Volume</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary">30%</div>
+                <div className="text-sm text-muted-foreground mt-1">Revenue Share</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary">48hrs</div>
+                <div className="text-sm text-muted-foreground mt-1">Approval Time</div>
+              </div>
             </motion.div>
           </div>
         </section>
