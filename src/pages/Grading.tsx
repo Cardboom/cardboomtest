@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/Header';
@@ -9,11 +9,24 @@ import { GRADING_PRICE_USD } from '@/hooks/useGrading';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function Grading() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Auth-aware navigation to grading flow
+  const handleStartGrading = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.info("Please sign in to grade your cards");
+      navigate('/auth?returnTo=/grading/new');
+      return;
+    }
+    navigate('/grading/new');
+  }, [navigate]);
 
   const stats = [
     { value: '50K+', label: 'Cards Graded', icon: FileCheck },
@@ -296,7 +309,7 @@ export default function Grading() {
                     <Button 
                       size="lg" 
                       className="h-12 md:h-14 px-6 md:px-8 text-base md:text-lg font-bold rounded-xl gap-2 shadow-lg shadow-primary/25"
-                      onClick={() => navigate('/grading/new')}
+                      onClick={handleStartGrading}
                     >
                       Grade Your Card
                       <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />
@@ -887,7 +900,7 @@ export default function Grading() {
                   <Button 
                     className={`w-full ${tier.popular ? '' : 'variant-outline'}`}
                     variant={tier.popular ? 'default' : 'outline'}
-                    onClick={() => navigate('/grading/new')}
+                    onClick={handleStartGrading}
                   >
                     Select {tier.name}
                   </Button>
@@ -974,7 +987,7 @@ export default function Grading() {
                     size="lg" 
                     variant="secondary"
                     className="h-12 md:h-14 px-6 md:px-10 text-base md:text-lg font-bold rounded-xl gap-2"
-                    onClick={() => navigate('/grading/new')}
+                    onClick={handleStartGrading}
                   >
                     Start Grading Now
                     <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />

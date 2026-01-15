@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, Clock, CheckCircle, AlertCircle, RefreshCw, ChevronRight, Image as ImageIcon, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const STATUS_CONFIG: Record<GradingOrderStatus, { label: string; color: string; icon: typeof Clock }> = {
   pending_payment: { label: 'Pending', color: 'bg-amber-500', icon: Clock },
@@ -31,6 +33,29 @@ export default function GradingOrders() {
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+
+  // Auth-aware navigation to grading flow
+  const handleStartGrading = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.info("Please sign in to grade your cards");
+      navigate('/auth?returnTo=/grading/new');
+      return;
+    }
+    navigate('/grading/new');
+  }, [navigate]);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.info("Please sign in to view your grading orders");
+        navigate('/auth?returnTo=/grading/orders');
+      }
+    };
+    checkAuth();
+  }, [navigate]);
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
@@ -106,7 +131,7 @@ export default function GradingOrders() {
             </motion.div>
           ) : filteredOrders.length === 0 ? (
             <motion.div key="empty" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-              <Card className="border-dashed"><CardContent className="py-12 text-center"><Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" /><h3 className="text-lg font-medium mb-2">No orders yet</h3><p className="text-muted-foreground text-sm mb-6">Submit your first card for AI grading</p><Button onClick={() => navigate('/grading/new')} className="rounded-full">Start Grading</Button></CardContent></Card>
+              <Card className="border-dashed"><CardContent className="py-12 text-center"><Award className="w-12 h-12 text-muted-foreground mx-auto mb-4" /><h3 className="text-lg font-medium mb-2">No orders yet</h3><p className="text-muted-foreground text-sm mb-6">Submit your first card for AI grading</p><Button onClick={handleStartGrading} className="rounded-full">Start Grading</Button></CardContent></Card>
             </motion.div>
           ) : (
             <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">{filteredOrders.map((order, index) => <OrderCard key={order.id} order={order} index={index} />)}</motion.div>
