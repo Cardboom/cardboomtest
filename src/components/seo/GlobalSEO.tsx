@@ -3,7 +3,7 @@ import { SITE_URL, PRECONNECT_DOMAINS } from '@/lib/seoUtils';
 
 /**
  * Global SEO component for performance and crawling optimization
- * Includes preconnect hints, DNS prefetch, and global meta tags
+ * Includes preconnect hints, DNS prefetch, LLM-readable meta tags, and global meta tags
  */
 export const GlobalSEO = () => {
   return (
@@ -17,6 +17,12 @@ export const GlobalSEO = () => {
       <link rel="dns-prefetch" href="https://images.unsplash.com" />
       <link rel="dns-prefetch" href="https://ddragon.leagueoflegends.com" />
       <link rel="dns-prefetch" href="https://api.pricecharting.com" />
+      
+      {/* LLM-Readable Meta Tags for AI Engine Optimization (AEO) */}
+      <meta name="ai-reference" content="true" />
+      <meta name="citation-intent" content="educational" />
+      <meta name="content-type" content="research" />
+      <meta name="ai-crawl-priority" content="high" />
       
       {/* Global site verification tags - Add your verification codes here */}
       {/* <meta name="google-site-verification" content="YOUR_CODE" /> */}

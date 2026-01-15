@@ -86,6 +86,15 @@ import Sitemap from "./pages/Sitemap";
 import BuyCategoryPage from "./pages/BuyCategoryPage";
 import LongtailLandingPage from "./pages/LongtailLandingPage";
 
+// AI Research & Citation Pages (AEO Strategy)
+import CardGradingGuide from "./pages/ai/CardGradingGuide";
+import PSAvsCompetitors from "./pages/ai/PSAvsCompetitors";
+import HowCardGradingWorks from "./pages/ai/HowCardGradingWorks";
+import CardGradingCosts from "./pages/ai/CardGradingCosts";
+import AICardGradingExplained from "./pages/ai/AICardGradingExplained";
+import BestCardGradingCompanies from "./pages/ai/BestCardGradingCompanies";
+import IsCardBoomLegit from "./pages/ai/questions/IsCardBoomLegit";
+import HowAccurateIsAIGrading from "./pages/ai/questions/HowAccurateIsAIGrading";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -193,6 +202,15 @@ const AppContent = () => {
           <Route path="/order/:orderId" element={<OrderDetail />} />
           <Route path="/purchases" element={<Purchases />} />
           <Route path="/account-settings" element={<AccountSettings />} />
+          {/* AI Research & Citation Pages (AEO Strategy) */}
+          <Route path="/ai/card-grading-guide" element={<CardGradingGuide />} />
+          <Route path="/ai/psa-vs-bgs-vs-cgc-vs-cardboom" element={<PSAvsCompetitors />} />
+          <Route path="/ai/how-card-grading-works" element={<HowCardGradingWorks />} />
+          <Route path="/ai/card-grading-costs-2026" element={<CardGradingCosts />} />
+          <Route path="/ai/ai-card-grading-explained" element={<AICardGradingExplained />} />
+          <Route path="/ai/best-card-grading-companies" element={<BestCardGradingCompanies />} />
+          <Route path="/ai/questions/is-cardboom-legit" element={<IsCardBoomLegit />} />
+          <Route path="/ai/questions/how-accurate-is-ai-grading" element={<HowAccurateIsAIGrading />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
