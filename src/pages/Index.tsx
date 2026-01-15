@@ -299,10 +299,8 @@ const Index = () => {
         <meta property="og:type" content="website" />
       </Helmet>
       
-      <ActivityAnnouncementBanner />
       {user && <DailyXPClaimNotification />}
       {user && <DailyCardVotePopup />}
-      {/* MarketTicker moved into LiveMarketPanel */}
       
       <main>
         {/* Boom Challenges - Full width at top */}
