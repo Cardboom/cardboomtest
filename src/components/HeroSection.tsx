@@ -119,9 +119,9 @@ export const HeroSection = ({ isLoggedIn = false }: HeroSectionProps) => {
         >
           <source src="/videos/hero-video.mp4" type="video/mp4" />
         </video>
-        {/* Overlay gradients */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        {/* Overlay gradients - reduced opacity for better video visibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
       </div>
 
       {/* Hero Content */}
