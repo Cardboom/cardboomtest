@@ -15,6 +15,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { SocialProofPopup } from "@/components/SocialProofPopup";
 import { SellerShippingNotifier } from "@/components/seller/SellerShippingNotifier";
 import { OnboardingChecklist } from "@/components/growth";
+import { NavigationProgress } from "@/components/NavigationProgress";
 import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -108,6 +109,7 @@ const AppContent = () => {
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <NavigationProgress />
         <OnboardingChecklist />
         <Routes>
           <Route path="/" element={<Index />} />
