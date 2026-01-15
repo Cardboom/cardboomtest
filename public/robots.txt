@@ -1,24 +1,56 @@
 # Cardboom Robots.txt
 # https://cardboom.com
 
+# Sitemaps - Must be at the top for visibility
+Sitemap: https://cardboom.com/sitemap-static.xml
+Sitemap: https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/sitemap?type=index
+
+# Google
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 1
+Disallow: /auth
+Disallow: /wallet
+Disallow: /vault
+Disallow: /sell
+Disallow: /profile
+Disallow: /messages
+Disallow: /trades
+Disallow: /portfolio
+Disallow: /admin
+Disallow: /order-success
+Disallow: /*?sort=*
+Disallow: /*?order=*
+Disallow: /*?filter=*
+Disallow: /*?page=*
 
 User-agent: Googlebot-Image
 Allow: /
 
+# Bing
 User-agent: Bingbot
 Allow: /
+Disallow: /auth
+Disallow: /wallet
+Disallow: /vault
+Disallow: /sell
+Disallow: /profile
+Disallow: /messages
+Disallow: /trades
+Disallow: /portfolio
+Disallow: /admin
+Disallow: /order-success
 Crawl-delay: 1
 
+# Yahoo
 User-agent: Slurp
 Allow: /
 Crawl-delay: 2
 
+# DuckDuckGo
 User-agent: DuckDuckBot
 Allow: /
 
+# Social Media Bots
 User-agent: Twitterbot
 Allow: /
 
@@ -31,16 +63,9 @@ Allow: /
 User-agent: Pinterest
 Allow: /
 
+# Default - All other bots
 User-agent: *
 Allow: /
-
-# Dynamic Sitemap Index (includes all cards)
-Sitemap: https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/sitemap?type=index
-
-# Static sitemap fallback
-Sitemap: https://cardboom.com/sitemap-static.xml
-
-# Disallow private/auth pages from indexing
 Disallow: /auth
 Disallow: /wallet
 Disallow: /vault
@@ -51,56 +76,10 @@ Disallow: /trades
 Disallow: /portfolio
 Disallow: /admin
 Disallow: /order-success
-
-# Allow specific public pages
-Allow: /markets
-Allow: /explorer
-Allow: /blog
-Allow: /deals
-Allow: /deals/*
-Allow: /buy/*
-Allow: /sitemap
-# Allow: /fractional # Temporarily disabled
-Allow: /gaming
-Allow: /leaderboard
-Allow: /hall-of-fame
-
-# Grading pages - High priority for SEO
-Allow: /grading
-Allow: /grading/*
-Allow: /api
-Allow: /help
-Allow: /about
-Allow: /safety
-Allow: /careers
-Allow: /press
-Allow: /terms
-Allow: /privacy
-Allow: /cards/*
-
-# Disallow filtered/sorted URLs to prevent duplicate content
 Disallow: /*?sort=*
 Disallow: /*?order=*
 Disallow: /*?filter=*
 Disallow: /*?page=*
-
-# Allow all card category pages for SEO indexing
-Allow: /pokemon/*
-Allow: /mtg/*
-Allow: /yugioh/*
-Allow: /onepiece/*
-Allow: /lorcana/*
-Allow: /digimon/*
-Allow: /dragonball/*
-Allow: /starwars/*
-Allow: /nba/*
-Allow: /football/*
-Allow: /tcg/*
-Allow: /figures/*
-Allow: /riftbound/*
-
-Allow: /seller/*
-Allow: /listing/*
 
 # Host directive
 Host: https://cardboom.com
