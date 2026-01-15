@@ -86,22 +86,20 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);
 
-      const [cardInstancesResult, usersResult, ordersResult, monthOrdersResult] = await Promise.all([
-        // Market value from unique card instances (not counting sold_pending duplicates)
-        // Only count cards with valid status that aren't in escrow transition
+      const [marketItemsResult, usersResult, ordersResult, monthOrdersResult] = await Promise.all([
+        // Market value from market_items (public access) - more reliable for non-logged users
         supabase
-          .from('card_instances')
-          .select('current_value')
-          .eq('is_active', true)
-          .not('status', 'eq', 'sold_pending'),
+          .from('market_items')
+          .select('current_price')
+          .gt('current_price', 0),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         // Total volume from completed orders only (to avoid counting pending escrow twice)
         supabase.from('orders').select('price').in('status', ['completed', 'delivered', 'shipped']),
         supabase.from('orders').select('id, price').gte('created_at', monthStart.toISOString()),
       ]);
 
-      // Calculate total market value from card instances (unique cards)
-      const totalMarketValue = cardInstancesResult.data?.reduce((sum, item) => sum + (item.current_value || 0), 0) || 0;
+      // Calculate total market value from market_items (catalog value)
+      const totalMarketValue = marketItemsResult.data?.reduce((sum, item) => sum + (item.current_price || 0), 0) || 0;
       // Total volume from completed trades only
       const totalOrdersVolume = ordersResult.data?.reduce((sum, order) => sum + (order.price || 0), 0) || 0;
       const monthSalesCount = monthOrdersResult.data?.length || 0;

@@ -20,6 +20,7 @@ interface ListingItem {
   created_at: string;
   cbgi_score: number | null;
   grade: string | null;
+  grading_company: string | null;
 }
 
 interface PopularCard {
@@ -43,7 +44,7 @@ export function PopularCardsPanel() {
       // Use simple query for reliability, then fetch seller names separately
       const { data, error } = await supabase
         .from('listings')
-        .select('id, title, category, image_url, price, condition, created_at, cbgi_score, grade, seller_id, slug')
+        .select('id, title, category, image_url, price, condition, created_at, cbgi_score, grade, grading_company, seller_id, slug')
         .eq('status', 'active')
         .not('image_url', 'is', null)
         .order('created_at', { ascending: false })
@@ -136,6 +137,7 @@ export function PopularCardsPanel() {
       condition: listing.condition,
       cbgi_score: listing.cbgi_score,
       grade: listing.grade,
+      grading_company: listing.grading_company,
     })),
     ...(popularCards || []).slice(0, marketItemsToShow).map(card => ({
       id: card.id,
@@ -147,6 +149,7 @@ export function PopularCardsPanel() {
       change_24h: card.change_24h,
       views_24h: card.views_24h,
       psa10_price: card.psa10_price,
+      psa9_price: card.psa9_price,
     })),
   ];
 
@@ -213,14 +216,27 @@ export function PopularCardsPanel() {
                         For Sale
                       </Badge>
                     )}
+                    {/* CBGI Score Badge */}
                     {isListing && (item as any).cbgi_score && (
                       <Badge className="text-[10px] px-1.5 py-0.5 bg-[#0ABAB5]/90 text-white">
-                        CBG {(item as any).cbgi_score.toFixed(1)}
+                        CBGI {(item as any).cbgi_score.toFixed(1)}
                       </Badge>
                     )}
+                    {/* External Grading Badge (PSA, BGS, CGC) */}
+                    {isListing && (item as any).grading_company && (item as any).grade && (
+                      <Badge className="text-[10px] px-1.5 py-0.5 bg-blue-600/90 text-white">
+                        {(item as any).grading_company} {(item as any).grade}
+                      </Badge>
+                    )}
+                    {/* Market item PSA badges */}
                     {!isListing && item.psa10_price && (
                       <Badge className="text-[10px] px-1.5 py-0.5 bg-blue-600/90 text-white">
                         PSA 10
+                      </Badge>
+                    )}
+                    {!isListing && !item.psa10_price && (item as any).psa9_price && (
+                      <Badge className="text-[10px] px-1.5 py-0.5 bg-purple-600/90 text-white">
+                        PSA 9
                       </Badge>
                     )}
                   </div>

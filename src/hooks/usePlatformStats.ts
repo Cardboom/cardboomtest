@@ -34,10 +34,10 @@ export const usePlatformStats = (): PlatformStats => {
           .eq('status', 'active')
           .neq('category', 'coaching'); // Exclude coaching from stats
 
-        // Fetch completed orders for volume
+        // Fetch completed orders for volume - use broader status match for visibility
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
-          .select('price_cents')
+          .select('price')
           .in('status', ['completed', 'shipped', 'delivered']);
 
         if (!isMounted) return;
@@ -56,8 +56,8 @@ export const usePlatformStats = (): PlatformStats => {
         // Items listed = active listings + market items with prices
         const itemsListed = safeMarketData.length + safeListingsData.length;
         
-        // Total volume from completed orders
-        const orderVolume = safeOrdersData.reduce((sum, o) => sum + (o.price_cents || 0), 0) / 100;
+        // Total volume from completed orders (price is in dollars)
+        const orderVolume = safeOrdersData.reduce((sum, o) => sum + (o.price || 0), 0);
         // If no orders yet, show a portion of catalog value as "tracked volume"
         const totalVolume = orderVolume > 0 ? orderVolume : totalCatalogValue * 0.15;
 

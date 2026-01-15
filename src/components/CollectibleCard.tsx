@@ -10,6 +10,7 @@ import { formatGrade } from '@/hooks/useGradePrices';
 import { CardPlaceholder } from './market/CardPlaceholder';
 import { MiniSparkline } from './market/MiniSparkline';
 import { getThumbnailUrl } from '@/lib/imageUtils';
+import { GradeBadge } from '@/components/ui/grade-badge';
 
 // Convert ISO country code to flag emoji
 const getCountryFlag = (countryCode: string): string => {
@@ -182,6 +183,18 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
           <div className="absolute bottom-3 left-3 z-20 px-2 py-1 rounded-md text-xs font-bold bg-primary/20 text-primary border border-primary/30 backdrop-blur-sm flex items-center gap-1">
             <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
             HOT
+          </div>
+        )}
+
+        {/* Grading Badge - top right below favorite button */}
+        {collectible.grade && (
+          <div className="absolute bottom-3 right-3 z-20">
+            <GradeBadge 
+              gradingCompany={(collectible as any).gradingCompany || (collectible.grade.startsWith('psa') ? 'PSA' : collectible.grade.startsWith('bgs') ? 'BGS' : collectible.grade.startsWith('cgc') ? 'CGC' : null)}
+              grade={collectible.grade.replace(/^(psa|bgs|cgc)/, '').replace('_', '.').toUpperCase()}
+              showUngraded={false}
+              className="text-xs"
+            />
           </div>
         )}
       </div>
