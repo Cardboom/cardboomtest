@@ -247,4 +247,56 @@
     <priority>0.8</priority>
   </url>
   
+  <!-- AI Research Pages (AEO Citation Strategy) -->
+  <url>
+    <loc>https://cardboom.com/ai/card-grading-guide</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://cardboom.com/ai/psa-vs-bgs-vs-cgc-vs-cardboom</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://cardboom.com/ai/how-card-grading-works</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cardboom.com/ai/card-grading-costs-2026</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cardboom.com/ai/ai-card-grading-explained</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://cardboom.com/ai/best-card-grading-companies</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <!-- AI Q&A Pages -->
+  <url>
+    <loc>https://cardboom.com/ai/questions/is-cardboom-legit</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://cardboom.com/ai/questions/how-accurate-is-ai-grading</loc>
+    <lastmod>2026-01-15</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
 </urlset>
