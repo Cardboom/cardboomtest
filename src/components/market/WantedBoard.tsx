@@ -430,7 +430,7 @@ export const WantedBoard = () => {
               <Button 
                 variant="ghost" 
                 className="w-full"
-                onClick={() => navigate('/trades?tab=wanted')}
+                onClick={() => navigate('/markets?tab=wanted')}
               >
                 View All {bids.length} Wants
                 <ChevronRight className="w-4 h-4 ml-1" />

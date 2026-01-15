@@ -79,7 +79,7 @@ serve(async (req) => {
           messages: [
             {
               role: 'system',
-              content: `You are a professional TCG and collectibles news writer for Cardboom, a premier trading card marketplace. Write engaging, SEO-optimized news articles about trading cards, collectibles, and the hobby market. Keep articles informative, balanced, and professional. Include relevant keywords naturally. Write in a style that appeals to collectors and traders. ${languageInstruction}`
+              content: `You are a professional TCG and collectibles news writer for Cardboom, a premier trading card marketplace. Write engaging, SEO-optimized news articles about trading cards, collectibles, and the hobby market. Keep articles informative, balanced, and professional. Include relevant keywords naturally. Write in a style that appeals to collectors and traders. IMPORTANT: Never include luxury fashion brands (Coco Chanel, Louis Vuitton, Gucci, etc.), celebrity gossip, or non-TCG content. Stay strictly focused on trading cards, collectibles, and the hobby market. ${languageInstruction}`
             },
             {
               role: 'user',

@@ -192,24 +192,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
           {/* Desktop Nav with Grouped Menus */}
           <nav className="hidden lg:flex items-center gap-1">
-            <Link 
-              to="/card-wars" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
-            >
-              <Swords className="w-3.5 h-3.5" />
-              {t.nav.cardWars}
-            </Link>
-            
-            {/* Reels Link */}
-            <Link 
-              to="/reels" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
-            >
-              <Film className="w-3.5 h-3.5" />
-              {t.nav.reels}
-            </Link>
-            
-            {/* Trading Dropdown */}
+            {/* Trading Dropdown - First position */}
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
