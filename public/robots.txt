@@ -1,9 +1,7 @@
-# Cardboom Robots.txt
-# https://cardboom.com
+# CardBoom Robots.txt
 
-# Sitemaps - Must be at the top for visibility
-Sitemap: https://cardboom.com/sitemap-static.xml
-Sitemap: https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/sitemap?type=index
+# Sitemaps
+Sitemap: https://cardboomtest.lovable.app/sitemap-static.xml
 
 # Google
 User-agent: Googlebot
@@ -18,10 +16,6 @@ Disallow: /trades
 Disallow: /portfolio
 Disallow: /admin
 Disallow: /order-success
-Disallow: /*?sort=*
-Disallow: /*?order=*
-Disallow: /*?filter=*
-Disallow: /*?page=*
 
 User-agent: Googlebot-Image
 Allow: /
@@ -41,29 +35,7 @@ Disallow: /admin
 Disallow: /order-success
 Crawl-delay: 1
 
-# Yahoo
-User-agent: Slurp
-Allow: /
-Crawl-delay: 2
-
-# DuckDuckGo
-User-agent: DuckDuckBot
-Allow: /
-
-# Social Media Bots
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-User-agent: Pinterest
-Allow: /
-
-# Default - All other bots
+# All other bots
 User-agent: *
 Allow: /
 Disallow: /auth
@@ -76,10 +48,3 @@ Disallow: /trades
 Disallow: /portfolio
 Disallow: /admin
 Disallow: /order-success
-Disallow: /*?sort=*
-Disallow: /*?order=*
-Disallow: /*?filter=*
-Disallow: /*?page=*
-
-# Host directive
-Host: https://cardboom.com
