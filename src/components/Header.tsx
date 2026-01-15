@@ -399,11 +399,11 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           {/* Spacer to push Sell button right */}
           <div className="hidden lg:block flex-1" />
           
-          {/* Sell Button - Dark themed to match background */}
+          {/* Sell Button */}
           <Button 
             size="sm"
             onClick={() => navigate('/sell')}
-            className="hidden lg:flex gap-1.5 bg-[#171616] hover:bg-[#252424] border border-border/50 text-foreground shadow-md text-sm font-semibold ml-4 rounded-md"
+            className="hidden lg:flex gap-1.5 bg-primary hover:bg-primary/90 shadow-md text-sm font-semibold ml-4"
           >
             <span className="font-bold">+</span>
             {t.nav.sell}
