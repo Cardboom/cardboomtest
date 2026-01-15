@@ -116,8 +116,8 @@
       "@context": "https://schema.org",
       "@type": "Organization",
       "@id": "https://cardboom.com/#organization",
-      "name": "Cardboom",
-      "alternateName": ["CardBoom", "Card Boom"],
+      "name": "CardBoom",
+      "alternateName": ["Cardboom", "Card Boom"],
       "url": "https://cardboom.com",
       "logo": {
         "@type": "ImageObject",
@@ -125,30 +125,52 @@
         "width": 512,
         "height": 512
       },
-      "description": "Premier Collectibles Trading Exchange for NBA cards, football cards, TCG, and rare figures",
+      "description": "AI-assisted trading card grading and marketplace for collectibles",
       "foundingDate": "2024",
+      "foundingLocation": {
+        "@type": "Place",
+        "name": "Ankara, Turkey"
+      },
       "founder": {
         "@type": "Organization",
-        "name": "Brainbaby Bilişim A.Ş."
+        "name": "Brainbaby Bilişim Anonim Şirketi",
+        "legalName": "BRAINBABY BILISIM ANONIM SIRKETI"
       },
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "Istanbul",
+        "addressLocality": "Ankara",
         "addressCountry": "TR"
       },
+      "areaServed": {
+        "@type": "Place",
+        "name": "Worldwide"
+      },
+      "knowsAbout": [
+        "Trading Card Grading",
+        "AI Card Authentication",
+        "Pokemon TCG",
+        "Magic: The Gathering",
+        "Yu-Gi-Oh!",
+        "Sports Cards",
+        "Collectibles Marketplace"
+      ],
+      "slogan": "The Future of Card Grading",
       "contactPoint": [
         {
           "@type": "ContactPoint",
           "contactType": "customer support",
           "email": "support@cardboom.com",
-          "availableLanguage": ["English", "German", "Turkish", "French", "Italian", "Arabic"]
+          "availableLanguage": ["English", "German", "Turkish", "French", "Italian", "Arabic", "Spanish", "Portuguese"]
         }
       ],
       "sameAs": [
+        "https://github.com/cardboom",
+        "https://medium.com/@cardboom",
+        "https://www.reddit.com/r/cardboom",
+        "https://www.linkedin.com/company/cardboom",
         "https://twitter.com/cardboom",
         "https://www.instagram.com/cardboom",
-        "https://www.facebook.com/cardboom",
-        "https://www.linkedin.com/company/cardboom"
+        "https://www.facebook.com/cardboom"
       ]
     }
     </script>
@@ -179,27 +201,48 @@
     }
     </script>
     
-    <!-- WebApplication Structured Data -->
+    <!-- SoftwareApplication Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Cardboom",
+      "@type": "SoftwareApplication",
+      "name": "CardBoom",
       "url": "https://cardboom.com",
-      "applicationCategory": "BusinessApplication",
+      "description": "AI-assisted trading card grading and marketplace. Grade Pokemon, MTG, Yu-Gi-Oh, sports cards instantly with AI, track portfolio value, and buy/sell on a trusted marketplace.",
+      "applicationCategory": ["CollectiblesApplication", "TradingCardsApplication", "FinanceApplication"],
+      "applicationSubCategory": "Trading Card Grading & Marketplace",
       "operatingSystem": "Any",
       "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "2.0",
+      "releaseNotes": "https://cardboom.com/changelog",
+      "screenshot": "https://cardboom.com/screenshots/app-preview.png",
+      "featureList": [
+        "AI-Powered Card Grading",
+        "Real-time Market Prices",
+        "Portfolio Tracking",
+        "Secure Marketplace",
+        "Vault Storage",
+        "Price Alerts",
+        "Collection Management"
+      ],
       "offers": {
         "@type": "Offer",
         "price": "0",
-        "priceCurrency": "USD"
+        "priceCurrency": "USD",
+        "description": "Free to use with optional Pro subscription at $9.99/month"
       },
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.8",
-        "ratingCount": "1250",
+        "ratingCount": "2847",
         "bestRating": "5",
         "worstRating": "1"
+      },
+      "author": {
+        "@id": "https://cardboom.com/#organization"
+      },
+      "provider": {
+        "@id": "https://cardboom.com/#organization"
       }
     }
     </script>

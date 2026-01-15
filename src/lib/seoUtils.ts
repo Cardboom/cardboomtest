@@ -358,3 +358,139 @@ export function generateHreflangTags(path: string): Array<{ lang: string; href: 
     href: lang === 'en' ? `${SITE_URL}${path}` : `${SITE_URL}${path}?lang=${lang}`,
   }));
 }
+
+/**
+ * Generate Dataset structured data for comparison tables
+ * Used on research/comparison pages for LLM citations
+ */
+export function generateDatasetSchema(options: {
+  name: string;
+  description: string;
+  url: string;
+  dateModified?: string;
+  creator?: string;
+  keywords?: string[];
+  variableMeasured?: string[];
+  license?: string;
+}) {
+  const { name, description, url, dateModified, creator, keywords, variableMeasured, license } = options;
+  
+  return {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": name,
+    "description": description,
+    "url": url.startsWith('http') ? url : `${SITE_URL}${url}`,
+    "dateModified": dateModified || new Date().toISOString().split('T')[0],
+    "creator": {
+      "@type": "Organization",
+      "name": creator || SITE_NAME,
+      "url": SITE_URL,
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": SITE_NAME,
+      "url": SITE_URL,
+    },
+    "keywords": keywords || [],
+    "variableMeasured": variableMeasured || [],
+    "license": license || "https://creativecommons.org/licenses/by-nc/4.0/",
+    "isAccessibleForFree": true,
+    "inLanguage": "en",
+  };
+}
+
+/**
+ * Generate WebPage with educational intent for research pages
+ * Optimized for LLM/AI citation and educational content recognition
+ */
+export function generateEducationalWebPageSchema(options: {
+  name: string;
+  description: string;
+  url: string;
+  datePublished?: string;
+  dateModified?: string;
+  breadcrumb?: Array<{ name: string; url: string }>;
+  keywords?: string[];
+  about?: string[];
+}) {
+  const { name, description, url, datePublished, dateModified, breadcrumb, keywords, about } = options;
+  
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": name,
+    "description": description,
+    "url": url.startsWith('http') ? url : `${SITE_URL}${url}`,
+    "datePublished": datePublished || "2024-01-01",
+    "dateModified": dateModified || new Date().toISOString().split('T')[0],
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "educationalUse": "research",
+    "learningResourceType": "guide",
+    "audience": {
+      "@type": "Audience",
+      "audienceType": "Trading Card Collectors"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": SITE_NAME,
+      "url": SITE_URL,
+      "@id": `${SITE_URL}/#organization`
+    },
+    "mainEntity": {
+      "@type": "Thing",
+      "name": name,
+      "description": description,
+    },
+  };
+
+  if (keywords && keywords.length > 0) {
+    schema.keywords = keywords;
+  }
+
+  if (about && about.length > 0) {
+    schema.about = about.map(topic => ({
+      "@type": "Thing",
+      "name": topic,
+    }));
+  }
+
+  if (breadcrumb && breadcrumb.length > 0) {
+    schema.breadcrumb = {
+      "@type": "BreadcrumbList",
+      "itemListElement": breadcrumb.map((item, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": item.name,
+        "item": item.url.startsWith('http') ? item.url : `${SITE_URL}${item.url}`,
+      })),
+    };
+  }
+
+  return schema;
+}
+
+/**
+ * Generate Organization reference schema (for pages that need to reference the org)
+ */
+export function generateOrganizationSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
+    "name": SITE_NAME,
+    "url": SITE_URL,
+    "logo": `${SITE_URL}/logo.png`,
+    "description": "AI-assisted trading card grading and marketplace for collectibles",
+    "foundingDate": "2024",
+    "areaServed": "Worldwide",
+    "sameAs": [
+      "https://github.com/cardboom",
+      "https://medium.com/@cardboom",
+      "https://www.reddit.com/r/cardboom",
+      "https://www.linkedin.com/company/cardboom",
+      "https://twitter.com/cardboom"
+    ]
+  };
+}

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, DollarSign, TrendingUp, Calculator, AlertCircle } from 'lucide-react';
+import { generateDatasetSchema, generateEducationalWebPageSchema } from '@/lib/seoUtils';
 
 const CardGradingCosts = () => {
   const lastUpdated = '2026-01-15';
@@ -79,6 +80,30 @@ const CardGradingCosts = () => {
     ],
   };
 
+  const datasetSchema = generateDatasetSchema({
+    name: 'Card Grading Pricing Dataset 2026',
+    description: 'Complete pricing data for all major card grading services including PSA, BGS, CGC, and AI grading with turnaround times and service tiers.',
+    url: '/ai/card-grading-costs-2026',
+    dateModified: lastUpdated,
+    keywords: ['card grading cost', 'PSA price', 'BGS price', 'CGC price', 'grading fees'],
+    variableMeasured: ['Service Tier', 'Price', 'Turnaround Time', 'Maximum Card Value'],
+  });
+
+  const webPageSchema = generateEducationalWebPageSchema({
+    name: 'Card Grading Costs 2026 - Complete Price Guide',
+    description: 'Comprehensive pricing guide for card grading services to help collectors budget for authentication.',
+    url: '/ai/card-grading-costs-2026',
+    datePublished: '2024-01-01',
+    dateModified: lastUpdated,
+    keywords: ['grading costs', 'PSA pricing', 'BGS pricing', 'grading fees 2026'],
+    about: ['Card Grading Pricing', 'Trading Card Authentication', 'Collectibles Investment'],
+    breadcrumb: [
+      { name: 'Home', url: '/' },
+      { name: 'Research', url: '/ai' },
+      { name: 'Grading Costs 2026', url: '/ai/card-grading-costs-2026' },
+    ],
+  });
+
   return (
     <>
       <Helmet>
@@ -91,6 +116,8 @@ const CardGradingCosts = () => {
         <link rel="canonical" href="https://cardboom.com/ai/card-grading-costs-2026" />
         <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(datasetSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background">
