@@ -323,8 +323,11 @@ const Index = () => {
           )}
         </div>
         
-        {/* Global Stats Bar - Hero at top (hide hero for logged in users) */}
-        <GlobalTCGStats hideHero={!!user} />
+        {/* Hero Section with Video (non-logged-in users) */}
+        {!user && <HeroSection />}
+        
+        {/* Global Stats Bar (only stats, no hero - for logged in users) */}
+        {user && <GlobalTCGStats hideHero={true} />}
 
         {/* Feature Showcase - Why CardBoom (only for non-logged-in users) */}
         {!user && <FeatureShowcase />}
