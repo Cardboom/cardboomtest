@@ -80,6 +80,7 @@ export const CardsGoingBoomPanel = () => {
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Defer fetch to reduce initial page load critical path
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -101,11 +102,17 @@ export const CardsGoingBoomPanel = () => {
       }
     };
 
-    fetchPosts();
+    // 2.5 second delay to break critical path chain
+    const timer = setTimeout(() => {
+      fetchPosts();
+    }, 2500);
     
     // Refresh posts every 5 minutes
     const interval = setInterval(fetchPosts, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, []);
 
   // Create three columns with different posts

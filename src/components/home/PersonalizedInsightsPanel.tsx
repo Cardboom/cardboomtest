@@ -33,8 +33,12 @@ export const PersonalizedInsightsPanel = ({ userId }: PersonalizedInsightsPanelP
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Defer fetch to reduce initial page load critical path
   useEffect(() => {
-    fetchInsights();
+    const timer = setTimeout(() => {
+      fetchInsights();
+    }, 3000); // 3 second delay
+    return () => clearTimeout(timer);
   }, [userId]);
 
   useEffect(() => {

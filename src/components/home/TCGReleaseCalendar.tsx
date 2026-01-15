@@ -44,8 +44,12 @@ export const TCGReleaseCalendar = () => {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Defer fetch to reduce initial page load critical path
   useEffect(() => {
-    fetchDrops();
+    const timer = setTimeout(() => {
+      fetchDrops();
+    }, 2000); // 2 second delay
+    return () => clearTimeout(timer);
   }, []);
 
   // Cycle through drops
