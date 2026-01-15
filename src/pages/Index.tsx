@@ -255,29 +255,27 @@ const Index = () => {
       
       {/* Unified ambient background that spans entire page */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-background" />
-        
-        {/* Video background for all users */}
+        {/* Video background for all users - must be first */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover z-0"
         >
           <source src="/videos/hero-video.mp4" type="video/mp4" />
         </video>
         
         {/* Overlay gradients - smooth blending */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background z-10" />
         {/* Stronger overlay for logged-in users to make panels readable */}
-        {user && <div className="absolute inset-0 bg-background/60" />}
+        {user && <div className="absolute inset-0 bg-background/50 z-10" />}
         
         {/* Large smooth gradient that spans entire viewport */}
         <div 
-          className="absolute inset-0"
+          className="absolute inset-0 z-20"
           style={{
             background: `
               radial-gradient(ellipse 120% 80% at 50% 0%, hsl(var(--primary) / 0.08), transparent 50%),
