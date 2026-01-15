@@ -246,32 +246,26 @@ const Index = () => {
   // Platform features now handled by FeatureShowcase component
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative bg-background">
       {/* Fixed header that follows scroll */}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       
       {/* Spacer for fixed header */}
       <div className="h-16" />
       
-      {/* Refined ambient background */}
-      <div className="fixed inset-0 pointer-events-none -z-10">
+      {/* Unified ambient background that spans entire page */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-background" />
         
-        {/* Single subtle gradient wash - GPU accelerated */}
+        {/* Large smooth gradient that spans entire viewport */}
         <div 
-          className="absolute inset-0 opacity-40 dark:opacity-30"
+          className="absolute inset-0"
           style={{
-            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent)',
-            willChange: 'transform'
-          }}
-        />
-        
-        {/* Minimal accent glow */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 h-[60vh] opacity-20 dark:opacity-15"
-          style={{
-            background: 'radial-gradient(ellipse 60% 40% at 50% 100%, hsl(var(--accent) / 0.1), transparent)',
-            willChange: 'transform'
+            background: `
+              radial-gradient(ellipse 120% 80% at 50% 0%, hsl(var(--primary) / 0.08), transparent 50%),
+              radial-gradient(ellipse 100% 60% at 20% 50%, hsl(var(--primary) / 0.04), transparent 40%),
+              radial-gradient(ellipse 100% 60% at 80% 70%, hsl(var(--accent) / 0.05), transparent 40%)
+            `,
           }}
         />
       </div>

@@ -93,22 +93,21 @@ export const FeatureShowcase = () => {
 
   return (
     <section className="pt-6 sm:pt-8 pb-10 sm:pb-16 relative overflow-hidden">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      {/* Subtle gradient that blends with page background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent" />
+      
+      {/* Soft animated glow */}
       <motion.div 
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 opacity-20"
         animate={{ 
           background: [
-            'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.1) 0%, transparent 50%)',
-            'radial-gradient(circle at 80% 50%, hsl(var(--primary) / 0.1) 0%, transparent 50%)',
-            'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.1) 0%, transparent 50%)',
+            'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.06) 0%, transparent 40%)',
+            'radial-gradient(circle at 80% 50%, hsl(var(--primary) / 0.06) 0%, transparent 40%)',
+            'radial-gradient(circle at 20% 50%, hsl(var(--primary) / 0.06) 0%, transparent 40%)',
           ]
         }}
         transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
       />
-      
-      {/* Grid pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_70%)]" />
       
       <div className="container mx-auto px-4 relative">
         {/* Header */}

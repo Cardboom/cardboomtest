@@ -154,12 +154,12 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   return (
     <>
     <header className="fixed top-0 left-0 right-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
-      <div className="container mx-auto px-4">
+      <div className="w-full px-4 lg:px-6">
         <div className="flex items-center justify-between h-16 gap-4 overflow-visible">
-          {/* Logo */}
+          {/* Logo - pushed to the left edge */}
           <Link 
             to="/" 
-            className="flex items-center gap-2 group flex-shrink-0 relative z-10"
+            className="flex items-center gap-2 group flex-shrink-0 relative z-10 -ml-2"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img 
