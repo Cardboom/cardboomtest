@@ -166,12 +166,12 @@ const CreatorPage = () => {
   }
 
   const platformIcons: Record<string, string> = {
-    youtube: '🎬',
-    twitch: '🎮',
-    twitter: '𝕏',
-    tiktok: '🎵',
-    instagram: '📸',
-    other: '🌐'
+    youtube: 'YT',
+    twitch: 'TW',
+    twitter: 'X',
+    tiktok: 'TT',
+    instagram: 'IG',
+    other: 'Web'
   };
 
   return (

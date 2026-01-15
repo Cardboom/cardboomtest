@@ -30,7 +30,7 @@ const PLATFORM_ICONS: Record<string, any> = {
   twitch: Twitch,
   twitter: Twitter,
   instagram: Instagram,
-  tiktok: () => <span className="text-lg">🎵</span>,
+  tiktok: () => <span className="text-lg font-semibold">TT</span>,
   other: Star
 };
 

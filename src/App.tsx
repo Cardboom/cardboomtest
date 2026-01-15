@@ -95,6 +95,10 @@ import AICardGradingExplained from "./pages/ai/AICardGradingExplained";
 import BestCardGradingCompanies from "./pages/ai/BestCardGradingCompanies";
 import IsCardBoomLegit from "./pages/ai/questions/IsCardBoomLegit";
 import HowAccurateIsAIGrading from "./pages/ai/questions/HowAccurateIsAIGrading";
+import CardGradingQuestionsIndex from "./pages/ai/CardGradingQuestionsIndex";
+import AIGradingFAQIndex from "./pages/ai/AIGradingFAQIndex";
+import ResearchIndex from "./pages/ai/ResearchIndex";
+
 const queryClient = new QueryClient();
 
 const AppContent = () => {
@@ -203,6 +207,9 @@ const AppContent = () => {
           <Route path="/purchases" element={<Purchases />} />
           <Route path="/account-settings" element={<AccountSettings />} />
           {/* AI Research & Citation Pages (AEO Strategy) */}
+          <Route path="/ai" element={<ResearchIndex />} />
+          <Route path="/ai/card-grading-questions" element={<CardGradingQuestionsIndex />} />
+          <Route path="/ai/ai-grading-faq" element={<AIGradingFAQIndex />} />
           <Route path="/ai/card-grading-guide" element={<CardGradingGuide />} />
           <Route path="/ai/psa-vs-bgs-vs-cgc-vs-cardboom" element={<PSAvsCompetitors />} />
           <Route path="/ai/how-card-grading-works" element={<HowCardGradingWorks />} />
