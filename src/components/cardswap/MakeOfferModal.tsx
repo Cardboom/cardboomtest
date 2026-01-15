@@ -32,6 +32,7 @@ interface MakeOfferModalProps {
     estimated_value: number | null;
     accept_cash_offers: boolean;
     min_cash_addon: number | null;
+    user_id: string;
   };
   onSuccess: () => void;
 }
@@ -114,6 +115,24 @@ export const MakeOfferModal = ({ open, onOpenChange, listing, onSuccess }: MakeO
       });
 
       if (error) throw error;
+
+      // Send notification to the listing owner
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            userId: listing.user_id,
+            type: 'swap_offer_received',
+            title: 'New Swap Offer Received!',
+            body: `You received a new offer on "${listing.title}"`,
+            data: {
+              listingId: listing.id,
+              offeredCardTitle: formData.title || 'Cash Only Offer',
+            }
+          }
+        });
+      } catch (notifError) {
+        console.error('Failed to send notification:', notifError);
+      }
 
       onSuccess();
       

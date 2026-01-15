@@ -92,6 +92,7 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
     // Check duration and auto-generate thumbnail from first frame
     const video = document.createElement('video');
     video.preload = 'metadata';
+    video.crossOrigin = 'anonymous'; // Required for canvas to capture frame
     video.src = URL.createObjectURL(file);
     
     video.onloadedmetadata = () => {
