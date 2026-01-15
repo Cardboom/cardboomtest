@@ -137,11 +137,18 @@ export const PriceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
-  // Initial fetch and interval - 10 second refresh instead of 3
+  // Defer initial fetch to reduce critical path - 4 second delay
   useEffect(() => {
-    fetchPrices();
+    const timer = setTimeout(() => {
+      fetchPrices();
+    }, 4000);
+    
+    // Start interval after initial fetch
     const interval = setInterval(fetchPrices, 10000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [fetchPrices]);
 
   // Real-time subscription for market_items changes
