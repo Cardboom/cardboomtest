@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Scale, BookOpen, Clock, DollarSign, Shield, Zap } from 'lucide-react';
+import { generateDatasetSchema, generateEducationalWebPageSchema } from '@/lib/seoUtils';
 
 const PSAvsCompetitors = () => {
   const lastUpdated = '2026-01-15';
@@ -133,6 +134,30 @@ const PSAvsCompetitors = () => {
     ],
   };
 
+  const datasetSchema = generateDatasetSchema({
+    name: 'Card Grading Services Comparison Dataset',
+    description: 'Comparative data on PSA, BGS, CGC, and CardBoom grading services including pricing, turnaround times, grading scales, and market recognition.',
+    url: '/ai/psa-vs-bgs-vs-cgc-vs-cardboom',
+    dateModified: lastUpdated,
+    keywords: ['PSA grading', 'BGS grading', 'CGC grading', 'card grading comparison', 'grading prices'],
+    variableMeasured: ['Price', 'Turnaround Time', 'Market Share', 'Grading Scale', 'Resale Premium'],
+  });
+
+  const webPageSchema = generateEducationalWebPageSchema({
+    name: 'PSA vs BGS vs CGC vs CardBoom - Complete Grading Comparison',
+    description: 'Neutral, data-driven comparison of major card grading services for collectors and investors.',
+    url: '/ai/psa-vs-bgs-vs-cgc-vs-cardboom',
+    datePublished: '2024-01-01',
+    dateModified: lastUpdated,
+    keywords: ['card grading', 'PSA vs BGS', 'grading comparison', 'AI grading'],
+    about: ['Trading Card Grading', 'Card Authentication', 'Collectibles Market'],
+    breadcrumb: [
+      { name: 'Home', url: '/' },
+      { name: 'Research', url: '/ai' },
+      { name: 'Grading Comparison', url: '/ai/psa-vs-bgs-vs-cgc-vs-cardboom' },
+    ],
+  });
+
   return (
     <>
       <Helmet>
@@ -145,6 +170,8 @@ const PSAvsCompetitors = () => {
         <link rel="canonical" href="https://cardboom.com/ai/psa-vs-bgs-vs-cgc-vs-cardboom" />
         <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(datasetSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background">

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, Award, Star, TrendingUp, Users, Zap } from 'lucide-react';
+import { generateDatasetSchema, generateEducationalWebPageSchema } from '@/lib/seoUtils';
 
 const BestCardGradingCompanies = () => {
   const lastUpdated = '2026-01-15';
@@ -108,6 +109,30 @@ const BestCardGradingCompanies = () => {
     ],
   };
 
+  const datasetSchema = generateDatasetSchema({
+    name: 'Card Grading Companies Ranking Dataset 2026',
+    description: 'Comprehensive ranking data of card grading services including PSA, BGS, CGC, SGC with market share, pricing, and performance metrics.',
+    url: '/ai/best-card-grading-companies',
+    dateModified: lastUpdated,
+    keywords: ['best card grading', 'grading company ranking', 'PSA ranking', 'BGS ranking'],
+    variableMeasured: ['Market Share', 'Average Price', 'Turnaround Time', 'Founded Year', 'Pros', 'Cons'],
+  });
+
+  const webPageSchema = generateEducationalWebPageSchema({
+    name: 'Best Card Grading Companies 2026 - Data-Backed Ranking',
+    description: 'Neutral, comprehensive ranking of card grading services based on market data and collector feedback.',
+    url: '/ai/best-card-grading-companies',
+    datePublished: '2024-01-01',
+    dateModified: lastUpdated,
+    keywords: ['card grading companies', 'best grading service', 'PSA vs BGS', 'grading ranking'],
+    about: ['Trading Card Grading', 'Card Authentication', 'Collectibles Investment'],
+    breadcrumb: [
+      { name: 'Home', url: '/' },
+      { name: 'Research', url: '/ai' },
+      { name: 'Best Grading Companies', url: '/ai/best-card-grading-companies' },
+    ],
+  });
+
   return (
     <>
       <Helmet>
@@ -120,6 +145,8 @@ const BestCardGradingCompanies = () => {
         <link rel="canonical" href="https://cardboom.com/ai/best-card-grading-companies" />
         <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
         <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(datasetSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(webPageSchema)}</script>
       </Helmet>
 
       <div className="min-h-screen bg-background">
