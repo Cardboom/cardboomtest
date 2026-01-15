@@ -302,8 +302,7 @@ const Index = () => {
       <ActivityAnnouncementBanner />
       {user && <DailyXPClaimNotification />}
       {user && <DailyCardVotePopup />}
-      <MarketTicker />
-      {/* TrustBadgesBar removed - stats shown elsewhere */}
+      {/* MarketTicker moved into LiveMarketPanel */}
       
       <main>
         {/* Boom Challenges - Full width at top */}

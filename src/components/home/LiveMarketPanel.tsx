@@ -54,22 +54,48 @@ export const LiveMarketPanel = () => {
   }, [events.length]);
 
   const fetchMarketData = async () => {
+    // Fetch market items
     const { data: marketItems } = await supabase
       .from('market_items')
       .select('name, current_price, change_24h, category')
       .not('current_price', 'is', null)
       .gt('current_price', 0)
       .order('views_24h', { ascending: false })
-      .limit(20);
+      .limit(15);
 
-    if (marketItems) {
-      const ticks: MarketTick[] = marketItems.map(item => ({
-        symbol: item.name.length > 12 ? item.name.substring(0, 12) + '…' : item.name,
-        price: item.current_price || 0,
-        change: item.change_24h || 0,
-      }));
-      setMarketTicks([...ticks, ...ticks]);
+    // Fetch active listings for ticker
+    const { data: tickerListings } = await supabase
+      .from('listings')
+      .select('title, price')
+      .eq('status', 'active')
+      .not('price', 'is', null)
+      .gt('price', 0)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    const ticks: MarketTick[] = [];
+    
+    // Interleave market items and listings
+    const marketQueue = (marketItems || []).map(item => ({
+      symbol: item.name.length > 14 ? item.name.substring(0, 14) + '…' : item.name,
+      price: item.current_price || 0,
+      change: item.change_24h || 0,
+    }));
+    
+    const listingQueue = (tickerListings || []).map(l => ({
+      symbol: (l.title.length > 14 ? l.title.substring(0, 14) + '…' : l.title) + ' 🏷️',
+      price: l.price || 0,
+      change: 0, // Listings don't have price change
+    }));
+
+    // Interleave: 2 market items, 1 listing
+    while (marketQueue.length > 0 || listingQueue.length > 0) {
+      if (marketQueue.length > 0) ticks.push(marketQueue.shift()!);
+      if (marketQueue.length > 0) ticks.push(marketQueue.shift()!);
+      if (listingQueue.length > 0) ticks.push(listingQueue.shift()!);
     }
+
+    setMarketTicks([...ticks, ...ticks, ...ticks]); // Triple for smooth loop
 
     const newEvents: EventItem[] = [];
 
