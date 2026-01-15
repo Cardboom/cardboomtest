@@ -14,6 +14,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { errorReporter } from '@/services/errorReporter';
 import { ImageOff, RefreshCw } from 'lucide-react';
+import { getThumbnailUrl } from '@/lib/imageUtils';
 
 export interface OptimizedImageProps {
   src?: string | null;
@@ -32,6 +33,8 @@ export interface OptimizedImageProps {
   width?: number;
   /** Explicit height for layout stability */
   height?: number;
+  /** Use full quality (no optimization) - for detail pages */
+  fullQuality?: boolean;
 }
 
 // Use a transparent pixel as absolute last resort - prefer official images from sync
@@ -54,9 +57,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onError,
   width,
   height,
+  fullQuality = false,
 }) => {
+  // Optimize image URL for thumbnails (unless fullQuality is requested)
+  const optimizedSrc = fullQuality ? src : getThumbnailUrl(src);
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-  const [currentSrc, setCurrentSrc] = useState(src);
+  const [currentSrc, setCurrentSrc] = useState(optimizedSrc);
   const [retryCount, setRetryCount] = useState(0);
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -102,12 +108,13 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Reset state when src changes
   useEffect(() => {
-    if (src !== currentSrc) {
-      setCurrentSrc(src);
+    const newOptimizedSrc = fullQuality ? src : getThumbnailUrl(src);
+    if (newOptimizedSrc !== currentSrc) {
+      setCurrentSrc(newOptimizedSrc);
       setStatus('loading');
       setRetryCount(0);
     }
-  }, [src]);
+  }, [src, fullQuality]);
 
   // Handle image load
   const handleLoad = () => {

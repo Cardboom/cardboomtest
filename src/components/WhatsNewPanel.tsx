@@ -9,6 +9,7 @@ import { Clock, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { generateListingUrl } from '@/lib/listingUrl';
+import { getThumbnailUrl } from '@/lib/imageUtils';
 
 const getCountryFlag = (countryCode: string): string => {
   if (!countryCode || countryCode.length !== 2) return '🌍';
@@ -80,7 +81,7 @@ export function WhatsNewPanel() {
               {listing.image_url ? (
                 <div className="relative flex-1 w-full flex items-center justify-center p-2">
                   <img 
-                    src={listing.image_url} 
+                    src={getThumbnailUrl(listing.image_url)} 
                     alt={listing.title}
                     width={300}
                     height={400}

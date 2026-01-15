@@ -1,6 +1,3 @@
-# Sitemaps first
-Sitemap: https://cardboom.com/sitemap-static.xml
-
 # Default security headers for all routes
 /*
   X-Content-Type-Options: nosniff
