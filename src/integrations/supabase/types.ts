@@ -1241,6 +1241,141 @@ export type Database = {
           },
         ]
       }
+      cached_market_summary: {
+        Row: {
+          cardboom_index: number | null
+          community_buzz: string | null
+          created_at: string
+          generated_at: string
+          hot_take: string | null
+          id: string
+          platform_grading_avg: number | null
+          sentiment: string | null
+          sleeper: string | null
+          top_movers: Json | null
+          updated_at: string
+          weekly_volume: number | null
+        }
+        Insert: {
+          cardboom_index?: number | null
+          community_buzz?: string | null
+          created_at?: string
+          generated_at?: string
+          hot_take?: string | null
+          id?: string
+          platform_grading_avg?: number | null
+          sentiment?: string | null
+          sleeper?: string | null
+          top_movers?: Json | null
+          updated_at?: string
+          weekly_volume?: number | null
+        }
+        Update: {
+          cardboom_index?: number | null
+          community_buzz?: string | null
+          created_at?: string
+          generated_at?: string
+          hot_take?: string | null
+          id?: string
+          platform_grading_avg?: number | null
+          sentiment?: string | null
+          sleeper?: string | null
+          top_movers?: Json | null
+          updated_at?: string
+          weekly_volume?: number | null
+        }
+        Relationships: []
+      }
+      cached_social_posts: {
+        Row: {
+          author_avatar: string | null
+          author_handle: string | null
+          author_name: string
+          content: string
+          created_at: string
+          engagement_count: number | null
+          external_id: string | null
+          id: string
+          is_active: boolean | null
+          platform: string
+          post_url: string | null
+          posted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_avatar?: string | null
+          author_handle?: string | null
+          author_name: string
+          content: string
+          created_at?: string
+          engagement_count?: number | null
+          external_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          platform?: string
+          post_url?: string | null
+          posted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_avatar?: string | null
+          author_handle?: string | null
+          author_name?: string
+          content?: string
+          created_at?: string
+          engagement_count?: number | null
+          external_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          platform?: string
+          post_url?: string | null
+          posted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cached_tcg_drops: {
+        Row: {
+          created_at: string
+          description: string | null
+          external_id: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          release_date: string
+          tcg: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          release_date: string
+          tcg: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          external_id?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          release_date?: string
+          tcg?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       card_instances: {
         Row: {
           accepts_grading_donations: boolean | null
