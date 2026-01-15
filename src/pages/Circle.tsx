@@ -416,7 +416,8 @@ const Circle = () => {
         const slug = `${normalizeSlug(linkedCard.name)}-${linkedCard.id.slice(0, 8)}`;
         navigate(`/cards/${linkedCard.category.toLowerCase()}/${slug}`);
       } else {
-        fetchDiscussions();
+        // Navigate to the new thread page
+        navigate(`/circle/${discussion.id}`);
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to create thread");
@@ -442,7 +443,9 @@ const Circle = () => {
   };
 
   const getCardUrl = (discussion: Discussion) => {
+    // For discussions without a linked card, go to thread page
     if (!discussion.market_item) return `/circle/${discussion.id}`;
+    // For card-linked discussions, go to the card page
     const slug = `${normalizeSlug(discussion.market_item.name)}-${discussion.market_item.id.slice(0, 8)}`;
     return `/cards/${discussion.market_item.category.toLowerCase()}/${slug}`;
   };

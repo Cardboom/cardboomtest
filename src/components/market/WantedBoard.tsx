@@ -15,7 +15,7 @@ import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
 import { CardAutocomplete } from './CardAutocomplete';
 import { 
   Gavel, Plus, Clock, User, Target, TrendingUp, 
-  MessageSquare, ChevronRight, Sparkles, Filter
+  MessageSquare, ChevronRight, Sparkles, Filter, ShoppingBag, ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -31,12 +31,24 @@ interface Bid {
   notes: string | null;
   status: string;
   user_id: string;
+  market_item_id: string | null;
   created_at: string;
   expires_at: string | null;
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
   };
+  matchingListings?: MatchingListing[];
+}
+
+interface MatchingListing {
+  id: string;
+  title: string;
+  price: number;
+  image_url: string | null;
+  seller_id: string;
+  category: string;
+  slug: string | null;
 }
 
 const CATEGORIES = [
@@ -81,7 +93,7 @@ export const WantedBoard = () => {
     });
   });
 
-  // Fetch active bids with profiles
+  // Fetch active bids with profiles and matching listings
   const { data: bids, isLoading } = useQuery({
     queryKey: ['wanted-board', selectedCategory],
     queryFn: async () => {
@@ -108,10 +120,33 @@ export const WantedBoard = () => {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      return (data || []).map(bid => ({
-        ...bid,
-        profile: profileMap.get(bid.user_id)
-      })) as Bid[];
+      // Fetch matching listings for each bid
+      const bidsWithMatches = await Promise.all(
+        (data || []).map(async (bid) => {
+          // Search for active listings that match the bid's item name
+          const searchTerms = bid.item_name.toLowerCase().split(' ').filter((t: string) => t.length > 2);
+          const firstTerm = searchTerms[0] || bid.item_name;
+          
+          const { data: listings } = await supabase
+            .from('listings')
+            .select('id, title, price, image_url, seller_id, category, slug')
+            .eq('status', 'active')
+            .eq('category', bid.category)
+            .neq('seller_id', bid.user_id) // Don't show user's own listings
+            .ilike('title', `%${firstTerm}%`)
+            .lte('price', bid.max_bid || bid.bid_amount * 1.5) // Within budget
+            .order('price', { ascending: true })
+            .limit(3);
+
+          return {
+            ...bid,
+            profile: profileMap.get(bid.user_id),
+            matchingListings: listings || []
+          };
+        })
+      );
+
+      return bidsWithMatches as Bid[];
     },
     refetchInterval: 30000,
   });
@@ -424,6 +459,47 @@ export const WantedBoard = () => {
                     </Button>
                   </div>
                 </div>
+                
+                {/* Matching Listings Section */}
+                {bid.matchingListings && bid.matchingListings.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ShoppingBag className="w-3 h-3 text-primary" />
+                      <span className="text-xs font-medium text-primary">
+                        {bid.matchingListings.length} matching listing{bid.matchingListings.length > 1 ? 's' : ''} available
+                      </span>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {bid.matchingListings.map((listing) => (
+                        <button
+                          key={listing.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/listing/${listing.category}/${listing.slug || listing.id}`);
+                          }}
+                          className="flex items-center gap-2 p-2 bg-background rounded-lg border border-border/50 hover:border-primary/50 transition-colors shrink-0"
+                        >
+                          {listing.image_url && (
+                            <img 
+                              src={listing.image_url} 
+                              alt={listing.title}
+                              className="w-8 h-8 rounded object-cover"
+                            />
+                          )}
+                          <div className="text-left">
+                            <div className="text-xs font-medium line-clamp-1 max-w-[120px]">
+                              {listing.title}
+                            </div>
+                            <div className="text-xs text-gain font-bold">
+                              {formatPrice(listing.price)}
+                            </div>
+                          </div>
+                          <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {bids.length > 8 && (

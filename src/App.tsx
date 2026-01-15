@@ -63,6 +63,7 @@ import Article from "./pages/Article";
 import Achievements from "./pages/Achievements";
 import Pricing from "./pages/Pricing";
 import Circle from "./pages/Circle";
+import Thread from "./pages/Thread";
 import CreatorPage from "./pages/CreatorPage";
 import CreatorInvite from "./pages/CreatorInvite";
 import Reels from "./pages/Reels";
