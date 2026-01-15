@@ -165,6 +165,7 @@ const AppContent = () => {
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/circle" element={<Circle />} />
+          <Route path="/circle/:id" element={<Thread />} />
           <Route path="/card-wars" element={<CardWars />} />
           <Route path="/pass" element={<CardBoomPass />} />
           <Route path="/reels" element={<Reels />} />
