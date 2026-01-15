@@ -70,14 +70,17 @@ const AchievementUnlockNotification = ({ achievement, onClose }: AchievementUnlo
             <div className={`absolute inset-0 blur-3xl opacity-30 bg-gradient-to-r ${tierColors[achievement.tier]} rounded-3xl`} />
             
             <div className={`relative p-8 rounded-2xl border-2 ${tierBgColors[achievement.tier]} bg-card shadow-2xl max-w-sm mx-4`}>
-              {/* Close button */}
+              {/* Close button - more prominent */}
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="absolute top-2 right-2 h-8 w-8"
-                onClick={onClose}
+                className="absolute -top-3 -right-3 h-10 w-10 rounded-full bg-card border-2 border-border shadow-lg hover:bg-destructive hover:text-destructive-foreground hover:border-destructive z-50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
               >
-                <X className="h-4 w-4" />
+                <X className="h-5 w-5" />
               </Button>
 
               {/* Achievement unlocked header */}

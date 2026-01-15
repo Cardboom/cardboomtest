@@ -68,17 +68,21 @@ export default function Purchases() {
           escrow_status,
           created_at,
           seller_id,
-          listing_id,
-          listings:listing_id (
-            id,
-            title,
-            image_url
-          )
+          listing_id
         `)
         .eq('buyer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Fetch listing data separately for reliability
+      const listingIds = data.filter(o => o.listing_id).map(o => o.listing_id);
+      const { data: listingsData } = await supabase
+        .from('listings')
+        .select('id, title, image_url')
+        .in('id', listingIds);
+      
+      const listingMap = new Map(listingsData?.map(l => [l.id, l]) || []);
 
       // Fetch seller profiles
       const sellerIds = [...new Set(data.map(o => o.seller_id))];
@@ -90,10 +94,7 @@ export default function Purchases() {
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
       return data.map(order => {
-        // Handle both array and object responses from the join
-        const listingData = Array.isArray(order.listings) 
-          ? order.listings[0] 
-          : order.listings;
+        const listingData = listingMap.get(order.listing_id);
         
         return {
           id: order.id,
@@ -139,10 +140,21 @@ export default function Purchases() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold truncate">{order.listing?.title || 'Unknown Item'}</h3>
-                <p className="text-sm text-muted-foreground">
-                  From: {order.seller_profile?.display_name || 'Unknown Seller'}
-                </p>
+                <h3 className="font-semibold truncate">{order.listing?.title || 'Purchased Item'}</h3>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                  {order.seller_profile?.avatar_url ? (
+                    <img 
+                      src={order.seller_profile.avatar_url} 
+                      alt={order.seller_profile.display_name || 'Seller'}
+                      className="w-5 h-5 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px]">
+                      {(order.seller_profile?.display_name?.[0] || 'S').toUpperCase()}
+                    </div>
+                  )}
+                  <span className="truncate">From: {order.seller_profile?.display_name || 'Seller'}</span>
+                </div>
                 <p className="text-lg font-bold mt-1">{formatPrice(order.price)}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}

@@ -325,10 +325,10 @@ export const TopListingsChart = () => {
           </motion.div>
         </div>
 
-        {/* CoinMarketCap-style horizontal chart table */}
-        <div className="relative overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
+        {/* CoinMarketCap-style horizontal chart table - Desktop */}
+        <div className="hidden md:block relative overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm">
           {/* Gradient overlay for scroll hint */}
-          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-card to-transparent z-10 pointer-events-none hidden sm:block" />
+          <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-card to-transparent z-10 pointer-events-none" />
           
           <div className="overflow-x-auto scrollbar-hide">
             <div className="min-w-[900px]">
@@ -447,7 +447,7 @@ export const TopListingsChart = () => {
             </div>
           </div>
           
-          {/* Bottom CTA Bar */}
+          {/* Bottom CTA Bar - Desktop */}
           <div className="px-4 py-4 border-t border-border/30 bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -465,6 +465,91 @@ export const TopListingsChart = () => {
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile Card Grid */}
+        <div className="md:hidden">
+          <div className="grid grid-cols-2 gap-3">
+            {listings.slice(0, 6).map((listing, index) => {
+              const isPositive = listing.change_7d >= 0;
+              
+              return (
+                <motion.div
+                  key={listing.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="relative rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden cursor-pointer group"
+                  onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title }))}
+                >
+                  {/* Image */}
+                  <div className="aspect-square relative overflow-hidden">
+                    {listing.image_url ? (
+                      <img 
+                        src={listing.image_url} 
+                        alt={listing.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+                        ?
+                      </div>
+                    )}
+                    {/* Rank badge */}
+                    <div className="absolute top-2 left-2 w-6 h-6 rounded-full bg-background/80 backdrop-blur flex items-center justify-center text-xs font-bold">
+                      {index + 1}
+                    </div>
+                    {/* Grade badge if graded */}
+                    {listing.certification_status === 'completed' && listing.grade && (
+                      <div className="absolute top-2 right-2">
+                        <Badge className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0 h-4 gap-0.5">
+                          <Award className="h-2.5 w-2.5" />
+                          CB {listing.grade}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-3">
+                    <p className="font-medium text-xs text-foreground line-clamp-2 mb-1">
+                      {listing.title}
+                    </p>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-2">
+                      <span>{getFlag(listing.seller_country)}</span>
+                      <span className="truncate">{listing.seller_username}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm">{formatPrice(listing.price)}</span>
+                      {listing.change_7d !== 0 && (
+                        <span className={`text-[10px] font-medium ${isPositive ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {isPositive ? '+' : ''}{listing.change_7d.toFixed(1)}%
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+          
+          {/* Bottom CTA - Mobile */}
+          <div className="mt-4 flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs text-muted-foreground">
+                {listings.length}+ listings
+              </span>
+            </div>
+            <Button 
+              variant="link" 
+              className="text-primary p-0 h-auto text-xs font-medium"
+              onClick={() => navigate('/markets?tab=forsale')}
+            >
+              View all
+              <ArrowRight className="w-3 h-3 ml-1" />
+            </Button>
           </div>
         </div>
       </div>
