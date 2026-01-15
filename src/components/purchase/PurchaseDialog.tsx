@@ -426,9 +426,9 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
                     <RadioGroupItem value="ship" id="ship" />
                     <Truck className="w-5 h-5 text-primary" />
                     <div className="flex-1">
-                      <p className="font-medium text-sm">Shipping (Turkey)</p>
+                      <p className="font-medium text-sm">Ship to My Address</p>
                       <p className="text-xs text-muted-foreground">
-                        Ship via Geliver carriers
+                        Domestic shipping within Turkey
                       </p>
                     </div>
                   </label>
