@@ -653,6 +653,9 @@ const SellPage = () => {
     <div className="min-h-screen bg-background">
       <Header cartCount={0} onCartClick={() => {}} />
       
+      {/* Spacer for fixed header */}
+      <div className="h-16" />
+      
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
           {/* Hero Section */}
