@@ -246,41 +246,41 @@ const Index = () => {
   // Platform features now handled by FeatureShowcase component
 
   return (
-    <div className="min-h-screen relative bg-background">
+    <div className="min-h-screen relative">
       {/* Fixed header that follows scroll */}
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
       
       {/* Spacer for fixed header */}
       <div className="h-16" />
       
-      {/* Unified ambient background that spans entire page */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        {/* Video background for all users - must be first */}
+      {/* Video background that spans entire page */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        {/* Video background for all users */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className="w-full h-full object-cover"
         >
           <source src="/videos/hero-video.mp4" type="video/mp4" />
         </video>
         
-        {/* Overlay gradients - smooth blending */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent z-10" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background z-10" />
+        {/* Overlay gradients - smooth blending - pointer-events-none */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-transparent to-background pointer-events-none" />
         {/* Stronger overlay for logged-in users to make panels readable */}
-        {user && <div className="absolute inset-0 bg-background/50 z-10" />}
+        {user && <div className="absolute inset-0 bg-background/40 pointer-events-none" />}
         
-        {/* Large smooth gradient that spans entire viewport */}
+        {/* Subtle gradient overlay */}
         <div 
-          className="absolute inset-0 z-20"
+          className="absolute inset-0 pointer-events-none"
           style={{
             background: `
-              radial-gradient(ellipse 120% 80% at 50% 0%, hsl(var(--primary) / 0.08), transparent 50%),
-              radial-gradient(ellipse 100% 60% at 20% 50%, hsl(var(--primary) / 0.04), transparent 40%),
-              radial-gradient(ellipse 100% 60% at 80% 70%, hsl(var(--accent) / 0.05), transparent 40%)
+              radial-gradient(ellipse 120% 80% at 50% 0%, hsl(var(--primary) / 0.06), transparent 50%),
+              radial-gradient(ellipse 100% 60% at 20% 50%, hsl(var(--primary) / 0.03), transparent 40%),
+              radial-gradient(ellipse 100% 60% at 80% 70%, hsl(var(--accent) / 0.04), transparent 40%)
             `,
           }}
         />
