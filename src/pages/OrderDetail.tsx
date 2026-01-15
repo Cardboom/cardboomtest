@@ -30,6 +30,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { OrderReviewSection } from '@/components/OrderReviewSection';
 import { ShippingRequestCard } from '@/components/order/ShippingRequestCard';
+import { ShippingSelector } from '@/components/order/ShippingSelector';
 import { useState as useCartState } from 'react';
 
 interface OrderAction {
@@ -724,50 +725,65 @@ export default function OrderDetail() {
 
             {/* Shipping & Delivery */}
             {order.delivery_option === 'ship' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-primary" />
-                    Shipping Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Tracking Number */}
-                  {order.tracking_number ? (
-                    <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">Tracking Number</p>
-                      <p className="font-mono text-sm font-medium">{order.tracking_number}</p>
-                      <Badge variant="secondary" className="mt-2 text-xs">
-                        <Truck className="w-3 h-3 mr-1" />
-                        In Transit
-                      </Badge>
-                    </div>
-                  ) : (
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <p className="text-sm text-muted-foreground flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        Awaiting shipping from seller
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Shipping Address */}
-                  {order.shipping_address && (
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-2">Delivery Address</p>
-                      <div className="text-sm space-y-0.5">
-                        <p className="font-medium">{order.shipping_address.name}</p>
-                        <p>{order.shipping_address.address}</p>
-                        <p>{order.shipping_address.district}, {order.shipping_address.city}</p>
-                        <p>{order.shipping_address.postalCode}</p>
-                        {order.shipping_address.phone && (
-                          <p className="text-muted-foreground">{order.shipping_address.phone}</p>
-                        )}
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Truck className="w-5 h-5 text-primary" />
+                      Shipping Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Tracking Number */}
+                    {order.tracking_number ? (
+                      <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">Tracking Number</p>
+                        <p className="font-mono text-sm font-medium break-all">{order.tracking_number}</p>
+                        <Badge variant="secondary" className="mt-2 text-xs">
+                          <Truck className="w-3 h-3 mr-1" />
+                          In Transit
+                        </Badge>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                    ) : (
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm text-muted-foreground flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          Awaiting shipping from seller
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Shipping Address */}
+                    {order.shipping_address && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-2">Delivery Address</p>
+                        <div className="text-sm space-y-0.5">
+                          <p className="font-medium">{order.shipping_address.name}</p>
+                          <p>{order.shipping_address.address}</p>
+                          <p>{order.shipping_address.district}, {order.shipping_address.city}</p>
+                          <p>{order.shipping_address.postalCode}</p>
+                          {order.shipping_address.phone && (
+                            <p className="text-muted-foreground">{order.shipping_address.phone}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Shipping Selector - Show for seller if no tracking yet */}
+                {!order.tracking_number && currentUserId && (
+                  <ShippingSelector
+                    orderId={order.id}
+                    shippingAddress={order.shipping_address}
+                    isSeller={isSeller}
+                    onShipmentCreated={() => {
+                      queryClient.invalidateQueries({ queryKey: ['order-detail', orderId] });
+                      queryClient.invalidateQueries({ queryKey: ['order-actions', orderId] });
+                    }}
+                  />
+                )}
+              </>
             )}
 
             {/* Vault Delivery */}
