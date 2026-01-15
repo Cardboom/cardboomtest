@@ -86,15 +86,23 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
       monthStart.setDate(1);
       monthStart.setHours(0, 0, 0, 0);
 
-      const [marketItemsResult, usersResult, ordersResult, monthOrdersResult] = await Promise.all([
-        supabase.from('market_items').select('current_price', { count: 'exact' }).gt('current_price', 0),
+      const [cardInstancesResult, usersResult, ordersResult, monthOrdersResult] = await Promise.all([
+        // Market value from unique card instances (not counting sold_pending duplicates)
+        // Only count cards with valid status that aren't in escrow transition
+        supabase
+          .from('card_instances')
+          .select('current_value')
+          .eq('is_active', true)
+          .not('status', 'eq', 'sold_pending'),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('orders').select('price'),
+        // Total volume from completed orders only (to avoid counting pending escrow twice)
+        supabase.from('orders').select('price').in('status', ['completed', 'delivered', 'shipped']),
         supabase.from('orders').select('id, price').gte('created_at', monthStart.toISOString()),
       ]);
 
-      // Calculate total market value from all items with prices
-      const totalMarketValue = marketItemsResult.data?.reduce((sum, item) => sum + (item.current_price || 0), 0) || 0;
+      // Calculate total market value from card instances (unique cards)
+      const totalMarketValue = cardInstancesResult.data?.reduce((sum, item) => sum + (item.current_value || 0), 0) || 0;
+      // Total volume from completed trades only
       const totalOrdersVolume = ordersResult.data?.reduce((sum, order) => sum + (order.price || 0), 0) || 0;
       const monthSalesCount = monthOrdersResult.data?.length || 0;
 
@@ -137,24 +145,24 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
       "relative overflow-hidden",
       hideHero ? "pt-0 pb-6" : "min-h-[85vh] flex flex-col justify-center py-8 sm:py-12 md:py-20"
     )}>
-      {/* Video Background - always shown */}
-      <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-        >
-          <source src="/videos/hero-video.mp4" type="video/mp4" />
-        </video>
-        {/* Overlay gradients - smooth blending */}
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background" />
-        {/* Stronger overlay for logged-in users to make stats readable */}
-        {hideHero && <div className="absolute inset-0 bg-background/60" />}
-      </div>
+      {/* Video Background - only for non-logged-in hero (logged-in users get video from Index.tsx) */}
+      {!hideHero && (
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/videos/hero-video.mp4" type="video/mp4" />
+          </video>
+          {/* Overlay gradients - smooth blending */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background" />
+        </div>
+      )}
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Hero headline + Stats combined - only show if not hidden */}

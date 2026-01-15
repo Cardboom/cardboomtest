@@ -257,6 +257,24 @@ const Index = () => {
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-background" />
         
+        {/* Video background for all users */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/videos/hero-video.mp4" type="video/mp4" />
+        </video>
+        
+        {/* Overlay gradients - smooth blending */}
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background" />
+        {/* Stronger overlay for logged-in users to make panels readable */}
+        {user && <div className="absolute inset-0 bg-background/60" />}
+        
         {/* Large smooth gradient that spans entire viewport */}
         <div 
           className="absolute inset-0"
