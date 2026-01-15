@@ -165,12 +165,12 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
       <div className="container mx-auto px-4 relative z-10">
         {/* Hero headline + Stats combined - only show if not hidden */}
         {!hideHero && (
-          <div className="text-center">
+          <div className="text-left max-w-xl">
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black tracking-tight mb-3 sm:mb-4 leading-[1.1]"
+              className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-3 sm:mb-4 leading-[1.1]"
             >
               Grade your <span className="text-primary">Card</span>
               <span className="block"><span className="text-primary">Boom</span> Your Value</span>
@@ -179,7 +179,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-2"
+              className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-lg mb-6 sm:mb-8"
             >
               {t.hero.description}
             </motion.p>
@@ -188,12 +188,12 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4 sm:px-0"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4"
             >
               <Button 
                 size="lg" 
                 onClick={() => navigate('/auth')}
-                className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-bold text-sm sm:text-base shadow-lg shadow-primary/25 cursor-pointer relative z-20"
+                className="h-12 sm:h-14 px-6 sm:px-10 rounded-md font-bold text-sm sm:text-base shadow-lg shadow-primary/25 cursor-pointer relative z-20"
               >
                 {t.hero.startTrading}
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
@@ -202,7 +202,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
                 variant="outline"
                 size="lg" 
                 onClick={() => navigate('/markets')}
-                className="h-12 sm:h-14 px-6 sm:px-10 rounded-full font-semibold text-sm sm:text-base cursor-pointer relative z-20"
+                className="h-12 sm:h-14 px-6 sm:px-10 rounded-md font-semibold text-sm sm:text-base cursor-pointer relative z-20"
               >
                 {t.hero.exploreMarket}
               </Button>
