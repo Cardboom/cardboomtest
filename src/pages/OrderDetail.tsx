@@ -31,6 +31,8 @@ import { Footer } from '@/components/Footer';
 import { OrderReviewSection } from '@/components/OrderReviewSection';
 import { ShippingRequestCard } from '@/components/order/ShippingRequestCard';
 import { ShippingSelector } from '@/components/order/ShippingSelector';
+import { OrderReceipt } from '@/components/order/OrderReceipt';
+import { ContactPartyButton } from '@/components/order/ContactPartyButton';
 import { useState as useCartState } from 'react';
 
 interface OrderAction {
@@ -229,12 +231,46 @@ export default function OrderDetail() {
         p_details: {},
       });
 
-      // If both confirmed, release funds
+      // If both confirmed, release funds and notify
       if (otherConfirmed) {
         await supabase.rpc('release_escrow_funds', {
           p_order_id: order.id,
           p_released_by: currentUserId,
         });
+
+        // Send completion notification to both parties
+        const notifyBoth = [order.buyer_id, order.seller_id];
+        for (const userId of notifyBoth) {
+          try {
+            await supabase.functions.invoke('send-notification', {
+              body: {
+                user_id: userId,
+                type: 'order_completed',
+                title: 'Order Completed! 🎉',
+                body: `Your order for "${order.listing?.title || 'item'}" has been completed. Funds have been released.`,
+                data: { order_id: order.id },
+              },
+            });
+          } catch (e) {
+            console.error('Failed to send completion notification:', e);
+          }
+        }
+      } else {
+        // Notify the other party that confirmation is pending
+        const otherPartyId = isBuyer ? order.seller_id : order.buyer_id;
+        try {
+          await supabase.functions.invoke('send-notification', {
+            body: {
+              user_id: otherPartyId,
+              type: 'order_update',
+              title: 'Confirmation Received',
+              body: `The ${isBuyer ? 'buyer' : 'seller'} has confirmed. Please confirm to complete the order.`,
+              data: { order_id: order.id },
+            },
+          });
+        } catch (e) {
+          console.error('Failed to send confirmation notification:', e);
+        }
       }
     },
     onSuccess: () => {
@@ -341,18 +377,34 @@ export default function OrderDetail() {
             <ArrowLeft className="w-4 h-4" />
             Back to Orders
           </Link>
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold mb-2">Order #{order.id.slice(0, 8)}</h1>
               <p className="text-muted-foreground">
                 Created {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge className={`${statusConfig.color} text-white`}>
                 {statusConfig.icon}
                 <span className="ml-1">{statusConfig.label}</span>
               </Badge>
+              
+              {/* Quick Actions */}
+              <OrderReceipt order={order} formatPrice={formatPrice} />
+              
+              {currentUserId && (isBuyer || isSeller) && order.listing_id && (
+                <ContactPartyButton
+                  orderId={order.id}
+                  listingId={order.listing_id}
+                  counterpartyId={isBuyer ? order.seller_id : order.buyer_id}
+                  counterpartyName={isBuyer 
+                    ? (order.seller_profile?.username || 'Seller')
+                    : (order.buyer_profile?.username || 'Buyer')
+                  }
+                  isBuyer={isBuyer}
+                />
+              )}
             </div>
           </div>
         </div>
