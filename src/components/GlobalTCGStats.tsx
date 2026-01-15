@@ -166,54 +166,67 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
         {/* Hero headline + Stats combined - only show if not hidden */}
         {!hideHero && (
           <div className="text-left max-w-xl">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 mb-4 bg-primary/10 border border-primary/20 rounded-full"
+            >
+              <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wide">Live Market</span>
+            </motion.div>
+            
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-3 sm:mb-4 leading-[1.1]"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 leading-[1.05]"
             >
-              Grade your <span className="text-primary">Card</span>
-              <span className="block"><span className="text-primary">Boom</span> Your Value</span>
+              <span className="text-primary">Grade.</span> Trade.
+              <span className="block mt-1">
+                <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">Collect.</span>
+              </span>
             </motion.h1>
+            
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-lg mb-6 sm:mb-8"
+              className="text-base md:text-lg text-muted-foreground max-w-md mb-8 leading-relaxed"
             >
-              {t.hero.description}
+              The marketplace for TCG collectors. AI-powered grading, real-time pricing, and a community that knows cards.
             </motion.p>
             
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4"
+              className="flex flex-col sm:flex-row gap-3"
             >
               <Button 
                 size="lg" 
                 onClick={() => navigate('/auth')}
-                className="h-12 sm:h-14 px-6 sm:px-10 rounded-md font-bold text-sm sm:text-base shadow-lg shadow-primary/25 cursor-pointer relative z-20"
+                className="h-12 px-8 rounded-md font-bold text-sm shadow-lg shadow-primary/25 cursor-pointer relative z-20 group"
               >
-                {t.hero.startTrading}
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                Start Trading
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
                 variant="outline"
                 size="lg" 
                 onClick={() => navigate('/markets')}
-                className="h-12 sm:h-14 px-6 sm:px-10 rounded-md font-semibold text-sm sm:text-base cursor-pointer relative z-20"
+                className="h-12 px-8 rounded-md font-semibold text-sm cursor-pointer relative z-20"
               >
-                {t.hero.exploreMarket}
+                Explore Market
               </Button>
             </motion.div>
             
             {/* News Ticker */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="mt-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-10"
             >
               <HeroNewsTicker />
             </motion.div>
