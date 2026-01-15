@@ -179,10 +179,12 @@ export const ItemSellersAndBids = ({
           </CardHeader>
           <CardContent className="py-2 px-4 space-y-2">
             {sellers.map((seller) => (
-              <div
+              <a
                 key={seller.listing_id}
+                href={`/listing/${seller.listing_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/listing/${seller.listing_id}`)}
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="w-8 h-8">
@@ -205,7 +207,7 @@ export const ItemSellersAndBids = ({
                   <span className="font-semibold text-foreground">{formatPrice(seller.price)}</span>
                   <ArrowRight className="w-4 h-4 text-muted-foreground" />
                 </div>
-              </div>
+              </a>
             ))}
           </CardContent>
         </Card>

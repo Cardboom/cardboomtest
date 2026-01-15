@@ -37,7 +37,7 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
 
   const handleGoToCard = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate(`/item/${collectible.id}`);
+    window.open(`/item/${collectible.id}`, '_blank', 'noopener,noreferrer');
   };
 
   // Generate sparkline data based on price change trend
@@ -106,10 +106,20 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
     toast.success(isFavorited ? 'Removed from favorites' : 'Added to favorites');
   };
 
+  const handleCardClick = () => {
+    // For listings, open in new tab directly
+    if ((collectible as any).source === 'listing' && (collectible as any).listingId) {
+      const url = `/listing/${(collectible as any).category || 'other'}/${(collectible as any).listingId}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      onClick(collectible);
+    }
+  };
+
   return (
     <div
       className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 hover:scale-[1.02] cursor-pointer animate-fade-in shadow-sm"
-      onClick={() => onClick(collectible)}
+      onClick={handleCardClick}
     >
       {/* Image */}
       <div className="relative aspect-square bg-gradient-to-br from-secondary to-muted overflow-hidden">
