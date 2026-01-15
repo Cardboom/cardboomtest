@@ -174,16 +174,44 @@ const OrderSuccess = () => {
             transition={{ delay: 0.4 }}
           >
             <Card className="mb-8">
-              <CardContent className="p-4 md:p-6">
+              <CardContent className="p-4 md:p-6 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                     {getDeliveryIcon()}
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">Next Steps</p>
+                    <p className="font-medium text-foreground">
+                      {state.deliveryOption === 'ship' ? 'Shipping' : state.deliveryOption === 'vault' ? 'Vault Storage' : 'Digital Trade'}
+                    </p>
                     <p className="text-sm text-muted-foreground">{getDeliveryText()}</p>
                   </div>
                 </div>
+
+                {/* Shipping Info */}
+                {state.deliveryOption === 'ship' && (
+                  <div className="mt-4 p-3 bg-muted/50 rounded-lg border border-border">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Truck className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Seller will ship your item</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You'll receive tracking information once the seller ships your order via Geliver.
+                    </p>
+                  </div>
+                )}
+
+                {/* Vault Info */}
+                {state.deliveryOption === 'vault' && (
+                  <div className="mt-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Vault className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Securely stored in CardBoom Vault</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Your item is protected and insured. You can request shipping anytime.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

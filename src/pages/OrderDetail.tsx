@@ -651,18 +651,73 @@ export default function OrderDetail() {
               </CardContent>
             </Card>
 
-            {/* Tracking */}
-            {order.tracking_number && (
+            {/* Shipping & Delivery */}
+            {order.delivery_option === 'ship' && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Truck className="w-5 h-5" />
-                    Shipping
+                    <Truck className="w-5 h-5 text-primary" />
+                    Shipping Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Tracking Number */}
+                  {order.tracking_number ? (
+                    <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1">Tracking Number</p>
+                      <p className="font-mono text-sm font-medium">{order.tracking_number}</p>
+                      <Badge variant="secondary" className="mt-2 text-xs">
+                        <Truck className="w-3 h-3 mr-1" />
+                        In Transit
+                      </Badge>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Awaiting shipping from seller
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Shipping Address */}
+                  {order.shipping_address && (
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Delivery Address</p>
+                      <div className="text-sm space-y-0.5">
+                        <p className="font-medium">{order.shipping_address.name}</p>
+                        <p>{order.shipping_address.address}</p>
+                        <p>{order.shipping_address.district}, {order.shipping_address.city}</p>
+                        <p>{order.shipping_address.postalCode}</p>
+                        {order.shipping_address.phone && (
+                          <p className="text-muted-foreground">{order.shipping_address.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Vault Delivery */}
+            {order.delivery_option === 'vault' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Package className="w-5 h-5 text-primary" />
+                    Vault Storage
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-1">Tracking Number</p>
-                  <p className="font-mono">{order.tracking_number}</p>
+                  <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                    <p className="text-sm">
+                      This item will be stored securely in the CardBoom Vault.
+                    </p>
+                    <Badge variant="secondary" className="mt-2 text-xs">
+                      <ShieldCheck className="w-3 h-3 mr-1" />
+                      Secure Storage
+                    </Badge>
+                  </div>
                 </CardContent>
               </Card>
             )}

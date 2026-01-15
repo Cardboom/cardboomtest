@@ -325,6 +325,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                       </li>
                       <li>
                         <NavigationMenuLink asChild>
+                          <Link to="/card-wars" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
+                              <Swords className="w-3.5 h-3.5 text-red-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-xs">{t.nav.cardWars}</div>
+                              <div className="text-[10px] text-muted-foreground">Vote & win prizes</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
                           <Link to="/news" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
                             <div className="w-8 h-8 rounded-md bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
                               <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
