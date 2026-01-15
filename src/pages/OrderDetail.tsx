@@ -29,6 +29,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { OrderReviewSection } from '@/components/OrderReviewSection';
+import { ShippingRequestCard } from '@/components/order/ShippingRequestCard';
 import { useState as useCartState } from 'react';
 
 interface OrderAction {
@@ -61,6 +62,13 @@ interface Order {
   refunded_at: string | null;
   admin_escalated_at: string | null;
   escalation_reason: string | null;
+  // Shipping request approval fields
+  shipping_requested_at: string | null;
+  shipping_requested_by: string | null;
+  buyer_approved_shipping: boolean | null;
+  seller_approved_shipping: boolean | null;
+  buyer_shipping_approved_at: string | null;
+  seller_shipping_approved_at: string | null;
   created_at: string;
   updated_at: string;
   listing: {
@@ -701,25 +709,48 @@ export default function OrderDetail() {
 
             {/* Vault Delivery */}
             {order.delivery_option === 'vault' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Package className="w-5 h-5 text-primary" />
-                    Vault Storage
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                    <p className="text-sm">
-                      This item will be stored securely in the CardBoom Vault.
-                    </p>
-                    <Badge variant="secondary" className="mt-2 text-xs">
-                      <ShieldCheck className="w-3 h-3 mr-1" />
-                      Secure Storage
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Package className="w-5 h-5 text-primary" />
+                      Vault Storage
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                      <p className="text-sm">
+                        This item will be stored securely in the CardBoom Vault.
+                      </p>
+                      <Badge variant="secondary" className="mt-2 text-xs">
+                        <ShieldCheck className="w-3 h-3 mr-1" />
+                        Secure Storage
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Shipping Request Card - only for vault orders */}
+                {currentUserId && (isBuyer || isSeller) && (
+                  <ShippingRequestCard
+                    orderId={order.id}
+                    currentUserId={currentUserId}
+                    isBuyer={isBuyer}
+                    isSeller={isSeller}
+                    deliveryOption={order.delivery_option}
+                    shippingRequestedAt={order.shipping_requested_at}
+                    shippingRequestedBy={order.shipping_requested_by}
+                    buyerApprovedShipping={order.buyer_approved_shipping}
+                    sellerApprovedShipping={order.seller_approved_shipping}
+                    buyerShippingApprovedAt={order.buyer_shipping_approved_at}
+                    sellerShippingApprovedAt={order.seller_shipping_approved_at}
+                    buyerUsername={order.buyer_profile?.username || null}
+                    sellerUsername={order.seller_profile?.username || null}
+                    buyerId={order.buyer_id}
+                    sellerId={order.seller_id}
+                  />
+                )}
+              </>
             )}
 
             {/* Contact Support */}
