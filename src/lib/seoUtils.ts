@@ -344,7 +344,8 @@ export const PRECONNECT_DOMAINS = [
   'https://fonts.googleapis.com',
   'https://fonts.gstatic.com',
   'https://kgffwhyfgkqeevsuhldt.supabase.co',
-  'https://www.googletagmanager.com',
+  'https://images.ygoprodeck.com',
+  'https://images.tcggo.com',
 ];
 
 /**

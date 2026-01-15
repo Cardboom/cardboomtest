@@ -15,14 +15,8 @@ export const GlobalSEO = () => {
       
       {/* DNS Prefetch for additional domains */}
       <link rel="dns-prefetch" href="https://images.unsplash.com" />
+      <link rel="dns-prefetch" href="https://ddragon.leagueoflegends.com" />
       <link rel="dns-prefetch" href="https://api.pricecharting.com" />
-      
-      {/* Preload critical fonts */}
-      <link 
-        rel="preload" 
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" 
-        as="style"
-      />
       
       {/* Global site verification tags - Add your verification codes here */}
       {/* <meta name="google-site-verification" content="YOUR_CODE" /> */}

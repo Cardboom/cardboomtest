@@ -1,82 +1,50 @@
-# Cache static assets aggressively (1 year for hashed files)
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
+# Sitemaps first
+Sitemap: https://cardboom.com/sitemap-static.xml
 
-# JavaScript and CSS with content hashes
-/*.js
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.css
-  Cache-Control: public, max-age=31536000, immutable
-
-# Images - long cache
-/*.png
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.jpg
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.jpeg
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.webp
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.svg
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.gif
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.ico
-  Cache-Control: public, max-age=31536000, immutable
-
-# Fonts - long cache
-/*.woff
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.woff2
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.ttf
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.eot
-  Cache-Control: public, max-age=31536000, immutable
-
-# Icons folder
-/icons/*
-  Cache-Control: public, max-age=31536000, immutable
-
-# Videos
-/videos/*
-  Cache-Control: public, max-age=2592000
-
-# HTML files - short cache for updates
-/*.html
-  Cache-Control: public, max-age=0, must-revalidate
-
-/
-  Cache-Control: public, max-age=0, must-revalidate
-
-# Manifest and service worker - revalidate often
-/manifest.webmanifest
-  Cache-Control: public, max-age=86400, must-revalidate
-
-/sw.js
-  Cache-Control: public, max-age=0, must-revalidate
-
-# Sitemaps and robots
-/robots.txt
-  Cache-Control: public, max-age=86400
-
-/sitemap*.xml
-  Cache-Control: public, max-age=3600
-
-# Security headers for all routes
+# Default security headers for all routes
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# HTML - no cache, always revalidate
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Hashed assets - immutable, 1 year cache
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Static files in public folder
+/favicon.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Videos - 30 days cache
+/videos/*
+  Cache-Control: public, max-age=2592000
+
+# Service worker - always fresh
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Manifest - 1 day cache
+/manifest.webmanifest
+  Cache-Control: public, max-age=86400
+
+# SEO files - moderate cache
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+/sitemap*.xml
+  Cache-Control: public, max-age=3600
