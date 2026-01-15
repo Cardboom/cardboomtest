@@ -75,6 +75,12 @@ interface Order {
     title: string;
     image_url: string | null;
     condition: string;
+    category: string | null;
+    description: string | null;
+    grade: string | null;
+    grading_company: string | null;
+    language: string | null;
+    set_name: string | null;
   } | null;
   buyer_profile: {
     username: string;
@@ -145,9 +151,9 @@ export default function OrderDetail() {
 
       if (error) throw error;
 
-      // Fetch listing separately to avoid array issues with Supabase joins
+      // Fetch listing separately with more details
       const { data: listingData } = data.listing_id 
-        ? await supabase.from('listings').select('title, image_url, condition').eq('id', data.listing_id).single()
+        ? await supabase.from('listings').select('title, image_url, condition, category, description, grade, grading_company, language, set_name').eq('id', data.listing_id).single()
         : { data: null };
 
       // Fetch profiles separately using display_name as username
@@ -358,25 +364,82 @@ export default function OrderDetail() {
               <CardHeader>
                 <CardTitle className="text-lg">Item Details</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="flex gap-4">
                   {order.listing?.image_url ? (
                     <img 
                       src={order.listing.image_url} 
                       alt={order.listing.title}
-                      className="w-24 h-24 object-cover rounded-lg"
+                      className="w-32 h-32 object-cover rounded-lg"
                     />
                   ) : (
-                    <div className="w-24 h-24 bg-muted rounded-lg flex items-center justify-center">
-                      <Package className="w-8 h-8 text-muted-foreground" />
+                    <div className="w-32 h-32 bg-muted rounded-lg flex items-center justify-center">
+                      <Package className="w-10 h-10 text-muted-foreground" />
                     </div>
                   )}
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold text-lg">{order.listing?.title || 'Unknown Item'}</h3>
-                    <p className="text-muted-foreground">{order.listing?.condition}</p>
-                    <p className="text-xl font-bold mt-2">{formatPrice(order.price)}</p>
+                    <p className="text-xl font-bold text-primary mt-1">{formatPrice(order.price)}</p>
+                    
+                    {/* Item badges */}
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {order.listing?.condition && (
+                        <Badge variant="secondary">{order.listing.condition}</Badge>
+                      )}
+                      {order.listing?.category && (
+                        <Badge variant="outline">{order.listing.category}</Badge>
+                      )}
+                      {order.listing?.grade && (
+                        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                          {order.listing.grading_company || 'Graded'}: {order.listing.grade}
+                        </Badge>
+                      )}
+                      {order.listing?.language && order.listing.language !== 'English' && (
+                        <Badge variant="outline">{order.listing.language}</Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
+
+                {/* Additional Details */}
+                <Separator />
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {order.listing?.set_name && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Set</p>
+                      <p className="font-medium">{order.listing.set_name}</p>
+                    </div>
+                  )}
+                  {order.listing?.category && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Category</p>
+                      <p className="font-medium">{order.listing.category}</p>
+                    </div>
+                  )}
+                  {order.listing?.condition && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Condition</p>
+                      <p className="font-medium">{order.listing.condition}</p>
+                    </div>
+                  )}
+                  {order.listing?.grade && (
+                    <div>
+                      <p className="text-muted-foreground text-xs">Grade</p>
+                      <p className="font-medium">{order.listing.grading_company} {order.listing.grade}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Description */}
+                {order.listing?.description && (
+                  <>
+                    <Separator />
+                    <div>
+                      <p className="text-muted-foreground text-xs mb-1">Description</p>
+                      <p className="text-sm">{order.listing.description}</p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
