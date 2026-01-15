@@ -135,10 +135,28 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
   return (
     <section className={cn(
       "relative overflow-hidden",
-      hideHero ? "pt-0 pb-6" : "py-8 sm:py-12 md:py-20"
+      hideHero ? "pt-0 pb-6" : "min-h-[85vh] flex flex-col justify-center py-8 sm:py-12 md:py-20"
     )}>
+      {/* Video Background for non-logged-in users */}
+      {!hideHero && (
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/videos/hero-video.mp4" type="video/mp4" />
+          </video>
+          {/* Overlay gradients */}
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        </div>
+      )}
+      
       {/* Background gradients - ensure pointer-events-none */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)] pointer-events-none" />
+      {hideHero && <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.06),transparent_60%)] pointer-events-none" />}
       
       <div className="container mx-auto px-4 relative z-10">
         {/* Hero headline + Stats combined - only show if not hidden */}
