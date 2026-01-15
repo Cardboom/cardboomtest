@@ -6,6 +6,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Try multiple possible base URLs
+const GELIVER_API_BASES = [
+  "https://api.geliver.com/v1",
+  "https://api.geliver.io/v1", 
+  "https://geliver.io/api/v1",
+  "https://geliver.com/api/v1",
+  "https://api.geliver.io/api/v1",
+];
 const GELIVER_API_BASE = "https://api.geliver.io/api/v1";
 
 interface ShippingAddress {
@@ -66,19 +74,59 @@ serve(async (req) => {
 
     // Get balance
     if (action === 'balance') {
-      const response = await fetch(`${GELIVER_API_BASE}/prices/get_balance`, {
-        headers: {
-          'Authorization': `Bearer ${GELIVER_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      // Try multiple base URLs with common balance endpoints
+      const endpoints: string[] = [];
+      for (const base of GELIVER_API_BASES) {
+        endpoints.push(`${base}/balance`);
+        endpoints.push(`${base}/account/balance`);
+        endpoints.push(`${base}/user/balance`);
+      }
+      
+      let lastError = null;
+      
+      for (const endpoint of endpoints) {
+        try {
+          console.log(`Trying Geliver endpoint: ${endpoint}`);
+          const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${GELIVER_API_KEY}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+          });
 
-      const data = await response.json();
-      console.log('Geliver balance response:', data);
+          const rawText = await response.text();
+          console.log(`Geliver response from ${endpoint}:`, response.status, rawText.substring(0, 200));
+          
+          if (response.ok) {
+            try {
+              const data = JSON.parse(rawText);
+              return new Response(
+                JSON.stringify(data),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            } catch {
+              // Continue to next endpoint if JSON parse fails
+            }
+          }
+        } catch (e) {
+          lastError = e;
+          continue;
+        }
+      }
 
+      // If all endpoints failed, return error with debug info
       return new Response(
-        JSON.stringify(data),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          error: 'Could not connect to Geliver API',
+          debug: {
+            apiKeyPresent: !!GELIVER_API_KEY,
+            apiKeyLength: GELIVER_API_KEY?.length,
+            testedEndpoints: endpoints,
+          }
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
