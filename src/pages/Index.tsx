@@ -304,7 +304,7 @@ const Index = () => {
       
       <main>
         {/* Boom Challenges - Full width at top */}
-        <div className="container mx-auto px-4 pt-3 space-y-2.5">
+        <div className="container mx-auto px-4 space-y-2.5">
           {/* Boom Challenges + My Gradings side by side - only for logged in users */}
           {user && (
             <div className="grid md:grid-cols-2 gap-3">
