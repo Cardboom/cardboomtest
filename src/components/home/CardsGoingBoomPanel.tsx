@@ -20,7 +20,7 @@ const mockPosts: XPost[] = [
   {
     id: '1',
     author: { name: 'PokéCollector', handle: '@pokecollector', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=poke' },
-    content: 'Just pulled a Charizard VMAX from my latest booster box! 🔥 This card is absolutely stunning. The market is going crazy for these.',
+    content: 'Just pulled a Charizard VMAX from my latest booster box! This card is absolutely stunning. The market is going crazy for these.',
     image: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=400&h=300&fit=crop',
     likes: 342,
     retweets: 89,
@@ -30,7 +30,7 @@ const mockPosts: XPost[] = [
   {
     id: '2',
     author: { name: 'TCG Investor', handle: '@tcginvestor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=investor' },
-    content: 'One Piece TCG prices are mooning! 🚀 Luffy Gear 5 just hit $500. Get in while you can.',
+    content: 'One Piece TCG prices are rising fast! Luffy Gear 5 just hit $500. Get in while you can.',
     likes: 567,
     retweets: 234,
     comments: 78,
@@ -39,7 +39,7 @@ const mockPosts: XPost[] = [
   {
     id: '3',
     author: { name: 'Slab King', handle: '@slabking', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=slab' },
-    content: 'PSA 10 Black Lotus sold for $540,000 today. MTG vintage market is insane. 💎',
+    content: 'PSA 10 Black Lotus sold for $540,000 today. MTG vintage market is incredible.',
     likes: 1243,
     retweets: 456,
     comments: 123,
@@ -48,7 +48,7 @@ const mockPosts: XPost[] = [
   {
     id: '4',
     author: { name: 'Card Flipper', handle: '@cardflip', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=flip' },
-    content: 'Mail day! Just received my graded Pikachu Illustrator from @cardboomcom. The CBGI score matches perfectly with my expectations 🎯',
+    content: 'Mail day! Just received my graded Pikachu Illustrator from @cardboomcom. The CBGI score matches perfectly with my expectations.',
     image: 'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?w=400&h=300&fit=crop',
     likes: 892,
     retweets: 167,
@@ -58,7 +58,7 @@ const mockPosts: XPost[] = [
   {
     id: '5',
     author: { name: 'Sports Cards Daily', handle: '@sportscardsdaily', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sports' },
-    content: 'Victor Wembanyama rookie cards are the hottest thing in sports cards right now. Prizm silvers selling for $2000+ 📈',
+    content: 'Victor Wembanyama rookie cards are the hottest thing in sports cards right now. Prizm silvers selling for $2000+.',
     likes: 678,
     retweets: 198,
     comments: 67,
@@ -67,7 +67,7 @@ const mockPosts: XPost[] = [
   {
     id: '6',
     author: { name: 'Yu-Gi-Oh Master', handle: '@ygomasterduelist', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=yugi' },
-    content: 'The 25th Anniversary Rarity Collection is completely sold out everywhere. My Blue-Eyes Ultimate Dragon is worth 3x what I paid! 🐉',
+    content: 'The 25th Anniversary Rarity Collection is completely sold out everywhere. My Blue-Eyes Ultimate Dragon is worth 3x what I paid!',
     likes: 445,
     retweets: 112,
     comments: 56,

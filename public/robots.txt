@@ -8,6 +8,8 @@ Sitemap: https://www.cardboom.com/sitemap-static.xml
 # Google
 User-agent: Googlebot
 Allow: /
+Allow: /ai/
+Allow: /ai/*
 Disallow: /auth
 Disallow: /wallet
 Disallow: /vault
@@ -25,6 +27,8 @@ Allow: /
 # Bing
 User-agent: Bingbot
 Allow: /
+Allow: /ai/
+Allow: /ai/*
 Disallow: /auth
 Disallow: /wallet
 Disallow: /vault
@@ -37,9 +41,44 @@ Disallow: /admin
 Disallow: /order-success
 Crawl-delay: 1
 
+# AI Crawlers - Explicitly allow research pages
+User-agent: GPTBot
+Allow: /ai/
+Allow: /ai/*
+Disallow: /auth
+Disallow: /wallet
+Disallow: /vault
+Disallow: /admin
+
+User-agent: ChatGPT-User
+Allow: /ai/
+Allow: /ai/*
+Disallow: /auth
+Disallow: /wallet
+Disallow: /vault
+Disallow: /admin
+
+User-agent: anthropic-ai
+Allow: /ai/
+Allow: /ai/*
+Disallow: /auth
+Disallow: /wallet
+Disallow: /vault
+Disallow: /admin
+
+User-agent: PerplexityBot
+Allow: /ai/
+Allow: /ai/*
+Disallow: /auth
+Disallow: /wallet
+Disallow: /vault
+Disallow: /admin
+
 # All other bots
 User-agent: *
 Allow: /
+Allow: /ai/
+Allow: /ai/*
 Disallow: /auth
 Disallow: /wallet
 Disallow: /vault

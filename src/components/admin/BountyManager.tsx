@@ -44,15 +44,15 @@ interface ReferralStats {
 }
 
 const BOUNTY_TYPES = [
-  { value: 'grading_count', label: 'Grade Cards', icon: '🧠' },
-  { value: 'referral_grading', label: 'Referral Gradings', icon: '👥' },
-  { value: 'referral_sales', label: 'Referral Sales', icon: '💰' },
-  { value: 'sale_count', label: 'Sell Cards', icon: '🏷️' },
-  { value: 'sale_commission', label: 'Commission Cashback (15%)', icon: '💵' },
-  { value: 'listing_count', label: 'List Cards', icon: '📋' },
+  { value: 'grading_count', label: 'Grade Cards', icon: '' },
+  { value: 'referral_grading', label: 'Referral Gradings', icon: '' },
+  { value: 'referral_sales', label: 'Referral Sales', icon: '' },
+  { value: 'sale_count', label: 'Sell Cards', icon: '' },
+  { value: 'sale_commission', label: 'Commission Cashback (15%)', icon: '' },
+  { value: 'listing_count', label: 'List Cards', icon: '' },
 ];
 
-const ICONS = ['🎯', '🏆', '💎', '🔥', '⭐', '🚀', '💪', '🎁', '👑', '🌟'];
+const ICONS = ['', '', '', '', '', '', '', '', '', ''];
 
 export const BountyManager = () => {
   const queryClient = useQueryClient();
