@@ -92,14 +92,18 @@ export const useGeliverShipping = () => {
           packageWidth: 20,
           packageHeight: 15,
           packageLength: 5,
-          selectedOfferId,
+          providerServiceCode: selectedOfferId || 'GELIVER_STANDART',
         },
       });
 
       if (error) throw error;
 
       toast.success('Shipping label created successfully');
-      return data;
+      return {
+        shipmentId: data?.transactionId,
+        trackingNumber: data?.trackingNumber,
+        ...data,
+      };
     } catch (error) {
       toast.error('Failed to create shipment');
       return null;
