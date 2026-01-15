@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, Sparkles, Award } from 'lucide-react';
+import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, Sparkles, Award, Truck, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -38,9 +38,18 @@ const getNotificationIcon = (type: string, data?: Record<string, unknown>) => {
       return <Star className="h-4 w-4 text-gold" />;
     case 'referral':
       return <Gift className="h-4 w-4 text-primary" />;
+    case 'shipping_approval_required':
+      return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+    case 'shipping_approved':
+      return <Truck className="h-4 w-4 text-green-500" />;
     default:
       return <Bell className="h-4 w-4" />;
   }
+};
+
+// Helper to check if notification requires action
+const isActionRequired = (type: string) => {
+  return type === 'shipping_approval_required';
 };
 
 export const NotificationCenter = () => {
@@ -205,11 +214,13 @@ export const NotificationCenter = () => {
                 const isSaleNotification = notificationType === 'sale' || 
                   notificationType === 'vault_shipping_required' || 
                   notificationType === 'order_update';
+                const isShippingNotification = notificationType === 'shipping_approval_required' ||
+                  notificationType === 'shipping_approved';
                 
                 if (notificationData?.grading_order_id) {
                   navigate(`/grading/order/${notificationData.grading_order_id}`);
-                } else if (isSaleNotification && notificationData?.order_id) {
-                  // Sale notifications should go to order page for shipping details
+                } else if ((isSaleNotification || isShippingNotification) && notificationData?.order_id) {
+                  // Sale and shipping notifications should go to order page
                   navigate(`/order/${notificationData.order_id}`);
                 } else if (notificationData?.order_id) {
                   navigate(`/order/${notificationData.order_id}`);
@@ -223,13 +234,18 @@ export const NotificationCenter = () => {
                   key={notification.id}
                   className={`flex items-start gap-3 p-3 cursor-pointer ${
                     !notification.is_read ? 'bg-accent/50' : ''
-                  }`}
+                  } ${isActionRequired(notification.type) ? 'border-l-2 border-l-yellow-500' : ''}`}
                   onClick={handleNotificationClick}
                 >
                   <div className="mt-0.5">
                     {getNotificationIcon(notification.type, notificationData)}
                   </div>
                   <div className="flex-1 min-w-0">
+                    {isActionRequired(notification.type) && (
+                      <Badge variant="outline" className="text-[10px] px-1 py-0 mb-1 text-yellow-600 border-yellow-500">
+                        Action Required
+                      </Badge>
+                    )}
                     <p className="font-medium text-sm truncate">
                       {notification.title}
                     </p>

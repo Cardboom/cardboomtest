@@ -5822,11 +5822,13 @@ export type Database = {
       orders: {
         Row: {
           admin_escalated_at: string | null
+          buyer_approved_shipping: boolean | null
           buyer_confirmed_at: string | null
           buyer_currency: string | null
           buyer_fee: number
           buyer_fee_cents: number | null
           buyer_id: string
+          buyer_shipping_approved_at: string | null
           card_instance_id: string | null
           confirmation_deadline: string | null
           created_at: string
@@ -5850,6 +5852,7 @@ export type Database = {
           price_in_listing_currency: number | null
           refunded_at: string | null
           sale_lane: Database["public"]["Enums"]["sale_lane"] | null
+          seller_approved_shipping: boolean | null
           seller_confirmed_at: string | null
           seller_currency: string | null
           seller_fee: number
@@ -5857,8 +5860,11 @@ export type Database = {
           seller_id: string
           seller_is_verified: boolean | null
           seller_payout_in_seller_currency: number | null
+          seller_shipping_approved_at: string | null
           ship_by_deadline: string | null
           shipping_address: Json | null
+          shipping_requested_at: string | null
+          shipping_requested_by: string | null
           status: Database["public"]["Enums"]["order_status"]
           tracking_number: string | null
           updated_at: string
@@ -5866,11 +5872,13 @@ export type Database = {
         }
         Insert: {
           admin_escalated_at?: string | null
+          buyer_approved_shipping?: boolean | null
           buyer_confirmed_at?: string | null
           buyer_currency?: string | null
           buyer_fee: number
           buyer_fee_cents?: number | null
           buyer_id: string
+          buyer_shipping_approved_at?: string | null
           card_instance_id?: string | null
           confirmation_deadline?: string | null
           created_at?: string
@@ -5894,6 +5902,7 @@ export type Database = {
           price_in_listing_currency?: number | null
           refunded_at?: string | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
+          seller_approved_shipping?: boolean | null
           seller_confirmed_at?: string | null
           seller_currency?: string | null
           seller_fee: number
@@ -5901,8 +5910,11 @@ export type Database = {
           seller_id: string
           seller_is_verified?: boolean | null
           seller_payout_in_seller_currency?: number | null
+          seller_shipping_approved_at?: string | null
           ship_by_deadline?: string | null
           shipping_address?: Json | null
+          shipping_requested_at?: string | null
+          shipping_requested_by?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           tracking_number?: string | null
           updated_at?: string
@@ -5910,11 +5922,13 @@ export type Database = {
         }
         Update: {
           admin_escalated_at?: string | null
+          buyer_approved_shipping?: boolean | null
           buyer_confirmed_at?: string | null
           buyer_currency?: string | null
           buyer_fee?: number
           buyer_fee_cents?: number | null
           buyer_id?: string
+          buyer_shipping_approved_at?: string | null
           card_instance_id?: string | null
           confirmation_deadline?: string | null
           created_at?: string
@@ -5938,6 +5952,7 @@ export type Database = {
           price_in_listing_currency?: number | null
           refunded_at?: string | null
           sale_lane?: Database["public"]["Enums"]["sale_lane"] | null
+          seller_approved_shipping?: boolean | null
           seller_confirmed_at?: string | null
           seller_currency?: string | null
           seller_fee?: number
@@ -5945,8 +5960,11 @@ export type Database = {
           seller_id?: string
           seller_is_verified?: boolean | null
           seller_payout_in_seller_currency?: number | null
+          seller_shipping_approved_at?: string | null
           ship_by_deadline?: string | null
           shipping_address?: Json | null
+          shipping_requested_at?: string | null
+          shipping_requested_by?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           tracking_number?: string | null
           updated_at?: string
