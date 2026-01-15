@@ -196,8 +196,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-9 px-3">
-                    <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
+                  <NavigationMenuTrigger className="text-sm font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-9 px-3">
+                    <TrendingUp className="w-4 h-4 mr-1.5" />
                     {t.nav.trading}
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -265,8 +265,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="text-xs font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-9 px-3">
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  <NavigationMenuTrigger className="text-sm font-semibold text-foreground bg-transparent hover:bg-muted/50 hover:text-primary data-[state=open]:bg-muted/50 data-[state=open]:text-primary h-9 px-3">
+                    <Sparkles className="w-4 h-4 mr-1.5" />
                     Explore
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -370,26 +370,26 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
             <Link 
               to="/grading" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Award className="w-3.5 h-3.5" />
+              <Award className="w-4 h-4" />
               {t.nav.grading}
             </Link>
             
             
             <Link 
               to="/gaming" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Gamepad2 className="w-3.5 h-3.5" />
+              <Gamepad2 className="w-4 h-4" />
               {t.nav.gaming}
             </Link>
             
             <Link 
               to="/vault" 
-              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
-              <Vault className="w-3.5 h-3.5" />
+              <Vault className="w-4 h-4" />
               {t.nav.myVault}
             </Link>
           </nav>
@@ -397,13 +397,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           {/* Spacer to push Sell button right */}
           <div className="hidden lg:block flex-1" />
           
-          {/* Sell Button - Positioned more to the right */}
+          {/* Sell Button - Premium Design */}
           <Button 
             size="sm"
             onClick={() => navigate('/sell')}
-            className="hidden lg:flex gap-1.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md shadow-primary/20 text-sm ml-4"
+            className="hidden lg:flex gap-2 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-400 hover:via-emerald-500 hover:to-teal-500 text-white font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 border-0 px-5 text-sm ml-4"
           >
-            <span className="font-bold">+</span>
+            <span className="text-lg leading-none">+</span>
             {t.nav.sell}
           </Button>
 
@@ -524,9 +524,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               </DropdownMenu>
             ) : (
               <Button 
-                variant="default" 
-                className="hidden sm:flex gap-2"
                 onClick={() => navigate('/auth')}
+                className="hidden sm:flex gap-2 bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary/90 hover:via-primary hover:to-primary text-primary-foreground font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 border-0 px-5"
               >
                 <User className="w-4 h-4" />
                 {t.nav.signIn}

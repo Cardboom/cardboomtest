@@ -78,15 +78,10 @@ const CreatorInvite = () => {
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      // Get monthly volume (completed orders in last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+      // Get total volume (all orders - matching homepage logic)
       const { data: orders } = await supabase
         .from('orders')
-        .select('price')
-        .eq('status', 'completed')
-        .gte('created_at', thirtyDaysAgo.toISOString());
+        .select('price');
 
       const monthlyVolume = orders?.reduce((sum, o) => sum + (o.price || 0), 0) || 0;
 
