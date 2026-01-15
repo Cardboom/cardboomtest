@@ -4,7 +4,7 @@
  * Keeps full quality for detail pages
  */
 
-const SUPABASE_STORAGE_URL = 'kgffwhyfgkqeevsuhldt.supabase.co/storage/v1/object/public';
+const SUPABASE_STORAGE_HOST = 'kgffwhyfgkqeevsuhldt.supabase.co';
 
 /**
  * Get optimized image URL for thumbnails (smaller size)
@@ -24,7 +24,7 @@ export function getOptimizedImageUrl(
   const { width = 400, height, quality = 75, format = 'webp' } = options;
   
   // Only optimize Supabase storage URLs
-  if (!url.includes(SUPABASE_STORAGE_URL)) {
+  if (!url.includes(SUPABASE_STORAGE_HOST) || !url.includes('/storage/v1/object/public')) {
     return url;
   }
   
