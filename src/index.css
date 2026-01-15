@@ -77,14 +77,14 @@
   }
 
   .dark {
-    /* Dark Theme - Premium Black (phygitals-inspired) */
-    --background: 0 0% 6%;
+    /* Dark Theme - Premium Dark (#171616) */
+    --background: 0 3% 9%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 7%;
+    --card: 0 3% 10%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 8%;
+    --popover: 0 3% 11%;
     --popover-foreground: 0 0% 98%;
 
     /* CardBoom Light Blue - matching logo */
