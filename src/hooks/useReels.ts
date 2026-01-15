@@ -576,9 +576,27 @@ export function useUploadReel() {
         .single();
 
       if (insertError) throw insertError;
+      setProgress(90);
+
+      // Award daily reel gems (50 gems, once per day)
+      const { data: rewardResult } = await supabase.rpc('award_daily_reel_gems', {
+        p_user_id: user.id,
+        p_reel_id: reel.id,
+      });
+
       setProgress(100);
 
-      toast({ title: 'Reel uploaded successfully!' });
+      if (rewardResult === true) {
+        toast({ 
+          title: '🎉 Reel uploaded + 50 Gems!', 
+          description: 'Daily Boom Reel reward claimed!' 
+        });
+        // Dispatch event for real-time balance update
+        window.dispatchEvent(new CustomEvent('gems-balance-updated'));
+      } else {
+        toast({ title: 'Reel uploaded successfully!' });
+      }
+      
       return reel;
     } catch (error) {
       console.error('Error uploading reel:', error);

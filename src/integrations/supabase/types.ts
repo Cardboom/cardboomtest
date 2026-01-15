@@ -7185,6 +7185,41 @@ export type Database = {
           },
         ]
       }
+      reel_daily_rewards: {
+        Row: {
+          created_at: string
+          gems_awarded: number
+          id: string
+          reel_id: string
+          reward_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gems_awarded?: number
+          id?: string
+          reel_id: string
+          reward_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gems_awarded?: number
+          id?: string
+          reel_id?: string
+          reward_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reel_daily_rewards_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "card_reels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reel_likes: {
         Row: {
           created_at: string
@@ -10029,6 +10064,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      award_daily_reel_gems: {
+        Args: { p_reel_id: string; p_user_id: string }
+        Returns: boolean
       }
       calculate_card_war_payouts: {
         Args: { war_id: string }
