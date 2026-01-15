@@ -161,6 +161,11 @@ export const UserManagement = () => {
   const [balanceType, setBalanceType] = useState<'add' | 'remove'>('add');
   const [balanceReason, setBalanceReason] = useState('');
 
+  // Role management
+  const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'moderator' | null>(null);
+
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
@@ -205,8 +210,28 @@ export const UserManagement = () => {
     }
   };
 
+  const fetchUserRoles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+      
+      if (error) throw error;
+      
+      const roleMap: Record<string, string[]> = {};
+      (data || []).forEach(r => {
+        if (!roleMap[r.user_id]) roleMap[r.user_id] = [];
+        roleMap[r.user_id].push(r.role);
+      });
+      setUserRoles(roleMap);
+    } catch (error) {
+      console.error('Error fetching user roles:', error);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchUserRoles();
   }, []);
 
   const fetchUserDetails = async (user: UserProfile) => {
@@ -476,6 +501,55 @@ export const UserManagement = () => {
     } catch (error) {
       console.error('Error revoking Pro:', error);
       toast.error('Failed to revoke Pro subscription');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleAssignRole = async (role: 'admin' | 'moderator') => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({ user_id: selectedUser.id, role });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.error(`User already has ${role} role`);
+        } else {
+          throw error;
+        }
+      } else {
+        toast.success(`${role.charAt(0).toUpperCase() + role.slice(1)} role assigned to ${selectedUser.display_name}`);
+        fetchUserRoles();
+      }
+      setRoleDialogOpen(false);
+    } catch (error) {
+      console.error('Error assigning role:', error);
+      toast.error('Failed to assign role');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRemoveRole = async (role: 'admin' | 'moderator' | 'user') => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', selectedUser.id)
+        .eq('role', role);
+
+      if (error) throw error;
+
+      toast.success(`${role.charAt(0).toUpperCase() + role.slice(1)} role removed from ${selectedUser.display_name}`);
+      fetchUserRoles();
+    } catch (error) {
+      console.error('Error removing role:', error);
+      toast.error('Failed to remove role');
     } finally {
       setIsProcessing(false);
     }
@@ -1023,9 +1097,48 @@ export const UserManagement = () => {
                     Restore Account
                   </Button>
                 )}
+                
+                {/* Role Management */}
+                <div className="flex items-center gap-2 mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
+                  <Shield className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Roles:</span>
+                  {(userRoles[selectedUser.id] || []).length > 0 ? (
+                    (userRoles[selectedUser.id] || []).map(role => (
+                      <Badge key={role} variant="secondary" className="gap-1">
+                        {role}
+                        <button 
+                          onClick={() => handleRemoveRole(role as 'admin' | 'moderator' | 'user')}
+                          className="ml-1 hover:text-red-500"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground">No special roles</span>
+                  )}
+                  <div className="ml-auto flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAssignRole('moderator')}
+                      disabled={isProcessing || (userRoles[selectedUser.id] || []).includes('moderator')}
+                      className="text-xs h-7"
+                    >
+                      + Moderator
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAssignRole('admin')}
+                      disabled={isProcessing || (userRoles[selectedUser.id] || []).includes('admin')}
+                      className="text-xs h-7 text-amber-500"
+                    >
+                      + Admin
+                    </Button>
+                  </div>
+                </div>
               </div>
-
-              {/* Banned/Paused Info */}
               {selectedUser.account_status === 'banned' && selectedUser.banned_reason && (
                 <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
                   <p className="text-sm text-red-500 font-medium">Ban Reason:</p>

@@ -154,11 +154,47 @@ Format your response as JSON:
       }
     }
 
-    // Insert articles into database
+    // Check for existing articles with similar titles to prevent duplicates
     if (generatedArticles.length > 0) {
+      // Get existing titles from the last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const { data: existingArticles } = await supabase
+        .from('cardboom_news')
+        .select('title')
+        .gte('created_at', sevenDaysAgo.toISOString());
+      
+      const existingTitles = new Set(
+        (existingArticles || []).map(a => a.title.toLowerCase().trim())
+      );
+      
+      // Filter out duplicates by checking if similar title exists
+      const uniqueArticles = generatedArticles.filter(article => {
+        const normalizedTitle = article.title.toLowerCase().trim();
+        // Check for exact match or very similar titles
+        return !existingTitles.has(normalizedTitle) && 
+          ![...existingTitles].some((existing: string) => {
+            // Calculate similarity - if more than 70% of words match, consider duplicate
+            const newWords = normalizedTitle.split(/\s+/);
+            const existingWords = existing.split(/\s+/);
+            const matchingWords = newWords.filter((w: string) => existingWords.includes(w)).length;
+            return matchingWords / Math.max(newWords.length, existingWords.length) > 0.7;
+          });
+      });
+      
+      if (uniqueArticles.length === 0) {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: 'No new unique articles to insert (duplicates filtered)' 
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       const { data: inserted, error } = await supabase
         .from('cardboom_news')
-        .insert(generatedArticles)
+        .insert(uniqueArticles)
         .select();
 
       if (error) {
@@ -168,7 +204,7 @@ Format your response as JSON:
 
       return new Response(JSON.stringify({ 
         success: true, 
-        message: `Generated ${inserted?.length || 0} news articles`,
+        message: `Generated ${inserted?.length || 0} news articles (${generatedArticles.length - uniqueArticles.length} duplicates filtered)`,
         articles: inserted 
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
