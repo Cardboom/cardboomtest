@@ -57,14 +57,14 @@ const BestCardGradingCompanies = () => {
     },
     {
       rank: 5,
-      name: 'CardBoom (AI-Powered)',
-      founded: 2024,
+      name: 'CardBoom CBGI (AI + Physical)',
+      founded: 2025,
       marketShare: 'Emerging',
-      bestFor: 'Pre-submission screening, instant results',
-      avgPrice: '$3-$15',
-      avgTurnaround: 'Instant',
-      pros: ['Instant results', 'Lowest cost', 'No shipping', 'Detailed AI analysis'],
-      cons: ['No physical slab', 'Emerging acceptance', 'Not for authentication'],
+      bestFor: 'AI pre-grading, physical slabs, strict standards',
+      avgPrice: '$3-$50',
+      avgTurnaround: 'Instant AI / 7-14 days physical',
+      pros: ['Instant AI pre-grades', 'Physical slabs available', 'Strictest grading (5-15% below PSA)', 'Full authentication', 'Lowest AI cost'],
+      cons: ['Newer to market', 'Building market acceptance', 'Smaller population data'],
     },
   ];
 
@@ -87,7 +87,7 @@ const BestCardGradingCompanies = () => {
         name: 'What is the best card grading company?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'PSA is the most widely recognized card grading company with the highest resale premiums and market liquidity. BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom for instant AI pre-grades.',
+          text: 'PSA is the most widely recognized card grading company with the highest resale premiums and market liquidity. BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom CBGI for strict AI pre-grades and physical slabs.',
         },
       },
       {
@@ -95,7 +95,7 @@ const BestCardGradingCompanies = () => {
         name: 'Which grading company is cheapest?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'CGC offers the lowest traditional grading starting at $15 per card. AI grading services like CardBoom offer pre-grades for $3-15 per card with instant results.',
+          text: 'CGC offers the lowest traditional grading starting at $15 per card. CardBoom CBGI offers AI pre-grades for $3-15 per card with instant results, and physical slabs starting at $25.',
         },
       },
       {
@@ -104,6 +104,22 @@ const BestCardGradingCompanies = () => {
         acceptedAnswer: {
           '@type': 'Answer',
           text: 'PSA is generally better for Pokemon cards due to higher liquidity and resale premiums in the Pokemon market. However, BGS Black Label 10s can command premium prices for high-value cards.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'How strict is CardBoom CBGI grading?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'CardBoom CBGI is known for very strict grading standards, typically grading 5-15% lower than PSA on the same cards. This makes a CBGI grade a strong indicator of true card condition.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'Does CardBoom offer physical slabs?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, CardBoom CBGI offers both instant AI pre-grades and physical slabs with authentication. Physical grading includes hands-on inspection and professional encapsulation.',
         },
       },
     ],
@@ -303,8 +319,8 @@ const BestCardGradingCompanies = () => {
               <div className="flex gap-3">
                 <Zap className="w-5 h-5 text-primary mt-1 shrink-0" />
                 <div>
-                  <h4 className="font-semibold">For pre-submission screening:</h4>
-                  <p className="text-sm text-muted-foreground">Choose CardBoom AI for instant, low-cost pre-grades before professional submission</p>
+                  <h4 className="font-semibold">For pre-submission screening & strict grading:</h4>
+                  <p className="text-sm text-muted-foreground">Choose CardBoom CBGI for instant AI pre-grades, physical slabs, and the strictest grading standards (5-15% below PSA)</p>
                 </div>
               </div>
             </CardContent>
@@ -320,14 +336,14 @@ const BestCardGradingCompanies = () => {
                 <h4 className="font-semibold mb-2">What is the best card grading company?</h4>
                 <p className="text-muted-foreground text-sm">
                   PSA is the most widely recognized card grading company with the highest resale premiums and market liquidity. 
-                  BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom for instant AI pre-grades.
+                  BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom CBGI for strict AI pre-grades and physical slabs.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Which grading company is cheapest?</h4>
                 <p className="text-muted-foreground text-sm">
                   CGC offers the lowest traditional grading starting at $15 per card. 
-                  AI grading services like CardBoom offer pre-grades for $3-15 per card with instant results.
+                  CardBoom CBGI offers AI pre-grades for $3-15 per card with instant results, and physical slabs starting at $25.
                 </p>
               </div>
               <div>
@@ -335,6 +351,20 @@ const BestCardGradingCompanies = () => {
                 <p className="text-muted-foreground text-sm">
                   PSA is generally better for Pokemon cards due to higher liquidity and resale premiums in the Pokemon market. 
                   However, BGS Black Label 10s can command premium prices for high-value cards.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">How strict is CardBoom CBGI grading?</h4>
+                <p className="text-muted-foreground text-sm">
+                  CardBoom CBGI is known for very strict grading standards, typically grading 5-15% lower than PSA on the same cards. 
+                  This makes a CBGI grade a strong indicator of true card condition and builds trust as market adoption grows.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Does CardBoom offer physical slabs?</h4>
+                <p className="text-muted-foreground text-sm">
+                  Yes, CardBoom CBGI offers both instant AI pre-grades and physical slabs with full authentication. 
+                  Physical grading includes hands-on inspection by expert graders and professional encapsulation.
                 </p>
               </div>
             </CardContent>

@@ -153,7 +153,7 @@ export const AIInsightsPanel = () => {
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 space-y-3">
+      <CardContent className="p-3 space-y-1">
         {insights.map((insight, index) => {
           const style = typeStyles[insight.type] || typeStyles.neutral;
           const isExpanded = expandedInsight === insight.id;
@@ -161,77 +161,86 @@ export const AIInsightsPanel = () => {
           return (
             <motion.div
               key={insight.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
               className={cn(
-                "p-4 rounded-xl border transition-all cursor-pointer",
-                style.bg,
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-all cursor-pointer hover:bg-muted/50",
                 style.border,
-                isExpanded && "ring-2 ring-primary/20"
+                isExpanded && "ring-1 ring-primary/30 bg-muted/30"
               )}
               onClick={() => setExpandedInsight(isExpanded ? null : insight.id)}
             >
-              <div className="flex items-start gap-3">
-                <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
-                  style.bg
-                )}>
-                  <style.icon className={cn("w-5 h-5", style.iconColor)} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <Badge className={cn("text-xs", style.labelBg)}>
-                      {style.label}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {insight.confidence}% confidence
-                    </Badge>
-                    {insight.impact === 'high' && (
-                      <Badge variant="destructive" className="text-xs gap-1">
-                        <Zap className="w-3 h-3" />
-                        High Impact
-                      </Badge>
-                    )}
-                  </div>
-                  <h4 className="font-semibold text-foreground">{insight.title}</h4>
-                  <p className="text-sm text-muted-foreground mt-1">{insight.description}</p>
-                  
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      className="mt-3 pt-3 border-t border-border/50"
-                    >
-                      {insight.action && (
-                        <div className="flex items-center gap-2 p-2 rounded-lg bg-background/50 mb-2">
-                          <Lightbulb className="w-4 h-4 text-gold" />
-                          <span className="text-sm font-medium">{insight.action}</span>
-                        </div>
-                      )}
-                      {insight.relatedItems && insight.relatedItems.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {insight.relatedItems.map(item => (
-                            <Badge key={item} variant="secondary" className="text-xs">
-                              {item}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                      <Button size="sm" className="mt-3 w-full gap-2" onClick={() => window.location.href = '/markets'}>
-                        View Analysis
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </motion.div>
+              {/* Icon */}
+              <div className={cn(
+                "w-8 h-8 rounded-md flex items-center justify-center shrink-0",
+                style.bg
+              )}>
+                <style.icon className={cn("w-4 h-4", style.iconColor)} />
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-medium text-sm text-foreground truncate">{insight.title}</h4>
+                  {insight.impact === 'high' && (
+                    <Zap className="w-3 h-3 text-gold shrink-0" />
                   )}
                 </div>
+                {!isExpanded && (
+                  <p className="text-xs text-muted-foreground truncate">{insight.description}</p>
+                )}
+                
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-2"
+                  >
+                    <p className="text-sm text-muted-foreground mb-2">{insight.description}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className={cn("text-xs", style.labelBg)}>
+                        {style.label}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {insight.confidence}% conf.
+                      </Badge>
+                    </div>
+                    {insight.action && (
+                      <div className="flex items-center gap-2 mt-2 p-2 rounded-md bg-background/50 text-xs">
+                        <Lightbulb className="w-3 h-3 text-gold shrink-0" />
+                        <span>{insight.action}</span>
+                      </div>
+                    )}
+                    {insight.relatedItems && insight.relatedItems.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {insight.relatedItems.slice(0, 3).map(item => (
+                          <Badge key={item} variant="secondary" className="text-xs">
+                            {item}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Right side badges */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Badge variant="outline" className="text-xs hidden sm:inline-flex">
+                  {insight.confidence}%
+                </Badge>
+                <ChevronRight className={cn(
+                  "w-4 h-4 text-muted-foreground transition-transform",
+                  isExpanded && "rotate-90"
+                )} />
               </div>
             </motion.div>
           );
         })}
         
-        <Button variant="outline" className="w-full gap-2" onClick={() => window.location.href = '/auth'}>
-          <Brain className="w-4 h-4" />
+        <Button variant="ghost" size="sm" className="w-full gap-2 mt-2 text-xs" onClick={() => window.location.href = '/auth'}>
+          <Brain className="w-3 h-3" />
           Get Personalized Insights
         </Button>
       </CardContent>
