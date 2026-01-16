@@ -275,8 +275,6 @@ export const ko: Translations = {
     easyPaymentsDesc: "암호화폐를 포함한 다양한 결제 방법",
     verifiedInvestors: "인증된 투자자",
     verifiedInvestorsDesc: "인증된 계정으로 안심하고 거래",
-    fractionalShares: "콜렉티브 유닛",
-    fractionalSharesDesc: "$10부터 레어 카드 커뮤니티에 참여",
   },
   // About Page
   about: {

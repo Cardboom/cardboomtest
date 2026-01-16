@@ -262,8 +262,6 @@ export const fr: Translations = {
     easyPaymentsDesc: "Plusieurs méthodes de paiement dont crypto",
     verifiedInvestors: "Investisseurs Vérifiés",
     verifiedInvestorsDesc: "Tradez en confiance avec des comptes vérifiés",
-    fractionalShares: "Parts Fractionnées",
-    fractionalSharesDesc: "Possédez des pièces de grails à partir de 10$",
   },
   about: {
     badge: "À Propos",

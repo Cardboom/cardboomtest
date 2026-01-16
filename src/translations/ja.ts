@@ -275,8 +275,6 @@ export const ja: Translations = {
     easyPaymentsDesc: "暗号通貨を含む複数の支払い方法",
     verifiedInvestors: "認証ユーザー",
     verifiedInvestorsDesc: "認証アカウントで安心して取引",
-    fractionalShares: "コレクティブユニット",
-    fractionalSharesDesc: "$10からレアカードコミュニティに参加",
   },
   // About Page
   about: {

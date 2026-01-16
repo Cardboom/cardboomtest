@@ -262,8 +262,6 @@ export const ar: Translations = {
     easyPaymentsDesc: "طرق دفع متعددة بما فيها العملات المشفرة",
     verifiedInvestors: "مستثمرون موثقون",
     verifiedInvestorsDesc: "تداول بثقة من حسابات موثقة",
-    fractionalShares: "حصص جزئية",
-    fractionalSharesDesc: "امتلك قطعاً من الكنوز بدءاً من 10$",
   },
   about: {
     badge: "من نحن",
