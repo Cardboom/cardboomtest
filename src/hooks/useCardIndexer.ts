@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ReviewedCardData } from '@/components/card-scan/CardReviewModal';
+import { formatCardDisplayName } from '@/lib/cardNameUtils';
 
 interface UpsertMarketItemParams {
   cardData: ReviewedCardData;
@@ -35,15 +36,68 @@ interface CreateGradingOrderParams {
 
 export function useCardIndexer() {
   /**
+   * Build full SEO-friendly display name from card data
+   */
+  const buildDisplayName = useCallback((cardData: ReviewedCardData): string => {
+    return formatCardDisplayName({
+      name: cardData.cardNameEnglish || cardData.cardName,
+      variant: null, // Extracted from rarity if special
+      setCode: cardData.setCode,
+      cardNumber: cardData.cardNumber,
+      rarity: cardData.rarity,
+    });
+  }, []);
+
+  /**
+   * Trigger auto-fetch of external price for a market item
+   */
+  const fetchExternalPrice = useCallback(async (marketItemId: string, cardData: ReviewedCardData) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-fetch-price', {
+        body: {
+          marketItemId,
+          cardData: {
+            name: cardData.cardNameEnglish || cardData.cardName,
+            variant: null,
+            setCode: cardData.setCode,
+            cardNumber: cardData.cardNumber,
+            rarity: cardData.rarity,
+            category: cardData.category,
+            setName: cardData.setName,
+          },
+        },
+      });
+      
+      if (error) {
+        console.warn('Auto-fetch price failed:', error);
+        return null;
+      }
+      
+      if (data?.success) {
+        console.log(`Auto-fetched price: $${data.price} from ${data.source}`);
+        return data;
+      }
+      
+      return null;
+    } catch (err) {
+      console.warn('Auto-fetch price error:', err);
+      return null;
+    }
+  }, []);
+
+  /**
    * Upsert a canonical card record in market_items using cvi_key
    */
   const upsertMarketItem = useCallback(async ({ cardData, imageUrl, currentPrice }: UpsertMarketItemParams) => {
     try {
+      // Build SEO-friendly full display name
+      const displayName = buildDisplayName(cardData);
+      
       // If we have a cvi_key, try to find existing record
       if (cardData.cviKey) {
         const { data: existing } = await supabase
           .from('market_items')
-          .select('id')
+          .select('id, verified_price, data_source')
           .eq('cvi_key', cardData.cviKey)
           .single();
 
@@ -52,7 +106,7 @@ export function useCardIndexer() {
           const { data, error } = await supabase
             .from('market_items')
             .update({
-              name: cardData.cardNameEnglish || cardData.cardName,
+              name: displayName,
               set_name: cardData.setName,
               set_code: cardData.setCode,
               card_number: cardData.cardNumber,
@@ -68,15 +122,21 @@ export function useCardIndexer() {
             .single();
 
           if (error) throw error;
+          
+          // Auto-fetch external price if not already verified
+          if (!existing.verified_price && !existing.data_source?.includes('pricecharting')) {
+            fetchExternalPrice(existing.id, cardData);
+          }
+          
           return data;
         }
       }
 
-      // Create new record
+      // Create new record with full display name
       const { data, error } = await supabase
         .from('market_items')
         .insert({
-          name: cardData.cardNameEnglish || cardData.cardName,
+          name: displayName,
           category: cardData.category,
           set_name: cardData.setName,
           set_code: cardData.setCode,
@@ -88,18 +148,26 @@ export function useCardIndexer() {
           ai_indexed_at: new Date().toISOString(),
           current_price: currentPrice || 0,
           base_price: currentPrice || 0,
+          price_status: 'pending',
+          data_source: 'cardboom',
           ...(imageUrl && { image_url: imageUrl }),
         })
         .select()
         .single();
 
       if (error) throw error;
+      
+      // Auto-fetch external price for new items (fire and forget)
+      if (data?.id) {
+        fetchExternalPrice(data.id, cardData);
+      }
+      
       return data;
     } catch (error) {
       console.error('Error upserting market item:', error);
       throw error;
     }
-  }, []);
+  }, [buildDisplayName, fetchExternalPrice]);
 
   /**
    * Create a listing linked to a market item
@@ -127,10 +195,13 @@ export function useCardIndexer() {
         currentPrice: price,
       });
 
+      // Build SEO-friendly full display name for listing title
+      const displayName = buildDisplayName(cardData);
+      
       // Create the listing with currency
       const listingData: Record<string, unknown> = {
         seller_id: userId,
-        title: cardData.cardNameEnglish || cardData.cardName,
+        title: displayName,
         description,
         category: cardData.category,
         condition,
