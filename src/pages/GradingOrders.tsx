@@ -12,7 +12,17 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Clock, CheckCircle, AlertCircle, RefreshCw, ChevronRight, Image as ImageIcon, Award } from 'lucide-react';
+import { ArrowLeft, Plus, Clock, CheckCircle, AlertCircle, RefreshCw, ChevronRight, Image as ImageIcon, Award, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
@@ -29,10 +39,12 @@ const STATUS_CONFIG: Record<GradingOrderStatus, { label: string; color: string; 
 
 export default function GradingOrders() {
   const navigate = useNavigate();
-  const { orders, isLoading } = useGrading();
+  const { orders, isLoading, deleteOrder } = useGrading();
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Auth-aware navigation to grading flow
   const handleStartGrading = useCallback(async () => {
@@ -64,6 +76,17 @@ export default function GradingOrders() {
     return true;
   });
 
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+    setIsDeleting(true);
+    await deleteOrder(orderToDelete);
+    setIsDeleting(false);
+    setOrderToDelete(null);
+  };
+
+  const canDelete = (status: GradingOrderStatus) => 
+    ['pending_payment', 'failed', 'refunded'].includes(status);
+
   const OrderCard = ({ order, index }: { order: GradingOrder; index: number }) => {
     const statusConfig = STATUS_CONFIG[order.status];
     const category = GRADING_CATEGORIES.find(c => c.id === order.category);
@@ -83,7 +106,22 @@ export default function GradingOrders() {
                     <p className="font-medium text-sm truncate">{category?.icon} {category?.name || order.category}</p>
                     <p className="text-xs text-muted-foreground">{format(new Date(order.created_at), 'MMM d, yyyy')}</p>
                   </div>
-                  <Badge variant="secondary" className={cn('shrink-0 text-white text-xs px-2 py-0.5', statusConfig.color)}><StatusIcon className="w-3 h-3 mr-1" />{statusConfig.label}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className={cn('shrink-0 text-white text-xs px-2 py-0.5', statusConfig.color)}><StatusIcon className="w-3 h-3 mr-1" />{statusConfig.label}</Badge>
+                    {canDelete(order.status) && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOrderToDelete(order.id);
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 {order.final_grade && <div className="flex items-center gap-2 mt-2"><span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">{order.final_grade.toFixed(1)}</span><span className="text-xs text-muted-foreground">{order.grade_label}</span></div>}
                 <div className="flex items-center justify-between mt-2"><span className="text-xs text-muted-foreground">#{order.id.slice(0, 8)}</span><ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" /></div>
@@ -139,6 +177,27 @@ export default function GradingOrders() {
         </AnimatePresence>
       </main>
       <Footer />
+
+      <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove grading order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this grading order from your list. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteOrder}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Removing...' : 'Remove'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

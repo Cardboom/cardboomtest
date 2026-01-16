@@ -362,6 +362,43 @@ export function useGrading() {
     }
   }, []);
 
+  const deleteOrder = async (orderId: string): Promise<boolean> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: 'Please sign in to continue', variant: 'destructive' });
+        return false;
+      }
+
+      // Only allow deletion of pending_payment orders (not yet processed)
+      const order = orders.find(o => o.id === orderId);
+      if (order && !['pending_payment', 'failed', 'refunded'].includes(order.status)) {
+        toast({ 
+          title: 'Cannot delete this order', 
+          description: 'Only pending, failed, or refunded orders can be removed.',
+          variant: 'destructive' 
+        });
+        return false;
+      }
+
+      const { error: deleteError } = await supabase
+        .from('grading_orders')
+        .delete()
+        .eq('id', orderId)
+        .eq('user_id', user.id);
+
+      if (deleteError) throw deleteError;
+
+      await fetchOrders();
+      toast({ title: 'Order removed successfully' });
+      return true;
+    } catch (err: any) {
+      console.error('Error deleting grading order:', err);
+      toast({ title: 'Failed to remove order', description: err.message, variant: 'destructive' });
+      return false;
+    }
+  };
+
   return {
     orders,
     isLoading,
@@ -370,7 +407,8 @@ export function useGrading() {
     createOrder,
     createOrderFromListing,
     submitAndPay,
-    getOrder
+    getOrder,
+    deleteOrder
   };
 }
 
