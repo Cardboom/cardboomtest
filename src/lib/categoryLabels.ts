@@ -3,11 +3,16 @@ export const categoryLabels: Record<string, string> = {
   'all': 'All Categories',
   'pokemon': 'Pokémon',
   'yugioh': 'Yu-Gi-Oh!',
-  'mtg': 'MTG',
+  'yu-gi-oh': 'Yu-Gi-Oh!',
+  'mtg': 'Magic: The Gathering',
+  'magic': 'Magic: The Gathering',
   'lorcana': 'Disney Lorcana',
+  'disney-lorcana': 'Disney Lorcana',
   'one-piece': 'One Piece',
   'onepiece': 'One Piece',
-  'lol-riftbound': 'LoL-Riftbound',
+  'lol-riftbound': 'LoL Riftbound',
+  'riftbound': 'LoL Riftbound',
+  'origins': 'LoL Riftbound',
   'figures': 'Figures & Collectibles',
   'sports-nba': 'NBA Cards',
   'sports-nfl': 'NFL Cards',
@@ -20,7 +25,9 @@ export const categoryLabels: Record<string, string> = {
   'gamepoints': 'Game Points',
   'digimon': 'Digimon TCG',
   'dragon-ball': 'Dragon Ball Super',
+  'dragonball': 'Dragon Ball Super',
   'star-wars': 'Star Wars',
+  'starwars': 'Star Wars',
 };
 
 // Category counts - these are now fetched dynamically via useCategoryCounts hook
