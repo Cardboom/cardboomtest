@@ -11,7 +11,7 @@
  * - Card checkout: Gems only (for TR users)
  */
 
-export type SubscriptionTier = 'free' | 'pro' | 'enterprise';
+export type SubscriptionTier = 'free' | 'lite' | 'pro' | 'enterprise';
 
 // Face value: 1 Gem = $0.01 USD
 export const GEM_FACE_VALUE_USD = 0.01;
@@ -19,6 +19,7 @@ export const GEM_FACE_VALUE_USD = 0.01;
 // Markup percentages for Gems top-up
 export const GEMS_MARKUP_PERCENT = {
   free: 12,
+  lite: 10,
   pro: 8,
   enterprise: 5,
 } as const;
@@ -137,6 +138,8 @@ export const getTierPricingMessage = (tier: SubscriptionTier): string => {
       return 'Enterprise pricing applied (5% markup)';
     case 'pro':
       return 'Pro member discount applied (8% markup)';
+    case 'lite':
+      return 'Lite member discount applied (10% markup)';
     default:
       return 'Standard pricing (12% markup)';
   }

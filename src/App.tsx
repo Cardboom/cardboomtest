@@ -90,6 +90,7 @@ import BuyCategoryPage from "./pages/BuyCategoryPage";
 import LongtailLandingPage from "./pages/LongtailLandingPage";
 import BoomPacks from "./pages/BoomPacks";
 import GemsPage from "./pages/GemsPage";
+import Fees from "./pages/Fees";
 
 // AI Research & Citation Pages (AEO Strategy)
 import CardGradingGuide from "./pages/ai/CardGradingGuide";
@@ -186,6 +187,7 @@ const AppContent = () => {
           <Route path="/blog/:slug" element={<Article />} />
           <Route path="/achievements" element={<Achievements />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/fees" element={<Fees />} />
           <Route path="/circle" element={<Circle />} />
           <Route path="/circle/:id" element={<Thread />} />
           <Route path="/card-wars" element={<CardWars />} />
