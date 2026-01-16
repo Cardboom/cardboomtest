@@ -105,12 +105,24 @@ Admin → Diagnostics → "Clear Cache" button
 ## Scheduled Refresh Jobs
 
 ### Edge Functions
+- `daily-price-snapshot` - Captures daily prices for all market items, updates 24h/7d/30d changes
+- `portfolio-snapshot` - Records portfolio values for users (enables portfolio graph)
 - `refresh-prices` - Updates price changes for items
 - `validate-images` - Checks and fixes broken image URLs
 - `backfill-attributes` - Fills missing card attributes
 
 ### Manual Trigger
 ```bash
+# Daily price snapshot (captures prices and updates change %)
+curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/daily-price-snapshot \
+  -H "Authorization: Bearer ANON_KEY" \
+  -d '{"batch_size": 500, "update_historical": true}'
+
+# Portfolio snapshot (records user portfolio values)
+curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/portfolio-snapshot \
+  -H "Authorization: Bearer ANON_KEY" \
+  -d '{}'
+
 # Refresh top viewed items
 curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/refresh-prices \
   -H "Authorization: Bearer ANON_KEY" \
@@ -127,8 +139,10 @@ curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/validate-imag
 curl -X POST https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/backfill-attributes
 ```
 
-### Cron Schedule (optional)
+### Cron Schedule (recommended)
 To enable automatic refreshes, set up pg_cron:
+- **daily-price-snapshot**: `0 */6 * * *` (every 6 hours)
+- **portfolio-snapshot**: `0 * * * *` (hourly)
 - Top viewed: `*/15 * * * *` (every 15 min)
-- Portfolio: `*/30 * * * *` (every 30 min)
+- Portfolio refresh: `*/30 * * * *` (every 30 min)
 - Full catalog: `0 2 * * *` (daily at 2am UTC)
