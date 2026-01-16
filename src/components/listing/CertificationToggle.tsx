@@ -19,22 +19,22 @@ interface CertificationToggleProps {
   onTypeChange?: (type: CertificationType) => void;
 }
 
-// AI Pre-Grading tiers (same pricing as grading page)
+// CBGI Pre-Grading tiers (aligned with grading page pricing)
 const AI_TIERS = [
   {
     id: 'standard' as const,
     name: 'Standard',
-    price: 10,
-    days: 'Instant',
-    description: 'AI analysis showing grade likelihood',
+    price: 15,
+    days: '20-25 days',
+    description: 'CardBoom Grading Index - AI pre-grading showing grade likelihood',
   },
   {
     id: 'express' as const,
-    name: 'Priority',
-    price: 15,
-    days: 'Instant + badge boost',
-    description: 'Priority visibility in marketplace',
-    badge: 'Boost',
+    name: 'Express',
+    price: 25,
+    days: '7-10 days',
+    description: 'Faster pre-grading turnaround',
+    badge: 'Popular',
   },
 ];
 
@@ -168,7 +168,7 @@ export const CertificationToggle = ({
                     <p className="text-xs text-muted-foreground">
                       Instant AI analysis showing grade likelihood before real inspection
                     </p>
-                    <Badge variant="secondary" className="mt-2 text-xs">From $10</Badge>
+                    <Badge variant="secondary" className="mt-2 text-xs">From $15</Badge>
                   </button>
                   
                   <button
