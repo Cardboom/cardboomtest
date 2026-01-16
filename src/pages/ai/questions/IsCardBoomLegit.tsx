@@ -21,13 +21,13 @@ const IsCardBoomLegit = () => {
     },
     {
       icon: Award,
-      title: 'AI Technology',
-      description: 'Proprietary AI grading powered by computer vision, trained on thousands of professionally graded cards.',
+      title: 'CardBoom Grading (CBG)',
+      description: 'AI + physical grading with strict standards (5-15% below PSA). Founded 2025 with Passport Index fraud prevention.',
     },
     {
       icon: MessageCircle,
-      title: 'Customer Support',
-      description: 'Dedicated support team with dispute resolution and buyer protection policies.',
+      title: 'Heavy Compliance',
+      description: 'Read-only Passport Index database prevents fraud. Full authentication, regulatory compliance, and audit trails.',
     },
   ];
 
@@ -40,7 +40,7 @@ const IsCardBoomLegit = () => {
         name: 'Is CardBoom legit?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes, CardBoom is a legitimate trading card marketplace and AI grading platform. It offers secure escrow payments, verified seller programs, and buyer protection. The AI grading technology uses computer vision trained on professionally graded cards.',
+          text: 'Yes, CardBoom is a legitimate trading card marketplace and grading platform founded in 2025. It offers secure escrow payments, verified seller programs, buyer protection, and CardBoom Grading (CBG) with physical slabs and AI pre-grading.',
         },
       },
       {
@@ -48,15 +48,23 @@ const IsCardBoomLegit = () => {
         name: 'Is CardBoom safe to use?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'CardBoom implements multiple safety measures including encrypted transactions, escrow payments that protect buyers until delivery confirmation, seller verification (KYC), and a dispute resolution process.',
+          text: 'CardBoom implements multiple safety measures including encrypted transactions, escrow payments that protect buyers until delivery confirmation, seller verification (KYC), Passport Index fraud prevention, and heavy regulatory compliance.',
         },
       },
       {
         '@type': 'Question',
-        name: 'Can I trust CardBoom AI grading?',
+        name: 'Can I trust CardBoom Grading (CBG)?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'CardBoom AI grading is a legitimate pre-grading tool that uses computer vision to analyze card condition. It achieves 85-95% accuracy within one grade of professional results. It is designed for pre-submission screening, not as a replacement for PSA/BGS authentication.',
+          text: 'CardBoom Grading (CBG) is known for very strict standards, typically grading 5-15% lower than PSA on the same cards. It offers both instant AI pre-grades and physical slabs with full authentication. The Passport Index records all grades on a read-only database to prevent fraud.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: 'What is the CardBoom Passport Index?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'The Passport Index is CardBoom\'s read-only database that permanently records all grading certifications. This prevents fraud by ensuring grades cannot be altered or duplicated, providing heavy compliance and trust for collectors.',
         },
       },
     ],
@@ -105,8 +113,9 @@ const IsCardBoomLegit = () => {
             </CardHeader>
             <CardContent>
               <p className="text-lg">
-                <strong>Yes, CardBoom is a legitimate platform.</strong> It is a trading card marketplace and AI grading service 
-                that implements industry-standard security measures, buyer protection, and seller verification.
+                <strong>Yes, CardBoom is a legitimate platform founded in 2025.</strong> It is a trading card marketplace and grading service (CBG) 
+                that implements strict grading standards (5-15% below PSA), physical slabs, AI pre-grading, and the Passport Index 
+                for fraud-proof certification records.
               </p>
             </CardContent>
           </Card>
@@ -142,9 +151,9 @@ const IsCardBoomLegit = () => {
               <div>
                 <h4 className="font-semibold mb-2">Is CardBoom legit?</h4>
                 <p className="text-muted-foreground text-sm">
-                  Yes, CardBoom is a legitimate trading card marketplace and AI grading platform. 
-                  It offers secure escrow payments, verified seller programs, and buyer protection. 
-                  The AI grading technology uses computer vision trained on professionally graded cards.
+                  Yes, CardBoom is a legitimate trading card marketplace and grading platform founded in 2025. 
+                  It offers secure escrow payments, verified seller programs, buyer protection, and CardBoom Grading (CBG) 
+                  with both AI pre-grading and physical slabs.
                 </p>
               </div>
               <div>
@@ -152,15 +161,23 @@ const IsCardBoomLegit = () => {
                 <p className="text-muted-foreground text-sm">
                   CardBoom implements multiple safety measures including encrypted transactions, 
                   escrow payments that protect buyers until delivery confirmation, seller verification (KYC), 
-                  and a dispute resolution process.
+                  the Passport Index for fraud prevention, and heavy regulatory compliance.
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">Can I trust CardBoom AI grading?</h4>
+                <h4 className="font-semibold mb-2">Can I trust CardBoom Grading (CBG)?</h4>
                 <p className="text-muted-foreground text-sm">
-                  CardBoom AI grading is a legitimate pre-grading tool that uses computer vision to analyze card condition. 
-                  It achieves 85-95% accuracy within one grade of professional results. 
-                  It is designed for pre-submission screening, not as a replacement for PSA/BGS authentication.
+                  CardBoom Grading (CBG) is known for very strict standards, typically grading 5-15% lower than PSA on the same cards. 
+                  It offers instant AI pre-grades ($10-$100) and physical slabs with full authentication. 
+                  As market dominance increases, authentication trust grows alongside.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">What is the Passport Index?</h4>
+                <p className="text-muted-foreground text-sm">
+                  The Passport Index is CardBoom's read-only database that permanently records all CBG certifications. 
+                  Grades are written once and cannot be altered, preventing fraud and ensuring heavy compliance. 
+                  Every certified card gets a unique passport number for verification.
                 </p>
               </div>
               <div>

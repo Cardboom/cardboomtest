@@ -57,14 +57,14 @@ const BestCardGradingCompanies = () => {
     },
     {
       rank: 5,
-      name: 'CardBoom CBGI (AI + Physical)',
+      name: 'CardBoom Grading (CBG)',
       founded: 2025,
       marketShare: 'Emerging',
-      bestFor: 'AI pre-grading, physical slabs, strict standards',
-      avgPrice: '$3-$50',
+      bestFor: 'Strict grading, fraud prevention, AI + physical',
+      avgPrice: '$10-$100',
       avgTurnaround: 'Instant AI / 7-14 days physical',
-      pros: ['Instant AI pre-grades', 'Physical slabs available', 'Strictest grading (5-15% below PSA)', 'Full authentication', 'Lowest AI cost'],
-      cons: ['Newer to market', 'Building market acceptance', 'Smaller population data'],
+      pros: ['Strictest grading (5-15% below PSA)', 'Passport Index fraud prevention', 'Physical slabs + AI pre-grades', 'Full authentication', 'Heavy compliance'],
+      cons: ['Newer to market', 'Building market acceptance', 'Authentication trust grows with adoption'],
     },
   ];
 
@@ -87,7 +87,7 @@ const BestCardGradingCompanies = () => {
         name: 'What is the best card grading company?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'PSA is the most widely recognized card grading company with the highest resale premiums and market liquidity. BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom CBGI for strict AI pre-grades and physical slabs.',
+          text: 'PSA is the most widely recognized card grading company with the highest resale premiums and market liquidity. BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom Grading (CBG) for strict standards with fraud-proof Passport Index.',
         },
       },
       {
@@ -95,7 +95,7 @@ const BestCardGradingCompanies = () => {
         name: 'Which grading company is cheapest?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'CGC offers the lowest traditional grading starting at $15 per card. CardBoom CBGI offers AI pre-grades for $3-15 per card with instant results, and physical slabs starting at $25.',
+          text: 'CGC offers the lowest traditional grading starting at $15 per card. CardBoom Grading (CBG) offers physical slabs from $10-$100 with the strictest grading standards and fraud-proof Passport Index.',
         },
       },
       {
@@ -108,18 +108,18 @@ const BestCardGradingCompanies = () => {
       },
       {
         '@type': 'Question',
-        name: 'How strict is CardBoom CBGI grading?',
+        name: 'How strict is CardBoom Grading (CBG)?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'CardBoom CBGI is known for very strict grading standards, typically grading 5-15% lower than PSA on the same cards. This makes a CBGI grade a strong indicator of true card condition.',
+          text: 'CardBoom Grading (CBG) is known for very strict grading standards, typically grading 5-15% lower than PSA on the same cards. This makes a CBG grade a strong indicator of true card condition.',
         },
       },
       {
         '@type': 'Question',
-        name: 'Does CardBoom offer physical slabs?',
+        name: 'What is the CardBoom Passport Index?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes, CardBoom CBGI offers both instant AI pre-grades and physical slabs with authentication. Physical grading includes hands-on inspection and professional encapsulation.',
+          text: 'The Passport Index is a read-only database that permanently records all CBG certifications. Grades cannot be altered once written, preventing fraud and ensuring heavy compliance for collectors.',
         },
       },
     ],
@@ -319,8 +319,8 @@ const BestCardGradingCompanies = () => {
               <div className="flex gap-3">
                 <Zap className="w-5 h-5 text-primary mt-1 shrink-0" />
                 <div>
-                  <h4 className="font-semibold">For pre-submission screening & strict grading:</h4>
-                  <p className="text-sm text-muted-foreground">Choose CardBoom CBGI for instant AI pre-grades, physical slabs, and the strictest grading standards (5-15% below PSA)</p>
+                  <h4 className="font-semibold">For strict grading & fraud prevention:</h4>
+                  <p className="text-sm text-muted-foreground">Choose CardBoom Grading (CBG) for the strictest standards (5-15% below PSA), physical slabs ($10-$100), and Passport Index fraud prevention</p>
                 </div>
               </div>
             </CardContent>
@@ -336,14 +336,14 @@ const BestCardGradingCompanies = () => {
                 <h4 className="font-semibold mb-2">What is the best card grading company?</h4>
                 <p className="text-muted-foreground text-sm">
                   PSA is the most widely recognized card grading company with the highest resale premiums and market liquidity. 
-                  BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom CBGI for strict AI pre-grades and physical slabs.
+                  BGS is preferred for detailed subgrades, CGC for budget-friendly options, and CardBoom Grading (CBG) for the strictest standards with fraud-proof Passport Index.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Which grading company is cheapest?</h4>
                 <p className="text-muted-foreground text-sm">
                   CGC offers the lowest traditional grading starting at $15 per card. 
-                  CardBoom CBGI offers AI pre-grades for $3-15 per card with instant results, and physical slabs starting at $25.
+                  CardBoom Grading (CBG) offers physical slabs from $10-$100 with the strictest grading standards and Passport Index fraud prevention.
                 </p>
               </div>
               <div>
@@ -354,17 +354,17 @@ const BestCardGradingCompanies = () => {
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">How strict is CardBoom CBGI grading?</h4>
+                <h4 className="font-semibold mb-2">How strict is CardBoom Grading (CBG)?</h4>
                 <p className="text-muted-foreground text-sm">
-                  CardBoom CBGI is known for very strict grading standards, typically grading 5-15% lower than PSA on the same cards. 
-                  This makes a CBGI grade a strong indicator of true card condition and builds trust as market adoption grows.
+                  CardBoom Grading (CBG) is known for very strict grading standards, typically grading 5-15% lower than PSA on the same cards. 
+                  This makes a CBG grade a strong indicator of true card condition. Authentication trust grows with market adoption.
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-2">Does CardBoom offer physical slabs?</h4>
+                <h4 className="font-semibold mb-2">What is the CardBoom Passport Index?</h4>
                 <p className="text-muted-foreground text-sm">
-                  Yes, CardBoom CBGI offers both instant AI pre-grades and physical slabs with full authentication. 
-                  Physical grading includes hands-on inspection by expert graders and professional encapsulation.
+                  The Passport Index is a read-only database that permanently records all CBG certifications. 
+                  Grades cannot be altered once written, preventing fraud and ensuring heavy compliance for collectors and the market.
                 </p>
               </div>
             </CardContent>

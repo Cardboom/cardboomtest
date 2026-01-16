@@ -33,10 +33,11 @@ const CardGradingCosts = () => {
     { service: 'Premium', price: '$150', turnaround: '5 business days', notes: 'Priority' },
   ];
 
-  const aiPricing = [
-    { service: 'CardBoom Basic', price: '$5', turnaround: 'Instant', notes: 'AI pre-grade' },
-    { service: 'CardBoom Pro', price: '$10', turnaround: 'Instant', notes: 'Detailed analysis' },
-    { service: 'CardBoom Bulk', price: '$3/card', turnaround: 'Instant', notes: '50+ cards' },
+  const cbgPricing = [
+    { service: 'CBG AI Pre-Grade', price: '$10', turnaround: 'Instant', notes: 'AI analysis + certificate' },
+    { service: 'CBG Standard', price: '$25', turnaround: '14 days', notes: 'Physical slab + Passport Index' },
+    { service: 'CBG Express', price: '$50', turnaround: '7 days', notes: 'Priority physical grading' },
+    { service: 'CBG Premium', price: '$100', turnaround: '3 days', notes: 'Fastest physical + auth' },
   ];
 
   const schemaData = {
@@ -283,7 +284,7 @@ const CardGradingCosts = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {aiPricing.map((row) => (
+                  {cbgPricing.map((row) => (
                     <TableRow key={row.service}>
                       <TableCell className="font-semibold">{row.service}</TableCell>
                       <TableCell>{row.price}</TableCell>
