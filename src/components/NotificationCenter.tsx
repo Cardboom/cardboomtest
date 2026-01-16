@@ -211,16 +211,17 @@ export const NotificationCenter = () => {
                 // Navigate based on notification type and data
                 // For sale/order notifications, prioritize order_id over listing_id
                 const notificationType = notification.type;
-                const isSaleNotification = notificationType === 'sale' || 
+                const isOrderNotification = notificationType === 'sale' || 
                   notificationType === 'vault_shipping_required' || 
-                  notificationType === 'order_update';
+                  notificationType === 'order_update' ||
+                  notificationType === 'order_confirmed';
                 const isShippingNotification = notificationType === 'shipping_approval_required' ||
                   notificationType === 'shipping_approved';
                 
                 if (notificationData?.grading_order_id) {
                   navigate(`/grading/order/${notificationData.grading_order_id}`);
-                } else if ((isSaleNotification || isShippingNotification) && notificationData?.order_id) {
-                  // Sale and shipping notifications should go to order page
+                } else if ((isOrderNotification || isShippingNotification) && notificationData?.order_id) {
+                  // Order-related notifications should go to order page
                   navigate(`/order/${notificationData.order_id}`);
                 } else if (notificationData?.order_id) {
                   navigate(`/order/${notificationData.order_id}`);
