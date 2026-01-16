@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCategoryLabel } from '@/lib/categoryLabels';
+import { useUnifiedPricing } from '@/hooks/useUnifiedPricing';
 
 interface CardHeroSectionProps {
   item: {
@@ -42,10 +43,10 @@ export const CardHeroSection = ({
   const change7d = item.change_7d || 0;
   const isPositive = change7d >= 0;
 
+  const { formatPriceWithSymbol } = useUnifiedPricing();
+
   const formatPrice = (price: number) => {
-    if (price >= 1000000) return `$${(price / 1000000).toFixed(2)}M`;
-    if (price >= 1000) return `$${(price / 1000).toFixed(1)}K`;
-    return `$${price.toLocaleString()}`;
+    return formatPriceWithSymbol(price);
   };
 
   return (

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { useCurrency } from '@/contexts/CurrencyContext';
+import { useUnifiedPricing } from '@/hooks/useUnifiedPricing';
 
 interface LiveTickerPriceProps {
   value: number;
@@ -15,7 +15,7 @@ export const LiveTickerPrice = ({
   tickInterval = 2000,
   volatility = 0.002,
 }: LiveTickerPriceProps) => {
-  const { formatPrice } = useCurrency();
+  const { formatPriceWithSymbol } = useUnifiedPricing();
   const [displayValue, setDisplayValue] = useState(value);
   const [isFlashing, setIsFlashing] = useState(false);
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
@@ -97,7 +97,7 @@ export const LiveTickerPrice = ({
         isFlashing && direction === 'up' && 'animate-tick-up scale-105',
         isFlashing && direction === 'down' && 'animate-tick-down scale-105'
       )}>
-        {formatPrice(displayValue)}
+        {formatPriceWithSymbol(displayValue)}
       </span>
       {isFlashing && (
         <span className={cn(

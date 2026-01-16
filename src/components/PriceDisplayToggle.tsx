@@ -1,19 +1,50 @@
 import { Button } from '@/components/ui/button';
 import { useGems } from '@/contexts/GemsContext';
-import { Gem, DollarSign } from 'lucide-react';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { Gem, DollarSign, Euro } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
  * Price Display Toggle
  * 
- * Allows users to switch between Gems and USD display modes
- * for marketplace prices. Does NOT affect checkout rules.
+ * Global navigation toggle for price display:
+ * - Gems: Always shows prices in Gems (fixed, never changes)
+ * - USD/EUR/TRY: Click to cycle through fiat currencies
+ * 
+ * Does NOT affect checkout rules - only display.
  */
 export const PriceDisplayToggle = () => {
   const { displayMode, setDisplayMode } = useGems();
+  const { currency, setCurrency } = useCurrency();
+
+  // Cycle through fiat currencies when clicking the fiat button
+  const cycleFiatCurrency = () => {
+    // First ensure we're in USD mode
+    if (displayMode !== 'usd') {
+      setDisplayMode('usd');
+    }
+    // Then cycle through currencies
+    if (currency === 'USD') setCurrency('EUR');
+    else if (currency === 'EUR') setCurrency('TRY');
+    else setCurrency('USD');
+  };
+
+  // Get current fiat display
+  const getFiatIcon = () => {
+    if (currency === 'EUR') return <Euro className="w-3.5 h-3.5" />;
+    if (currency === 'TRY') return <span className="text-xs font-bold">₺</span>;
+    return <DollarSign className="w-3.5 h-3.5" />;
+  };
+
+  const getFiatLabel = () => {
+    return currency;
+  };
+
+  const isFiatMode = displayMode === 'usd';
 
   return (
     <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5 border border-border">
+      {/* Gems Toggle - Fixed, always shows Gems */}
       <Button
         variant="ghost"
         size="sm"
@@ -28,19 +59,21 @@ export const PriceDisplayToggle = () => {
         <Gem className="w-3.5 h-3.5" />
         Gems
       </Button>
+      
+      {/* Fiat Toggle - Cycles through USD/EUR/TRY */}
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => setDisplayMode('usd')}
+        onClick={cycleFiatCurrency}
         className={cn(
-          "h-7 px-2.5 gap-1.5 text-xs font-medium transition-all rounded-md",
-          displayMode === 'usd' 
+          "h-7 px-2.5 gap-1.5 text-xs font-medium transition-all rounded-md min-w-[60px]",
+          isFiatMode 
             ? "bg-green-500/20 text-green-400 hover:bg-green-500/30 hover:text-green-400" 
             : "text-muted-foreground hover:text-foreground hover:bg-muted"
         )}
       >
-        <DollarSign className="w-3.5 h-3.5" />
-        USD
+        {getFiatIcon()}
+        {getFiatLabel()}
       </Button>
     </div>
   );
