@@ -275,8 +275,6 @@ export const nl: Translations = {
     easyPaymentsDesc: "Meerdere betaalmethoden inclusief crypto",
     verifiedInvestors: "Geverifieerde Investeerders",
     verifiedInvestorsDesc: "Handel met vertrouwen via geverifieerde accounts",
-    fractionalShares: "Fractionele Aandelen",
-    fractionalSharesDesc: "Bezit stukken van topstukken vanaf €10",
   },
   // About Page
   about: {

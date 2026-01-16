@@ -262,8 +262,6 @@ export const de: Translations = {
     easyPaymentsDesc: "Mehrere Zahlungsmethoden inkl. Krypto",
     verifiedInvestors: "Verifizierte Investoren",
     verifiedInvestorsDesc: "Handle mit Vertrauen von verifizierten Konten",
-    fractionalShares: "Bruchteilsanteile",
-    fractionalSharesDesc: "Besitze Teile von Grails ab 10$",
   },
   about: {
     badge: "Über uns",

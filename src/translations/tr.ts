@@ -262,8 +262,6 @@ export const tr: Translations = {
     easyPaymentsDesc: "Kripto dahil çoklu ödeme yöntemleri",
     verifiedInvestors: "Doğrulanmış Yatırımcılar",
     verifiedInvestorsDesc: "Doğrulanmış hesaplardan güvenle işlem yapın",
-    fractionalShares: "Parçalı Hisseler",
-    fractionalSharesDesc: "10$'dan başlayan fiyatlarla değerli parçalara sahip olun",
   },
   about: {
     badge: "Hakkımızda",
