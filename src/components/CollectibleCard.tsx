@@ -11,6 +11,7 @@ import { CardPlaceholder } from './market/CardPlaceholder';
 import { MiniSparkline } from './market/MiniSparkline';
 import { getThumbnailUrl } from '@/lib/imageUtils';
 import { GradeBadge } from '@/components/ui/grade-badge';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 // Convert ISO country code to flag emoji
 const getCountryFlag = (countryCode: string): string => {
@@ -217,6 +218,13 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
           </div>
         )}
 
+        {/* Category Badge - Always visible on mobile */}
+        <div className="mb-2">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+            {formatCategoryName(collectible.category)}
+          </span>
+        </div>
+
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 flex-wrap">
           {collectible.grade && (
             <span className={cn(
@@ -233,8 +241,8 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
             </span>
           )}
           <span>{collectible.brand}</span>
-          <span>•</span>
-          <span>{collectible.year}</span>
+          <span className="hidden sm:inline">•</span>
+          <span className="hidden sm:inline">{collectible.year}</span>
         </div>
 
         {/* Price Section with Live Ticker and Sparkline */}

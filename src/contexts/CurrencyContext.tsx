@@ -15,7 +15,7 @@ interface ExchangeRates {
 interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
-  formatPrice: (priceUSD: number) => string;
+  formatPrice: (priceUSD: number | null | undefined) => string;
   formatPriceInCurrency: (amount: number, fromCurrency: Currency) => string;
   convertToUSD: (amount: number, fromCurrency: Currency) => number;
   convertFromUSD: (amountUSD: number, toCurrency: Currency) => number;
@@ -136,7 +136,12 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Format price that's already in USD to user's preferred currency
-  const formatPrice = (priceUSD: number) => {
+  const formatPrice = (priceUSD: number | null | undefined) => {
+    // Handle null/undefined values gracefully
+    if (priceUSD == null || isNaN(priceUSD)) {
+      return '$0';
+    }
+    
     if (currency === 'TRY') {
       const tryPrice = priceUSD * exchangeRates.USD_TRY;
       return `₺${tryPrice.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
