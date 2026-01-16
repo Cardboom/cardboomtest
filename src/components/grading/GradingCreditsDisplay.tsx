@@ -48,11 +48,14 @@ export const GradingCreditsDisplay: React.FC<GradingCreditsDisplayProps> = ({
         </div>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-yellow-500/20">
+      <div className="mt-3 pt-3 border-t border-yellow-500/20 space-y-1">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Check className="w-4 h-4 text-green-500" />
-          <span>Credit will be automatically applied at checkout</span>
+          <span>Credits applied automatically at checkout</span>
         </div>
+        <p className="text-xs text-muted-foreground/70 pl-6">
+          Covers base certification only. Speed upgrades & protection bundles are paid separately.
+        </p>
       </div>
     </motion.div>
   );

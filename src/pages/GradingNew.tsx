@@ -185,7 +185,7 @@ export default function GradingNew() {
     checkAuth();
   }, [navigate, toast]);
 
-  const { creditsRemaining } = useGradingCredits(userId);
+  const { creditsRemaining, useCredits, refetch: refetchCredits } = useGradingCredits(userId);
 
   const steps = [
     { key: 'photos', label: 'Photos' },
@@ -198,32 +198,65 @@ export default function GradingNew() {
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
   // Calculate pricing based on speed tier and batch discounts
+  // Pro subscribers get 1 free grading/month for BASE certification only
+  // Extras (protection, speed upgrades) still cost money
   const pricing = useMemo(() => {
     const selectedSpeed = SPEED_TIERS.find(t => t.id === speedTier) || SPEED_TIERS[0];
-    const basePerCard = selectedSpeed.price + (includeProtection ? PROTECTION_BUNDLE_PRICE : 0);
-    const subtotal = basePerCard * quantity;
+    const standardSpeed = SPEED_TIERS.find(t => t.id === 'standard') || SPEED_TIERS[0];
     
-    // Get batch discount
+    // Base grading cost (standard tier price) - this is what credits cover
+    const baseGradingCost = standardSpeed.price;
+    
+    // Speed upgrade cost (difference between selected tier and standard)
+    const speedUpgradeCost = selectedSpeed.price - standardSpeed.price;
+    
+    // Protection bundle cost
+    const protectionCost = includeProtection ? PROTECTION_BUNDLE_PRICE : 0;
+    
+    // How many credits can we apply? Only for base grading, up to quantity
+    const creditsToApply = Math.min(creditsRemaining, quantity);
+    const creditDiscount = creditsToApply * baseGradingCost;
+    
+    // Calculate costs
+    // Base grading: (quantity - credits) * baseGradingCost
+    const gradingAfterCredits = (quantity - creditsToApply) * baseGradingCost;
+    
+    // Extras are always paid: speed upgrade + protection per card
+    const extrasPerCard = speedUpgradeCost + protectionCost;
+    const totalExtras = extrasPerCard * quantity;
+    
+    const subtotal = (baseGradingCost + extrasPerCard) * quantity;
+    
+    // Get batch discount (applies to remaining paid amount only)
     const batchInfo = getBatchDiscount(quantity);
-    const discountAmount = batchInfo.isBatch ? subtotal * (batchInfo.discount / 100) : 0;
-    const total = subtotal - discountAmount;
+    const paidSubtotal = gradingAfterCredits + totalExtras;
+    const batchDiscountAmount = batchInfo.isBatch ? paidSubtotal * (batchInfo.discount / 100) : 0;
+    
+    const total = paidSubtotal - batchDiscountAmount;
     
     return { 
-      basePerCard, 
+      basePerCard: selectedSpeed.price + protectionCost, 
       subtotal, 
       hasBulkDiscount: batchInfo.isBatch,
       batchDiscount: batchInfo.discount,
       batchLabel: batchInfo.label,
       isBatchOrder: batchInfo.isBatch,
-      discountAmount, 
+      discountAmount: batchDiscountAmount, 
       total, 
-      savings: discountAmount,
+      savings: creditDiscount + batchDiscountAmount,
       speedPrice: selectedSpeed.price,
-      protectionPrice: includeProtection ? PROTECTION_BUNDLE_PRICE : 0,
+      protectionPrice: protectionCost,
       daysMin: selectedSpeed.daysMin,
       daysMax: selectedSpeed.daysMax,
+      // Credit-specific fields
+      creditsApplied: creditsToApply,
+      creditDiscount,
+      baseGradingCost,
+      speedUpgradeCost,
+      totalExtras,
+      gradingAfterCredits,
     };
-  }, [quantity, includeProtection, speedTier]);
+  }, [quantity, includeProtection, speedTier, creditsRemaining]);
 
   const handleBackImageChange = (file: File | null) => {
     if (!file) return;
@@ -329,8 +362,20 @@ export default function GradingNew() {
       }
       
       if (!order) { setIsSubmitting(false); return; }
+      
+      // Consume grading credits if any were applied
+      if (pricing.creditsApplied > 0) {
+        const creditsUsed = await useCredits(pricing.creditsApplied);
+        if (creditsUsed) {
+          toast({ 
+            title: `🎉 Used ${pricing.creditsApplied} free grading credit${pricing.creditsApplied > 1 ? 's' : ''}!`,
+            description: 'Your Pro subscription perk was applied'
+          });
+        }
+      }
+      
       const success = await submitAndPay(order.id, order.idempotency_key);
-      if (success) { setCreatedOrder(order); setStep('success'); }
+      if (success) { setCreatedOrder(order); setStep('success'); refetchCredits(); }
     } catch (e) { console.error(e); } finally { setIsSubmitting(false); }
   };
   
@@ -967,12 +1012,33 @@ export default function GradingNew() {
                     )}
                     <div className="h-px bg-border my-1" />
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Subtotal</span>
-                      <span>${pricing.subtotal.toFixed(2)}</span>
+                      <span className="text-muted-foreground">Base Grading ({quantity}x)</span>
+                      <span>${(pricing.baseGradingCost * quantity).toFixed(2)}</span>
                     </div>
+                    {pricing.speedUpgradeCost > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Speed Upgrade ({quantity}x)</span>
+                        <span>${(pricing.speedUpgradeCost * quantity).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {includeProtection && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Protection ({quantity}x)</span>
+                        <span>${(PROTECTION_BUNDLE_PRICE * quantity).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.creditsApplied > 0 && (
+                      <div className="flex justify-between text-yellow-600">
+                        <span className="flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          Free Credits ({pricing.creditsApplied}x)
+                        </span>
+                        <span>-${pricing.creditDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
                     {pricing.hasBulkDiscount && (
                       <div className="flex justify-between text-primary">
-                        <span>Bulk discount</span>
+                        <span>Bulk discount ({pricing.batchDiscount}%)</span>
                         <span>-${pricing.discountAmount.toFixed(2)}</span>
                       </div>
                     )}
@@ -1011,12 +1077,33 @@ export default function GradingNew() {
                     </div>
                     <div className="h-px bg-border" />
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Grading ({quantity}x)</span>
-                      <span>${pricing.subtotal.toFixed(2)}</span>
+                      <span className="text-muted-foreground">Base Grading ({quantity}x)</span>
+                      <span>${(pricing.baseGradingCost * quantity).toFixed(2)}</span>
                     </div>
+                    {pricing.speedUpgradeCost > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Speed Upgrade ({quantity}x)</span>
+                        <span>${(pricing.speedUpgradeCost * quantity).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.protectionPrice > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Protection ({quantity}x)</span>
+                        <span>${(pricing.protectionPrice * quantity).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.creditsApplied > 0 && (
+                      <div className="flex justify-between text-sm text-yellow-600">
+                        <span className="flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" />
+                          Free Grading Credits ({pricing.creditsApplied}x)
+                        </span>
+                        <span>-${pricing.creditDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
                     {pricing.hasBulkDiscount && (
                       <div className="flex justify-between text-sm text-primary">
-                        <span>Discount</span>
+                        <span>Batch Discount ({pricing.batchDiscount}%)</span>
                         <span>-${pricing.discountAmount.toFixed(2)}</span>
                       </div>
                     )}
