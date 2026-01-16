@@ -94,7 +94,7 @@ const BoomPacks: React.FC = () => {
       </Helmet>
 
       <div className="min-h-screen bg-background flex flex-col">
-        <Header onCartClick={() => setCartOpen(true)} />
+        <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
 
         <main className="flex-1">
           {/* Hero Section */}

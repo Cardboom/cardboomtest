@@ -87,6 +87,7 @@ import AccountSettings from "./pages/AccountSettings";
 import Sitemap from "./pages/Sitemap";
 import BuyCategoryPage from "./pages/BuyCategoryPage";
 import LongtailLandingPage from "./pages/LongtailLandingPage";
+import BoomPacks from "./pages/BoomPacks";
 
 // AI Research & Citation Pages (AEO Strategy)
 import CardGradingGuide from "./pages/ai/CardGradingGuide";
@@ -188,6 +189,7 @@ const AppContent = () => {
           <Route path="/card-wars" element={<CardWars />} />
           <Route path="/pass" element={<CardBoomPass />} />
           <Route path="/reels" element={<Reels />} />
+          <Route path="/boom-packs" element={<BoomPacks />} />
           {/* Grading Routes */}
           <Route path="/grading" element={<Grading />} />
           <Route path="/grading/new" element={<GradingNew />} />

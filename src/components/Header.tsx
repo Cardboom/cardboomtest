@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Gem, Flame, Rocket } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Gem, Flame, Rocket, Package } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { CardboomPointsBadge } from '@/components/CardboomPointsBadge';
@@ -252,6 +252,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                             <div>
                               <div className="font-medium text-xs">{t.nav.tradesOffers}</div>
                               <div className="text-[10px] text-muted-foreground">{t.nav.tradesOffersDesc}</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/boom-packs" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-rose-500/10 flex items-center justify-center group-hover:bg-rose-500/20 transition-colors">
+                              <Package className="w-3.5 h-3.5 text-rose-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-xs">Boom Packs</div>
+                              <div className="text-[10px] text-muted-foreground">Open sealed packs</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -613,6 +626,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                 <Link to="/trades" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <ArrowLeftRight className="w-5 h-5 text-purple-500" />
                   <span>{t.nav.tradesOffers}</span>
+                </Link>
+                <Link to="/boom-packs" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <Package className="w-5 h-5 text-rose-500" />
+                  <span>Boom Packs</span>
                 </Link>
                 {/* Fractional feature temporarily disabled */}
                 
