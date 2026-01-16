@@ -159,6 +159,36 @@ export const useGradingCredits = (userId?: string) => {
     }
   };
 
+  // Use multiple credits at once (for batch orders)
+  const useCredits = async (count: number) => {
+    if (!userId || !credits || credits.credits_remaining < count || count <= 0) {
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('grading_credits')
+        .update({
+          credits_remaining: credits.credits_remaining - count,
+        })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      await supabase.from('grading_credit_history').insert({
+        user_id: userId,
+        credits_change: -count,
+        reason: `Used ${count} credit${count > 1 ? 's' : ''} for grading order`,
+      });
+
+      fetchCredits();
+      return true;
+    } catch (error) {
+      console.error('Error using credits:', error);
+      return false;
+    }
+  };
+
   const checkAndGrantMonthlyCredit = async (subscriptionTier: string) => {
     if (!userId) return false;
 
@@ -230,6 +260,7 @@ export const useGradingCredits = (userId?: string) => {
     grantFirstDepositCredit,
     grantFirstSubscribeCredit,
     useCredit,
+    useCredits,
     checkAndGrantMonthlyCredit,
     refetch: fetchCredits,
   };
