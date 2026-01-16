@@ -37,13 +37,19 @@ export const ProfileBackgroundSelector = ({
   const [unlocking, setUnlocking] = useState<string | null>(null);
 
   const isUnlocked = (bg: Background) => {
-    // Default and free backgrounds are always unlocked
+    // Free backgrounds (xp_cost = 0) unlock automatically when user reaches the level
     if (bg.xp_cost === 0 && userLevel >= bg.unlock_level) return true;
+    // Paid backgrounds must be explicitly unlocked
     return unlockedBackgrounds.includes(bg.id);
   };
 
   const canUnlock = (bg: Background) => {
+    // Must meet level requirement AND have enough XP to purchase
     return userLevel >= bg.unlock_level && userXP >= bg.xp_cost;
+  };
+
+  const meetsLevelRequirement = (bg: Background) => {
+    return userLevel >= bg.unlock_level;
   };
 
   const handleUnlock = async (bg: Background) => {
@@ -52,12 +58,34 @@ export const ProfileBackgroundSelector = ({
     setUnlocking(null);
   };
 
-  const getBackgroundStyle = (bg: Background) => {
+  const getBackgroundStyle = (bg: Background): React.CSSProperties => {
     if (bg.type === 'animated') {
+      // Assign different animation styles based on background name
+      const name = bg.name.toLowerCase();
+      let animationStyle = 'gradient-shift 8s ease infinite';
+      let size = '400% 400%';
+      
+      if (name.includes('matrix') || name.includes('rain')) {
+        animationStyle = 'matrix-rain 3s linear infinite';
+        size = '100% 200%';
+      } else if (name.includes('plasma') || name.includes('storm')) {
+        animationStyle = 'plasma-flow 12s linear infinite';
+        size = '200% 200%';
+      } else if (name.includes('pulse') || name.includes('lightning')) {
+        animationStyle = 'gradient-shift 4s ease infinite, pulse-glow 2s ease-in-out infinite';
+        size = '400% 400%';
+      } else if (name.includes('gold') || name.includes('legendary') || name.includes('solar')) {
+        animationStyle = 'shimmer-gold 3s linear infinite, gradient-shift 6s ease infinite';
+        size = '200% 100%';
+      } else if (name.includes('holographic') || name.includes('quantum')) {
+        animationStyle = 'gradient-shift 3s ease infinite';
+        size = '600% 600%';
+      }
+      
       return {
         background: bg.css_value,
-        backgroundSize: '400% 400%',
-        animation: 'gradient-shift 8s ease infinite'
+        backgroundSize: size,
+        animation: animationStyle
       };
     }
     return { background: bg.css_value };
@@ -126,20 +154,34 @@ export const ProfileBackgroundSelector = ({
                 </div>
 
                 {!unlocked && (
-                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-white text-sm">Level {bg.unlock_level} Required</p>
-                    <p className="text-amber-400 text-sm font-medium">{bg.xp_cost} XP</p>
-                    {canPurchase && (
-                      <Button
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnlock(bg);
-                        }}
-                        disabled={unlocking === bg.id}
-                      >
-                        {unlocking === bg.id ? 'Unlocking...' : 'Unlock'}
-                      </Button>
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {!meetsLevelRequirement(bg) ? (
+                      <>
+                        <Lock className="h-5 w-5 text-muted-foreground" />
+                        <p className="text-white text-sm font-medium">Level {bg.unlock_level} Required</p>
+                        <p className="text-muted-foreground text-xs">You are level {userLevel}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-amber-400 text-sm font-medium">{bg.xp_cost} XP</p>
+                        <p className="text-muted-foreground text-xs">You have {userXP} XP</p>
+                        {canPurchase && (
+                          <Button
+                            size="sm"
+                            className="mt-1"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleUnlock(bg);
+                            }}
+                            disabled={unlocking === bg.id}
+                          >
+                            {unlocking === bg.id ? 'Unlocking...' : 'Unlock Now'}
+                          </Button>
+                        )}
+                        {!canPurchase && (
+                          <p className="text-red-400 text-xs">Need {bg.xp_cost - userXP} more XP</p>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
