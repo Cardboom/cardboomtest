@@ -401,6 +401,14 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             </Link>
             
             <Link 
+              to="/boom-packs" 
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
+            >
+              <Package className="w-4 h-4" />
+              Boom Packs
+            </Link>
+            
+            <Link 
               to="/vault" 
               className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-sm font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
