@@ -8,6 +8,7 @@ import { Vault, Truck, ArrowLeftRight, MessageCircle, ShoppingCart, Users } from
 import { toast } from 'sonner';
 import { useUnifiedPricing } from '@/hooks/useUnifiedPricing';
 import { generateListingUrl } from '@/lib/listingUrl';
+import { formatCategoryName } from '@/lib/categoryFormatter';
 
 interface Listing {
   id: string;
@@ -245,16 +246,7 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
   };
 
   const getCategoryLabel = (cat: string) => {
-    const labels: Record<string, string> = {
-      nba: 'NBA',
-      football: 'Football',
-      tcg: 'TCG',
-      figures: 'Figures',
-      pokemon: 'Pokémon',
-      'one-piece': 'One Piece',
-      'lol-riftbound': 'Riftbound',
-    };
-    return labels[cat] || cat.replace(/-/g, ' ').toUpperCase();
+    return formatCategoryName(cat);
   };
 
   // Render grade badge using unified component
