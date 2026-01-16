@@ -16,67 +16,67 @@ interface XPost {
 }
 
 // Fallback mock posts when API is unavailable
-const mockPosts: XPost[] = [
+// Community posts shown when no live data is available
+const communityPosts: XPost[] = [
   {
     id: '1',
-    author: { name: 'PokéCollector', handle: '@pokecollector', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=poke' },
-    content: 'Just pulled a Charizard VMAX from my latest booster box! This card is absolutely stunning. The market is going crazy for these.',
-    image: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=400&h=300&fit=crop',
-    likes: 342,
-    retweets: 89,
-    comments: 45,
-    timestamp: '2h',
+    author: { name: 'CardCollector_TR', handle: '@cardcollector_tr', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tr1' },
+    content: 'Just listed my first One Piece card on CardBoom! The grading process was super smooth. Love the CBGI certification 🔥',
+    likes: 156,
+    retweets: 42,
+    comments: 28,
+    timestamp: '3h',
   },
   {
     id: '2',
-    author: { name: 'TCG Investor', handle: '@tcginvestor', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=investor' },
-    content: 'One Piece TCG prices are rising fast! Luffy Gear 5 just hit $500. Get in while you can.',
-    likes: 567,
+    author: { name: 'TCG Enthusiast', handle: '@tcgfan2026', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tcg1' },
+    content: 'Prismatic Evolutions pre-orders are selling fast! Already seeing PSA 10 Pikachus going for 3x release price 📈',
+    likes: 892,
     retweets: 234,
-    comments: 78,
-    timestamp: '4h',
+    comments: 167,
+    timestamp: '5h',
   },
   {
     id: '3',
-    author: { name: 'Slab King', handle: '@slabking', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=slab' },
-    content: 'PSA 10 Black Lotus sold for $540,000 today. MTG vintage market is incredible.',
-    likes: 1243,
-    retweets: 456,
-    comments: 123,
-    timestamp: '6h',
-  },
-  {
-    id: '4',
-    author: { name: 'Card Flipper', handle: '@cardflip', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=flip' },
-    content: 'Mail day! Just received my graded Pikachu Illustrator from @cardboomcom. The CBGI score matches perfectly with my expectations.',
-    image: 'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?w=400&h=300&fit=crop',
-    likes: 892,
-    retweets: 167,
-    comments: 92,
+    author: { name: 'Slab Hunter', handle: '@slabhunter', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=slab1' },
+    content: 'Mail day! My graded Gear 5 Luffy just arrived from CardBoom Vault. The slab quality is insane 💎',
+    image: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=400&h=300&fit=crop',
+    likes: 445,
+    retweets: 89,
+    comments: 56,
     timestamp: '8h',
   },
   {
-    id: '5',
-    author: { name: 'Sports Cards Daily', handle: '@sportscardsdaily', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sports' },
-    content: 'Victor Wembanyama rookie cards are the hottest thing in sports cards right now. Prizm silvers selling for $2000+.',
+    id: '4',
+    author: { name: 'OP Collector', handle: '@opcollector', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=op1' },
+    content: 'OP-11 Two Legends dropping next month! Shanks cards are going to be absolutely fire 🏴‍☠️',
     likes: 678,
-    retweets: 198,
-    comments: 67,
+    retweets: 156,
+    comments: 89,
     timestamp: '12h',
   },
   {
+    id: '5',
+    author: { name: 'Magic Player', handle: '@mtglegacy', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mtg1' },
+    content: 'Vintage Black Lotus prices stabilizing around $500k for PSA 10. The reserved list keeps everything strong 💪',
+    likes: 1243,
+    retweets: 456,
+    comments: 234,
+    timestamp: '1d',
+  },
+  {
     id: '6',
-    author: { name: 'Yu-Gi-Oh Master', handle: '@ygomasterduelist', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=yugi' },
-    content: 'The 25th Anniversary Rarity Collection is completely sold out everywhere. My Blue-Eyes Ultimate Dragon is worth 3x what I paid!',
-    likes: 445,
-    retweets: 112,
-    comments: 56,
+    author: { name: 'YGO Master', handle: '@ygoduel', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ygo1' },
+    content: 'Just pulled a Ghost Rare from my 25th Anniversary box! CardBoom grading here I come 🎴',
+    likes: 567,
+    retweets: 123,
+    comments: 78,
     timestamp: '1d',
   },
 ];
 
 export const CardsGoingBoomPanel = () => {
-  const [posts, setPosts] = useState<XPost[]>(mockPosts);
+  const [posts, setPosts] = useState<XPost[]>(communityPosts);
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
