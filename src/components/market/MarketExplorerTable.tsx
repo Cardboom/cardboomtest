@@ -6,7 +6,7 @@ import { MarketFilters, SortOption } from '@/pages/Explorer';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useCurrency } from '@/contexts/CurrencyContext';
+import { useUnifiedPricing } from '@/hooks/useUnifiedPricing';
 import { InlinePlaceholder } from './CardPlaceholder';
 import { getCategoryLabel } from '@/lib/categoryLabels';
 
@@ -39,7 +39,7 @@ interface MarketExplorerTableProps {
 
 export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: MarketExplorerTableProps) => {
   const navigate = useNavigate();
-  const { formatPrice: formatCurrency } = useCurrency();
+  const { formatPriceWithSymbol } = useUnifiedPricing();
   const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
   const [user, setUser] = useState<any>(null);
   const [marketItems, setMarketItems] = useState<MarketItem[]>([]);
@@ -166,7 +166,7 @@ export const MarketExplorerTable = ({ filters, sortBy, sortOrder, filterType }: 
   };
 
   const formatPrice = (price: number) => {
-    return formatCurrency(price);
+    return formatPriceWithSymbol(price);
   };
 
 

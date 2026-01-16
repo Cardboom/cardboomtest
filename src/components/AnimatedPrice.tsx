@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
-import { useCurrency } from '@/contexts/CurrencyContext';
+import { useUnifiedPricing } from '@/hooks/useUnifiedPricing';
 
 interface AnimatedPriceProps {
   value: number;
@@ -15,7 +15,7 @@ export const AnimatedPrice = ({
   showTrend = true,
   size = 'md',
 }: AnimatedPriceProps) => {
-  const { formatPrice } = useCurrency();
+  const { formatPriceWithSymbol } = useUnifiedPricing();
   const [displayValue, setDisplayValue] = useState(value);
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
@@ -89,7 +89,7 @@ export const AnimatedPrice = ({
         className
       )}
     >
-      {formatPrice(displayValue)}
+      {formatPriceWithSymbol(displayValue)}
     </span>
   );
 };
