@@ -683,7 +683,19 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
               <Button 
                 className="flex-1 gap-2"
                 onClick={handlePurchase}
-                disabled={loading || !hasEnoughBalance || (deliveryOption === 'ship' && !selectedCarrier && offers.length > 0)}
+                disabled={
+                  loading || 
+                  !hasEnoughBalance || 
+                  (deliveryOption === 'ship' && (
+                    !shippingAddress.name || 
+                    !shippingAddress.phone || 
+                    !shippingAddress.address || 
+                    !shippingAddress.city || 
+                    !shippingAddress.district || 
+                    !shippingAddress.postalCode ||
+                    (!selectedCarrier && offers.length > 0)
+                  ))
+                }
               >
                 {loading ? (
                   <>

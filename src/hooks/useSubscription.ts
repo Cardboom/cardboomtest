@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -59,19 +59,20 @@ export const useSubscription = (userId?: string) => {
     }
   };
 
-  const isPro = () => {
+  // Use useMemo to recalculate when subscription changes
+  const isPro = useMemo(() => {
     if (!subscription) return false;
     if (subscription.tier !== 'pro' && subscription.tier !== 'enterprise') return false;
     if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) return false;
     return true;
-  };
+  }, [subscription]);
 
-  const isEnterprise = () => {
+  const isEnterprise = useMemo(() => {
     if (!subscription) return false;
     if (subscription.tier !== 'enterprise') return false;
     if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) return false;
     return true;
-  };
+  }, [subscription]);
 
   const subscribe = async (tier: 'pro' | 'enterprise' = 'pro', billingCycle: 'monthly' | 'yearly' = 'monthly') => {
     if (!userId) {
@@ -202,7 +203,7 @@ export const useSubscription = (userId?: string) => {
   };
 
   const getFeeRates = () => {
-    if (isEnterprise()) {
+    if (isEnterprise) {
       return {
         buyerFeeRate: 0.03, // 3% for Enterprise
         sellerFeeRate: 0.045, // 4.5% for Enterprise
@@ -210,7 +211,7 @@ export const useSubscription = (userId?: string) => {
         wireFeeRate: 0.01, // 1% for Enterprise
       };
     }
-    if (isPro()) {
+    if (isPro) {
       return {
         buyerFeeRate: 0.045, // 4.5% for Pro
         sellerFeeRate: 0.06, // 6% for Pro
@@ -229,8 +230,8 @@ export const useSubscription = (userId?: string) => {
   return {
     subscription,
     loading,
-    isPro: isPro(),
-    isEnterprise: isEnterprise(),
+    isPro,
+    isEnterprise,
     subscribe,
     cancelAutoRenew,
     getFeeRates,
