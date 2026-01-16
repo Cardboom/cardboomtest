@@ -235,17 +235,6 @@ export default function Grading() {
         <meta name="keywords" content={seo.keywords} />
         <link rel="canonical" href="https://cardboom.com/grading" />
         
-        {/* Hreflang for all languages */}
-        <link rel="alternate" hrefLang="en" href="https://cardboom.com/grading" />
-        <link rel="alternate" hrefLang="tr" href="https://cardboom.com/grading?lang=tr" />
-        <link rel="alternate" hrefLang="de" href="https://cardboom.com/grading?lang=de" />
-        <link rel="alternate" hrefLang="fr" href="https://cardboom.com/grading?lang=fr" />
-        <link rel="alternate" hrefLang="it" href="https://cardboom.com/grading?lang=it" />
-        <link rel="alternate" hrefLang="ar" href="https://cardboom.com/grading?lang=ar" />
-        <link rel="alternate" hrefLang="ja" href="https://cardboom.com/grading?lang=ja" />
-        <link rel="alternate" hrefLang="ko" href="https://cardboom.com/grading?lang=ko" />
-        <link rel="alternate" hrefLang="x-default" href="https://cardboom.com/grading" />
-        
         {/* Open Graph */}
         <meta property="og:title" content={seo.title} />
         <meta property="og:description" content={seo.description} />
