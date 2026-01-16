@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { GemsProvider } from "@/contexts/GemsContext";
 import { PriceProvider } from "@/contexts/PriceContext";
 import { AchievementProvider } from "@/contexts/AchievementContext";
 import { DebugProvider } from "@/contexts/DebugContext";
@@ -240,17 +241,19 @@ const App = () => (
     <HelmetProvider>
       <LanguageProvider>
         <CurrencyProvider>
-          <PriceProvider>
-            <QueryClientProvider client={queryClient}>
-              <TooltipProvider>
-                <AchievementProvider>
-                  <DebugProvider>
-                    <AppContent />
-                  </DebugProvider>
-                </AchievementProvider>
-              </TooltipProvider>
-            </QueryClientProvider>
-          </PriceProvider>
+          <GemsProvider>
+            <PriceProvider>
+              <QueryClientProvider client={queryClient}>
+                <TooltipProvider>
+                  <AchievementProvider>
+                    <DebugProvider>
+                      <AppContent />
+                    </DebugProvider>
+                  </AchievementProvider>
+                </TooltipProvider>
+              </QueryClientProvider>
+            </PriceProvider>
+          </GemsProvider>
         </CurrencyProvider>
       </LanguageProvider>
     </HelmetProvider>

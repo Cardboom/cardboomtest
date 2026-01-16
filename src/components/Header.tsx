@@ -34,7 +34,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { XPProgressBar } from '@/components/XPProgressBar';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { CurrencyToggle } from '@/components/CurrencyToggle';
+import { PriceDisplayToggle } from '@/components/PriceDisplayToggle';
 import { AIMarketInsight } from '@/components/AIMarketInsight';
 import { cn } from '@/lib/utils';
 import { SmartSearch } from '@/components/SmartSearch';
@@ -433,8 +433,8 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             {user && <CardboomPointsBadge />}
           </div>
 
-          <div className="flex items-center gap-0.5">
-            <CurrencyToggle />
+          <div className="flex items-center gap-1.5">
+            <PriceDisplayToggle />
             <ThemeToggle />
             <LanguageSelector />
             {user && (
