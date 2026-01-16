@@ -30,6 +30,7 @@ const WalletPage = () => {
   const { t } = useLanguage();
   const { formatPrice, currency } = useCurrency();
   const [balance, setBalance] = useState<number>(0);
+  const [pendingBalance, setPendingBalance] = useState<number>(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCardTopUp, setShowCardTopUp] = useState(false);
@@ -87,6 +88,8 @@ const WalletPage = () => {
       
       if (wallet) {
         setBalance(Number(wallet.balance));
+        // pending_balance added via migration - cast to access before types regenerate
+        setPendingBalance(Number((wallet as any).pending_balance || 0));
 
         const { data: txns, error: txnError } = await supabase
           .from('transactions')
@@ -169,18 +172,44 @@ const WalletPage = () => {
             </div>
           </div>
 
-          {/* Balance Card */}
+          {/* Balance Card with Pending Support */}
           <Card className="mb-6 overflow-hidden border-primary/20 relative">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-gold/5" />
             <CardContent className="p-8 relative">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
                 <div className="space-y-4">
+                  {/* Total Balance (if pending exists) */}
+                  {pendingBalance > 0 && (
+                    <div className="mb-2">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">Total Balance</p>
+                      <p className="text-2xl font-display font-semibold text-muted-foreground">
+                        {formatPrice(balance + pendingBalance)}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Available Balance */}
                   <div>
                     <p className="text-sm text-muted-foreground mb-2 uppercase tracking-wider font-medium">Available Balance</p>
                     <h2 className="text-4xl md:text-5xl font-display font-bold text-foreground tracking-tight">
                       {formatPrice(balance)}
                     </h2>
                   </div>
+
+                  {/* Pending Balance - Only show if exists */}
+                  {pendingBalance > 0 && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {formatPrice(pendingBalance)} Pending
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Funds held until verification complete
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Today's PNL */}
                   <div className="flex items-center gap-3">

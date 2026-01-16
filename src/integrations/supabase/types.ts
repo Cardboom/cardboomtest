@@ -10122,6 +10122,7 @@ export type Database = {
           created_at: string
           currency: string | null
           id: string
+          pending_balance: number
           updated_at: string
           user_id: string
         }
@@ -10131,6 +10132,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           id?: string
+          pending_balance?: number
           updated_at?: string
           user_id: string
         }
@@ -10140,6 +10142,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           id?: string
+          pending_balance?: number
           updated_at?: string
           user_id?: string
         }
