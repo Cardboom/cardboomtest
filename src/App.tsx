@@ -72,6 +72,7 @@ import Grading from "./pages/Grading";
 import GradingNew from "./pages/GradingNew";
 import GradingOrders from "./pages/GradingOrders";
 import GradingOrderDetail from "./pages/GradingOrderDetail";
+import GradingCreditsPage from "./pages/GradingCreditsPage";
 import NotFound from "./pages/NotFound";
 import CardWars from "./pages/CardWars";
 import CardBoomPass from "./pages/CardBoomPass";
@@ -190,6 +191,7 @@ const AppContent = () => {
           <Route path="/grading/new" element={<GradingNew />} />
           <Route path="/grading/orders" element={<GradingOrders />} />
           <Route path="/grading/orders/:id" element={<GradingOrderDetail />} />
+          <Route path="/grading/credits" element={<GradingCreditsPage />} />
           {/* Creator Routes */}
           <Route path="/@:username" element={<CreatorPage />} />
           <Route path="/creators" element={<CreatorInvite />} />
