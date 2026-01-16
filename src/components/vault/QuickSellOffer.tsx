@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { 
   Zap, 
   BadgeDollarSign, 
@@ -12,7 +14,9 @@ import {
   AlertTriangle,
   Sparkles,
   ArrowRight,
-  TrendingDown
+  TrendingDown,
+  Gem,
+  Banknote
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,8 +48,10 @@ export const QuickSellOffer = ({
   const { formatPrice } = useCurrency();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [accepting, setAccepting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'gems' | 'cash'>('gems');
 
   const offerPrice = marketPrice * QUICK_SELL_PERCENTAGE;
+  const offerGems = Math.floor(offerPrice * 100); // 1 Gem = $0.01
   const savings = marketPrice - offerPrice;
 
   const handleAcceptOffer = async () => {
@@ -57,7 +63,7 @@ export const QuickSellOffer = ({
         return;
       }
 
-      // Create a quick sell order record
+      // Create a quick sell order record with payment method
       const { error: orderError } = await supabase
         .from('quick_sell_offers')
         .insert({
@@ -65,6 +71,7 @@ export const QuickSellOffer = ({
           user_id: session.user.id,
           market_price: marketPrice,
           offer_price: offerPrice,
+          payment_method: paymentMethod,
           status: 'pending_review',
         });
 
@@ -83,14 +90,18 @@ export const QuickSellOffer = ({
 
       // Notify admins
       await supabase.from('notifications').insert({
-        user_id: session.user.id, // Will be replaced with admin notification system
+        user_id: session.user.id,
         type: 'quick_sell_request',
         title: '💰 Quick Sell Request',
-        body: `User requested Quick Sell for "${itemTitle}" at ${formatPrice(offerPrice)}`,
-        data: { vault_item_id: vaultItemId, offer_price: offerPrice },
+        body: `User requested Quick Sell for "${itemTitle}" at ${formatPrice(offerPrice)} (${paymentMethod === 'gems' ? 'Gems' : 'Cash Transfer'})`,
+        data: { vault_item_id: vaultItemId, offer_price: offerPrice, payment_method: paymentMethod },
       });
 
-      toast.success('Quick Sell request submitted! We\'ll process your payment within 24 hours.');
+      toast.success(
+        paymentMethod === 'gems' 
+          ? `Quick Sell request submitted! You'll receive ${offerGems.toLocaleString()} Gems within 24 hours.`
+          : 'Quick Sell request submitted! We\'ll process your cash transfer within 24-48 hours.'
+      );
       setShowConfirmDialog(false);
       onAccept?.();
     } catch (error) {
@@ -153,27 +164,50 @@ export const QuickSellOffer = ({
                 </div>
               </div>
 
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="w-4 h-4 text-primary" />
-                  Payment within 24 hours
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Shield className="w-4 h-4 text-primary" />
-                  No fees, no hassle
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <BadgeDollarSign className="w-4 h-4 text-primary" />
-                  Direct to your wallet
-                </div>
+              {/* Payment Method Selection */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Choose payment method</Label>
+                <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as 'gems' | 'cash')} className="grid grid-cols-2 gap-3">
+                  <Label
+                    htmlFor="gems-compact"
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      paymentMethod === 'gems' 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="gems" id="gems-compact" className="sr-only" />
+                    <Gem className="w-5 h-5 text-primary" />
+                    <div className="text-center">
+                      <p className="font-semibold text-sm">{offerGems.toLocaleString()} Gems</p>
+                      <p className="text-xs text-muted-foreground">Instant credit</p>
+                    </div>
+                  </Label>
+                  <Label
+                    htmlFor="cash-compact"
+                    className={`flex flex-col items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      paymentMethod === 'cash' 
+                        ? 'border-primary bg-primary/5' 
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <RadioGroupItem value="cash" id="cash-compact" className="sr-only" />
+                    <Banknote className="w-5 h-5 text-gain" />
+                    <div className="text-center">
+                      <p className="font-semibold text-sm">{formatPrice(offerPrice)}</p>
+                      <p className="text-xs text-muted-foreground">Bank transfer</p>
+                    </div>
+                  </Label>
+                </RadioGroup>
               </div>
 
               <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5" />
                   <p className="text-xs text-muted-foreground">
-                    Quick Sell offers 60% of market value for instant liquidity. 
-                    You can get more by listing on the marketplace, but Quick Sell is faster and guaranteed.
+                    {paymentMethod === 'gems' 
+                      ? 'Gems will be credited within 24 hours after approval.'
+                      : 'Cash transfer may take 24-48 hours after approval. Bank details required.'}
                   </p>
                 </div>
               </div>
@@ -192,7 +226,11 @@ export const QuickSellOffer = ({
                   'Processing...'
                 ) : (
                   <>
-                    Accept {formatPrice(offerPrice)}
+                    {paymentMethod === 'gems' ? (
+                      <>Accept {offerGems.toLocaleString()} Gems</>
+                    ) : (
+                      <>Accept {formatPrice(offerPrice)}</>
+                    )}
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
@@ -292,11 +330,50 @@ export const QuickSellOffer = ({
               </div>
             </div>
 
+            {/* Payment Method Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">How would you like to be paid?</Label>
+              <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as 'gems' | 'cash')} className="grid grid-cols-2 gap-3">
+                <Label
+                  htmlFor="gems-full"
+                  className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'gems' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <RadioGroupItem value="gems" id="gems-full" className="sr-only" />
+                  <Gem className="w-6 h-6 text-primary" />
+                  <div className="text-center">
+                    <p className="font-bold">{offerGems.toLocaleString()} Gems</p>
+                    <p className="text-xs text-muted-foreground">Credited in 24 hours</p>
+                  </div>
+                </Label>
+                <Label
+                  htmlFor="cash-full"
+                  className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'cash' 
+                      ? 'border-primary bg-primary/5' 
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <RadioGroupItem value="cash" id="cash-full" className="sr-only" />
+                  <Banknote className="w-6 h-6 text-gain" />
+                  <div className="text-center">
+                    <p className="font-bold">{formatPrice(offerPrice)}</p>
+                    <p className="text-xs text-muted-foreground">Bank transfer 24-48h</p>
+                  </div>
+                </Label>
+              </RadioGroup>
+            </div>
+
             <div className="p-3 rounded-lg bg-gain/10 border border-gain/20">
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-gain" />
                 <p className="text-sm text-gain font-medium">
-                  Funds will be added to your wallet within 24 hours
+                  {paymentMethod === 'gems' 
+                    ? 'Gems credited to your account within 24 hours'
+                    : 'Cash transferred to your bank within 24-48 hours'}
                 </p>
               </div>
             </div>
@@ -315,7 +392,11 @@ export const QuickSellOffer = ({
                 'Processing...'
               ) : (
                 <>
-                  Confirm Sale
+                  {paymentMethod === 'gems' ? (
+                    <>Confirm for {offerGems.toLocaleString()} Gems</>
+                  ) : (
+                    <>Confirm for {formatPrice(offerPrice)}</>
+                  )}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

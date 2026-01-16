@@ -7376,6 +7376,7 @@ export type Database = {
           market_price: number
           offer_price: number
           paid_at: string | null
+          payment_method: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string
@@ -7391,6 +7392,7 @@ export type Database = {
           market_price: number
           offer_price: number
           paid_at?: string | null
+          payment_method?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string
@@ -7406,6 +7408,7 @@ export type Database = {
           market_price?: number
           offer_price?: number
           paid_at?: string | null
+          payment_method?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string

@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info, Zap, DollarSign, Sparkles, Camera } from 'lucide-react';
+import { Plus, Package, Vault, Truck, ArrowLeftRight, Pencil, Trash2, Eye, Upload, X, Loader2, Image as ImageIcon, PieChart, Search, Shield, Info, Zap, DollarSign, Sparkles, Camera, ArrowRight } from 'lucide-react';
 import { getCategoryLabel } from '@/lib/categoryLabels';
 import { CardScanner } from '@/components/CardScanner';
 import { CardPricingIntelligence } from '@/components/CardPricingIntelligence';
@@ -1226,20 +1226,36 @@ const SellPage = () => {
                         </div>
                       </div>
 
-                      {/* Instant Sell to CardBoom Option */}
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        disabled={instantSelling || !formData.title || !formData.price}
-                        onClick={prepareInstantSell}
-                        className="w-full gap-2 border-gold/50 bg-gradient-to-r from-gold/10 to-transparent hover:from-gold/20 hover:border-gold"
-                      >
-                        <Zap className="h-4 w-4 text-gold" />
-                        <span>Instant Sell to CardBoom @ 80%</span>
-                      </Button>
-                      <p className="text-xs text-center text-muted-foreground">
-                        Get paid instantly! We buy your card at 80% of market price - no waiting for buyers.
-                      </p>
+                      {/* Quick Sell Info - Vault Required */}
+                      <div className="p-4 rounded-lg border border-amber-500/30 bg-gradient-to-r from-amber-500/5 to-orange-500/5">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-amber-500/20 shrink-0">
+                            <Zap className="h-5 w-5 text-amber-500" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-foreground flex items-center gap-2">
+                              Quick Sell to CardBoom
+                              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
+                                60% Value
+                              </Badge>
+                            </h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Want instant cash? Send your card to the <span className="font-medium text-foreground">Vault</span> first. 
+                              Once verified, you can Quick Sell at 60% of market value — paid in <span className="font-medium text-foreground">Gems or cash</span> within 24 hours.
+                            </p>
+                            <Button 
+                              type="button"
+                              variant="outline" 
+                              size="sm" 
+                              className="mt-3 gap-2 border-amber-500/50 hover:bg-amber-500/10"
+                              onClick={() => navigate('/vault')}
+                            >
+                              <ArrowRight className="h-4 w-4" />
+                              Go to Vault
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </form>
                 </CardContent>
