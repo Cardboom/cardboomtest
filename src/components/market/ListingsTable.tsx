@@ -79,7 +79,14 @@ export const ListingsTable = ({ category, search }: ListingsTableProps) => {
         .order('created_at', { ascending: false });
 
       if (category && category !== 'all') {
-        query = query.eq('category', category);
+        // Handle category name variations (one-piece vs onepiece, etc.)
+        const categoryVariants = [category];
+        if (category === 'one-piece') categoryVariants.push('onepiece');
+        if (category === 'onepiece') categoryVariants.push('one-piece');
+        if (category === 'gaming') categoryVariants.push('videogames');
+        if (category === 'videogames') categoryVariants.push('gaming');
+        
+        query = query.in('category', categoryVariants);
       }
 
       if (search) {

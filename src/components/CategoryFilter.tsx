@@ -30,16 +30,13 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
     return 0;
   };
 
-  // Filter out categories with 0 items (except 'all')
-  const categoriesWithItems = mainCategories.filter(cat => {
-    if (cat.id === 'all') return true;
-    return getCategoryCount(cat.id) > 0;
-  });
+  // Show all main categories - don't filter based on count
+  // Categories may have listings even if no market_items
 
   return (
     <div className="sticky top-16 z-40 bg-background/95 backdrop-blur-sm py-4 mb-4 -mx-4 px-4 overflow-x-auto scrollbar-hide border-b border-border/20">
       <div className="flex gap-2 sm:gap-3 min-w-max sm:flex-wrap sm:min-w-0">
-        {categoriesWithItems.map((category) => {
+        {mainCategories.map((category) => {
           const count = getCategoryCount(category.id);
           return (
             <button
