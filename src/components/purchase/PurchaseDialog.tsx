@@ -13,14 +13,16 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Vault, Truck, ArrowLeftRight, ShoppingCart, Loader2, MapPin, Package, Wallet, Sparkles, Plus, AlertCircle, Home, Building2, ChevronDown } from 'lucide-react';
+import { Vault, Truck, ArrowLeftRight, ShoppingCart, Loader2, MapPin, Package, Wallet, Sparkles, Plus, AlertCircle, Home, Building2, ChevronDown, Banknote } from 'lucide-react';
 import { FeeUpgradeNudge } from './FeeUpgradeNudge';
 import { usePurchase } from '@/hooks/usePurchase';
 import { useCartAbandonment } from '@/hooks/useCartAbandonment';
 import { useGeliverShipping } from '@/hooks/useGeliverShipping';
+import { useTurkeyCompliance } from '@/hooks/useTurkeyCompliance';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
+import { IBANProductCheckout } from '@/components/checkout/IBANProductCheckout';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface SavedAddress {
@@ -86,6 +88,14 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
   const [gemAmount, setGemAmount] = useState(0);
   const [showTopUp, setShowTopUp] = useState(false);
   const [loadingBalances, setLoadingBalances] = useState(true);
+  
+  // Payment method state - wallet vs IBAN for TR users
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'iban'>('wallet');
+  const [showIBANCheckout, setShowIBANCheckout] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  
+  // Turkey compliance
+  const { isTurkishResident, allowIBANForProducts } = useTurkeyCompliance();
   
   const { purchase, loading, calculateFeesSync } = usePurchase();
   const { trackCartAbandonment, markCartRecovered } = useCartAbandonment();
@@ -335,8 +345,21 @@ export const PurchaseDialog = ({ open, onOpenChange, listing }: PurchaseDialogPr
                 onClick={() => setShowTopUp(true)}
               >
                 <Plus className="w-4 h-4" />
-                Add Funds to Wallet
+                {isTurkishResident ? 'Top Up Gems (Credit Card)' : 'Add Funds to Wallet'}
               </Button>
+              
+              {/* IBAN option for Turkish users */}
+              {allowIBANForProducts && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full gap-2 border-blue-500/30 text-blue-500 hover:bg-blue-500/10"
+                  onClick={() => setPaymentMethod('iban')}
+                >
+                  <Banknote className="w-4 h-4" />
+                  Buy with Bank Transfer (IBAN)
+                </Button>
+              )}
             </div>
 
             {/* Gems Discount Section */}
