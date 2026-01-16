@@ -156,15 +156,17 @@ serve(async (req) => {
       console.log('[iyzico-init-3ds] Using saved card token');
     } else {
       // Use new card details
+      // NOTE: registerCard is disabled because "Card storage feature is not enabled for this merchant"
+      // Contact iyzico to enable card storage/tokenization for your merchant account
       paymentCard = {
         cardHolderName: cardHolderName,
         cardNumber: cardNumber.replace(/\s/g, ''),
         expireYear: expireYear.length === 2 ? `20${expireYear}` : expireYear,
         expireMonth: expireMonth.padStart(2, '0'),
         cvc: cvc,
-        registerCard: saveCard ? 1 : 0, // Enable card registration if user wants to save
+        // registerCard: saveCard ? 1 : 0, // Disabled - requires iyzico card storage feature
       };
-      console.log('[iyzico-init-3ds] Using new card, registerCard:', saveCard ? 1 : 0);
+      console.log('[iyzico-init-3ds] Using new card (card storage disabled)');
     }
 
     const iyzicoRequest: Record<string, any> = {
