@@ -273,8 +273,7 @@ export const en = {
     easyPaymentsDesc: "Multiple payment methods including crypto",
     verifiedInvestors: "Verified Investors",
     verifiedInvestorsDesc: "Trade with confidence from verified accounts",
-    fractionalShares: "Fractional Shares",
-    fractionalSharesDesc: "Own pieces of grails starting from $10",
+    // Fractional shares feature disabled
   },
   // About Page
   about: {

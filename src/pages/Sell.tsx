@@ -44,8 +44,7 @@ import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard'
 import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
 import { useCardIndexer } from '@/hooks/useCardIndexer';
 import { CertificationToggle, CertificationTier } from '@/components/listing/CertificationToggle';
-import { AuctionToggle, AUCTION_LISTING_FEE } from '@/components/listing/AuctionToggle';
-import { useAuctions } from '@/hooks/useAuctions';
+// AuctionToggle removed - feature disabled
 import { processImageFile, isHeicFile } from '@/lib/heic-converter';
 interface Listing {
   id: string;
@@ -1157,23 +1156,9 @@ const SellPage = () => {
                       onTierChange={(tier) => setFormData({ ...formData, certificationTier: tier })}
                     />
 
-                    {/* Auction Mode */}
-                    <AuctionToggle
-                      enabled={formData.isAuction}
-                      onEnabledChange={(enabled) => setFormData({ ...formData, isAuction: enabled })}
-                      startingPrice={formData.auctionStartingPrice}
-                      onStartingPriceChange={(price) => setFormData({ ...formData, auctionStartingPrice: price })}
-                      reservePrice={formData.auctionReservePrice}
-                      onReservePriceChange={(price) => setFormData({ ...formData, auctionReservePrice: price })}
-                      buyNowPrice={formData.auctionBuyNowPrice}
-                      onBuyNowPriceChange={(price) => setFormData({ ...formData, auctionBuyNowPrice: price })}
-                      durationDays={formData.auctionDurationDays}
-                      onDurationChange={(days) => setFormData({ ...formData, auctionDurationDays: days })}
-                      startDate={formData.auctionStartDate}
-                      onStartDateChange={(date) => setFormData({ ...formData, auctionStartDate: date })}
-                    />
+                    {/* Auction Mode removed - feature disabled */}
 
-                    {/* Fractional shares removed - enterprise feature only */}
+                    {/* Fractional shares removed - feature disabled */}
 
                     <div className="flex flex-col gap-3">
                       <Button type="submit" disabled={submitting || uploading} className="w-full gap-2">

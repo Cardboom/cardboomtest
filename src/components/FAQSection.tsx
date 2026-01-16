@@ -49,7 +49,7 @@ const faqItems = [
   },
   {
     question: "What are the fees for buying and selling on CardBoom?",
-    answer: "Buyers pay a 3% buyer protection fee on purchases. Sellers pay a 5% commission on successful sales. Verified Sellers get reduced rates (3% commission). Wire transfer deposits under $500 have a 2% processing fee. There are no listing fees - you only pay when you sell. Fractional share trades have a 1% transaction fee."
+    answer: "Buyers pay a 3% buyer protection fee on purchases. Sellers pay a 5% commission on successful sales. Verified Sellers get reduced rates (3% commission). Wire transfer deposits under $500 have a 2% processing fee. There are no listing fees - you only pay when you sell."
   },
   {
     question: "How does the referral program work?",
