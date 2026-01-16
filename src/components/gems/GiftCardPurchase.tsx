@@ -6,19 +6,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Gift, Sparkles, Send, Check, Loader2, Mail, Phone } from 'lucide-react';
+import { Gift, Send, Check, Loader2, Mail, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 const GIFT_CARD_OPTIONS = [
-  { cents: 500, label: '$5', gems: 500 },
-  { cents: 1000, label: '$10', gems: 1000 },
-  { cents: 2000, label: '$20', gems: 2000 },
-  { cents: 5000, label: '$50', gems: 5000 },
-  { cents: 10000, label: '$100', gems: 10000 },
-  { cents: 100000, label: '$1,000', gems: 100000 },
+  { cents: 500, label: '$5', coins: 500 },
+  { cents: 1000, label: '$10', coins: 1000 },
+  { cents: 2000, label: '$20', coins: 2000 },
+  { cents: 5000, label: '$50', coins: 5000 },
+  { cents: 10000, label: '$100', coins: 10000 },
+  { cents: 100000, label: '$1,000', coins: 100000 },
 ];
 
 interface GiftCardPurchaseProps {
@@ -83,7 +84,7 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
           recipient_email: recipientType === 'email' && recipientEmail ? recipientEmail : null,
           recipient_phone: recipientType === 'phone' && recipientPhone ? formatPhoneNumber(recipientPhone) : null,
           denomination_cents: selectedAmount.cents,
-          gem_amount: selectedAmount.gems,
+          gem_amount: selectedAmount.coins,
           message: message || null,
         })
         .select('id, code')
@@ -134,7 +135,7 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
               recipientType,
               recipient,
               senderName,
-              gemAmount: selectedAmount.gems,
+              gemAmount: selectedAmount.coins,
               giftCode: giftCard.code,
               message: message || null,
             },
@@ -176,8 +177,8 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Gift className="w-5 h-5 text-primary" />
-            Gift CardBoom Gems
+            <Gift className="w-5 h-5 text-amber-500" />
+            Gift Boom Coins
           </DialogTitle>
         </DialogHeader>
 
@@ -225,8 +226,8 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
                   >
                     <p className="font-bold text-lg">{option.label}</p>
                     <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                      <Sparkles className="w-3 h-3" />
-                      {option.gems.toLocaleString()} Gems
+                      <BoomCoinIcon size="xs" className="text-amber-400" />
+                      {option.coins.toLocaleString()} Coins
                     </div>
                   </button>
                 ))}
@@ -277,7 +278,7 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
               <Label htmlFor="message">Personal Message (Optional)</Label>
               <Textarea
                 id="message"
-                placeholder="Enjoy your gems!"
+                placeholder="Enjoy your coins!"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={2}
@@ -295,9 +296,9 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-muted-foreground">Recipient gets</p>
-                      <div className="flex items-center gap-1 text-xl font-bold text-primary">
-                        <Sparkles className="w-5 h-5" />
-                        {selectedAmount.gems.toLocaleString()}
+                      <div className="flex items-center gap-1 text-xl font-bold text-amber-500">
+                        <BoomCoinIcon size="md" className="text-amber-400" />
+                        {selectedAmount.coins.toLocaleString()}
                       </div>
                     </div>
                   </div>
