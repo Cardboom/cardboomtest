@@ -38,7 +38,8 @@ import {
   ImageIcon,
   Package,
   Zap,
-  Save
+  Save,
+  Award
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -122,7 +123,6 @@ export default function GradingNew() {
   // Options
   const [deliveryOption, setDeliveryOption] = useState<DeliveryOption>('shipping');
   const [includeProtection, setIncludeProtection] = useState(false);
-  const [quantity, setQuantity] = useState(1);
   const [speedTier, setSpeedTier] = useState<SpeedTier>('standard');
   const [autoListEnabled, setAutoListEnabled] = useState(false);
   const [autoListPrice, setAutoListPrice] = useState<number | null>(null);
@@ -130,7 +130,6 @@ export default function GradingNew() {
   const [cardAnalysis, setCardAnalysis] = useState<CardAnalysis | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewedCardData, setReviewedCardData] = useState<ReviewedCardData | null>(null);
-  const [saveBatchCredits, setSaveBatchCredits] = useState(false); // Save unused batch credits for future use
   
   // Cropping state
   const [showCropper, setShowCropper] = useState(false);
@@ -185,7 +184,7 @@ export default function GradingNew() {
     checkAuth();
   }, [navigate, toast]);
 
-  const { creditsRemaining, useCredits, refetch: refetchCredits } = useGradingCredits(userId);
+  const { creditsRemaining, useCredit, refetch: refetchCredits } = useGradingCredits(userId);
 
   const steps = [
     { key: 'photos', label: 'Photos' },
@@ -197,7 +196,7 @@ export default function GradingNew() {
   const currentStepIndex = steps.findIndex(s => s.key === step);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
-  // Calculate pricing based on speed tier and batch discounts
+  // Calculate pricing - single card grading only
   // Pro subscribers get 1 free grading/month for BASE certification only
   // Extras (protection, speed upgrades) still cost money
   const pricing = useMemo(() => {
@@ -213,37 +212,29 @@ export default function GradingNew() {
     // Protection bundle cost
     const protectionCost = includeProtection ? PROTECTION_BUNDLE_PRICE : 0;
     
-    // How many credits can we apply? Only for base grading, up to quantity
-    const creditsToApply = Math.min(creditsRemaining, quantity);
+    // Can we apply a credit? (1 credit = 1 grading)
+    const creditsToApply = creditsRemaining > 0 ? 1 : 0;
     const creditDiscount = creditsToApply * baseGradingCost;
     
-    // Calculate costs
-    // Base grading: (quantity - credits) * baseGradingCost
-    const gradingAfterCredits = (quantity - creditsToApply) * baseGradingCost;
+    // Calculate costs for single card
+    const gradingAfterCredits = creditsToApply > 0 ? 0 : baseGradingCost;
     
-    // Extras are always paid: speed upgrade + protection per card
-    const extrasPerCard = speedUpgradeCost + protectionCost;
-    const totalExtras = extrasPerCard * quantity;
+    // Extras are always paid: speed upgrade + protection
+    const totalExtras = speedUpgradeCost + protectionCost;
     
-    const subtotal = (baseGradingCost + extrasPerCard) * quantity;
-    
-    // Get batch discount (applies to remaining paid amount only)
-    const batchInfo = getBatchDiscount(quantity);
-    const paidSubtotal = gradingAfterCredits + totalExtras;
-    const batchDiscountAmount = batchInfo.isBatch ? paidSubtotal * (batchInfo.discount / 100) : 0;
-    
-    const total = paidSubtotal - batchDiscountAmount;
+    const subtotal = baseGradingCost + totalExtras;
+    const total = gradingAfterCredits + totalExtras;
     
     return { 
       basePerCard: selectedSpeed.price + protectionCost, 
       subtotal, 
-      hasBulkDiscount: batchInfo.isBatch,
-      batchDiscount: batchInfo.discount,
-      batchLabel: batchInfo.label,
-      isBatchOrder: batchInfo.isBatch,
-      discountAmount: batchDiscountAmount, 
+      hasBulkDiscount: false,
+      batchDiscount: 0,
+      batchLabel: '',
+      isBatchOrder: false,
+      discountAmount: 0, 
       total, 
-      savings: creditDiscount + batchDiscountAmount,
+      savings: creditDiscount,
       speedPrice: selectedSpeed.price,
       protectionPrice: protectionCost,
       daysMin: selectedSpeed.daysMin,
@@ -256,7 +247,7 @@ export default function GradingNew() {
       totalExtras,
       gradingAfterCredits,
     };
-  }, [quantity, includeProtection, speedTier, creditsRemaining]);
+  }, [includeProtection, speedTier, creditsRemaining]);
 
   const handleBackImageChange = (file: File | null) => {
     if (!file) return;
@@ -344,31 +335,23 @@ export default function GradingNew() {
           return;
         }
         
-        // Pass batch info to createOrder - batch orders don't count toward Boom Challenges
-        const batchInfo = pricing.isBatchOrder ? {
-          isBatchDiscounted: true,
-          batchSize: quantity,
-          batchDiscountPercent: pricing.batchDiscount,
-        } : undefined;
-        
         order = await createOrder(
           frontImage, 
           backImage, 
           speedTier, 
           autoListEnabled, 
-          autoListPrice,
-          batchInfo
+          autoListPrice
         );
       }
       
       if (!order) { setIsSubmitting(false); return; }
       
-      // Consume grading credits if any were applied
+      // Consume 1 grading credit if applied
       if (pricing.creditsApplied > 0) {
-        const creditsUsed = await useCredits(pricing.creditsApplied);
+        const creditsUsed = await useCredit();
         if (creditsUsed) {
           toast({ 
-            title: `🎉 Used ${pricing.creditsApplied} free grading credit${pricing.creditsApplied > 1 ? 's' : ''}!`,
+            title: '🎉 Used 1 free grading credit!',
             description: 'Your Pro subscription perk was applied'
           });
         }
@@ -788,96 +771,19 @@ export default function GradingNew() {
                   <p className="text-xs text-muted-foreground">CardBoom Index Certification</p>
                 </div>
                 <CardContent className="p-4 space-y-5">
-                  {/* Quantity */}
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Cards to Grade</Label>
-                    <div className="flex items-center gap-3">
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-full"
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        disabled={quantity <= 1}
-                      >
-                        <Minus className="w-3 h-3" />
-                      </Button>
-                      <span className="text-xl font-bold w-8 text-center">{quantity}</span>
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-full"
-                        onClick={() => setQuantity(quantity + 1)}
-                      >
-                        <Plus className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {/* Batch Discount Display */}
-                  {pricing.hasBulkDiscount && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-primary font-medium bg-primary/10 rounded-lg p-3">
-                        <Percent className="w-4 h-4" />
-                        <div className="flex-1">
-                          <span className="font-bold">{pricing.batchDiscount}% Batch Discount!</span>
-                          <span className="text-xs text-muted-foreground ml-2">({pricing.batchLabel})</span>
-                        </div>
-                        <span className="font-bold">-${pricing.discountAmount.toFixed(2)}</span>
-                      </div>
-                      <div className="flex items-start gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                        <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                        <p className="text-xs text-amber-600 dark:text-amber-400">
-                          <strong>Note:</strong> Batch orders with discount do not count toward Boom Challenges.
+                  {/* Pre-purchase Credits Info */}
+                  {creditsRemaining > 0 && (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <Award className="w-4 h-4 text-emerald-500" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                          You have {creditsRemaining} free grading credit{creditsRemaining > 1 ? 's' : ''}!
                         </p>
-                      </div>
-                      
-                      {/* Save Batch Credits Toggle */}
-                      <div 
-                        className={cn(
-                          "flex items-center justify-between p-3 rounded-xl border-2 transition-all cursor-pointer",
-                          saveBatchCredits ? "border-primary bg-primary/5" : "border-border bg-muted/30"
-                        )} 
-                        onClick={() => setSaveBatchCredits(!saveBatchCredits)}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "p-2 rounded-lg",
-                            saveBatchCredits ? "bg-primary text-primary-foreground" : "bg-muted"
-                          )}>
-                            <Save className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold">Save Extra Credits to Vault</p>
-                            <p className="text-xs text-muted-foreground">Use for future gradings (valid 1 year)</p>
-                          </div>
-                        </div>
-                        <Switch checked={saveBatchCredits} onCheckedChange={setSaveBatchCredits} />
+                        <p className="text-xs text-muted-foreground">Will be applied to this order</p>
                       </div>
                     </div>
                   )}
-
-                  {/* Batch Discount Tiers Preview */}
-                  {!pricing.hasBulkDiscount && quantity >= 2 && (
-                    <div className="p-3 rounded-lg bg-muted/50 border border-border">
-                      <p className="text-xs text-muted-foreground mb-2">Add more cards for batch discounts:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {BATCH_DISCOUNT_TIERS.map((tier) => (
-                          <button
-                            key={tier.minQuantity}
-                            onClick={() => setQuantity(tier.minQuantity)}
-                            className={`text-xs px-2 py-1 rounded-full border transition-colors ${
-                              quantity >= tier.minQuantity 
-                                ? 'bg-primary text-primary-foreground border-primary' 
-                                : 'bg-background border-border hover:border-primary/50'
-                            }`}
-                          >
-                            {tier.minQuantity}+ = {tier.discount}% off
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
+                  
                   {/* Speed Tier */}
                   <SpeedTierSelector
                     value={speedTier}
@@ -984,8 +890,8 @@ export default function GradingNew() {
                   {/* Order Details */}
                   <div className="p-4 rounded-xl bg-muted/50 space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Cards</span>
-                      <span className="font-medium">{quantity}x</span>
+                      <span className="text-muted-foreground">Card</span>
+                      <span className="font-medium">1x Grading</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Speed</span>
@@ -1001,7 +907,7 @@ export default function GradingNew() {
                     {includeProtection && (
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Protection Bundle</span>
-                        <span className="font-medium text-primary">+${PROTECTION_BUNDLE_PRICE}/card</span>
+                        <span className="font-medium text-primary">+${PROTECTION_BUNDLE_PRICE}</span>
                       </div>
                     )}
                     {autoListEnabled && (
@@ -1012,34 +918,28 @@ export default function GradingNew() {
                     )}
                     <div className="h-px bg-border my-1" />
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Base Grading ({quantity}x)</span>
-                      <span>${(pricing.baseGradingCost * quantity).toFixed(2)}</span>
+                      <span className="text-muted-foreground">Base Grading</span>
+                      <span>${pricing.baseGradingCost.toFixed(2)}</span>
                     </div>
                     {pricing.speedUpgradeCost > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Speed Upgrade ({quantity}x)</span>
-                        <span>${(pricing.speedUpgradeCost * quantity).toFixed(2)}</span>
+                        <span className="text-muted-foreground">Speed Upgrade</span>
+                        <span>${pricing.speedUpgradeCost.toFixed(2)}</span>
                       </div>
                     )}
                     {includeProtection && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Protection ({quantity}x)</span>
-                        <span>${(PROTECTION_BUNDLE_PRICE * quantity).toFixed(2)}</span>
+                        <span className="text-muted-foreground">Protection</span>
+                        <span>${PROTECTION_BUNDLE_PRICE.toFixed(2)}</span>
                       </div>
                     )}
                     {pricing.creditsApplied > 0 && (
                       <div className="flex justify-between text-yellow-600">
                         <span className="flex items-center gap-1">
                           <Sparkles className="w-3 h-3" />
-                          Free Credits ({pricing.creditsApplied}x)
+                          Free Credit Applied
                         </span>
                         <span>-${pricing.creditDiscount.toFixed(2)}</span>
-                      </div>
-                    )}
-                    {pricing.hasBulkDiscount && (
-                      <div className="flex justify-between text-primary">
-                        <span>Bulk discount ({pricing.batchDiscount}%)</span>
-                        <span>-${pricing.discountAmount.toFixed(2)}</span>
                       </div>
                     )}
                     <div className="h-px bg-border my-1" />
@@ -1077,19 +977,19 @@ export default function GradingNew() {
                     </div>
                     <div className="h-px bg-border" />
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Base Grading ({quantity}x)</span>
-                      <span>${(pricing.baseGradingCost * quantity).toFixed(2)}</span>
+                      <span className="text-muted-foreground">Base Grading</span>
+                      <span>${pricing.baseGradingCost.toFixed(2)}</span>
                     </div>
                     {pricing.speedUpgradeCost > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Speed Upgrade ({quantity}x)</span>
-                        <span>${(pricing.speedUpgradeCost * quantity).toFixed(2)}</span>
+                        <span className="text-muted-foreground">Speed Upgrade</span>
+                        <span>${pricing.speedUpgradeCost.toFixed(2)}</span>
                       </div>
                     )}
                     {pricing.protectionPrice > 0 && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Protection ({quantity}x)</span>
-                        <span>${(pricing.protectionPrice * quantity).toFixed(2)}</span>
+                        <span className="text-muted-foreground">Protection</span>
+                        <span>${pricing.protectionPrice.toFixed(2)}</span>
                       </div>
                     )}
                     {pricing.creditsApplied > 0 && (
