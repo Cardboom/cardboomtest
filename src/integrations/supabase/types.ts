@@ -7368,6 +7368,62 @@ export type Database = {
         }
         Relationships: []
       }
+      quick_sell_offers: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          market_price: number
+          offer_price: number
+          paid_at: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+          vault_item_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          market_price: number
+          offer_price: number
+          paid_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+          vault_item_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          market_price?: number
+          offer_price?: number
+          paid_at?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+          vault_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quick_sell_offers_vault_item_id_fkey"
+            columns: ["vault_item_id"]
+            isOneToOne: false
+            referencedRelation: "vault_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_hits: {
         Row: {
           blocked_at: string | null
@@ -9773,6 +9829,8 @@ export type Database = {
           listing_id: string | null
           order_id: string | null
           owner_id: string
+          quick_sell_offer_price: number | null
+          quick_sell_requested: boolean | null
           received_at: string | null
           return_shipping_fee: number | null
           shipped_at: string | null
@@ -9799,6 +9857,8 @@ export type Database = {
           listing_id?: string | null
           order_id?: string | null
           owner_id: string
+          quick_sell_offer_price?: number | null
+          quick_sell_requested?: boolean | null
           received_at?: string | null
           return_shipping_fee?: number | null
           shipped_at?: string | null
@@ -9825,6 +9885,8 @@ export type Database = {
           listing_id?: string | null
           order_id?: string | null
           owner_id?: string
+          quick_sell_offer_price?: number | null
+          quick_sell_requested?: boolean | null
           received_at?: string | null
           return_shipping_fee?: number | null
           shipped_at?: string | null

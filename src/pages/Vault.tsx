@@ -23,7 +23,8 @@ import {
   BarChart3,
   X,
   MapPin,
-  Copy
+  Copy,
+  Zap
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -33,6 +34,7 @@ import { SendToVaultDialog } from '@/components/SendToVaultDialog';
 import { RequestReturnDialog } from '@/components/vault/RequestReturnDialog';
 import { VaultToListingWizard } from '@/components/listing/VaultToListingWizard';
 import { ListingSuccessModal } from '@/components/listing/ListingSuccessModal';
+import { QuickSellOffer } from '@/components/vault/QuickSellOffer';
 import { motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -446,29 +448,43 @@ const VaultPage = () => {
                             </div>
                             <div className="flex gap-2 mt-4">
                               {item.status === 'verified' ? (
-                                <>
-                                  <Button 
-                                    variant="default" 
-                                    size="sm" 
-                                    className="flex-1"
-                                    onClick={() => {
-                                      setSelectedListingItem(item);
-                                      setShowListingWizard(true);
-                                    }}
-                                  >
-                                    List for Sale
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      setReturnDialogOpen(true);
-                                    }}
-                                  >
-                                    <Truck className="h-4 w-4" />
-                                  </Button>
-                                </>
+                                <div className="space-y-2 w-full">
+                                  {/* Quick Sell Option for verified items with estimated value */}
+                                  {item.estimated_value && item.estimated_value > 0 && (
+                                    <QuickSellOffer
+                                      vaultItemId={item.id}
+                                      itemTitle={item.title}
+                                      marketPrice={item.estimated_value}
+                                      imageUrl={item.image_url}
+                                      category={formatCategoryName(item.category)}
+                                      onAccept={fetchVaultItems}
+                                      compact
+                                    />
+                                  )}
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      variant="default" 
+                                      size="sm" 
+                                      className="flex-1"
+                                      onClick={() => {
+                                        setSelectedListingItem(item);
+                                        setShowListingWizard(true);
+                                      }}
+                                    >
+                                      List for Sale
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedItem(item);
+                                        setReturnDialogOpen(true);
+                                      }}
+                                    >
+                                      <Truck className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
                               ) : item.status === 'pending_shipment' ? (
                                 isPurchasedItem ? (
                                   // Purchased item - buyer is waiting for seller to ship
