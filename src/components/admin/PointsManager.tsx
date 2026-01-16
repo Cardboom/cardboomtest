@@ -443,15 +443,22 @@ export function PointsManager() {
               </div>
 
               <div>
-                <p className="text-sm font-medium mb-2">Amount</p>
-                <Input
-                  type="number"
-                  value={adjustmentAmount}
-                  onChange={(e) => setAdjustmentAmount(e.target.value)}
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                />
+                <p className="text-sm font-medium mb-2">Amount (USD $)</p>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    type="number"
+                    value={adjustmentAmount}
+                    onChange={(e) => setAdjustmentAmount(e.target.value)}
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    className="pl-7"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  All wallet balances are stored in USD
+                </p>
               </div>
 
               <div>
