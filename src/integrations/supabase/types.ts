@@ -983,6 +983,288 @@ export type Database = {
           },
         ]
       }
+      boom_pack_audit_log: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          gems_amount: number | null
+          id: string
+          pack_id: string | null
+          pack_type_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          gems_amount?: number | null
+          id?: string
+          pack_id?: string | null
+          pack_type_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          gems_amount?: number | null
+          id?: string
+          pack_id?: string | null
+          pack_type_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boom_pack_audit_log_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "boom_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boom_pack_audit_log_pack_type_id_fkey"
+            columns: ["pack_type_id"]
+            isOneToOne: false
+            referencedRelation: "boom_pack_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boom_pack_cards: {
+        Row: {
+          boom_pack_id: string
+          can_list_after: string
+          card_image_url: string | null
+          card_instance_id: string | null
+          card_name: string
+          cooldown_until: string
+          created_at: string
+          id: string
+          is_in_vault: boolean
+          is_shipped: boolean
+          market_item_id: string | null
+          origin_tag: string
+          rarity: string
+          user_id: string
+          utility_value_gems: number
+        }
+        Insert: {
+          boom_pack_id: string
+          can_list_after: string
+          card_image_url?: string | null
+          card_instance_id?: string | null
+          card_name: string
+          cooldown_until: string
+          created_at?: string
+          id?: string
+          is_in_vault?: boolean
+          is_shipped?: boolean
+          market_item_id?: string | null
+          origin_tag?: string
+          rarity?: string
+          user_id: string
+          utility_value_gems?: number
+        }
+        Update: {
+          boom_pack_id?: string
+          can_list_after?: string
+          card_image_url?: string | null
+          card_instance_id?: string | null
+          card_name?: string
+          cooldown_until?: string
+          created_at?: string
+          id?: string
+          is_in_vault?: boolean
+          is_shipped?: boolean
+          market_item_id?: string | null
+          origin_tag?: string
+          rarity?: string
+          user_id?: string
+          utility_value_gems?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boom_pack_cards_boom_pack_id_fkey"
+            columns: ["boom_pack_id"]
+            isOneToOne: false
+            referencedRelation: "boom_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boom_pack_cards_card_instance_id_fkey"
+            columns: ["card_instance_id"]
+            isOneToOne: false
+            referencedRelation: "card_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boom_pack_cards_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boom_pack_inventory_pool: {
+        Row: {
+          allocated_at: string | null
+          allocated_to_pack_id: string | null
+          card_image_url: string | null
+          card_name: string
+          category: string
+          created_at: string
+          id: string
+          is_available: boolean
+          market_item_id: string | null
+          rarity: string
+          utility_value_gems: number
+        }
+        Insert: {
+          allocated_at?: string | null
+          allocated_to_pack_id?: string | null
+          card_image_url?: string | null
+          card_name: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          market_item_id?: string | null
+          rarity?: string
+          utility_value_gems?: number
+        }
+        Update: {
+          allocated_at?: string | null
+          allocated_to_pack_id?: string | null
+          card_image_url?: string | null
+          card_name?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_available?: boolean
+          market_item_id?: string | null
+          rarity?: string
+          utility_value_gems?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boom_pack_inventory_pool_allocated_to_pack_id_fkey"
+            columns: ["allocated_to_pack_id"]
+            isOneToOne: false
+            referencedRelation: "boom_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boom_pack_inventory_pool_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      boom_pack_types: {
+        Row: {
+          available_from: string | null
+          available_until: string | null
+          cards_count: number
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          is_featured: boolean
+          name: string
+          price_gems: number
+          rarity_distribution: Json | null
+          stock_limit: number | null
+          stock_sold: number
+          updated_at: string
+        }
+        Insert: {
+          available_from?: string | null
+          available_until?: string | null
+          cards_count?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          name: string
+          price_gems: number
+          rarity_distribution?: Json | null
+          stock_limit?: number | null
+          stock_sold?: number
+          updated_at?: string
+        }
+        Update: {
+          available_from?: string | null
+          available_until?: string | null
+          cards_count?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          is_featured?: boolean
+          name?: string
+          price_gems?: number
+          rarity_distribution?: Json | null
+          stock_limit?: number | null
+          stock_sold?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      boom_packs: {
+        Row: {
+          bonus_gems_awarded: number | null
+          created_at: string
+          gems_spent: number
+          id: string
+          opened_at: string | null
+          pack_type_id: string
+          purchased_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          bonus_gems_awarded?: number | null
+          created_at?: string
+          gems_spent: number
+          id?: string
+          opened_at?: string | null
+          pack_type_id: string
+          purchased_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          bonus_gems_awarded?: number | null
+          created_at?: string
+          gems_spent?: number
+          id?: string
+          opened_at?: string | null
+          pack_type_id?: string
+          purchased_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "boom_packs_pack_type_id_fkey"
+            columns: ["pack_type_id"]
+            isOneToOne: false
+            referencedRelation: "boom_pack_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bounties: {
         Row: {
           auto_generated: boolean | null
