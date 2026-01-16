@@ -33,6 +33,7 @@ import { ShippingRequestCard } from '@/components/order/ShippingRequestCard';
 import { ShippingSelector } from '@/components/order/ShippingSelector';
 import { OrderReceipt } from '@/components/order/OrderReceipt';
 import { ContactPartyButton } from '@/components/order/ContactPartyButton';
+import { OrderNextSteps } from '@/components/order/OrderNextSteps';
 import { useState as useCartState } from 'react';
 
 interface OrderAction {
@@ -412,6 +413,18 @@ export default function OrderDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* What Happens Next - Always show at top */}
+            <OrderNextSteps
+              status={order.status}
+              escrowStatus={order.escrow_status}
+              isBuyer={isBuyer}
+              isSeller={isSeller}
+              hasTracking={!!order.tracking_number}
+              buyerConfirmed={!!order.buyer_confirmed_at}
+              sellerConfirmed={!!order.seller_confirmed_at}
+              deliveryOption={order.delivery_option}
+            />
+
             {/* Item Card */}
             <Card>
               <CardHeader>
