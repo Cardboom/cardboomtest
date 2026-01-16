@@ -240,9 +240,17 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
               {formatGrade(collectible.grade)}
             </span>
           )}
-          <span>{collectible.brand}</span>
-          <span className="hidden sm:inline">•</span>
-          <span className="hidden sm:inline">{collectible.year}</span>
+          {collectible.year && (
+            <>
+              <span>{collectible.year}</span>
+            </>
+          )}
+          {collectible.condition && (
+            <>
+              <span>•</span>
+              <span>{collectible.condition}</span>
+            </>
+          )}
         </div>
 
         {/* Price Section with Live Ticker and Sparkline */}
