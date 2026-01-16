@@ -674,3 +674,87 @@
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Profile background animations */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes plasma-flow {
+  0% {
+    background-position: 0% 0%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+@keyframes matrix-rain {
+  0% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 50% 100%;
+  }
+}
+
+@keyframes shimmer-gold {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.bg-animated-gradient {
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+.bg-animated-pulse {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+.bg-animated-plasma {
+  background-size: 200% 200%;
+  animation: plasma-flow 12s linear infinite;
+}
+
+.bg-animated-matrix {
+  background-size: 100% 200%;
+  animation: matrix-rain 3s linear infinite;
+}
+
+.bg-animated-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer-gold 3s linear infinite;
+}
