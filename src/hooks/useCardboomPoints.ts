@@ -44,7 +44,7 @@ export const useCardboomPoints = (userId?: string) => {
       if (error) throw error;
       setPoints(data as CardboomPoints | null);
     } catch (error) {
-      console.error('Error fetching Cardboom Gems:', error);
+      console.error('Error fetching Boom Coins:', error);
     } finally {
       setLoading(false);
     }
@@ -109,9 +109,9 @@ export const useCardboomPoints = (userId?: string) => {
       fetchHistory();
     };
 
-    window.addEventListener('gems-balance-updated', handleBalanceUpdate);
+    window.addEventListener('coins-balance-updated', handleBalanceUpdate);
     return () => {
-      window.removeEventListener('gems-balance-updated', handleBalanceUpdate);
+      window.removeEventListener('coins-balance-updated', handleBalanceUpdate);
     };
   }, [fetchPoints, fetchHistory]);
 

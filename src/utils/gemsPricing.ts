@@ -1,14 +1,14 @@
 /**
- * Gems Pricing Utilities
+ * Boom Coins Pricing Utilities
  * 
- * Core pricing logic for CardBoom's Gems system.
+ * Core pricing logic for CardBoom's Boom Coins system.
  * 
  * Rules:
- * - 1 Gem = $0.01 USD (internal face value)
+ * - 1 Boom Coin = $0.01 USD (internal face value)
  * - Top-up markup: +12% standard, +8% Pro, +5% Enterprise
- * - Marketplace: display prices in Gems (derived from USD)
+ * - Marketplace: display prices in Boom Coins (derived from USD)
  * - IBAN checkout: USD only
- * - Card checkout: Gems only (for TR users)
+ * - Card checkout: Boom Coins only (for TR users)
  */
 
 export type SubscriptionTier = 'free' | 'lite' | 'pro' | 'enterprise';
@@ -66,15 +66,15 @@ export const getGemsFromPaymentUSD = (usd: number, tier: SubscriptionTier = 'fre
 };
 
 /**
- * Format Gems amount with emoji
+ * Format Boom Coins amount with emoji
  */
 export const formatGems = (gems: number): string => {
   const rounded = Math.round(gems);
-  return `${rounded.toLocaleString()} 💎`;
+  return `${rounded.toLocaleString()} 💣`;
 };
 
 /**
- * Format Gems amount without emoji
+ * Format Boom Coins amount without emoji
  */
 export const formatGemsPlain = (gems: number): string => {
   const rounded = Math.round(gems);
@@ -130,7 +130,7 @@ export const validateCheckoutPayment = (
 };
 
 /**
- * Get tier-specific messaging for Gems pricing
+ * Get tier-specific messaging for Boom Coins pricing
  */
 export const getTierPricingMessage = (tier: SubscriptionTier): string => {
   switch (tier) {

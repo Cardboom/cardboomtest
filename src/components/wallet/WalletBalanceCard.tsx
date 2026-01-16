@@ -94,7 +94,7 @@ export const WalletBalanceCard = ({
 
           <Button onClick={onTopUp} size="lg" className="gap-2 shadow-glow h-14 px-8">
             <Sparkles className="h-5 w-5" />
-            {isTurkishResident ? 'Top Up Gems' : 'Add Funds'}
+            {isTurkishResident ? 'Top Up Boom Coins' : 'Add Funds'}
           </Button>
         </div>
       </CardContent>

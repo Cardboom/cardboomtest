@@ -8,8 +8,8 @@ import { useCurrency, Currency } from '@/contexts/CurrencyContext';
  * Combines GemsContext and CurrencyContext for consistent pricing across the site.
  * 
  * Rules:
- * - Gems are ALWAYS in fixed USD conversion (1 Gem = $0.01 USD)
- * - When displayMode is 'gems': Show price in Gems (USD × 100)
+ * - Boom Coins are ALWAYS in fixed USD conversion (1 Boom Coin = $0.01 USD)
+ * - When displayMode is 'gems': Show price in Boom Coins (USD × 100)
  * - When displayMode is 'usd': Show price in selected fiat currency (USD/EUR/TRY)
  * - Turkish users see TRY equivalent with same markup as USD
  */
@@ -21,9 +21,9 @@ export interface UnifiedPricingResult {
   fiatCurrency: Currency;
   /** Format a USD price respecting current display mode and currency */
   formatPrice: (priceUSD: number) => string;
-  /** Format price with Gems emoji if in gems mode */
+  /** Format price with Boom Coins emoji if in coins mode */
   formatPriceWithSymbol: (priceUSD: number) => string;
-  /** Format price in Gems (always in USD base, for Turkish users shows TRY equivalent) */
+  /** Format price in Boom Coins (always in USD base, for Turkish users shows TRY equivalent) */
   formatGemsPrice: (priceUSD: number, showTRYEquivalent?: boolean) => string;
   /** Convert USD to Gems (always available) */
   usdToGems: (usd: number) => number;
@@ -97,10 +97,10 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
     return formatFiatPrice(priceUSD);
   }, [isGemsMode, usdToGems, formatGems, formatFiatPrice]);
 
-  // Format gems price - always USD base, optionally show TRY equivalent
+  // Format coins price - always USD base, optionally show TRY equivalent
   const formatGemsPrice = useCallback((priceUSD: number, showTRYEquivalent = false): string => {
     const gems = usdToGems(priceUSD);
-    const gemsStr = `${Math.round(gems).toLocaleString()} 💎`;
+    const gemsStr = `${Math.round(gems).toLocaleString()} 💣`;
     
     if (showTRYEquivalent) {
       const tryValue = getGemsTRYValue(gems);
@@ -141,7 +141,7 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
 export const usePricingSymbol = () => {
   const { isGemsMode, fiatCurrency } = useUnifiedPricing();
   
-  if (isGemsMode) return '💎';
+  if (isGemsMode) return '💣';
   if (fiatCurrency === 'TRY') return '₺';
   if (fiatCurrency === 'EUR') return '€';
   return '$';
@@ -153,6 +153,6 @@ export const usePricingSymbol = () => {
 export const usePricingLabel = () => {
   const { isGemsMode, fiatCurrency } = useUnifiedPricing();
   
-  if (isGemsMode) return 'Gems';
+  if (isGemsMode) return 'Coins';
   return fiatCurrency;
 };

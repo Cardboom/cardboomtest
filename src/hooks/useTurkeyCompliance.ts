@@ -33,10 +33,10 @@ export interface TurkeyComplianceConfig {
 
 // Terminology for Turkish users (avoid banking language)
 export const TR_TERMINOLOGY = {
-  topUp: 'Top Up Gems',
-  topUpCard: 'Top Up Gems (Credit Card)',
+  topUp: 'Top Up Boom Coins',
+  topUpCard: 'Top Up Boom Coins (Credit Card)',
   buyIBAN: 'Buy with Bank Transfer (IBAN)',
-  gems: 'CardBoom Gems',
+  gems: 'CardBoom Boom Coins',
   gemsDescription: 'Prepaid platform credits for CardBoom services',
   
   // Forbidden terms - never use for TR users
