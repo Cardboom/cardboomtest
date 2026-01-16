@@ -412,35 +412,33 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           {/* Spacer to push Sell button right */}
           <div className="hidden lg:block flex-1" />
           
-          {/* Sell Button */}
-          <Button 
-            size="sm"
-            onClick={() => navigate('/sell')}
-            className="hidden lg:flex gap-1.5 bg-primary hover:bg-primary/90 shadow-md text-sm font-semibold ml-4"
-          >
-            <span className="font-bold">+</span>
-            {t.nav.sell}
-          </Button>
+          {/* Sell Button + Gems Badge */}
+          <div className="hidden lg:flex items-center gap-2 ml-4">
+            <Button 
+              size="sm"
+              onClick={() => navigate('/sell')}
+              className="gap-1.5 bg-primary hover:bg-primary/90 shadow-md text-sm font-semibold"
+            >
+              <span className="font-bold">+</span>
+              {t.nav.sell}
+            </Button>
+            {user && <CardboomPointsBadge />}
+          </div>
 
           <div className="flex items-center gap-0.5">
             <CurrencyToggle />
             <ThemeToggle />
             <LanguageSelector />
             {user && (
-              <div className="hidden sm:flex items-center gap-1">
+              <div className="hidden sm:flex lg:hidden items-center gap-1">
                 <CardboomPointsBadge />
+              </div>
+            )}
+            {user && (
+              <div className="hidden sm:flex items-center">
                 <NotificationCenter />
               </div>
             )}
-            
-            <Button variant="ghost" size="icon" className="relative h-9 w-9" onClick={onCartClick}>
-              <ShoppingCart className="w-4 h-4" />
-              {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-primary text-primary-foreground rounded-full text-[10px] flex items-center justify-center font-bold">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
 
             {user ? (
               <DropdownMenu>
