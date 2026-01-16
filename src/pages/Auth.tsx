@@ -49,6 +49,7 @@ const Auth = () => {
   const [referralCode, setReferralCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedFees, setAcceptedFees] = useState(false);
+  const [acceptedConsignment, setAcceptedConsignment] = useState(false);
   const [loginMethod, setLoginMethod] = useState<LoginMethod>('email');
   const [loginPhone, setLoginPhone] = useState('');
   const [otp, setOtp] = useState('');
@@ -76,6 +77,7 @@ const Auth = () => {
     nationalId?: string;
     terms?: string;
     fees?: string;
+    consignment?: string;
     loginPhone?: string;
     otp?: string;
     resetPhone?: string;
@@ -135,6 +137,7 @@ const Auth = () => {
       nationalId?: string;
       terms?: string;
       fees?: string;
+      consignment?: string;
     } = {};
     
     const emailResult = emailSchema.safeParse(email);
@@ -163,6 +166,10 @@ const Auth = () => {
 
     if (!acceptedFees) {
       newErrors.fees = 'You must accept the platform fees and commissions';
+    }
+
+    if (!acceptedConsignment) {
+      newErrors.consignment = 'You must accept the consignment agreement';
     }
     
     setErrors(newErrors);
@@ -1236,6 +1243,23 @@ const Auth = () => {
                         </span>
                       </label>
                       {errors.fees && <p className="text-destructive text-xs ml-8">{t.auth.feesError}</p>}
+                    </div>
+
+                    {/* Consignment & Agency Agreement Checkbox */}
+                    <div className="space-y-2 bg-primary/5 rounded-lg p-3 border border-primary/20">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={acceptedConsignment}
+                          onChange={(e) => setAcceptedConsignment(e.target.checked)}
+                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50 shrink-0"
+                        />
+                        <span className="text-sm text-muted-foreground leading-relaxed">
+                          <span className="text-foreground font-medium">{t.auth.consignmentAgreement}</span>{' '}
+                          <a href="/consignment-agreement" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">({t.auth.consignmentLink})</a>
+                        </span>
+                      </label>
+                      {errors.consignment && <p className="text-destructive text-xs ml-8">{t.auth.consignmentError}</p>}
                     </div>
 
                     <Button
