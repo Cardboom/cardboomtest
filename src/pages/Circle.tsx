@@ -114,6 +114,11 @@ interface Discussion {
   upvotes: number;
   language: string;
   market_item: MarketItem | null;
+  creator_profile?: {
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
   hasVoted?: boolean;
 }
 
@@ -254,11 +259,47 @@ const Circle = () => {
         marketItems = items || [];
       }
 
+      // Fetch first comment creator for each discussion to get author
+      const discussionIds = data.map(d => d.id);
+      let creatorMap: Record<string, any> = {};
+      
+      if (discussionIds.length > 0) {
+        // Get first comments for each discussion
+        const { data: firstComments } = await supabase
+          .from("discussion_comments")
+          .select("discussion_id, user_id")
+          .in("discussion_id", discussionIds)
+          .order("created_at", { ascending: true });
+        
+        if (firstComments && firstComments.length > 0) {
+          // Get unique first comment per discussion
+          const firstCommentByDiscussion: Record<string, string> = {};
+          for (const comment of firstComments) {
+            if (!firstCommentByDiscussion[comment.discussion_id]) {
+              firstCommentByDiscussion[comment.discussion_id] = comment.user_id;
+            }
+          }
+          
+          // Fetch profiles for these users
+          const userIds = [...new Set(Object.values(firstCommentByDiscussion))];
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id, display_name, avatar_url")
+            .in("id", userIds);
+          
+          // Build creator map
+          for (const [discussionId, userId] of Object.entries(firstCommentByDiscussion)) {
+            creatorMap[discussionId] = profiles?.find(p => p.id === userId) || null;
+          }
+        }
+      }
+
       let discussionsWithItems = data.map(d => ({
         ...d,
         upvotes: d.upvotes || 0,
         language: d.language || "en",
         market_item: marketItems.find(m => m.id === d.market_item_id) || null,
+        creator_profile: creatorMap[d.id] || null,
         hasVoted: userVotes.has(d.id)
       }));
 
@@ -443,11 +484,8 @@ const Circle = () => {
   };
 
   const getCardUrl = (discussion: Discussion) => {
-    // For discussions without a linked card, go to thread page
-    if (!discussion.market_item) return `/circle/${discussion.id}`;
-    // For card-linked discussions, go to the card page
-    const slug = `${normalizeSlug(discussion.market_item.name)}-${discussion.market_item.id.slice(0, 8)}`;
-    return `/cards/${discussion.market_item.category.toLowerCase()}/${slug}`;
+    // All discussions should go to the thread page
+    return `/circle/${discussion.id}`;
   };
 
   return (
@@ -695,6 +733,13 @@ const Circle = () => {
                           {discussion.title || discussion.market_item?.name}
                         </h3>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {discussion.creator_profile && (
+                            <span className="flex items-center gap-1">
+                              <span className="text-foreground font-medium">
+                                {discussion.creator_profile.display_name || 'Anonymous'}
+                              </span>
+                            </span>
+                          )}
                           <span className="flex items-center gap-1">
                             <MessageSquare className="w-3.5 h-3.5" />
                             {discussion.comment_count}
