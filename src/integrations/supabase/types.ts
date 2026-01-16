@@ -6274,6 +6274,7 @@ export type Database = {
           created_at: string
           fee: number
           id: string
+          metadata: Json | null
           payment_id: string | null
           status: string
           total: number
@@ -6286,6 +6287,7 @@ export type Database = {
           created_at?: string
           fee: number
           id?: string
+          metadata?: Json | null
           payment_id?: string | null
           status?: string
           total: number
@@ -6298,6 +6300,7 @@ export type Database = {
           created_at?: string
           fee?: number
           id?: string
+          metadata?: Json | null
           payment_id?: string | null
           status?: string
           total?: number
