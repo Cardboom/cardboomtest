@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Gem, Package, CreditCard, Sparkles, Shield, Clock, TrendingUp, Check, Info } from 'lucide-react';
+import { Gem, Package, CreditCard, Sparkles, Shield, Clock, TrendingUp, Check, Info, Gift, Ticket } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -15,6 +15,8 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { useCardboomPoints } from '@/hooks/useCardboomPoints';
 import { useTurkeyCompliance } from '@/hooks/useTurkeyCompliance';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
+import { GiftCardPurchase } from '@/components/gems/GiftCardPurchase';
+import { ClaimGiftCard } from '@/components/gems/ClaimGiftCard';
 import { toast } from 'sonner';
 
 // Gem pack options with prices in USD
@@ -32,6 +34,7 @@ const GemsPage: React.FC = () => {
   const [user, setUser] = useState<any>(null);
   const [showTopUp, setShowTopUp] = useState(false);
   const [selectedPack, setSelectedPack] = useState<typeof GEM_PACKS[0] | null>(null);
+  const [walletBalanceCents, setWalletBalanceCents] = useState(0);
   
   const { pricing, subscriptionTier, getGemsTopUpCost } = useGems();
   const { exchangeRates, currency } = useCurrency();
@@ -40,6 +43,17 @@ const GemsPage: React.FC = () => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      if (user) {
+        // Fetch wallet balance for gifting
+        supabase
+          .from('wallets')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) setWalletBalanceCents(Number(data.balance) * 100);
+          });
+      }
     });
   }, []);
 
@@ -123,20 +137,35 @@ const GemsPage: React.FC = () => {
                   and premium features. Better rates for subscribers.
                 </motion.p>
 
-                {/* Current Balance */}
+                {/* Current Balance & Gifting */}
                 {user && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="inline-flex items-center gap-4 px-8 py-4 bg-card border border-border rounded-2xl shadow-xl"
+                    className="flex flex-col sm:flex-row items-center gap-4"
                   >
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-sky-400 to-primary flex items-center justify-center">
-                      <Gem className="w-7 h-7 text-white" />
+                    <div className="inline-flex items-center gap-4 px-8 py-4 bg-card border border-border rounded-2xl shadow-xl">
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-sky-400 to-primary flex items-center justify-center">
+                        <Gem className="w-7 h-7 text-white" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm text-muted-foreground">Your Balance</p>
+                        <p className="text-3xl font-bold">{balance.toLocaleString()} <span className="text-lg text-muted-foreground">Gems</span></p>
+                      </div>
                     </div>
-                    <div className="text-left">
-                      <p className="text-sm text-muted-foreground">Your Balance</p>
-                      <p className="text-3xl font-bold">{balance.toLocaleString()} <span className="text-lg text-muted-foreground">Gems</span></p>
+                    
+                    {/* Gem Gifting Actions */}
+                    <div className="flex gap-2">
+                      <GiftCardPurchase 
+                        userBalance={walletBalanceCents} 
+                        onPurchaseComplete={() => {
+                          supabase.from('wallets').select('balance').eq('user_id', user.id).single().then(({ data }) => {
+                            if (data) setWalletBalanceCents(Number(data.balance) * 100);
+                          });
+                        }} 
+                      />
+                      <ClaimGiftCard onClaimComplete={() => {}} />
                     </div>
                   </motion.div>
                 )}
