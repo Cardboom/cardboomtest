@@ -98,8 +98,8 @@ const SellPage = () => {
   } | null>(null);
   const [showVaultWizard, setShowVaultWizard] = useState(false);
   const [selectedVaultItem, setSelectedVaultItem] = useState<any>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [showAIScanner, setShowAIScanner] = useState(true);
   const [scannedAnalysis, setScannedAnalysis] = useState<CardAnalysis | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -196,51 +196,73 @@ const SellPage = () => {
   };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    let file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    // Convert HEIC to JPEG if needed
-    if (isHeicFile(file)) {
-      toast.loading('Converting HEIC image...', { id: 'heic-convert' });
-      try {
-        file = await processImageFile(file);
-        toast.success('Image converted successfully!', { id: 'heic-convert' });
-      } catch (error) {
-        toast.error('Failed to convert HEIC image. Please use JPG or PNG.', { id: 'heic-convert' });
-        return;
-      }
-    }
+    const maxImages = 5;
+    const currentCount = imageFiles.length;
+    const newFilesArray = Array.from(files).slice(0, maxImages - currentCount);
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image must be less than 10MB');
+    if (newFilesArray.length === 0) {
+      toast.error(`Maximum ${maxImages} images allowed`);
       return;
     }
 
-    setImageFile(file);
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = reader.result as string;
-      setImagePreview(base64);
-      
-      // Trigger AI analysis
-      const result = await analyzeImage(base64);
-      
-      // Auto-fill form if card was detected
-      if (result?.detected) {
-        setFormData(prev => ({
-          ...prev,
-          title: result.cardName || prev.title,
-          category: result.category || prev.category,
-          condition: result.estimatedCondition || prev.condition,
-        }));
+    for (let file of newFilesArray) {
+      // Convert HEIC to JPEG if needed
+      if (isHeicFile(file)) {
+        toast.loading('Converting HEIC image...', { id: 'heic-convert' });
+        try {
+          file = await processImageFile(file);
+          toast.success('Image converted successfully!', { id: 'heic-convert' });
+        } catch (error) {
+          toast.error('Failed to convert HEIC image. Please use JPG or PNG.', { id: 'heic-convert' });
+          continue;
+        }
       }
-    };
-    reader.readAsDataURL(file);
+
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('Image must be less than 10MB');
+        continue;
+      }
+
+      setImageFiles(prev => [...prev, file]);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        setImagePreviews(prev => [...prev, base64]);
+        
+        // Trigger AI analysis only for the first image
+        if (imagePreviews.length === 0 && imageFiles.length === 0) {
+          const result = await analyzeImage(base64);
+          
+          // Auto-fill form if card was detected
+          if (result?.detected) {
+            setFormData(prev => ({
+              ...prev,
+              title: result.cardName || prev.title,
+              category: result.category || prev.category,
+              condition: result.estimatedCondition || prev.condition,
+            }));
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const clearImage = () => {
-    setImageFile(null);
-    setImagePreview(null);
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    if (index === 0) {
+      clearAnalysis();
+      setScannedAnalysis(null);
+    }
+  };
+
+  const clearAllImages = () => {
+    setImageFiles([]);
+    setImagePreviews([]);
     clearAnalysis();
     setScannedAnalysis(null);
     setShowAIScanner(true);
@@ -249,30 +271,35 @@ const SellPage = () => {
     }
   };
 
-  const uploadImage = async (userId: string): Promise<string | null> => {
-    if (!imageFile) return null;
+  const uploadImages = async (userId: string): Promise<string[]> => {
+    if (imageFiles.length === 0) return [];
     
     setUploading(true);
+    const uploadedUrls: string[] = [];
+    
     try {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`;
+      for (const file of imageFiles) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+        const filePath = `${userId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('listing-images')
-        .upload(filePath, imageFile);
+        const { error: uploadError } = await supabase.storage
+          .from('listing-images')
+          .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from('listing-images')
-        .getPublicUrl(filePath);
+        const { data } = supabase.storage
+          .from('listing-images')
+          .getPublicUrl(filePath);
 
-      return data.publicUrl;
+        uploadedUrls.push(data.publicUrl);
+      }
+      return uploadedUrls;
     } catch (error) {
-      console.error('Error uploading image:', error);
-      toast.error('Failed to upload image');
-      return null;
+      console.error('Error uploading images:', error);
+      toast.error('Failed to upload images');
+      return uploadedUrls;
     } finally {
       setUploading(false);
     }
@@ -307,8 +334,9 @@ const SellPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      // Upload image if selected
-      const imageUrl = await uploadImage(session.user.id);
+      // Upload images if selected
+      const uploadedUrls = await uploadImages(session.user.id);
+      const imageUrl = uploadedUrls.length > 0 ? uploadedUrls[0] : null;
 
       // Prepare card data for indexing - use reviewed data if available
       const cardData = reviewedCardData ? {
@@ -408,7 +436,7 @@ const SellPage = () => {
         auctionDurationDays: '7',
         auctionStartDate: '',
       });
-      clearImage();
+      clearAllImages();
       fetchListings();
     } catch (error: any) {
       console.error('Error creating listing:', error);
@@ -544,7 +572,7 @@ const SellPage = () => {
       condition: formData.condition,
       marketPrice: price,
       instantPrice: instantPrice,
-      imageUrl: imagePreview,
+      imageUrl: imagePreviews[0] || null,
     });
     setShowInstantSellDialog(true);
   };
@@ -558,10 +586,11 @@ const SellPage = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Not authenticated');
 
-      // Upload image if exists
+      // Upload images if exist
       let uploadedImageUrl = instantSellData.imageUrl;
-      if (imageFile) {
-        uploadedImageUrl = await uploadImage(session.user.id);
+      if (imageFiles.length > 0) {
+        const uploadedUrls = await uploadImages(session.user.id);
+        uploadedImageUrl = uploadedUrls[0] || null;
       }
 
       // Create an instant sale request (pending admin approval after shipping)
@@ -621,7 +650,7 @@ const SellPage = () => {
         auctionDurationDays: '7',
         auctionStartDate: '',
       });
-      clearImage();
+      clearAllImages();
       setShowInstantSellDialog(false);
       setInstantSellData(null);
 
@@ -709,7 +738,7 @@ const SellPage = () => {
                 onSelectPrice={(price, imageUrl) => {
                   setFormData({ ...formData, price: price.toString() });
                   if (imageUrl) {
-                    setImagePreview(imageUrl);
+                    setImagePreviews([imageUrl]);
                   }
                   setActiveTab('create');
                   toast.success('Price applied! Complete your listing details.');
@@ -718,14 +747,14 @@ const SellPage = () => {
             </TabsContent>
 
             {/* AI Scanner Upload Section */}
-            {activeTab === 'create' && showAIScanner && !imagePreview && (
+            {activeTab === 'create' && showAIScanner && imagePreviews.length === 0 && (
               <div className="mb-6">
               <CardScannerUpload
                   mode="sell"
                   onScanComplete={(scanAnalysis, file, previewUrl) => {
                     setScannedAnalysis(scanAnalysis);
-                    setImageFile(file);
-                    setImagePreview(previewUrl);
+                    setImageFiles([file]);
+                    setImagePreviews([previewUrl]);
                     setShowAIScanner(false);
                     
                     // Always show review modal for user verification
@@ -1023,23 +1052,45 @@ const SellPage = () => {
                             onChange={handleImageSelect}
                             accept="image/jpeg,image/png,image/gif,image/webp,image/heic,image/heif,.heic,.heif"
                             className="hidden"
+                            multiple
                           />
-                          {imagePreview ? (
-                            <div className="relative w-full max-w-xs">
-                              <img 
-                                src={imagePreview} 
-                                alt="Preview" 
-                                className="w-full h-48 object-cover rounded-lg border border-border"
-                              />
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="absolute top-2 right-2 h-8 w-8"
-                                onClick={clearImage}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
+                          {imagePreviews.length > 0 ? (
+                            <div className="space-y-3">
+                              <div className="flex flex-wrap gap-3">
+                                {imagePreviews.map((preview, index) => (
+                                  <div key={index} className="relative w-32 h-32">
+                                    <img 
+                                      src={preview} 
+                                      alt={`Preview ${index + 1}`} 
+                                      className="w-full h-full object-cover rounded-lg border border-border"
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      className="absolute -top-2 -right-2 h-6 w-6"
+                                      onClick={() => removeImage(index)}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                    {index === 0 && (
+                                      <Badge className="absolute bottom-1 left-1 text-[10px]">Main</Badge>
+                                    )}
+                                  </div>
+                                ))}
+                                {imagePreviews.length < 5 && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-32 h-32 flex flex-col gap-1 border-dashed"
+                                    onClick={() => fileInputRef.current?.click()}
+                                  >
+                                    <Plus className="h-5 w-5 text-muted-foreground" />
+                                    <span className="text-xs text-muted-foreground">Add more</span>
+                                  </Button>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{imagePreviews.length}/5 images • First image is main</p>
                             </div>
                           ) : (
                             <Button
@@ -1049,15 +1100,15 @@ const SellPage = () => {
                               onClick={() => fileInputRef.current?.click()}
                             >
                               <Upload className="h-8 w-8 text-muted-foreground" />
-                              <span className="text-muted-foreground">Click to upload image</span>
-                              <span className="text-xs text-muted-foreground">JPG, PNG, GIF up to 10MB</span>
+                              <span className="text-muted-foreground">Click to upload images</span>
+                              <span className="text-xs text-muted-foreground">Up to 5 images, 10MB each</span>
                             </Button>
                           )}
                         </div>
                       </div>
 
                       {/* AI Pricing Intelligence */}
-                      {(imagePreview || isAnalyzing) && (
+                      {(imagePreviews.length > 0 || isAnalyzing) && (
                         <div className="sm:col-span-2">
                           <CardPricingIntelligence
                             analysis={analysis}
@@ -1467,7 +1518,7 @@ const SellPage = () => {
         open={showReviewModal}
         onClose={() => setShowReviewModal(false)}
         analysis={scannedAnalysis}
-        imagePreview={imagePreview}
+        imagePreview={imagePreviews[0] || null}
         onConfirm={(reviewedData) => {
           setReviewedCardData(reviewedData);
           setFormData(prev => ({

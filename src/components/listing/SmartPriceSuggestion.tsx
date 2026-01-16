@@ -340,6 +340,7 @@ const PriceOption = ({
   <Tooltip>
     <TooltipTrigger asChild>
       <button
+        type="button"
         onClick={onSelect}
         className={cn(
           "relative p-3 rounded-lg border transition-all text-left hover:scale-[1.02]",
