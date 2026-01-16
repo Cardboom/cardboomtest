@@ -17,15 +17,71 @@ const KNOWN_DROPS = [
   { name: 'Yu-Gi-Oh! 25th Mega Set', tcg: 'yugioh', release_date: '2026-04-18', type: 'collection', description: 'Anniversary celebration set' },
 ];
 
-// Mock social posts for TCG community buzz
-const COMMUNITY_POSTS = [
+// Fallback mock posts if X API fails
+const FALLBACK_POSTS = [
   { author_name: 'PokéCollector', author_handle: '@pokecollector', content: 'Prismatic Evolutions is absolutely stunning! The holographic effects are next level. 🔥', engagement_count: 1250 },
   { author_name: 'TCG Investor', author_handle: '@tcginvestor', content: 'One Piece TCG prices are mooning! OP-11 pre-orders selling out everywhere. Get in while you can. 🚀', engagement_count: 890 },
   { author_name: 'Slab King', author_handle: '@slabking', content: 'PSA 10 population on vintage Pokemon keeps climbing. Raw card arbitrage is the play right now. 💎', engagement_count: 567 },
-  { author_name: 'Card Flipper', author_handle: '@cardflip', content: 'Just sold my Luffy Gear 5 for 3x what I paid. This market is insane! 📈', engagement_count: 445 },
-  { author_name: 'Sports Cards Daily', author_handle: '@sportscardsdaily', content: 'Victor Wembanyama rookie cards holding strong. Smart money is accumulating. 🏀', engagement_count: 678 },
-  { author_name: 'MTG Finance', author_handle: '@mtgfinance', content: 'Commander Masters singles are finally stabilizing. Time to buy your staples! 🃏', engagement_count: 334 },
 ];
+
+// Fetch live X/Twitter posts mentioning @cardboomcom
+async function fetchLiveXPosts(): Promise<{posts: any[], fromApi: boolean}> {
+  const X_BEARER_TOKEN = Deno.env.get('X_BEARER_TOKEN');
+  
+  if (!X_BEARER_TOKEN) {
+    console.log('[sync-homepage-cache] X_BEARER_TOKEN not configured, using fallback posts');
+    return { posts: [], fromApi: false };
+  }
+
+  try {
+    // Search for tweets mentioning @cardboomcom OR #cardboom OR TCG-related terms
+    const searchQuery = encodeURIComponent('(@cardboomcom OR #cardboom OR #tcgcards OR #pokemontcg OR #onepiecetcg) -is:retweet');
+    const url = `https://api.twitter.com/2/tweets/search/recent?query=${searchQuery}&max_results=20&tweet.fields=created_at,public_metrics&expansions=author_id&user.fields=name,username,profile_image_url`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${X_BEARER_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[sync-homepage-cache] X API error:', response.status, errorText);
+      return { posts: [], fromApi: false };
+    }
+
+    const data = await response.json();
+    
+    // Map users by ID for easy lookup
+    const users = new Map<string, any>();
+    if (data.includes?.users) {
+      for (const user of data.includes.users) {
+        users.set(user.id, user);
+      }
+    }
+
+    // Transform tweets to our format
+    const posts = (data.data || []).map((tweet: any) => {
+      const author = users.get(tweet.author_id);
+      return {
+        external_id: tweet.id,
+        author_name: author?.name || 'TCG Fan',
+        author_handle: `@${author?.username || 'unknown'}`,
+        author_avatar: author?.profile_image_url || null,
+        content: tweet.text,
+        engagement_count: (tweet.public_metrics?.like_count || 0) + (tweet.public_metrics?.retweet_count || 0),
+        posted_at: tweet.created_at,
+        post_url: `https://x.com/${author?.username}/status/${tweet.id}`,
+      };
+    });
+
+    console.log(`[sync-homepage-cache] Fetched ${posts.length} live X posts`);
+    return { posts, fromApi: true };
+  } catch (err) {
+    console.error('[sync-homepage-cache] Error fetching X posts:', err);
+    return { posts: [], fromApi: false };
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -82,30 +138,62 @@ Deno.serve(async (req) => {
       results.errors.push(`TCG drops: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
 
-    // 2. Update Social Posts cache
+    // 2. Update Social Posts cache - try live X API first, fallback to mock
     try {
-      for (const post of COMMUNITY_POSTS) {
-        const postId = `${post.author_handle}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-        
-        const { error } = await supabase
-          .from('cached_social_posts')
-          .upsert({
-            external_id: postId,
-            platform: 'x',
-            author_name: post.author_name,
-            author_handle: post.author_handle,
-            content: post.content,
-            engagement_count: post.engagement_count + Math.floor(Math.random() * 100), // Add some variance
-            posted_at: new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000).toISOString(), // Random time in last 24h
-            is_active: true,
-            updated_at: now.toISOString()
-          }, { onConflict: 'external_id' })
+      const { posts: livePosts, fromApi } = await fetchLiveXPosts();
+      
+      if (fromApi && livePosts.length > 0) {
+        // Use live X API posts
+        for (const post of livePosts) {
+          const { error } = await supabase
+            .from('cached_social_posts')
+            .upsert({
+              external_id: post.external_id,
+              platform: 'x',
+              author_name: post.author_name,
+              author_handle: post.author_handle,
+              author_avatar: post.author_avatar,
+              content: post.content,
+              engagement_count: post.engagement_count,
+              posted_at: post.posted_at,
+              post_url: post.post_url,
+              is_active: true,
+              updated_at: now.toISOString()
+            }, { onConflict: 'external_id' })
 
-        if (error) {
-          results.errors.push(`Social post: ${error.message}`)
-        } else {
-          results.social_posts++
+          if (error) {
+            results.errors.push(`Social post: ${error.message}`)
+          } else {
+            results.social_posts++
+          }
         }
+        console.log(`[sync-homepage-cache] Synced ${results.social_posts} live X posts`)
+      } else {
+        // Fallback to mock posts
+        for (const post of FALLBACK_POSTS) {
+          const postId = `mock-${post.author_handle}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+          
+          const { error } = await supabase
+            .from('cached_social_posts')
+            .upsert({
+              external_id: postId,
+              platform: 'x',
+              author_name: post.author_name,
+              author_handle: post.author_handle,
+              content: post.content,
+              engagement_count: post.engagement_count + Math.floor(Math.random() * 100),
+              posted_at: new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+              is_active: true,
+              updated_at: now.toISOString()
+            }, { onConflict: 'external_id' })
+
+          if (error) {
+            results.errors.push(`Social post: ${error.message}`)
+          } else {
+            results.social_posts++
+          }
+        }
+        console.log(`[sync-homepage-cache] Used ${results.social_posts} fallback posts (X API unavailable)`)
       }
 
       // Keep only last 50 posts
