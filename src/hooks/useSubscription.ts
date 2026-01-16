@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 interface Subscription {
   id: string;
   user_id: string;
-  tier: 'free' | 'pro' | 'enterprise';
+  tier: 'free' | 'lite' | 'pro' | 'enterprise';
   price_monthly: number;
   started_at: string;
   expires_at: string | null;
@@ -18,10 +18,12 @@ export const useSubscription = (userId?: string) => {
   const [loading, setLoading] = useState(true);
 
   // Monthly prices
-  const PRO_PRICE = 9.99;
-  const ENTERPRISE_PRICE = 29.99;
+  const LITE_PRICE = 9.99;
+  const PRO_PRICE = 25;
+  const ENTERPRISE_PRICE = 50;
   
   // Yearly prices (11 months - 1 month free)
+  const LITE_YEARLY_PRICE = LITE_PRICE * 11;
   const PRO_YEARLY_PRICE = PRO_PRICE * 11;
   const ENTERPRISE_YEARLY_PRICE = ENTERPRISE_PRICE * 11;
   
@@ -60,9 +62,16 @@ export const useSubscription = (userId?: string) => {
   };
 
   // Use useMemo to recalculate when subscription changes
+  const isLite = useMemo(() => {
+    if (!subscription) return false;
+    if (!['lite', 'pro', 'enterprise'].includes(subscription.tier)) return false;
+    if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) return false;
+    return true;
+  }, [subscription]);
+
   const isPro = useMemo(() => {
     if (!subscription) return false;
-    if (subscription.tier !== 'pro' && subscription.tier !== 'enterprise') return false;
+    if (!['pro', 'enterprise'].includes(subscription.tier)) return false;
     if (subscription.expires_at && new Date(subscription.expires_at) < new Date()) return false;
     return true;
   }, [subscription]);
@@ -203,40 +212,48 @@ export const useSubscription = (userId?: string) => {
   };
 
   const getFeeRates = () => {
+    // Seller fee structure: up to $7,500 | over $7,500
     if (isEnterprise) {
       return {
-        buyerFeeRate: 0.03, // 3% for Enterprise
-        sellerFeeRate: 0.045, // 4.5% for Enterprise
-        cardFeeRate: 0.045, // 4.5% for Enterprise
-        wireFeeRate: 0.01, // 1% for Enterprise
+        sellerFeeRate: 0.04, // 4% up to $7,500
+        sellerFeeRateOver: 0.01, // 1% over $7,500
+        gemsMarkup: 0.05, // 5%
       };
     }
     if (isPro) {
       return {
-        buyerFeeRate: 0.045, // 4.5% for Pro
-        sellerFeeRate: 0.06, // 6% for Pro
-        cardFeeRate: 0.055, // 5.5% for Pro
-        wireFeeRate: 0.02, // 2% for Pro
+        sellerFeeRate: 0.08, // 8% up to $7,500
+        sellerFeeRateOver: 0.015, // 1.5% over $7,500
+        gemsMarkup: 0.08, // 8%
+      };
+    }
+    if (isLite) {
+      return {
+        sellerFeeRate: 0.10, // 10% up to $7,500
+        sellerFeeRateOver: 0.02, // 2% over $7,500
+        gemsMarkup: 0.10, // 10%
       };
     }
     return {
-      buyerFeeRate: 0.06, // 6% standard
-      sellerFeeRate: 0.085, // 8.5% standard
-      cardFeeRate: 0.07, // 7% standard
-      wireFeeRate: 0.03, // 3% standard
+      sellerFeeRate: 0.1325, // 13.25% up to $7,500
+      sellerFeeRateOver: 0.0235, // 2.35% over $7,500
+      gemsMarkup: 0.12, // 12%
     };
   };
 
   return {
     subscription,
     loading,
+    isLite,
     isPro,
     isEnterprise,
     subscribe,
     cancelAutoRenew,
     getFeeRates,
+    LITE_PRICE,
     PRO_PRICE,
     ENTERPRISE_PRICE,
+    LITE_YEARLY_PRICE,
     PRO_YEARLY_PRICE,
     ENTERPRISE_YEARLY_PRICE,
     ENTERPRISE_FREE_GRADINGS_PER_MONTH,

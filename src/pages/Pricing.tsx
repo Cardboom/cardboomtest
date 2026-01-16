@@ -28,7 +28,7 @@ const Pricing = () => {
 
   const currentTier = subscription?.tier || 'free';
 
-  const handleSubscribe = async (tier: 'pro' | 'enterprise') => {
+  const handleSubscribe = async (tier: 'lite' | 'pro' | 'enterprise') => {
     if (!userId) {
       toast.error('Please sign in to subscribe');
       navigate('/auth');
@@ -37,7 +37,8 @@ const Pricing = () => {
 
     setProcessing(tier);
     try {
-      const price = tier === 'pro' ? 9.99 : 20;
+      const prices = { lite: 9.99, pro: 25, enterprise: 50 };
+      const price = prices[tier];
       
       // Get user's wallet
       const { data: wallet, error: walletError } = await supabase
@@ -64,13 +65,14 @@ const Pricing = () => {
       if (deductError) throw deductError;
 
       // Create transaction record
+      const tierLabels = { lite: 'Lite', pro: 'Pro', enterprise: 'Enterprise' };
       await supabase
         .from('transactions')
         .insert({
           wallet_id: wallet.id,
           type: 'withdrawal',
           amount: -price,
-          description: `${tier === 'pro' ? 'Pro' : 'Enterprise'} Subscription - Monthly`,
+          description: `${tierLabels[tier]} Subscription - Monthly`,
         });
 
       // Calculate expiry (30 days from now)
@@ -108,7 +110,8 @@ const Pricing = () => {
           });
       }
 
-      toast.success(`Welcome to ${tier === 'pro' ? 'Pro' : 'Enterprise'}! Enjoy your premium features.`);
+      toast.success(`Welcome to ${tierLabels[tier]}! Enjoy your premium features.`);
+      toast.success(`Welcome to ${tierLabels[tier]}! Enjoy your premium features.`);
       navigate('/profile');
     } catch (error: any) {
       console.error('Subscription error:', error);
@@ -128,10 +131,9 @@ const Pricing = () => {
       popular: false,
       tier: 'free' as const,
       fees: {
-        buyer: '6%',
-        seller: '8.5%',
-        card: '7%',
-        wire: '3%',
+        seller: '13.25%',
+        sellerOver: '2.35%',
+        gemsMarkup: '12%',
       },
       features: [
         'Browse marketplace',
@@ -148,48 +150,67 @@ const Pricing = () => {
       ],
     },
     {
-      name: 'Pro',
+      name: 'Lite',
       price: '$9.99',
+      period: '/month',
+      description: 'Lower fees, more value',
+      icon: TrendingUp,
+      popular: false,
+      tier: 'lite' as const,
+      fees: {
+        seller: '10%',
+        sellerOver: '2%',
+        gemsMarkup: '10%',
+      },
+      features: [
+        'Everything in Free',
+        'Reduced transaction fees',
+        'Lower Gems markup',
+        'Lite badge on profile',
+        'Standard support',
+      ],
+      savings: 'Save ~$30/month on fees',
+    },
+    {
+      name: 'Pro',
+      price: '$25',
       period: '/month',
       description: 'For serious collectors',
       icon: Crown,
       popular: true,
       tier: 'pro' as const,
       fees: {
-        buyer: '4.5%',
-        seller: '6%',
-        card: '5.5%',
-        wire: '2%',
+        seller: '8%',
+        sellerOver: '1.5%',
+        gemsMarkup: '8%',
       },
       features: [
-        'Everything in Free',
+        'Everything in Lite',
         'PnL Graph & Analytics',
         'Portfolio performance tracking',
         'Price alerts (unlimited)',
         'Pro badge on profile',
-        'Reduced transaction fees',
         'Priority customer support',
         'Early access to features',
       ],
-      savings: 'Save ~$50/month on fees',
+      savings: 'Save ~$75/month on fees',
     },
     {
       name: 'Enterprise',
-      price: '$20',
+      price: '$50',
       period: '/month',
       description: 'For power sellers',
       icon: Building2,
       popular: false,
       tier: 'enterprise' as const,
       fees: {
-        buyer: '3%',
-        seller: '4.5%',
-        card: '4.5%',
-        wire: '1%',
+        seller: '4%',
+        sellerOver: '1%',
+        gemsMarkup: '5%',
       },
       features: [
         'Everything in Pro',
-        'Lowest transaction fees',
+        'Lowest transaction fees (4%)',
         'Advanced analytics dashboard',
         'API access (coming soon)',
         'Bulk listing tools',
@@ -197,7 +218,7 @@ const Pricing = () => {
         'Custom reports',
         'Enterprise badge',
       ],
-      savings: 'Save ~$150/month on fees',
+      savings: 'Save ~$200/month on fees',
     },
   ];
 
@@ -282,23 +303,19 @@ const Pricing = () => {
 
                   {/* Fee Comparison */}
                   <div className="bg-muted/50 rounded-lg p-4 mb-6">
-                    <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Transaction Fees</p>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-3 h-3 text-muted-foreground" />
-                        <span>Buyer: <span className="font-semibold text-foreground">{plan.fees.buyer}</span></span>
+                    <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Seller Fees</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Up to $7,500</span>
+                        <Badge variant="outline" className="font-semibold">{plan.fees.seller}</Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Percent className="w-3 h-3 text-muted-foreground" />
-                        <span>Seller: <span className="font-semibold text-foreground">{plan.fees.seller}</span></span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Over $7,500</span>
+                        <Badge variant="secondary" className="font-semibold">{plan.fees.sellerOver}</Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <CreditCard className="w-3 h-3 text-muted-foreground" />
-                        <span>Card: <span className="font-semibold text-foreground">{plan.fees.card}</span></span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Banknote className="w-3 h-3 text-muted-foreground" />
-                        <span>Wire: <span className="font-semibold text-foreground">{plan.fees.wire}</span></span>
+                      <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                        <span className="text-muted-foreground">Gems Markup</span>
+                        <Badge variant="outline" className="font-semibold">{plan.fees.gemsMarkup}</Badge>
                       </div>
                     </div>
                   </div>
