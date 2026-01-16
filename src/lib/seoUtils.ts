@@ -350,13 +350,13 @@ export const PRECONNECT_DOMAINS = [
 
 /**
  * Generate hreflang tags for internationalization
+ * NOTE: Removed ?lang= query params as they create non-canonical URLs.
+ * Currently returns only the canonical English version.
+ * For proper i18n, use path-based localization (e.g., /de/, /tr/).
  */
 export function generateHreflangTags(path: string): Array<{ lang: string; href: string }> {
-  const langs = ['en', 'de', 'tr', 'fr', 'ja'];
-  return langs.map(lang => ({
-    lang,
-    href: lang === 'en' ? `${SITE_URL}${path}` : `${SITE_URL}${path}?lang=${lang}`,
-  }));
+  // Only return canonical URL - query param based lang is not recommended for SEO
+  return [{ lang: 'en', href: `${SITE_URL}${path}` }];
 }
 
 /**

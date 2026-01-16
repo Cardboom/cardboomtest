@@ -7,6 +7,8 @@ const ALLOWED_ORIGINS = [
   // Lovable preview and published URLs
   'https://id-preview--b56128be-ee17-48af-baa7-915f88c0900b.lovable.app',
   'https://cardboomtest.lovable.app',
+  // Lovable project URLs
+  'https://b56128be-ee17-48af-baa7-915f88c0900b.lovableproject.com',
   // Local development
   'http://localhost:5173',
   'http://localhost:8080',

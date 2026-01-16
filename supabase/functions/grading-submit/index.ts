@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getCorsHeaders } from "../_shared/cors.ts";
-
-// Tightened CORS - only allows cardboom.com and Lovable preview URLs
-const corsHeaders = getCorsHeaders();
+import { getCorsHeaders, handleCorsPreflightRequest } from "../_shared/cors.ts";
 
 // Speed tier pricing - price is now stored on the order itself
 const GEM_RATE = 0.002; // 0.2% in gems (or 0.25% for Pro)
@@ -152,9 +149,13 @@ async function buildCalibratedPrompt(supabase: any): Promise<{ prompt: string; v
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS preflight
+  const preflightResponse = handleCorsPreflightRequest(req);
+  if (preflightResponse) return preflightResponse;
+
+  // Get CORS headers with origin
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
