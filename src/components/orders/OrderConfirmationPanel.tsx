@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ export const OrderConfirmationPanel = ({
   const [disputeReason, setDisputeReason] = useState('');
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const isBuyer = currentUserId === order.buyer_id;
   const isSeller = currentUserId === order.seller_id;
@@ -89,6 +91,8 @@ export const OrderConfirmationPanel = ({
       );
       queryClient.invalidateQueries({ queryKey: ['order', order.id] });
       onConfirmationComplete?.();
+      // Navigate to order details page after confirmation
+      navigate(`/orders/${order.id}`);
     },
     onError: (error: Error) => {
       toast.error(`Failed to confirm: ${error.message}`);

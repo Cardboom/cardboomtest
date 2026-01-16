@@ -302,7 +302,7 @@ const Index = () => {
       {user && <DailyXPClaimNotification />}
       {user && <DailyCardVotePopup />}
       
-      <main>
+      <main className="pt-4">
         {/* Boom Challenges - Full width at top */}
         <div className="container mx-auto px-4 space-y-2.5">
           {/* Boom Challenges + My Gradings side by side - only for logged in users */}
