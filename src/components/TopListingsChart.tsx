@@ -86,7 +86,7 @@ export const TopListingsChart = () => {
       // Fetch active listings - ONLY with images
       const { data: listingsData, error } = await supabase
         .from('listings')
-        .select('id, title, price, image_url, category, created_at, seller_id, market_item_id, certification_status, grading_order_id, slug')
+        .select('id, title, price, image_url, category, created_at, seller_id, market_item_id, certification_status, grading_order_id, slug, set_code, card_number, rarity')
         .eq('status', 'active')
         .not('image_url', 'is', null)
         .order('created_at', { ascending: false })
@@ -251,9 +251,15 @@ export const TopListingsChart = () => {
           : gradeInfo?.status === 'pending' ? 'pending'
           : listing.certification_status;
 
+        // Build full display name with set code and card number for SEO
+        let fullTitle = listing.title;
+        if (listing.set_code && listing.card_number && !listing.title.includes(listing.set_code)) {
+          fullTitle = `${listing.title} ${listing.set_code}-${listing.card_number}`;
+        }
+
         return {
           id: listing.id,
-          title: listing.title,
+          title: fullTitle,
           price: listing.price,
           image_url: listing.image_url,
           category: listing.category,
