@@ -88,13 +88,18 @@ export function ShippingRequestCard({
 
       // Create notification for the other party
       const otherUserId = isBuyer ? sellerId : buyerId;
-      await supabase.from('notifications').insert({
+      const requesterName = isBuyer ? (buyerUsername || 'The buyer') : (sellerUsername || 'The seller');
+      const { error: notifError } = await supabase.from('notifications').insert({
         user_id: otherUserId,
         type: 'shipping_approval_required',
-        title: 'Shipping Approval Required',
-        body: `${isBuyer ? buyerUsername : sellerUsername} has requested shipping for an order. Your approval is needed.`,
+        title: '📦 Shipping Request',
+        body: `${requesterName} has requested shipping for your order. Please review and approve.`,
         data: { order_id: orderId },
       });
+      
+      if (notifError) {
+        console.error('Failed to create shipping notification:', notifError);
+      }
     },
     onSuccess: () => {
       toast.success('Shipping request sent! Waiting for approval.');

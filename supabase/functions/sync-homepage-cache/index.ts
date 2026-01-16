@@ -34,9 +34,9 @@ async function fetchLiveXPosts(): Promise<{posts: any[], fromApi: boolean}> {
   }
 
   try {
-    // Search for tweets mentioning @cardboomcom only
+    // Search for tweets mentioning @cardboomcom only - use api.x.com (new endpoint)
     const searchQuery = encodeURIComponent('@cardboomcom -is:retweet');
-    const url = `https://api.twitter.com/2/tweets/search/recent?query=${searchQuery}&max_results=20&tweet.fields=created_at,public_metrics&expansions=author_id&user.fields=name,username,profile_image_url`;
+    const url = `https://api.x.com/2/tweets/search/recent?query=${searchQuery}&max_results=20&tweet.fields=created_at,public_metrics&expansions=author_id&user.fields=name,username,profile_image_url`;
 
     const response = await fetch(url, {
       headers: {
