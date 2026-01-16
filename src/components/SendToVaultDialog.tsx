@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Vault, Package, MapPin, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles } from 'lucide-react';
+import { Vault, Package, MapPin, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -466,6 +466,29 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
               </CardContent>
             </Card>
 
+            {/* Quick Sell Teaser */}
+            <Card className="border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-orange-500/5">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20 shrink-0">
+                    <Zap className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-foreground flex items-center gap-2">
+                      Quick Sell Available
+                      <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
+                        60% Value
+                      </Badge>
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Once verified, you can instantly sell to CardBoom at 60% of market value — 
+                      no listing required, payment within 24 hours!
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="border-accent/20">
               <CardContent className="p-4">
                 <h5 className="font-medium mb-2 flex items-center gap-2">
@@ -475,7 +498,7 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
                 <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
                   <li>{t.vault?.nextStep1 || 'Ship your packaged card to the address above'}</li>
                   <li>{t.vault?.nextStep2 || 'We receive and verify your card (3-5 business days)'}</li>
-                  <li>{t.vault?.nextStep3 || 'Your card appears in your vault, ready to sell or trade!'}</li>
+                  <li>{t.vault?.nextStep3 || 'Your card appears in your vault, ready to sell, trade, or Quick Sell!'}</li>
                 </ol>
               </CardContent>
             </Card>
