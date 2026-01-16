@@ -34,8 +34,8 @@ async function fetchLiveXPosts(): Promise<{posts: any[], fromApi: boolean}> {
   }
 
   try {
-    // Search for tweets mentioning @cardboomcom OR #cardboom OR TCG-related terms
-    const searchQuery = encodeURIComponent('(@cardboomcom OR #cardboom OR #tcgcards OR #pokemontcg OR #onepiecetcg) -is:retweet');
+    // Search for tweets mentioning @cardboomcom only
+    const searchQuery = encodeURIComponent('@cardboomcom -is:retweet');
     const url = `https://api.twitter.com/2/tweets/search/recent?query=${searchQuery}&max_results=20&tweet.fields=created_at,public_metrics&expansions=author_id&user.fields=name,username,profile_image_url`;
 
     const response = await fetch(url, {
