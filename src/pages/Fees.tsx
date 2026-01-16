@@ -5,26 +5,21 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { 
-  CreditCard, 
   Percent, 
   TrendingDown, 
-  Info, 
   Crown, 
   Building2, 
   Sparkles,
   ArrowRight,
   Calculator,
-  HelpCircle
+  Check,
+  Gem,
+  Wallet,
+  BadgeCheck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 const Fees = () => {
   const [cartItems] = useState<any[]>([]);
@@ -95,8 +90,8 @@ const Fees = () => {
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Fees & Pricing | CardBoom</title>
-        <meta name="description" content="Transparent fee structure for trading cards on CardBoom. Lower fees with Lite, Pro, and Enterprise subscriptions." />
+        <title>Simple, Fair Fees | CardBoom</title>
+        <meta name="description" content="Know exactly what you'll pay. CardBoom's all-inclusive trading fees with no hidden charges. Save more as you grow." />
       </Helmet>
 
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
@@ -106,22 +101,23 @@ const Fees = () => {
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4 text-primary border-primary/30">
             <Percent className="w-3 h-3 mr-1" />
-            Transparent Pricing
+            All-Inclusive
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Simple, Fair <span className="text-primary">Fees</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Know exactly what you'll pay. Lower your fees by upgrading your subscription.
+            Know exactly what you'll pay. Save more as you grow.
           </p>
         </div>
 
         {/* Trading Cards Fee Structure */}
-        <Card className="max-w-4xl mx-auto mb-12">
+        <Card className="max-w-4xl mx-auto mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-primary" />
+              <BadgeCheck className="w-5 h-5 text-primary" />
               Trading Card Sales
+              <Badge variant="secondary" className="ml-2 text-xs">All-inclusive</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -133,36 +129,8 @@ const Fees = () => {
                     <tr className="border-b border-border">
                       <th className="text-left py-3 px-4 font-semibold">Tier</th>
                       <th className="text-left py-3 px-4 font-semibold">Monthly</th>
-                      <th className="text-left py-3 px-4 font-semibold">
-                        <div className="flex items-center gap-1">
-                          Up to $7,500
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Fee applied to the first $7,500 of each sale</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold">
-                        <div className="flex items-center gap-1">
-                          Over $7,500
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <HelpCircle className="w-3.5 h-3.5 text-muted-foreground" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Reduced fee on the portion exceeding $7,500</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </th>
+                      <th className="text-left py-3 px-4 font-semibold">Up to $7,500</th>
+                      <th className="text-left py-3 px-4 font-semibold">Over $7,500</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -196,98 +164,151 @@ const Fees = () => {
                 </table>
               </div>
 
-              {/* Example Calculation */}
-              <Separator />
-              
-              <div className="bg-muted/50 rounded-lg p-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
-                  <Calculator className="w-4 h-4" />
-                  Fee Calculator
-                </h3>
-                
-                <div className="mb-4">
-                  <label className="text-sm text-muted-foreground mb-2 block">Sale Amount ($)</label>
-                  <input
-                    type="number"
-                    value={saleAmount}
-                    onChange={(e) => setSaleAmount(Number(e.target.value) || 0)}
-                    className="w-full max-w-xs px-4 py-2 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                    min={0}
-                    step={100}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {tiers.map((tier) => {
-                    const fee = calculateFee(saleAmount, tier.tier);
-                    const netAmount = saleAmount - fee;
-                    return (
-                      <div key={tier.name} className="bg-background rounded-lg p-4 border border-border/50">
-                        <p className="text-sm text-muted-foreground mb-1">{tier.name}</p>
-                        <p className="text-lg font-bold text-loss">-${fee.toFixed(2)}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          You receive: <span className="text-gain font-medium">${netAmount.toFixed(2)}</span>
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {saleAmount > 7500 && (
-                  <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
-                    <p className="text-sm text-muted-foreground">
-                      <Info className="w-4 h-4 inline mr-1" />
-                      For sales over $7,500, the lower rate applies only to the amount exceeding $7,500.
-                    </p>
-                  </div>
-                )}
+              {/* Helper Text */}
+              <div className="bg-muted/30 rounded-lg p-4 flex items-start gap-3">
+                <Check className="w-5 h-5 text-gain shrink-0 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  All fees include payment processing, wallet usage, and currency conversion. No hidden charges.
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Additional Fees */}
-        <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 mb-12">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Payment Processing</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Credit/Debit Card</span>
-                <Badge variant="outline">2.9% + $0.30</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Wire Transfer</span>
-                <Badge variant="outline">Free</Badge>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Gems Top-up</span>
-                <Badge variant="outline">Varies by tier</Badge>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Fee Calculator - Simplified */}
+        <Card className="max-w-4xl mx-auto mb-12">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-primary" />
+              Fee Calculator
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-6">
+              <label className="text-sm text-muted-foreground mb-2 block">Sale Amount ($)</label>
+              <input
+                type="number"
+                value={saleAmount}
+                onChange={(e) => setSaleAmount(Number(e.target.value) || 0)}
+                className="w-full max-w-xs px-4 py-2 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                min={0}
+                step={100}
+              />
+            </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Other Fees</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex justify-between items-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {tiers.map((tier) => {
+                const fee = calculateFee(saleAmount, tier.tier);
+                const netAmount = saleAmount - fee;
+                const Icon = tier.icon;
+                return (
+                  <div key={tier.name} className="bg-muted/50 rounded-lg p-4 border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon className={`w-4 h-4 ${tier.color}`} />
+                      <p className="text-sm font-medium">{tier.name}</p>
+                    </div>
+                    <p className="text-2xl font-bold text-gain">${netAmount.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You receive
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-xs text-muted-foreground mt-4 text-center">
+              Payout shown is final.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Wallet & Gems Section */}
+        <Card className="max-w-4xl mx-auto mb-12">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gem className="w-5 h-5 text-sky-400" />
+              Wallet & Gems
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-6">
+              Gems are CardBoom's internal balance, designed for fast and seamless transactions.
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Top-Up Options */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Top-Up Options</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+                    <span className="font-medium">Credit / Debit Card</span>
+                    <Badge variant="outline">Instant</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gain/5 border border-gain/20">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Bank Transfer (IBAN)</span>
+                      <Badge className="bg-gain/20 text-gain border-0 text-xs">Bonus Gems</Badge>
+                    </div>
+                    <Badge variant="outline">1-2 days</Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Member Benefits */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Member Benefits</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+                    <div className="flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Pro Members</span>
+                    </div>
+                    <Badge className="bg-primary/10 text-primary border-0">Better Gem Value</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-amber-500" />
+                      <span className="font-medium">Enterprise</span>
+                    </div>
+                    <Badge className="bg-amber-500/10 text-amber-500 border-0">Best Gem Value</Badge>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <Separator className="my-6" />
+
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-sky-500/5 border border-sky-500/20">
+              <Wallet className="w-5 h-5 text-sky-400" />
+              <p className="text-sm text-muted-foreground">
+                Your Gem balance is ready to use instantly.
+              </p>
+            </div>
+
+            <p className="text-xs text-muted-foreground mt-4 text-center">
+              Gem pricing may vary slightly based on market conditions.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Other Fees - Simplified */}
+        <Card className="max-w-4xl mx-auto mb-12">
+          <CardHeader>
+            <CardTitle className="text-lg">Other Fees</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
                 <span className="text-muted-foreground">Listing Fee</span>
-                <Badge variant="secondary">Free</Badge>
+                <Badge variant="secondary" className="bg-gain/10 text-gain border-0">Free</Badge>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Auction Listing</span>
-                <Badge variant="outline">$0.50</Badge>
-              </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center p-3 rounded-lg bg-muted/30">
                 <span className="text-muted-foreground">Withdrawal</span>
-                <Badge variant="secondary">Free</Badge>
+                <Badge variant="secondary" className="bg-gain/10 text-gain border-0">Free</Badge>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* CTA */}
         <div className="max-w-2xl mx-auto text-center">

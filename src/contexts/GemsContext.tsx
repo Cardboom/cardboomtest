@@ -14,7 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type PriceDisplayMode = 'gems' | 'usd';
 
-export type SubscriptionTier = 'free' | 'pro' | 'enterprise';
+export type SubscriptionTier = 'free' | 'lite' | 'pro' | 'enterprise';
 
 interface GemsPricing {
   /** Markup percentage based on subscription tier */
@@ -57,12 +57,14 @@ const GemsContext = createContext<GemsContextType | undefined>(undefined);
 // Markup percentages by tier
 const MARKUP_BY_TIER: Record<SubscriptionTier, number> = {
   free: 12,      // +12% for standard users
+  lite: 10,      // +10% for Lite subscribers
   pro: 8,        // +8% for Pro subscribers
   enterprise: 5, // +5% for Enterprise subscribers
 };
 
 const TIER_LABELS: Record<SubscriptionTier, string> = {
   free: 'Standard',
+  lite: 'Lite',
   pro: 'Pro',
   enterprise: 'Enterprise',
 };
