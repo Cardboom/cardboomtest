@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { useUnifiedPricing } from '@/hooks/useUnifiedPricing';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 interface LiveTickerPriceProps {
   value: number;
@@ -15,7 +16,7 @@ export const LiveTickerPrice = ({
   tickInterval = 2000,
   volatility = 0.002,
 }: LiveTickerPriceProps) => {
-  const { formatPriceWithSymbol } = useUnifiedPricing();
+  const { formatPriceWithSymbol, isGemsMode, formatPrice } = useUnifiedPricing();
   const [displayValue, setDisplayValue] = useState(value);
   const [isFlashing, setIsFlashing] = useState(false);
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
@@ -93,11 +94,18 @@ export const LiveTickerPrice = ({
       )}
     >
       <span className={cn(
-        'inline-block transition-all duration-150',
+        'inline-flex items-center gap-1 transition-all duration-150',
         isFlashing && direction === 'up' && 'animate-tick-up scale-105',
         isFlashing && direction === 'down' && 'animate-tick-down scale-105'
       )}>
-        {formatPriceWithSymbol(displayValue)}
+        {isGemsMode ? (
+          <>
+            {formatPrice(displayValue)}
+            <BoomCoinIcon size="sm" className="text-amber-400 inline-block" />
+          </>
+        ) : (
+          formatPriceWithSymbol(displayValue)
+        )}
       </span>
       {isFlashing && (
         <span className={cn(
