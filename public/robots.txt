@@ -1,9 +1,8 @@
 # CardBoom Robots.txt
-# https://cardboom.com
+# https://cardboomtest.lovable.app
 
 # Sitemaps
-Sitemap: https://cardboom.com/sitemap-static.xml
-Sitemap: https://www.cardboom.com/sitemap-static.xml
+Sitemap: https://cardboomtest.lovable.app/sitemap-static.xml
 
 # Google
 User-agent: Googlebot
@@ -91,4 +90,4 @@ Disallow: /admin
 Disallow: /order-success
 
 # Host
-Host: https://cardboom.com
+Host: https://cardboomtest.lovable.app

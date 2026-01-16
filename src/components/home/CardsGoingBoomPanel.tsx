@@ -15,68 +15,8 @@ interface XPost {
   timestamp: string;
 }
 
-// Fallback mock posts when API is unavailable
-// Community posts shown when no live data is available
-const communityPosts: XPost[] = [
-  {
-    id: '1',
-    author: { name: 'CardCollector_TR', handle: '@cardcollector_tr', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tr1' },
-    content: 'Just listed my first One Piece card on CardBoom! The grading process was super smooth. Love the CBGI certification 🔥',
-    likes: 156,
-    retweets: 42,
-    comments: 28,
-    timestamp: '3h',
-  },
-  {
-    id: '2',
-    author: { name: 'TCG Enthusiast', handle: '@tcgfan2026', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=tcg1' },
-    content: 'Prismatic Evolutions pre-orders are selling fast! Already seeing PSA 10 Pikachus going for 3x release price 📈',
-    likes: 892,
-    retweets: 234,
-    comments: 167,
-    timestamp: '5h',
-  },
-  {
-    id: '3',
-    author: { name: 'Slab Hunter', handle: '@slabhunter', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=slab1' },
-    content: 'Mail day! My graded Gear 5 Luffy just arrived from CardBoom Vault. The slab quality is insane 💎',
-    image: 'https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=400&h=300&fit=crop',
-    likes: 445,
-    retweets: 89,
-    comments: 56,
-    timestamp: '8h',
-  },
-  {
-    id: '4',
-    author: { name: 'OP Collector', handle: '@opcollector', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=op1' },
-    content: 'OP-11 Two Legends dropping next month! Shanks cards are going to be absolutely fire 🏴‍☠️',
-    likes: 678,
-    retweets: 156,
-    comments: 89,
-    timestamp: '12h',
-  },
-  {
-    id: '5',
-    author: { name: 'Magic Player', handle: '@mtglegacy', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mtg1' },
-    content: 'Vintage Black Lotus prices stabilizing around $500k for PSA 10. The reserved list keeps everything strong 💪',
-    likes: 1243,
-    retweets: 456,
-    comments: 234,
-    timestamp: '1d',
-  },
-  {
-    id: '6',
-    author: { name: 'YGO Master', handle: '@ygoduel', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ygo1' },
-    content: 'Just pulled a Ghost Rare from my 25th Anniversary box! CardBoom grading here I come 🎴',
-    likes: 567,
-    retweets: 123,
-    comments: 78,
-    timestamp: '1d',
-  },
-];
-
 export const CardsGoingBoomPanel = () => {
-  const [posts, setPosts] = useState<XPost[]>(communityPosts);
+  const [posts, setPosts] = useState<XPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -182,6 +122,27 @@ export const CardsGoingBoomPanel = () => {
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center px-6">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-4">
+                <Flame className="w-8 h-8 text-orange-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Be the first to go boom!</h3>
+              <p className="text-muted-foreground max-w-md mb-4">
+                Tweet about CardBoom with <span className="font-mono text-primary">@cardboomcom</span> and your post will appear here
+              </p>
+              <a
+                href="https://x.com/intent/tweet?text=Just%20discovered%20%40cardboomcom%20-%20the%20future%20of%20TCG%20trading!%20%F0%9F%94%A5"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                Tweet about CardBoom
+              </a>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4 h-full overflow-hidden">
