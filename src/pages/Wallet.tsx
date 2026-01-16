@@ -5,7 +5,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, ArrowUpRight, ArrowDownLeft, History, Plus, CreditCard, TrendingUp, TrendingDown, Banknote } from 'lucide-react';
+import { Wallet, ArrowUpRight, ArrowDownLeft, History, Plus, CreditCard, TrendingUp, TrendingDown, Banknote, Sparkles, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
@@ -13,8 +13,8 @@ import { WireTransferDialog } from '@/components/WireTransferDialog';
 import { WithdrawalDialog } from '@/components/WithdrawalDialog';
 import { PaymentSuccessDialog } from '@/components/PaymentSuccessDialog';
 import { CurrencyToggle } from '@/components/CurrencyToggle';
+import { useTurkeyCompliance, getPaymentLabel } from '@/hooks/useTurkeyCompliance';
 import { toast } from 'sonner';
-
 interface Transaction {
   id: string;
   type: string;
@@ -39,6 +39,9 @@ const WalletPage = () => {
   const [successAmount, setSuccessAmount] = useState(0);
   const [successPaymentId, setSuccessPaymentId] = useState<string | undefined>();
   const [user, setUser] = useState<any>(null);
+  
+  // Turkey compliance - determines payment method restrictions
+  const { isTurkishResident, allowIBANForWallet, allowWithdrawals, loading: complianceLoading } = useTurkeyCompliance();
 
   // Handle payment callback from iyzico
   useEffect(() => {
@@ -198,18 +201,39 @@ const WalletPage = () => {
                 </div>
 
                 <Button onClick={() => setShowCardTopUp(true)} size="lg" className="gap-2 shadow-glow h-14 px-8">
-                  <Plus className="h-5 w-5" />
-                  Add Funds
+                  <Sparkles className="h-5 w-5" />
+                  {isTurkishResident ? 'Top Up Gems' : 'Add Funds'}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
+          {/* Turkey Compliance Notice */}
+          {isTurkishResident && (
+            <Card className="mb-6 border-amber-500/30 bg-amber-500/5">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">Turkey Payment Rules</p>
+                    <p className="text-xs text-muted-foreground">
+                      Card payments can only be used to top up CardBoom Gems (platform credits). 
+                      For product purchases, use bank transfer (IBAN) at checkout.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Quick Add Funds Options */}
           <Card className="mb-6">
             <CardContent className="p-6">
-              <h3 className="font-display font-semibold text-foreground mb-4">Quick Add Funds</h3>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <h3 className="font-display font-semibold text-foreground mb-4">
+                {isTurkishResident ? 'Top Up CardBoom Gems' : 'Quick Add Funds'}
+              </h3>
+              <div className={`grid ${isTurkishResident ? 'grid-cols-1' : 'sm:grid-cols-2'} gap-4`}>
+                {/* Card Top-Up - Always available (Gems only for TR) */}
                 <button
                   onClick={() => setShowCardTopUp(true)}
                   className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-secondary/30 transition-all text-left"
@@ -218,44 +242,64 @@ const WalletPage = () => {
                     <CreditCard className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">Credit / Debit Card</p>
-                    <p className="text-sm text-muted-foreground">Instant • USD & TRY • 6.5% fee</p>
+                    <p className="font-semibold text-foreground">
+                      {getPaymentLabel(isTurkishResident, 'cardTopUp')}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {isTurkishResident 
+                        ? 'Instant • Get platform credits • 6.5% fee'
+                        : 'Instant • USD & TRY • 6.5% fee'
+                      }
+                    </p>
                   </div>
                 </button>
-                <button
-                  onClick={() => setShowWireTransfer(true)}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-secondary/30 transition-all text-left"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                    <Banknote className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Wire Transfer (EFT/Havale)</p>
-                    <p className="text-sm text-muted-foreground">TRY only • Domestic TR • 3% fee</p>
-                  </div>
-                </button>
+                
+                {/* Wire Transfer - Only for non-TR wallet funding */}
+                {allowIBANForWallet && (
+                  <button
+                    onClick={() => setShowWireTransfer(true)}
+                    className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-primary/30 hover:bg-secondary/30 transition-all text-left"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                      <Banknote className="h-6 w-6 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">Wire Transfer (EFT/Havale)</p>
+                      <p className="text-sm text-muted-foreground">TRY only • Domestic TR • 3% fee</p>
+                    </div>
+                  </button>
+                )}
               </div>
+              
+              {/* TR users: explain IBAN is for products only */}
+              {isTurkishResident && (
+                <p className="text-xs text-muted-foreground mt-4">
+                  💡 Bank transfer (IBAN) is available at checkout for direct product purchases.
+                </p>
+              )}
             </CardContent>
           </Card>
 
-          {/* Withdraw Funds */}
-          <Card className="mb-6">
-            <CardContent className="p-6">
-              <h3 className="font-display font-semibold text-foreground mb-4">Withdraw Funds</h3>
-              <button
-                onClick={() => setShowWithdrawal(true)}
-                className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-gain/30 hover:bg-gain/5 transition-all text-left w-full"
-              >
-                <div className="w-12 h-12 rounded-xl bg-gain/10 flex items-center justify-center">
-                  <ArrowDownLeft className="h-6 w-6 text-gain" />
-                </div>
-                <div>
-                  <p className="font-semibold text-foreground">Withdraw to Bank Account</p>
-                  <p className="text-sm text-muted-foreground">Turkish IBAN only • TRY • ₺16 fee • 1-3 business days</p>
-                </div>
-              </button>
-            </CardContent>
-          </Card>
+          {/* Withdraw Funds - Only for non-TR users */}
+          {allowWithdrawals && (
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <h3 className="font-display font-semibold text-foreground mb-4">Withdraw Funds</h3>
+                <button
+                  onClick={() => setShowWithdrawal(true)}
+                  className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card hover:border-gain/30 hover:bg-gain/5 transition-all text-left w-full"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-gain/10 flex items-center justify-center">
+                    <ArrowDownLeft className="h-6 w-6 text-gain" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Withdraw to Bank Account</p>
+                    <p className="text-sm text-muted-foreground">Turkish IBAN only • TRY • ₺16 fee • 1-3 business days</p>
+                  </div>
+                </button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Transactions */}
           <Card>
