@@ -156,7 +156,7 @@ const CoinsPage: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Gem Gifting Actions */}
+                    {/* Coin Gifting Actions */}
                     <div className="flex gap-2">
                       <GiftCardPurchase 
                         userBalance={walletBalanceCents} 

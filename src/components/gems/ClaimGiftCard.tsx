@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Ticket, Sparkles, Check, Loader2 } from 'lucide-react';
+import { Ticket, Check, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 interface ClaimGiftCardProps {
   onClaimComplete?: () => void;
@@ -39,7 +40,7 @@ export function ClaimGiftCard({ onClaimComplete }: ClaimGiftCardProps) {
 
       setClaimedAmount(result.gems_received || 0);
       toast.success('Gift card claimed!', { 
-        description: `You received ${result.gems_received?.toLocaleString()} gems!` 
+        description: `You received ${result.gems_received?.toLocaleString()} Boom Coins!` 
       });
       onClaimComplete?.();
     } catch (error: any) {
@@ -80,9 +81,9 @@ export function ClaimGiftCard({ onClaimComplete }: ClaimGiftCardProps) {
               <h3 className="text-2xl font-bold">Success!</h3>
               <p className="text-muted-foreground">You've received</p>
             </div>
-            <div className="flex items-center justify-center gap-2 text-3xl font-bold text-primary">
-              <Sparkles className="w-8 h-8" />
-              {claimedAmount.toLocaleString()} Gems
+            <div className="flex items-center justify-center gap-2 text-3xl font-bold text-amber-500">
+              <BoomCoinIcon size="xl" className="text-amber-400" />
+              {claimedAmount.toLocaleString()} Coins
             </div>
             <Button onClick={() => { resetForm(); setIsOpen(false); }} className="mt-4">
               Done
@@ -111,9 +112,9 @@ export function ClaimGiftCard({ onClaimComplete }: ClaimGiftCardProps) {
               {isClaiming ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Sparkles className="w-4 h-4" />
+                <BoomCoinIcon size="sm" className="text-amber-400" />
               )}
-              {isClaiming ? 'Claiming...' : 'Claim Gems'}
+              {isClaiming ? 'Claiming...' : 'Claim Coins'}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">
