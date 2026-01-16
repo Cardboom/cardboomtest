@@ -5,300 +5,298 @@
   
   <!-- Homepage -->
   <url>
-    <loc>https://cardboom.com/</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   
   <!-- Markets/Explorer -->
   <url>
-    <loc>https://cardboom.com/markets</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/markets</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   
   <url>
-    <loc>https://cardboom.com/explorer</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/explorer</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   
   <!-- Blog -->
   <url>
-    <loc>https://cardboom.com/blog</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/blog</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- Deals -->
   <url>
-    <loc>https://cardboom.com/deals</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/deals</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- Grading - High Priority SEO Target -->
   <url>
-    <loc>https://cardboom.com/grading</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/grading</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   
-  <!-- Fractional Market - Temporarily disabled -->
-  
   <!-- Gaming -->
   <url>
-    <loc>https://cardboom.com/gaming</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/gaming</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   
   <!-- Leaderboard -->
   <url>
-    <loc>https://cardboom.com/leaderboard</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/leaderboard</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   
   <!-- Hall of Fame -->
   <url>
-    <loc>https://cardboom.com/hall-of-fame</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/hall-of-fame</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <!-- API -->
   <url>
-    <loc>https://cardboom.com/api</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/api</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <!-- Help -->
   <url>
-    <loc>https://cardboom.com/help</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/help</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <!-- About -->
   <url>
-    <loc>https://cardboom.com/about</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/about</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <!-- Safety -->
   <url>
-    <loc>https://cardboom.com/safety</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/safety</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <!-- Careers -->
   <url>
-    <loc>https://cardboom.com/careers</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/careers</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <!-- Press -->
   <url>
-    <loc>https://cardboom.com/press</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/press</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <!-- Legal Pages -->
   <url>
-    <loc>https://cardboom.com/terms</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/terms</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   
   <url>
-    <loc>https://cardboom.com/privacy</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/privacy</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   
   <url>
-    <loc>https://cardboom.com/verified-seller</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/verified-seller</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://cardboom.com/referrals</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/referrals</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <!-- HTML Sitemap -->
   <url>
-    <loc>https://cardboom.com/sitemap</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/sitemap</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <!-- Category Landing Pages -->
   <url>
-    <loc>https://cardboom.com/buy/pokemon-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/buy/pokemon-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/buy/mtg-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/buy/mtg-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/buy/yugioh-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/buy/yugioh-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/buy/onepiece-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/buy/onepiece-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/buy/nba-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/buy/nba-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/buy/football-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/buy/football-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- Long-tail Landing Pages -->
   <url>
-    <loc>https://cardboom.com/deals/pokemon-cards-under-10</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/deals/pokemon-cards-under-10</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/deals/pokemon-cards-under-50</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/deals/pokemon-cards-under-50</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/deals/psa-10-pokemon-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/deals/psa-10-pokemon-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/deals/vintage-pokemon-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/deals/vintage-pokemon-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/deals/charizard-cards</loc>
-    <lastmod>2025-12-16</lastmod>
+    <loc>https://cardboomtest.lovable.app/deals/charizard-cards</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- AI Research Index Pages (highest priority) -->
   <url>
-    <loc>https://cardboom.com/ai</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/card-grading-questions</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/card-grading-questions</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/ai-grading-faq</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/ai-grading-faq</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   
   <!-- AI Research Pages (AEO Citation Strategy) -->
   <url>
-    <loc>https://cardboom.com/ai/card-grading-guide</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/card-grading-guide</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/psa-vs-bgs-vs-cgc-vs-cardboom</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/psa-vs-bgs-vs-cgc-vs-cardboom</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/how-card-grading-works</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/how-card-grading-works</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/card-grading-costs-2026</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/card-grading-costs-2026</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/ai-card-grading-explained</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/ai-card-grading-explained</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/best-card-grading-companies</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/best-card-grading-companies</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   
   <!-- AI Q&A Pages -->
   <url>
-    <loc>https://cardboom.com/ai/questions/is-cardboom-legit</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/questions/is-cardboom-legit</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://cardboom.com/ai/questions/how-accurate-is-ai-grading</loc>
-    <lastmod>2026-01-15</lastmod>
+    <loc>https://cardboomtest.lovable.app/ai/questions/how-accurate-is-ai-grading</loc>
+    <lastmod>2026-01-16</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>

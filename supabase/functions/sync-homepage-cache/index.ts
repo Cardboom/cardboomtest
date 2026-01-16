@@ -17,12 +17,7 @@ const KNOWN_DROPS = [
   { name: 'Yu-Gi-Oh! 25th Mega Set', tcg: 'yugioh', release_date: '2026-04-18', type: 'collection', description: 'Anniversary celebration set' },
 ];
 
-// Fallback mock posts if X API fails
-const FALLBACK_POSTS = [
-  { author_name: 'PokéCollector', author_handle: '@pokecollector', content: 'Prismatic Evolutions is absolutely stunning! The holographic effects are next level. 🔥', engagement_count: 1250 },
-  { author_name: 'TCG Investor', author_handle: '@tcginvestor', content: 'One Piece TCG prices are mooning! OP-11 pre-orders selling out everywhere. Get in while you can. 🚀', engagement_count: 890 },
-  { author_name: 'Slab King', author_handle: '@slabking', content: 'PSA 10 population on vintage Pokemon keeps climbing. Raw card arbitrage is the play right now. 💎', engagement_count: 567 },
-];
+// No fallback mock posts - only show real X API posts
 
 // Fetch live X/Twitter posts mentioning @cardboomcom
 async function fetchLiveXPosts(): Promise<{posts: any[], fromApi: boolean}> {
@@ -169,31 +164,8 @@ Deno.serve(async (req) => {
         }
         console.log(`[sync-homepage-cache] Synced ${results.social_posts} live X posts`)
       } else {
-        // Fallback to mock posts
-        for (const post of FALLBACK_POSTS) {
-          const postId = `mock-${post.author_handle}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-          
-          const { error } = await supabase
-            .from('cached_social_posts')
-            .upsert({
-              external_id: postId,
-              platform: 'x',
-              author_name: post.author_name,
-              author_handle: post.author_handle,
-              content: post.content,
-              engagement_count: post.engagement_count + Math.floor(Math.random() * 100),
-              posted_at: new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-              is_active: true,
-              updated_at: now.toISOString()
-            }, { onConflict: 'external_id' })
-
-          if (error) {
-            results.errors.push(`Social post: ${error.message}`)
-          } else {
-            results.social_posts++
-          }
-        }
-        console.log(`[sync-homepage-cache] Used ${results.social_posts} fallback posts (X API unavailable)`)
+        // No fallback - only real posts
+        console.log(`[sync-homepage-cache] No live X posts found - section will show CTA to tweet`)
       }
 
       // Keep only last 50 posts
