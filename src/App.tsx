@@ -84,6 +84,7 @@ import MyStorefrontPage from "./pages/MyStorefrontPage";
 import Cardswap from "./pages/Cardswap";
 import OrderDetail from "./pages/OrderDetail";
 import Purchases from "./pages/Purchases";
+import Orders from "./pages/Orders";
 import AccountSettings from "./pages/AccountSettings";
 import Sitemap from "./pages/Sitemap";
 import BuyCategoryPage from "./pages/BuyCategoryPage";
@@ -215,7 +216,8 @@ const AppContent = () => {
           <Route path="/buy-orders" element={<BuyOrders />} />
           {/* Order & Purchases */}
           <Route path="/order/:orderId" element={<OrderDetail />} />
-          <Route path="/purchases" element={<Purchases />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/purchases" element={<Orders />} /> {/* Redirect legacy purchases URL */}
           <Route path="/account-settings" element={<AccountSettings />} />
           {/* AI Research & Citation Pages (AEO Strategy) */}
           <Route path="/ai" element={<ResearchIndex />} />

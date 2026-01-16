@@ -523,9 +523,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <TrendingUp className="w-4 h-4 mr-2" />
                     {t.nav.myListings}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/purchases')}>
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    {t.nav.myPurchases || 'My Purchases'}
+                  <DropdownMenuItem onClick={() => navigate('/orders')}>
+                    <Package className="w-4 h-4 mr-2" />
+                    My Orders
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/referrals')}>
                     <Gift className="w-4 h-4 mr-2" />
@@ -708,9 +708,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                         </span>
                       )}
                     </Link>
-                    <Link to="/purchases" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
-                      <ShoppingCart className="w-5 h-5 text-muted-foreground" />
-                      <span>{t.nav.myPurchases || 'My Purchases'}</span>
+                    <Link to="/orders" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                      <Package className="w-5 h-5 text-muted-foreground" />
+                      <span>My Orders</span>
                     </Link>
                   </>
                 )}
