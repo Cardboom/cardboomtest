@@ -119,3 +119,15 @@ verify_jwt = false
 
 [functions.sync-homepage-cache]
 verify_jwt = false
+
+[functions.grading-submit]
+verify_jwt = false
+
+[functions.grade-listing]
+verify_jwt = false
+
+[functions.grading-admin]
+verify_jwt = false
+
+[functions.process-pending-grades]
+verify_jwt = false
