@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, Gem, Sparkles, Info, ShieldCheck } from 'lucide-react';
+import { Package, Gem, Sparkles, Info, ShieldCheck, Play, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -25,6 +25,7 @@ const BoomPacks: React.FC = () => {
   const [openedCards, setOpenedCards] = useState<BoomPackCardType[]>([]);
   const [bonusGems, setBonusGems] = useState(0);
   const [showAnimation, setShowAnimation] = useState(false);
+  const [videoMuted, setVideoMuted] = useState(true);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -63,7 +64,6 @@ const BoomPacks: React.FC = () => {
     const cards = await openPack(packId);
     if (cards) {
       setOpenedCards(cards);
-      // Calculate bonus from the pack
       const totalUtility = cards.reduce((sum, c) => sum + c.utility_value_gems, 0);
       const packCost = pack.gems_spent;
       setBonusGems(totalUtility < packCost ? packCost - totalUtility : 0);
@@ -78,7 +78,7 @@ const BoomPacks: React.FC = () => {
   };
 
   const handleTopUp = () => {
-    navigate('/wallet');
+    navigate('/gems');
   };
 
   const currentPack = sealedPacks.find(p => p.id === openingPackId);
@@ -97,66 +97,114 @@ const BoomPacks: React.FC = () => {
         <Header cartCount={0} onCartClick={() => setCartOpen(true)} />
 
         <main className="flex-1">
-          {/* Hero Section */}
-          <section className="relative py-12 md:py-20 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-            <div className="container mx-auto px-4 relative z-10">
-              <div className="max-w-3xl mx-auto text-center">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-center gap-2 mb-4"
-                >
-                  <Sparkles className="w-6 h-6 text-primary" />
-                  <span className="text-sm font-medium text-primary uppercase tracking-wider">
-                    Sealed Collectible Packs
-                  </span>
-                </motion.div>
-                
-                <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="text-4xl md:text-5xl font-bold mb-4"
-                >
-                  Boom Packs
-                </motion.h1>
-                
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-lg text-muted-foreground mb-8"
-                >
-                  Discover real trading cards in every pack. All cards come from 
-                  CardBoom's verified inventory and are added directly to your collection.
-                </motion.p>
+          {/* Cinematic Video Hero Section */}
+          <section className="relative h-[70vh] min-h-[500px] max-h-[800px] overflow-hidden">
+            {/* Video Background */}
+            <div className="absolute inset-0">
+              <video
+                autoPlay
+                loop
+                muted={videoMuted}
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              >
+                <source src="/videos/boom-packs-hero.mp4" type="video/mp4" />
+              </video>
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-background/80" />
+            </div>
 
-                {/* Gems Balance */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="inline-flex items-center gap-3 px-6 py-3 bg-card border border-border rounded-full shadow-lg"
-                >
-                  <Gem className="w-6 h-6 text-primary" />
-                  <span className="text-2xl font-bold">{balance.toLocaleString()}</span>
-                  <span className="text-muted-foreground">Gems</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleTopUp}
-                    className="ml-2"
+            {/* Mute Toggle */}
+            <button
+              onClick={() => setVideoMuted(!videoMuted)}
+              className="absolute bottom-6 right-6 z-20 p-3 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+            >
+              {videoMuted ? (
+                <VolumeX className="w-5 h-5 text-white" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-white" />
+              )}
+            </button>
+
+            {/* Hero Content */}
+            <div className="relative z-10 h-full flex items-center">
+              <div className="container mx-auto px-4">
+                <div className="max-w-2xl">
+                  <motion.div
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="space-y-6"
                   >
-                    Top Up
-                  </Button>
-                </motion.div>
+                    <div className="flex items-center gap-3">
+                      <div className="px-4 py-1.5 bg-primary/20 border border-primary/30 rounded-full">
+                        <span className="text-sm font-semibold text-primary uppercase tracking-wider">
+                          Now Available
+                        </span>
+                      </div>
+                    </div>
+
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+                      <span className="block text-white">Boom</span>
+                      <span className="block bg-gradient-to-r from-primary via-sky-400 to-primary bg-clip-text text-transparent">
+                        Packs
+                      </span>
+                    </h1>
+
+                    <p className="text-lg md:text-xl text-white/80 max-w-lg">
+                      Discover real trading cards in every pack. Premium collectibles, 
+                      guaranteed value, instant delivery to your vault.
+                    </p>
+
+                    {/* Gems Balance Card */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3, duration: 0.5 }}
+                      className="inline-flex items-center gap-4 px-6 py-4 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-400 to-primary flex items-center justify-center">
+                          <Gem className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-white/60 uppercase tracking-wider">Your Balance</p>
+                          <p className="text-2xl font-bold text-white">{balance.toLocaleString()} Gems</p>
+                        </div>
+                      </div>
+                      <div className="h-10 w-px bg-white/20" />
+                      <Button
+                        onClick={handleTopUp}
+                        className="bg-white text-black hover:bg-white/90 font-semibold"
+                      >
+                        Top Up
+                      </Button>
+                    </motion.div>
+
+                    {/* Trust Badges */}
+                    <div className="flex items-center gap-6 pt-4">
+                      <div className="flex items-center gap-2 text-white/60 text-sm">
+                        <ShieldCheck className="w-4 h-4 text-green-400" />
+                        <span>Guaranteed Value</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-white/60 text-sm">
+                        <Package className="w-4 h-4 text-sky-400" />
+                        <span>Real Cards</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-white/60 text-sm">
+                        <Sparkles className="w-4 h-4 text-amber-400" />
+                        <span>Instant Delivery</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               </div>
             </div>
           </section>
 
           {/* Main Content */}
-          <section className="container mx-auto px-4 pb-16">
+          <section className="container mx-auto px-4 py-16">
             <Tabs defaultValue="shop" className="space-y-8">
               <TabsList className="grid w-full max-w-md mx-auto grid-cols-3">
                 <TabsTrigger value="shop" className="flex items-center gap-2">
@@ -180,13 +228,11 @@ const BoomPacks: React.FC = () => {
 
               {/* Shop Tab */}
               <TabsContent value="shop" className="space-y-6">
-                {/* Disclaimer */}
-                <Alert>
-                  <ShieldCheck className="h-4 w-4" />
+                <Alert className="bg-card/50 border-primary/20">
+                  <ShieldCheck className="h-4 w-4 text-primary" />
                   <AlertDescription>
-                    Boom Packs are sealed collectible products containing real trading cards. 
-                    Each pack is guaranteed to contain cards with utility value equal to or greater than the pack price.
-                    Cards are for collection and entertainment purposes.
+                    Boom Packs contain real trading cards from CardBoom's verified inventory. 
+                    Every pack is guaranteed to deliver card value equal to or greater than the pack price.
                   </AlertDescription>
                 </Alert>
 
@@ -238,9 +284,6 @@ const BoomPacks: React.FC = () => {
                     <p className="text-muted-foreground mb-4">
                       Purchase packs from the shop to add them here
                     </p>
-                    <Button onClick={() => document.querySelector('[value="shop"]')?.dispatchEvent(new Event('click'))}>
-                      Browse Packs
-                    </Button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -258,12 +301,10 @@ const BoomPacks: React.FC = () => {
 
               {/* Collection Tab */}
               <TabsContent value="collection" className="space-y-6">
-                {/* Cooldown Info */}
                 <Alert>
                   <Info className="h-4 w-4" />
                   <AlertDescription>
                     Cards from Boom Packs have a 7-day cooldown before they can be listed on the marketplace.
-                    During this time, you can view, store in vault, or request shipping.
                   </AlertDescription>
                 </Alert>
 

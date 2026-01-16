@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useGems, PriceDisplayMode } from '@/contexts/GemsContext';
 import { useCurrency, Currency } from '@/contexts/CurrencyContext';
 
@@ -8,10 +8,10 @@ import { useCurrency, Currency } from '@/contexts/CurrencyContext';
  * Combines GemsContext and CurrencyContext for consistent pricing across the site.
  * 
  * Rules:
+ * - Gems are ALWAYS in fixed USD conversion (1 Gem = $0.01 USD)
  * - When displayMode is 'gems': Show price in Gems (USD × 100)
  * - When displayMode is 'usd': Show price in selected fiat currency (USD/EUR/TRY)
- * - Gems prices are always fixed (not affected by currency toggle)
- * - Fiat prices respect the current currency selection
+ * - Turkish users see TRY equivalent with same markup as USD
  */
 
 export interface UnifiedPricingResult {
@@ -23,6 +23,8 @@ export interface UnifiedPricingResult {
   formatPrice: (priceUSD: number) => string;
   /** Format price with Gems emoji if in gems mode */
   formatPriceWithSymbol: (priceUSD: number) => string;
+  /** Format price in Gems (always in USD base, for Turkish users shows TRY equivalent) */
+  formatGemsPrice: (priceUSD: number, showTRYEquivalent?: boolean) => string;
   /** Convert USD to Gems (always available) */
   usdToGems: (usd: number) => number;
   /** Convert Gems to USD (always available) */
@@ -37,6 +39,8 @@ export interface UnifiedPricingResult {
   cycleFiatCurrency: () => void;
   /** Set specific fiat currency */
   setFiatCurrency: (currency: Currency) => void;
+  /** Get TRY equivalent for gems (for Turkish users) */
+  getGemsTRYValue: (gems: number) => number;
 }
 
 export const useUnifiedPricing = (): UnifiedPricingResult => {
@@ -46,6 +50,7 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
     usdToGems, 
     gemsToUsd,
     formatGems,
+    pricing,
   } = useGems();
   
   const { 
@@ -64,6 +69,13 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
     else if (fiatCurrency === 'EUR') setFiatCurrency('TRY');
     else setFiatCurrency('USD');
   }, [fiatCurrency, setFiatCurrency]);
+
+  // Get TRY value for gems (with same markup applied)
+  const getGemsTRYValue = useCallback((gems: number): number => {
+    const usdValue = gemsToUsd(gems);
+    const withMarkup = usdValue * pricing.markupMultiplier;
+    return withMarkup * (exchangeRates.USD_TRY || 42);
+  }, [gemsToUsd, pricing.markupMultiplier, exchangeRates.USD_TRY]);
 
   // Format price respecting display mode
   const formatPrice = useCallback((priceUSD: number): string => {
@@ -85,6 +97,19 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
     return formatFiatPrice(priceUSD);
   }, [isGemsMode, usdToGems, formatGems, formatFiatPrice]);
 
+  // Format gems price - always USD base, optionally show TRY equivalent
+  const formatGemsPrice = useCallback((priceUSD: number, showTRYEquivalent = false): string => {
+    const gems = usdToGems(priceUSD);
+    const gemsStr = `${Math.round(gems).toLocaleString()} 💎`;
+    
+    if (showTRYEquivalent) {
+      const tryValue = getGemsTRYValue(gems);
+      return `${gemsStr} (≈ ₺${Math.round(tryValue).toLocaleString('tr-TR')})`;
+    }
+    
+    return gemsStr;
+  }, [usdToGems, getGemsTRYValue]);
+
   // Get raw numeric value in current display
   const getDisplayValue = useCallback((priceUSD: number): number => {
     if (isGemsMode) {
@@ -98,6 +123,7 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
     fiatCurrency,
     formatPrice,
     formatPriceWithSymbol,
+    formatGemsPrice,
     usdToGems,
     gemsToUsd,
     getDisplayValue,
@@ -105,6 +131,7 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
     setDisplayMode,
     cycleFiatCurrency,
     setFiatCurrency,
+    getGemsTRYValue,
   };
 };
 

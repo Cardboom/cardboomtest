@@ -500,15 +500,28 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
+      {/* Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none"
+        >
+          <source src="/videos/boom-packs-hero.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
+      </div>
+
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 z-[1]">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-accent/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
       </div>
       
       {/* Grid Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:60px_60px]" />
+      <div className="absolute inset-0 z-[2] bg-[linear-gradient(hsl(var(--border)/0.2)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.2)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
       {/* Header */}
       <header className="relative z-10 border-b border-border/30 backdrop-blur-sm px-6 py-4">
