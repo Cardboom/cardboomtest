@@ -104,7 +104,8 @@ const Explorer = () => {
                 Figures
               </TabsTrigger>
               <TabsTrigger value="trending" className="rounded-lg data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-                🔥 Trending
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Trending
               </TabsTrigger>
               <TabsTrigger value="gainers" className="rounded-lg data-[state=active]:bg-gain/20 data-[state=active]:text-gain">
                 <TrendingUp className="w-4 h-4 mr-2" />

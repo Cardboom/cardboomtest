@@ -290,7 +290,7 @@ const Index = () => {
       <div className="relative">
         <Helmet>
         <title>Cardboom - Premier Collectibles Trading Exchange | Buy & Sell Trading Cards</title>
-        <meta name="description" content="Trade NBA cards, football cards, Pokemon TCG, Yu-Gi-Oh!, and rare collectible figures with real-time pricing, secure transactions, and instant settlements. Join 10,000+ collectors on Cardboom." />
+        <meta name="description" content="Trade NBA cards, football cards, Pokemon TCG, Yu-Gi-Oh!, and rare collectible figures with real-time pricing, secure transactions, and instant settlements on Cardboom." />
         <meta name="keywords" content="trading cards, NBA cards, football cards, TCG, Pokemon cards, Yu-Gi-Oh cards, collectibles, figures, marketplace, live prices, card grading, PSA, BGS, sports cards" />
         <link rel="canonical" href="https://cardboom.com/" />
         <meta property="og:title" content="Cardboom - Premier Collectibles Trading Exchange" />

@@ -23,19 +23,9 @@ export const categoryLabels: Record<string, string> = {
   'star-wars': 'Star Wars',
 };
 
-// Category counts from database (updated dynamically)
-export const categoryCounts: Record<string, number> = {
-  'mtg': 9790,
-  'yugioh': 9690,
-  'pokemon': 9151,
-  'gaming': 7006,
-  'one-piece': 15,
-  'lol-riftbound': 16,
-  'lorcana': 8,
-  'sports-nba': 8,
-  'sports-nfl': 6,
-  'figures': 5,
-};
+// Category counts - these are now fetched dynamically via useCategoryCounts hook
+// This static object is kept only for backwards compatibility
+export const categoryCounts: Record<string, number> = {};
 
 export const getCategoryLabel = (category: string): string => {
   return categoryLabels[category] || category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, ' ');
@@ -69,23 +59,23 @@ export const getCategoryIcon = (category: string): string => {
   return categoryIcons[category] || 'ALL';
 };
 
-// Main categories to display in navigation (sorted by popularity)
+// Main categories to display in navigation - counts are now fetched dynamically
 export const mainCategories = [
-  { id: 'all', label: 'All', icon: '', count: 35000 },
-  { id: 'mtg', label: 'MTG', icon: '', count: 9790 },
-  { id: 'yugioh', label: 'Yu-Gi-Oh!', icon: '', count: 9690 },
-  { id: 'pokemon', label: 'Pokémon', icon: '', count: 9151 },
-  { id: 'gaming', label: 'Video Games', icon: '', count: 7006 },
-  { id: 'digimon', label: 'Digimon TCG', icon: '', count: 500 },
-  { id: 'dragon-ball', label: 'Dragon Ball Super', icon: '', count: 400 },
-  { id: 'star-wars', label: 'Star Wars', icon: '', count: 350 },
-  { id: 'one-piece', label: 'One Piece', icon: '', count: 15 },
-  { id: 'lol-riftbound', label: 'LoL-Riftbound', icon: '', count: 16 },
-  { id: 'lorcana', label: 'Disney Lorcana', icon: '', count: 8 },
-  { id: 'sports-nba', label: 'NBA Cards', icon: '', count: 8 },
-  { id: 'sports-nfl', label: 'NFL Cards', icon: '', count: 6 },
-  { id: 'fifa', label: 'FIFA', icon: '', count: 0 },
-  { id: 'nba', label: 'NBA', icon: '', count: 0 },
-  { id: 'baseball', label: 'Baseball', icon: '', count: 0 },
-  { id: 'figures', label: 'Figures', icon: '', count: 5 },
+  { id: 'all', label: 'All', icon: '' },
+  { id: 'pokemon', label: 'Pokémon', icon: '' },
+  { id: 'gaming', label: 'Video Games', icon: '' },
+  { id: 'mtg', label: 'MTG', icon: '' },
+  { id: 'yugioh', label: 'Yu-Gi-Oh!', icon: '' },
+  { id: 'one-piece', label: 'One Piece', icon: '' },
+  { id: 'lol-riftbound', label: 'LoL-Riftbound', icon: '' },
+  { id: 'lorcana', label: 'Disney Lorcana', icon: '' },
+  { id: 'digimon', label: 'Digimon TCG', icon: '' },
+  { id: 'dragon-ball', label: 'Dragon Ball Super', icon: '' },
+  { id: 'star-wars', label: 'Star Wars', icon: '' },
+  { id: 'sports-nba', label: 'NBA Cards', icon: '' },
+  { id: 'sports-nfl', label: 'NFL Cards', icon: '' },
+  { id: 'fifa', label: 'FIFA', icon: '' },
+  { id: 'nba', label: 'NBA', icon: '' },
+  { id: 'baseball', label: 'Baseball', icon: '' },
+  { id: 'figures', label: 'Figures', icon: '' },
 ];
