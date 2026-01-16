@@ -173,26 +173,40 @@ const GemsPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Pricing Tier Info */}
+          {/* Pricing Tier Info - No percentages, just badges */}
           <section className="container mx-auto px-4 pb-8">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-center gap-4 flex-wrap">
-                <Badge variant={subscriptionTier === 'free' ? 'default' : 'outline'} className="px-4 py-2">
-                  Standard: 12% markup
-                </Badge>
-                <Badge variant={subscriptionTier === 'pro' ? 'default' : 'outline'} className="px-4 py-2 bg-amber-500/10 text-amber-500 border-amber-500/30">
-                  Pro: 8% markup
-                </Badge>
-                <Badge variant={subscriptionTier === 'enterprise' ? 'default' : 'outline'} className="px-4 py-2 bg-purple-500/10 text-purple-500 border-purple-500/30">
-                  Enterprise: 5% markup
-                </Badge>
+                {subscriptionTier === 'free' && (
+                  <Badge variant="outline" className="px-4 py-2">
+                    Standard Rate
+                  </Badge>
+                )}
+                {subscriptionTier === 'lite' && (
+                  <Badge className="px-4 py-2 bg-blue-500/10 text-blue-500 border-blue-500/30">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Lite Member
+                  </Badge>
+                )}
+                {subscriptionTier === 'pro' && (
+                  <Badge className="px-4 py-2 bg-primary/10 text-primary border-primary/30">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Better Gem Value
+                  </Badge>
+                )}
+                {subscriptionTier === 'enterprise' && (
+                  <Badge className="px-4 py-2 bg-amber-500/10 text-amber-500 border-amber-500/30">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    Best Gem Value
+                  </Badge>
+                )}
               </div>
               {subscriptionTier === 'free' && (
                 <p className="text-center text-sm text-muted-foreground mt-4">
                   <Button variant="link" className="text-primary p-0 h-auto" onClick={() => navigate('/pricing')}>
-                    Upgrade to Pro or Enterprise
+                    Upgrade your membership
                   </Button>
-                  {' '}for better Gem rates
+                  {' '}for better Gem value
                 </p>
               )}
             </div>
@@ -252,9 +266,11 @@ const GemsPage: React.FC = () => {
                               ≈ ${finalPrice.toFixed(2)} USD
                             </p>
                           )}
-                          <p className="text-xs text-muted-foreground">
-                            {pricing.tierLabel} pricing ({pricing.markupPercent}% markup)
-                          </p>
+                          {subscriptionTier !== 'free' && (
+                            <p className="text-xs text-gain font-medium">
+                              {subscriptionTier === 'enterprise' ? 'Best Value' : 'Member Price'}
+                            </p>
+                          )}
                         </div>
                         
                         <Button 
