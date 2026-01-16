@@ -59,6 +59,7 @@ import Privacy from "./pages/Privacy";
 import KVKK from "./pages/KVKK";
 import UserAgreement from "./pages/UserAgreement";
 import DistanceSalesContract from "./pages/DistanceSalesContract";
+import ConsignmentAgreement from "./pages/ConsignmentAgreement";
 import API from "./pages/API";
 import Article from "./pages/Article";
 import Achievements from "./pages/Achievements";
@@ -177,6 +178,7 @@ const AppContent = () => {
           <Route path="/kvkk" element={<KVKK />} />
           <Route path="/kullanici-sozlesmesi" element={<UserAgreement />} />
           <Route path="/mesafeli-satis-sozlesmesi" element={<DistanceSalesContract />} />
+          <Route path="/consignment-agreement" element={<ConsignmentAgreement />} />
           <Route path="/api" element={<API />} />
           <Route path="/blog/:slug" element={<Article />} />
           <Route path="/achievements" element={<Achievements />} />
