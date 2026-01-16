@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Package, Gem, Sparkles, Info, ShieldCheck, Play, Volume2, VolumeX } from 'lucide-react';
+import { Package, Sparkles, Info, ShieldCheck, Play, Volume2, VolumeX } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -16,6 +16,7 @@ import { SealedPackCard } from '@/components/boom-packs/SealedPackCard';
 import { UserPackCards } from '@/components/boom-packs/UserPackCards';
 import { PackOpeningAnimation } from '@/components/boom-packs/PackOpeningAnimation';
 import { toast } from 'sonner';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 const BoomPacks: React.FC = () => {
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ const BoomPacks: React.FC = () => {
   };
 
   const handleTopUp = () => {
-    navigate('/gems');
+    navigate('/coins');
   };
 
   const currentPack = sealedPacks.find(p => p.id === openingPackId);
@@ -157,7 +158,7 @@ const BoomPacks: React.FC = () => {
                       guaranteed value, instant delivery to your vault.
                     </p>
 
-                    {/* Gems Balance Card */}
+                    {/* Boom Coins Balance Card */}
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -165,12 +166,12 @@ const BoomPacks: React.FC = () => {
                       className="inline-flex items-center gap-4 px-6 py-4 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-sky-400 to-primary flex items-center justify-center">
-                          <Gem className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                          <BoomCoinIcon className="w-6 h-6 text-white" />
                         </div>
                         <div>
                           <p className="text-xs text-white/60 uppercase tracking-wider">Your Balance</p>
-                          <p className="text-2xl font-bold text-white">{balance.toLocaleString()} Gems</p>
+                          <p className="text-2xl font-bold text-white">{balance.toLocaleString()} Coins</p>
                         </div>
                       </div>
                       <div className="h-10 w-px bg-white/20" />

@@ -12,7 +12,7 @@ export const EngagementCTAs = () => {
       id: 'card-wars',
       icon: Swords,
       title: 'Card Wars LIVE',
-      subtitle: 'Vote now & win gems!',
+      subtitle: 'Vote now & win coins!',
       color: 'from-orange-500 to-red-500',
       iconBg: 'bg-orange-500/20',
       iconColor: 'text-orange-500',

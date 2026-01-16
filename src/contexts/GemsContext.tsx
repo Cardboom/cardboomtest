@@ -2,14 +2,14 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Gems Pricing Context
+ * Boom Coins Pricing Context
  * 
- * Implements CardBoom's Gems pricing rules:
- * - 1 Gem = $0.01 USD (internal face value)
+ * Implements CardBoom's Boom Coins pricing rules:
+ * - 1 Boom Coin = $0.01 USD (internal face value)
  * - +12% markup for standard users
  * - +8% markup for Pro subscribers
  * - +5% markup for Enterprise subscribers
- * - Gems display mode for marketplace
+ * - Boom Coins display mode for marketplace
  */
 
 export type PriceDisplayMode = 'gems' | 'usd';
@@ -181,10 +181,10 @@ export const GemsProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return afterMarkup / GEM_FACE_VALUE_USD;
   }, [pricing.markupMultiplier]);
 
-  // Format gems with symbol
+  // Format coins with symbol (bomb emoji for Boom Coins)
   const formatGems = useCallback((gems: number): string => {
     const rounded = Math.round(gems);
-    return `${rounded.toLocaleString()} 💎`;
+    return `${rounded.toLocaleString()} 💣`;
   }, []);
 
   // Format price for display based on current mode

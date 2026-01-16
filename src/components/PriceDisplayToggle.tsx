@@ -1,14 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { useGems } from '@/contexts/GemsContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { Gem, DollarSign, Euro } from 'lucide-react';
+import { DollarSign, Euro } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 /**
  * Price Display Toggle
  * 
  * Global navigation toggle for price display:
- * - Gems: Always shows prices in Gems (fixed, never changes)
+ * - Coins: Always shows prices in Boom Coins (fixed, never changes)
  * - USD/EUR/TRY: Click to cycle through fiat currencies
  * 
  * Does NOT affect checkout rules - only display.
@@ -44,7 +45,7 @@ export const PriceDisplayToggle = () => {
 
   return (
     <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5 border border-border">
-      {/* Gems Toggle - Fixed, always shows Gems */}
+      {/* Coins Toggle - Fixed, always shows Boom Coins */}
       <Button
         variant="ghost"
         size="sm"
@@ -52,12 +53,12 @@ export const PriceDisplayToggle = () => {
         className={cn(
           "h-7 px-2.5 gap-1.5 text-xs font-medium transition-all rounded-md",
           displayMode === 'gems' 
-            ? "bg-sky-500/20 text-sky-400 hover:bg-sky-500/30 hover:text-sky-400" 
+            ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 hover:text-amber-400" 
             : "text-muted-foreground hover:text-foreground hover:bg-muted"
         )}
       >
-        <Gem className="w-3.5 h-3.5" />
-        Gems
+        <BoomCoinIcon size="xs" />
+        Coins
       </Button>
       
       {/* Fiat Toggle - Cycles through USD/EUR/TRY */}

@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Package, Gem } from 'lucide-react';
+import { Sparkles, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BoomPackType } from '@/hooks/useBoomPacks';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 interface BoomPackCardProps {
   packType: BoomPackType;
@@ -112,11 +113,11 @@ export const BoomPackCard: React.FC<BoomPackCardProps> = ({
           {/* Price */}
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <div className="flex items-center gap-2">
-              <Gem className="w-5 h-5 text-primary" />
+              <BoomCoinIcon className="w-5 h-5 text-amber-400" />
               <span className="text-xl font-bold text-foreground">
                 {packType.price_gems.toLocaleString()}
               </span>
-              <span className="text-sm text-muted-foreground">Gems</span>
+              <span className="text-sm text-muted-foreground">Coins</span>
             </div>
           </div>
 
@@ -148,11 +149,11 @@ export const BoomPackCard: React.FC<BoomPackCardProps> = ({
             <Button
               onClick={onTopUp}
               variant="outline"
-              className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              className="w-full border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black"
               size="lg"
             >
-              <Gem className="w-5 h-5 mr-2" />
-              Top Up Gems
+              <BoomCoinIcon className="w-5 h-5 mr-2" />
+              Top Up Coins
             </Button>
           )}
         </div>

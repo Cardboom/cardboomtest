@@ -119,11 +119,11 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       const result = data as { success?: boolean; gems_awarded?: number; error?: string } | null;
       
       if (result?.success) {
-        toast.success(`🎉 Claimed ${((result.gems_awarded || 0) / 100).toFixed(0)} gems!`);
+        toast.success(`🎉 Claimed ${((result.gems_awarded || 0) / 100).toFixed(0)} coins!`);
         fetchBounties();
         
-        // Dispatch event to refresh gems balance in header
-        window.dispatchEvent(new CustomEvent('gems-balance-updated'));
+        // Dispatch event to refresh coins balance in header
+        window.dispatchEvent(new CustomEvent('coins-balance-updated'));
       } else {
         toast.error(result?.error || 'Failed to claim reward');
       }

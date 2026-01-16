@@ -67,8 +67,8 @@ export function GemPaymentOption({ totalPriceCents, onGemAmountChange, className
             }}
           />
           <Label htmlFor="use-gems" className="flex items-center gap-2 cursor-pointer">
-            <Sparkles className="w-4 h-4 text-primary" />
-            Pay with CardBoom Gems
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            Pay with Boom Coins
           </Label>
         </div>
         <Badge variant="outline" className="gap-1">
@@ -81,9 +81,9 @@ export function GemPaymentOption({ totalPriceCents, onGemAmountChange, className
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Gems to use</span>
+              <span className="text-muted-foreground">Coins to use</span>
               <span className="font-semibold flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-primary" />
+                <Sparkles className="w-3 h-3 text-amber-500" />
                 {gemAmount.toLocaleString()}
               </span>
             </div>
@@ -103,7 +103,7 @@ export function GemPaymentOption({ totalPriceCents, onGemAmountChange, className
 
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="p-3 rounded-lg bg-muted/50">
-              <p className="text-muted-foreground text-xs">Gem Discount</p>
+              <p className="text-muted-foreground text-xs">Coin Discount</p>
               <p className="font-bold text-gain">-{formatPrice(discountCents / 100)}</p>
             </div>
             <div className="p-3 rounded-lg bg-primary/10">

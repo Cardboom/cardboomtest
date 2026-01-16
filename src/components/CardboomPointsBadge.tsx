@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gem } from 'lucide-react';
 import { useCardboomPoints } from '@/hooks/useCardboomPoints';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 export const CardboomPointsBadge = () => {
   const navigate = useNavigate();
@@ -21,13 +21,13 @@ export const CardboomPointsBadge = () => {
 
   return (
     <motion.button
-      onClick={() => navigate('/gems')}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 transition-colors cursor-pointer"
+      onClick={() => navigate('/coins')}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-colors cursor-pointer"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <Gem className="w-4 h-4 text-sky-400" />
-      <span className="text-sm font-medium text-sky-400">
+      <BoomCoinIcon className="w-4 h-4 text-amber-400" />
+      <span className="text-sm font-medium text-amber-400">
         {loading ? '...' : balance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
       </span>
     </motion.button>
