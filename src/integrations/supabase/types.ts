@@ -11544,6 +11544,12 @@ export type Database = {
         Args: { p_reel_id: string; p_user_id: string }
         Returns: boolean
       }
+      backfill_listing_market_items: {
+        Args: never
+        Returns: {
+          updated_count: number
+        }[]
+      }
       build_normalized_key: {
         Args: {
           card_code?: string

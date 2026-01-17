@@ -77,6 +77,41 @@ export const ListThisCardDialog = ({
 
     setLoading(true);
     try {
+      // If no marketItemId provided, try to find or create one
+      let finalMarketItemId = marketItemId;
+      
+      if (!finalMarketItemId && displayCardName && displayCategory) {
+        // Try to find existing market item
+        const { data: existingItem } = await supabase
+          .from('market_items')
+          .select('id')
+          .ilike('name', displayCardName.trim())
+          .eq('category', displayCategory.toLowerCase())
+          .limit(1)
+          .single();
+        
+        if (existingItem) {
+          finalMarketItemId = existingItem.id;
+        } else {
+          // Create new market item for this card
+          const { data: newItem } = await supabase
+            .from('market_items')
+            .insert({
+              name: displayCardName.trim(),
+              category: displayCategory.toLowerCase(),
+              set_name: displaySetName || null,
+              current_price: parseFloat(price),
+              base_price: parseFloat(price),
+              data_source: 'user_listing',
+            })
+            .select('id')
+            .single();
+          
+          if (newItem) {
+            finalMarketItemId = newItem.id;
+          }
+        }
+      }
       // Upload image to storage
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -105,7 +140,7 @@ export const ListThisCardDialog = ({
           image_url: publicUrl,
           seller_id: user.id,
           status: 'active',
-          market_item_id: marketItemId,
+          market_item_id: finalMarketItemId || null,
           allows_vault: true,
           allows_shipping: true,
           allows_trade: false,
