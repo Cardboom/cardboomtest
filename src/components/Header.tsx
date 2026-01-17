@@ -180,7 +180,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
     <>
     <header className="fixed top-0 left-0 right-0 z-[10000] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
       <div className="w-full px-4 lg:px-6">
-        <div className="flex items-center justify-between h-16 gap-4 overflow-visible">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4 overflow-hidden">
           {/* Logo - pushed to the left edge */}
           <Link 
             to="/" 
@@ -192,7 +192,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
               alt="CardBoom" 
               width={160}
               height={160}
-              className="h-40 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+              className="h-24 sm:h-32 lg:h-40 w-auto object-contain group-hover:scale-105 transition-transform duration-200"
             />
           </Link>
 
