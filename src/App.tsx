@@ -92,6 +92,8 @@ import LongtailLandingPage from "./pages/LongtailLandingPage";
 import BoomPacks from "./pages/BoomPacks";
 import CoinsPage from "./pages/CoinsPage";
 import Fees from "./pages/Fees";
+import CatalogCardPage from "./pages/CatalogCardPage";
+import CatalogExplorer from "./pages/CatalogExplorer";
 
 // AI Research & Citation Pages (AEO Strategy)
 import CardGradingGuide from "./pages/ai/CardGradingGuide";
@@ -164,6 +166,9 @@ const AppContent = () => {
           <Route path="/hall-of-fame" element={<HallOfFame />} />
           {/* SEO Card Pages - New canonical structure */}
           <Route path="/cards/:category/:slug" element={<CardPage />} />
+          {/* Catalog Card Pages - Canonical pricing with clean separation */}
+          <Route path="/catalog" element={<CatalogExplorer />} />
+          <Route path="/catalog/:game/:canonicalKey" element={<CatalogCardPage />} />
           {/* Legacy routes - redirect to canonical */}
           <Route path="/:category/:slug" element={<LegacyCardRedirect />} />
           <Route path="/:category/:slug/:grade" element={<LegacyCardRedirect />} />

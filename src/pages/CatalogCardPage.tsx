@@ -1,0 +1,220 @@
+import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, Bell, Heart, Share2 } from 'lucide-react';
+import { useCatalogCard, useCatalogCardPrice } from '@/hooks/useCatalogCard';
+import { CatalogPricePanel } from '@/components/catalog/CatalogPricePanel';
+import { CatalogPriceChart } from '@/components/catalog/CatalogPriceChart';
+import { CatalogCardListings } from '@/components/catalog/CatalogCardListings';
+import { ShareButton } from '@/components/ShareButton';
+
+const gameLabels: Record<string, string> = {
+  pokemon: 'Pokémon',
+  mtg: 'Magic: The Gathering',
+  onepiece: 'One Piece',
+  yugioh: 'Yu-Gi-Oh!',
+  lorcana: 'Disney Lorcana',
+  digimon: 'Digimon',
+};
+
+const CatalogCardPage = () => {
+  const { game, canonicalKey } = useParams();
+  const fullKey = canonicalKey || '';
+  
+  const { data: card, isLoading: cardLoading } = useCatalogCard(fullKey);
+  const { data: price, isLoading: priceLoading } = useCatalogCardPrice(card?.id);
+
+  if (cardLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!card) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header cartCount={0} onCartClick={() => {}} />
+        <main className="container mx-auto px-4 py-12 text-center">
+          <h1 className="text-2xl font-bold mb-4">Card Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            We couldn't find this card in our catalog.
+          </p>
+          <Button asChild>
+            <Link to="/explorer">Browse Cards</Link>
+          </Button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const pageTitle = `${card.name} - ${card.set_name || card.game} | CardBoom`;
+  const pageDescription = `${card.name} price guide and market data. Track prices, view listings, and analyze trends on CardBoom.`;
+  const canonicalUrl = `https://cardboom.com/catalog/${card.game}/${card.canonical_key}`;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="product" />
+        {card.image_url && <meta property="og:image" content={card.image_url} />}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            "name": card.name,
+            "description": pageDescription,
+            "image": card.image_url,
+            "brand": { "@type": "Brand", "name": gameLabels[card.game] || card.game },
+            "offers": price?.median_usd ? {
+              "@type": "Offer",
+              "priceCurrency": "USD",
+              "price": price.median_usd,
+            } : undefined
+          })}
+        </script>
+      </Helmet>
+
+      <Header cartCount={0} onCartClick={() => {}} />
+
+      <main className="container mx-auto px-4 py-6">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+          <Link to="/" className="hover:text-foreground">Home</Link>
+          <span>/</span>
+          <Link to="/explorer" className="hover:text-foreground">Catalog</Link>
+          <span>/</span>
+          <Link to={`/explorer?game=${card.game}`} className="hover:text-foreground capitalize">
+            {gameLabels[card.game] || card.game}
+          </Link>
+          <span>/</span>
+          <span className="text-foreground">{card.name}</span>
+        </nav>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column - Card Image */}
+          <div className="lg:col-span-1 space-y-4">
+            <Card className="glass overflow-hidden">
+              <CardContent className="p-4">
+                <div className="aspect-[2.5/3.5] relative">
+                  <img
+                    src={card.image_url || '/placeholder.svg'}
+                    alt={card.name}
+                    className="w-full h-full object-contain rounded-lg"
+                    loading="eager"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1">
+                <Heart className="w-4 h-4 mr-2" />
+                Watchlist
+              </Button>
+              <Button variant="outline" className="flex-1">
+                <Bell className="w-4 h-4 mr-2" />
+                Alert
+              </Button>
+              <ShareButton 
+                title={card.name} 
+                url={canonicalUrl}
+              />
+            </div>
+
+            {/* Card Details */}
+            <Card className="glass">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Game</span>
+                  <Badge variant="secondary">{gameLabels[card.game] || card.game}</Badge>
+                </div>
+                {card.set_name && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Set</span>
+                    <span className="font-medium">{card.set_name}</span>
+                  </div>
+                )}
+                {card.card_number && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Number</span>
+                    <span className="font-medium">{card.card_number}</span>
+                  </div>
+                )}
+                {card.rarity && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Rarity</span>
+                    <Badge variant="outline">{card.rarity}</Badge>
+                  </div>
+                )}
+                {card.variant && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Variant</span>
+                    <span className="font-medium">{card.variant}</span>
+                  </div>
+                )}
+                {card.finish && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Finish</span>
+                    <span className="font-medium">{card.finish}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Pricing & Listings */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Header */}
+            <header>
+              <div className="flex items-center gap-2 mb-2">
+                <Badge variant="secondary" className="capitalize">
+                  {gameLabels[card.game] || card.game}
+                </Badge>
+                {card.rarity && <Badge variant="outline">{card.rarity}</Badge>}
+              </div>
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
+                {card.name}
+              </h1>
+              {card.set_name && (
+                <p className="text-muted-foreground text-lg">
+                  {card.set_name}
+                  {card.card_number && ` • #${card.card_number}`}
+                </p>
+              )}
+            </header>
+
+            {/* Price Panel */}
+            <CatalogPricePanel price={price} isLoading={priceLoading} />
+
+            {/* Price Chart */}
+            {card.id && (
+              <CatalogPriceChart catalogCardId={card.id} cardName={card.name} />
+            )}
+
+            {/* Active Listings */}
+            {card.id && (
+              <CatalogCardListings catalogCardId={card.id} />
+            )}
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default CatalogCardPage;

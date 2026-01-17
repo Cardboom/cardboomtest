@@ -146,8 +146,9 @@ serve(async (req) => {
           results.snapshots_created++
         }
 
-      } catch (err) {
-        results.errors.push(`${card.id}: ${err.message}`)
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err)
+        results.errors.push(`${card.id}: ${errMsg}`)
       }
     }
 
@@ -157,9 +158,10 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
 
-  } catch (error) {
-    console.error('[catalog-price-snapshot] Error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error)
+    console.error('[catalog-price-snapshot] Error:', errMsg)
+    return new Response(JSON.stringify({ error: errMsg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
