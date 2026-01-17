@@ -254,13 +254,20 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
         </div>
 
         {/* Price Section with Live Ticker and Sparkline */}
-        <div className="flex items-end justify-between">
-          <div className="flex-1">
-            <div className="text-2xl font-bold font-display text-foreground">
-              <LiveTickerPrice 
-                value={collectible.price} 
-                tickInterval={3000}
-                volatility={0.003}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="text-2xl font-bold font-display text-foreground">
+                <LiveTickerPrice 
+                  value={collectible.price} 
+                  tickInterval={3000}
+                  volatility={0.003}
+                />
+              </div>
+              {/* Arrow icon inline with price */}
+              <ExternalLink 
+                className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:text-primary shrink-0" 
+                onClick={handleGoToCard}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -284,28 +291,18 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
             </div>
           </div>
 
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGoToCard}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <ExternalLink className="w-4 h-4 mr-1" />
-              Go To Card
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart(collectible);
-              }}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <ShoppingCart className="w-4 h-4" />
-            </Button>
-          </div>
+          {/* Cart button only */}
+          <Button
+            variant="default"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(collectible);
+            }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 h-8 w-8"
+          >
+            <ShoppingCart className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     </div>

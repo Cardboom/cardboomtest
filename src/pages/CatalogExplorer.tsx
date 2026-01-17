@@ -129,14 +129,14 @@ const CatalogExplorer = () => {
                 return (
                   <Card
                     key={card.id}
-                    className="glass cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
+                    className="group glass cursor-pointer hover:border-primary/50 transition-colors overflow-hidden"
                     onClick={() => handleCardSelect(card)}
                   >
                     <div className="aspect-[2.5/3.5] relative bg-muted">
                       <img
                         src={card.image_url || '/placeholder.svg'}
                         alt={card.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />
                       <Badge
@@ -145,9 +145,15 @@ const CatalogExplorer = () => {
                       >
                         {card.game.toUpperCase()}
                       </Badge>
+                      {/* Hover overlay with arrow */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1">
+                          View Card
+                        </div>
+                      </div>
                     </div>
                     <CardContent className="p-3">
-                      <p className="font-medium text-sm line-clamp-2 mb-1">
+                      <p className="font-medium text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors">
                         {card.name}
                       </p>
                       <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
@@ -159,7 +165,7 @@ const CatalogExplorer = () => {
                         </p>
                       ) : (
                         <p className="text-xs text-muted-foreground">
-                          Price pending
+                          No market data yet
                         </p>
                       )}
                     </CardContent>
