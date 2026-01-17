@@ -2491,6 +2491,7 @@ export type Database = {
           catalog_card_id: string
           confidence: number | null
           market_item_id: string
+          match_method: string | null
           matched_at: string | null
         }
         Insert: {
@@ -2498,6 +2499,7 @@ export type Database = {
           catalog_card_id: string
           confidence?: number | null
           market_item_id: string
+          match_method?: string | null
           matched_at?: string | null
         }
         Update: {
@@ -2505,6 +2507,7 @@ export type Database = {
           catalog_card_id?: string
           confidence?: number | null
           market_item_id?: string
+          match_method?: string | null
           matched_at?: string | null
         }
         Relationships: [
@@ -2541,6 +2544,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          normalized_key: string | null
           rarity: string | null
           set_code: string | null
           set_name: string | null
@@ -2556,6 +2560,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          normalized_key?: string | null
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
@@ -2571,6 +2576,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          normalized_key?: string | null
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
@@ -4486,6 +4492,30 @@ export type Database = {
         }
         Relationships: []
       }
+      finish_aliases: {
+        Row: {
+          alias: string
+          canonical_finish: string
+          created_at: string | null
+          game: string
+          id: string
+        }
+        Insert: {
+          alias: string
+          canonical_finish: string
+          created_at?: string | null
+          game: string
+          id?: string
+        }
+        Update: {
+          alias?: string
+          canonical_finish?: string
+          created_at?: string | null
+          game?: string
+          id?: string
+        }
+        Relationships: []
+      }
       first_purchase_discounts: {
         Row: {
           created_at: string
@@ -6198,6 +6228,7 @@ export type Database = {
           match_confidence: number | null
           match_source: string | null
           name: string
+          normalized_key: string | null
           price_24h_ago: number | null
           price_30d_ago: number | null
           price_7d_ago: number | null
@@ -6263,6 +6294,7 @@ export type Database = {
           match_confidence?: number | null
           match_source?: string | null
           name: string
+          normalized_key?: string | null
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
@@ -6328,6 +6360,7 @@ export type Database = {
           match_confidence?: number | null
           match_source?: string | null
           name?: string
+          normalized_key?: string | null
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
@@ -9306,6 +9339,30 @@ export type Database = {
         }
         Relationships: []
       }
+      set_aliases: {
+        Row: {
+          alias: string
+          canonical_set_code: string
+          created_at: string | null
+          game: string
+          id: string
+        }
+        Insert: {
+          alias: string
+          canonical_set_code: string
+          created_at?: string | null
+          game: string
+          id?: string
+        }
+        Update: {
+          alias?: string
+          canonical_set_code?: string
+          created_at?: string | null
+          game?: string
+          id?: string
+        }
+        Relationships: []
+      }
       set_completion: {
         Row: {
           completion_percent: number | null
@@ -10650,6 +10707,30 @@ export type Database = {
         }
         Relationships: []
       }
+      variant_aliases: {
+        Row: {
+          alias: string
+          canonical_variant: string
+          created_at: string | null
+          game: string
+          id: string
+        }
+        Insert: {
+          alias: string
+          canonical_variant: string
+          created_at?: string | null
+          game: string
+          id?: string
+        }
+        Update: {
+          alias?: string
+          canonical_variant?: string
+          created_at?: string | null
+          game?: string
+          id?: string
+        }
+        Relationships: []
+      }
       vault_items: {
         Row: {
           admin_notes: string | null
@@ -11463,6 +11544,18 @@ export type Database = {
         Args: { p_reel_id: string; p_user_id: string }
         Returns: boolean
       }
+      build_normalized_key: {
+        Args: {
+          card_code?: string
+          card_number: string
+          collector_number?: string
+          finish?: string
+          game: string
+          set_code: string
+          variant?: string
+        }
+        Returns: string
+      }
       calculate_card_war_payouts: {
         Args: { war_id: string }
         Returns: undefined
@@ -11667,6 +11760,20 @@ export type Database = {
           p_details?: Json
           p_order_id: string
         }
+        Returns: string
+      }
+      normalize_card_number: { Args: { input: string }; Returns: string }
+      normalize_finish: {
+        Args: { game: string; input: string }
+        Returns: string
+      }
+      normalize_set_code: {
+        Args: { game: string; input: string }
+        Returns: string
+      }
+      normalize_string: { Args: { input: string }; Returns: string }
+      normalize_variant: {
+        Args: { game: string; input: string }
         Returns: string
       }
       post_ledger_entry: {
