@@ -134,3 +134,9 @@ verify_jwt = false
 
 [functions.auto-fetch-price]
 verify_jwt = false
+
+[functions.ingest-price-events]
+verify_jwt = false
+
+[functions.aggregate-daily-prices]
+verify_jwt = false
