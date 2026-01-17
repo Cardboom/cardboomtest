@@ -112,14 +112,24 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
       
       cardName = cardName.replace(/\s+/g, ' ').trim();
       
+      // Price priority: Price Override > Market Price > Average Cost
+      // (Average Cost is often 0 in exports)
       let purchasePrice: number | undefined;
       const avgCostStr = avgCostIndex >= 0 ? values[avgCostIndex]?.replace(/[,$]/g, '') : '';
       const marketPriceStr = marketPriceIndex >= 0 ? values[marketPriceIndex]?.replace(/[,$]/g, '') : '';
       const overrideStr = priceOverrideIndex >= 0 ? values[priceOverrideIndex]?.replace(/[,$]/g, '') : '';
       
-      purchasePrice = parseFloat(avgCostStr) || undefined;
-      if (!purchasePrice || purchasePrice === 0) {
-        purchasePrice = parseFloat(overrideStr) || parseFloat(marketPriceStr) || undefined;
+      // Priority: override > market > avgCost (skip zeros)
+      const overrideVal = parseFloat(overrideStr) || 0;
+      const marketVal = parseFloat(marketPriceStr) || 0;
+      const avgCostVal = parseFloat(avgCostStr) || 0;
+      
+      if (overrideVal > 0) {
+        purchasePrice = overrideVal;
+      } else if (marketVal > 0) {
+        purchasePrice = marketVal;
+      } else if (avgCostVal > 0) {
+        purchasePrice = avgCostVal;
       }
       
       const gradeVal = gradeIndex >= 0 ? values[gradeIndex] : '';
@@ -234,31 +244,22 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
       setProgress(((i + 1) / cards.length) * 100);
 
       try {
-        // Try to find matching market item with multiple search strategies
-        let marketItem: { id: string; current_price: number } | null = null;
+        // EXACT MATCHING ONLY - by card_number if available
+        let marketItemId: string | null = null;
         
-        // Strategy 1: Search by exact name + set
-        if (card.set && card.name) {
+        if (card.cardNumber && card.cardNumber.trim()) {
+          // Only match by exact card number + category
           const { data } = await supabase
             .from('market_items')
-            .select('id, current_price')
-            .ilike('name', `%${card.name}%`)
-            .ilike('set_name', `%${card.set}%`)
+            .select('id')
+            .eq('card_number', card.cardNumber.trim())
+            .eq('category', card.category?.toLowerCase().replace(/\s+/g, '-') || 'other')
             .limit(1)
             .maybeSingle();
-          marketItem = data;
-        }
-        
-        // Strategy 2: Search by name only if no set match
-        if (!marketItem && card.name) {
-          const cleanName = card.name.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
-          const { data } = await supabase
-            .from('market_items')
-            .select('id, current_price')
-            .ilike('name', `%${cleanName}%`)
-            .limit(1)
-            .maybeSingle();
-          marketItem = data;
+          
+          if (data) {
+            marketItemId = data.id;
+          }
         }
 
         // Parse grade properly
@@ -290,20 +291,22 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
         const validGrades: CardCondition[] = ['raw', 'psa1', 'psa2', 'psa3', 'psa4', 'psa5', 'psa6', 'psa7', 'psa8', 'psa9', 'psa10', 'bgs9', 'bgs9_5', 'bgs10', 'cgc9', 'cgc9_5', 'cgc10'];
         const finalGrade: CardCondition = validGrades.includes(normalizedGrade as CardCondition) ? normalizedGrade as CardCondition : 'raw';
         
-        const customName = marketItem ? null : `${card.name}${card.set ? ` - ${card.set}` : ''}${card.cardNumber ? ` #${card.cardNumber}` : ''}`;
+        // ALWAYS create custom name with full details from CSV
+        const customName = `${card.name}${card.cardNumber ? ` [${card.cardNumber}]` : ''}${card.set ? ` - ${card.set}` : ''}`;
         
+        // ALWAYS use CSV price - NEVER fall back to database prices
         const { error } = await supabase.from('portfolio_items').insert([{
           user_id: user.id,
-          market_item_id: marketItem?.id ?? null,
-          custom_name: customName,
+          market_item_id: marketItemId, // Only set if exact match found
+          custom_name: customName, // Always set custom name with full CSV data
           grade: finalGrade,
-          purchase_price: card.purchasePrice ?? marketItem?.current_price ?? null,
+          purchase_price: card.purchasePrice ?? null, // ONLY use CSV price
           quantity: card.quantity ?? 1,
         }]);
 
         if (error) throw error;
 
-        updatedCards[i] = { ...card, status: 'success', message: marketItem ? 'Matched!' : 'Added manually' };
+        updatedCards[i] = { ...card, status: 'success', message: marketItemId ? 'Linked to catalog' : 'Added' };
         successCount++;
       } catch (error: any) {
         console.error('Import error for card:', card.name, error);
