@@ -76,6 +76,31 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const { isPro, isEnterprise } = useSubscription(user?.id);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.top = `-${window.scrollY}px`;
+    } else {
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+    };
+  }, [mobileMenuOpen]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -153,7 +178,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
 
   return (
     <>
-    <header className="fixed top-0 left-0 right-0 z-[60] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
+    <header className="fixed top-0 left-0 right-0 z-[10000] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
       <div className="w-full px-4 lg:px-6">
         <div className="flex items-center justify-between h-16 gap-4 overflow-visible">
           {/* Logo - pushed to the left edge */}
@@ -573,11 +598,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
         <>
           {/* Backdrop overlay */}
           <div 
-            className="fixed inset-x-0 top-[64px] bottom-0 z-[90] bg-black/50 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
+            style={{ touchAction: 'none' }}
           />
-          <div className="fixed inset-x-0 top-[64px] bottom-0 z-[100] bg-background overflow-y-auto overscroll-contain lg:hidden">
-          <div className="container mx-auto px-4 py-4 pb-24">
+          <div 
+            className="fixed left-0 right-0 top-16 bottom-0 z-[9999] bg-background lg:hidden"
+            style={{ 
+              overflowY: 'auto', 
+              WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain'
+            }}
+          >
+          <div className="px-4 py-4 pb-32">
               {/* Search */}
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
