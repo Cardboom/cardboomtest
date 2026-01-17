@@ -72,6 +72,14 @@ export const MakeOfferDialog = ({
       return;
     }
 
+    // Max 8 digits = $99,999,999.99
+    const MAX_OFFER_USD = 99999999.99;
+    const amountInUsd = offerCurrency === 'USD' ? amount : getUsdEquivalent(amount, offerCurrency);
+    if (amountInUsd > MAX_OFFER_USD) {
+      toast.error('Maximum offer is $99,999,999.99 USD');
+      return;
+    }
+
     setIsLoading(true);
 
     try {

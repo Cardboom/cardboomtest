@@ -73,20 +73,21 @@ export const CoachRegistrationDialog = ({ open, onOpenChange }: CoachRegistratio
         return;
       }
 
-      // Update profile with coach info
+      // Update profile with coach info - pending verification
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
           display_name: displayName || undefined,
           bio: bio || undefined,
-          custom_guru: 'gaming_coach',
+          custom_guru: 'gaming_coach_pending',
           guru_expertise: enabledServices.map(s => s.game),
+          is_verified_coach: false,
         })
         .eq('id', user.id);
 
       if (profileError) throw profileError;
 
-      // Create coaching listings for each enabled game
+      // Create coaching listings as INACTIVE until admin verification
       for (const service of enabledServices) {
         const gameName = GAMES.find(g => g.id === service.game)?.name || service.game;
         
@@ -101,10 +102,11 @@ export const CoachRegistrationDialog = ({ open, onOpenChange }: CoachRegistratio
           allows_shipping: false,
           allows_trade: false,
           allows_vault: false,
+          status: 'pending', // Requires admin verification
         });
       }
 
-      toast.success('Successfully registered as a coach! Your services are now live.');
+      toast.success('Coach application submitted! An admin will review and verify your profile.');
       onOpenChange(false);
     } catch (error: any) {
       console.error('Coach registration error:', error);
