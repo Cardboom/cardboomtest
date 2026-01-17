@@ -1122,7 +1122,7 @@ const Auth = () => {
                     {/* Welcome Message */}
                     <div className="text-center space-y-1">
                       <h3 className="text-lg font-semibold text-foreground">Create Your Account</h3>
-                      <p className="text-sm text-muted-foreground">Join the #1 TCG marketplace</p>
+                      <p className="text-sm text-muted-foreground">Your portfolio deserves a market.</p>
                     </div>
 
                     {/* Early Access Badge */}

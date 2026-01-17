@@ -134,16 +134,14 @@ export const HeroSection = ({ isLoggedIn = false }: HeroSectionProps) => {
         >
           {/* Headline */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-6">
-            <span className="text-foreground">Grade your </span>
-            <span className="text-primary">Card</span>
+            <span className="text-foreground">Don't just track your portfolio.</span>
             <br />
-            <span className="text-primary">Boom </span>
-            <span className="text-foreground">Your Value</span>
+            <span className="text-primary">Trade & sell it.</span>
           </h1>
           
           {/* Subtitle */}
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mb-8">
-            Buy, sell, grade, and track cards, figures, gaming items, and fractional collectibles — all in one trusted base.
+            CardBoom turns portfolio tracking into real market pricing and real liquidity.
           </p>
           
           {/* CTA Buttons */}
@@ -153,7 +151,7 @@ export const HeroSection = ({ isLoggedIn = false }: HeroSectionProps) => {
               onClick={() => navigate('/auth')}
               className="h-14 px-8 rounded-full font-bold text-base cursor-pointer bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary/90 hover:via-primary hover:to-primary shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 gap-2"
             >
-              Start Investing
+              Get Started Free
               <ArrowRight className="w-5 h-5" />
             </Button>
             <Button 
