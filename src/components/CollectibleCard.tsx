@@ -12,6 +12,7 @@ import { MiniSparkline } from './market/MiniSparkline';
 import { getThumbnailUrl } from '@/lib/imageUtils';
 import { GradeBadge } from '@/components/ui/grade-badge';
 import { formatCategoryName } from '@/lib/categoryFormatter';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 // Convert ISO country code to flag emoji
 const getCountryFlag = (countryCode: string): string => {
@@ -110,9 +111,14 @@ export const CollectibleCard = ({ collectible, onAddToCart, onClick }: Collectib
   };
 
   const handleCardClick = () => {
-    // For listings, open in new tab directly
+    // For listings, open in new tab directly using SEO-friendly URL
     if ((collectible as any).source === 'listing' && (collectible as any).listingId) {
-      const url = `/listing/${(collectible as any).category || 'other'}/${(collectible as any).listingId}`;
+      const url = generateListingUrl({
+        id: (collectible as any).listingId,
+        category: (collectible as any).category || collectible.category || 'other',
+        slug: (collectible as any).slug,
+        title: collectible.name
+      });
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       onClick(collectible);

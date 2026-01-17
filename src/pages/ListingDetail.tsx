@@ -201,6 +201,28 @@ const ListingDetail = () => {
           }
         }
         
+        // Try if the slug is actually a UUID (legacy URL passed through SEO route)
+        if (!data && !error && isUUID(slug)) {
+          const uuidResult = await supabase
+            .from('listings')
+            .select('*')
+            .eq('id', slug)
+            .maybeSingle();
+          data = uuidResult.data;
+          error = uuidResult.error;
+          
+          // If found via UUID in SEO route, redirect to proper SEO URL
+          if (data && data.slug) {
+            const seoUrl = generateListingUrl({
+              id: data.id,
+              category: data.category,
+              slug: data.slug,
+            });
+            navigate(seoUrl, { replace: true });
+            return;
+          }
+        }
+        
         // Last resort: try partial match from start
         if (!data && !error) {
           const partialResult = await supabase
