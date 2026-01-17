@@ -1821,6 +1821,59 @@ export type Database = {
           },
         ]
       }
+      card_price_snapshots: {
+        Row: {
+          catalog_card_id: string
+          confidence: number | null
+          created_at: string | null
+          high_usd: number | null
+          id: string
+          liquidity_count: number | null
+          low_usd: number | null
+          median_eur: number | null
+          median_try: number | null
+          median_usd: number | null
+          snapshot_date: string
+          sources: Json | null
+        }
+        Insert: {
+          catalog_card_id: string
+          confidence?: number | null
+          created_at?: string | null
+          high_usd?: number | null
+          id?: string
+          liquidity_count?: number | null
+          low_usd?: number | null
+          median_eur?: number | null
+          median_try?: number | null
+          median_usd?: number | null
+          snapshot_date: string
+          sources?: Json | null
+        }
+        Update: {
+          catalog_card_id?: string
+          confidence?: number | null
+          created_at?: string | null
+          high_usd?: number | null
+          id?: string
+          liquidity_count?: number | null
+          low_usd?: number | null
+          median_eur?: number | null
+          median_try?: number | null
+          median_usd?: number | null
+          snapshot_date?: string
+          sources?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_price_snapshots_catalog_card_id_fkey"
+            columns: ["catalog_card_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_reels: {
         Row: {
           avg_watch_time: number | null
@@ -2271,6 +2324,93 @@ export type Database = {
           source?: string
           transaction_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      catalog_card_listings: {
+        Row: {
+          catalog_card_id: string
+          id: string
+          listing_id: string
+          match_confidence: number | null
+          matched_at: string | null
+        }
+        Insert: {
+          catalog_card_id: string
+          id?: string
+          listing_id: string
+          match_confidence?: number | null
+          matched_at?: string | null
+        }
+        Update: {
+          catalog_card_id?: string
+          id?: string
+          listing_id?: string
+          match_confidence?: number | null
+          matched_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_card_listings_catalog_card_id_fkey"
+            columns: ["catalog_card_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_card_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_cards: {
+        Row: {
+          canonical_key: string
+          card_number: string | null
+          created_at: string | null
+          finish: string | null
+          game: string
+          id: string
+          image_url: string | null
+          name: string
+          rarity: string | null
+          set_code: string | null
+          set_name: string | null
+          updated_at: string | null
+          variant: string | null
+        }
+        Insert: {
+          canonical_key: string
+          card_number?: string | null
+          created_at?: string | null
+          finish?: string | null
+          game: string
+          id?: string
+          image_url?: string | null
+          name: string
+          rarity?: string | null
+          set_code?: string | null
+          set_name?: string | null
+          updated_at?: string | null
+          variant?: string | null
+        }
+        Update: {
+          canonical_key?: string
+          card_number?: string | null
+          created_at?: string | null
+          finish?: string | null
+          game?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          rarity?: string | null
+          set_code?: string | null
+          set_name?: string | null
+          updated_at?: string | null
+          variant?: string | null
         }
         Relationships: []
       }
@@ -6930,6 +7070,7 @@ export type Database = {
       }
       price_events: {
         Row: {
+          catalog_card_id: string | null
           created_at: string
           currency: string
           event_type: string | null
@@ -6952,6 +7093,7 @@ export type Database = {
           total_usd: number | null
         }
         Insert: {
+          catalog_card_id?: string | null
           created_at?: string
           currency?: string
           event_type?: string | null
@@ -6974,6 +7116,7 @@ export type Database = {
           total_usd?: number | null
         }
         Update: {
+          catalog_card_id?: string | null
           created_at?: string
           currency?: string
           event_type?: string | null
@@ -6996,6 +7139,13 @@ export type Database = {
           total_usd?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "price_events_catalog_card_id_fkey"
+            columns: ["catalog_card_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "price_events_matched_market_item_id_fkey"
             columns: ["matched_market_item_id"]
@@ -10909,6 +11059,25 @@ export type Database = {
         Args: { p_card_number?: string; p_set_name?: string; p_title: string }
         Returns: string
       }
+      get_card_latest_price: {
+        Args: { p_catalog_card_id: string }
+        Returns: {
+          confidence: number
+          liquidity_count: number
+          median_try: number
+          median_usd: number
+          snapshot_date: string
+        }[]
+      }
+      get_card_price_history: {
+        Args: { p_catalog_card_id: string; p_days?: number }
+        Returns: {
+          confidence: number
+          liquidity_count: number
+          median_usd: number
+          snapshot_date: string
+        }[]
+      }
       get_current_user_email: { Args: never; Returns: string }
       get_current_user_phone: { Args: never; Returns: string }
       get_seller_rating: {
@@ -10990,6 +11159,8 @@ export type Database = {
         Args: { p_order_id: string; p_released_by?: string }
         Returns: boolean
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       spend_cardboom_points: {
         Args: {
           p_amount: number
