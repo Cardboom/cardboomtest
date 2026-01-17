@@ -50,6 +50,7 @@ import { FAQSection } from '@/components/FAQSection';
 import { SEOFeaturesSection } from '@/components/SEOFeaturesSection';
 import { TrustBadgesBar, ViralReferralLeaderboard } from '@/components/growth';
 import { RecentlyViewedSection } from '@/components/home/RecentlyViewedSection';
+import { CatalogCollectionsSection } from '@/components/home/CatalogCollectionsSection';
 
 
 const Index = () => {
@@ -335,6 +336,13 @@ const Index = () => {
 
         {/* Feature Showcase - Why CardBoom (only for non-logged-in users) */}
         {!user && <FeatureShowcase />}
+
+        {/* Catalog Collections - Price-aware entry points */}
+        {!user && (
+          <ScrollReveal>
+            <CatalogCollectionsSection />
+          </ScrollReveal>
+        )}
 
         {/* Panels for non-logged-in users - shown after Why CardBoom section */}
         {!user && (
