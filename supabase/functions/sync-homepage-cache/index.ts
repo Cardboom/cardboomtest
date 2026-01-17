@@ -6,16 +6,26 @@ const corsHeaders = {
 }
 
 // Popular TCG drops - these would ideally come from an external API
-const KNOWN_DROPS = [
-  { name: 'Prismatic Evolutions', tcg: 'pokemon', release_date: '2026-01-17', type: 'booster-box', description: 'Special set featuring prismatic cards' },
-  { name: 'OP-11 Two Legends', tcg: 'one-piece', release_date: '2026-02-07', type: 'booster-box', description: 'Featuring Shanks and Buggy' },
-  { name: 'Aetherdrift', tcg: 'magic', release_date: '2026-02-14', type: 'booster-box', description: 'New Magic: The Gathering expansion' },
-  { name: 'Azurite Sea', tcg: 'lorcana', release_date: '2026-02-21', type: 'booster-box', description: 'Disney Lorcana expansion' },
-  { name: 'OP-12 Wings of the Captain', tcg: 'one-piece', release_date: '2026-03-14', type: 'booster-box', description: 'Featuring Whitebeard Pirates' },
-  { name: 'Shrouded Fable', tcg: 'pokemon', release_date: '2026-03-21', type: 'booster-box', description: 'Pokemon TCG expansion' },
-  { name: 'Riftbound Ascension', tcg: 'riftbound', release_date: '2026-04-04', type: 'booster-box', description: 'League of Legends TCG expansion' },
-  { name: 'Yu-Gi-Oh! 25th Mega Set', tcg: 'yugioh', release_date: '2026-04-18', type: 'collection', description: 'Anniversary celebration set' },
-];
+// TCG drops are now dynamically calculated based on current date
+const getUpcomingDrops = () => {
+  const now = new Date();
+  const addDays = (days: number) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split('T')[0];
+  };
+  
+  return [
+    { name: 'Prismatic Evolutions', tcg: 'pokemon', release_date: addDays(7), type: 'booster-box', description: 'Special set featuring prismatic cards' },
+    { name: 'OP-11 Two Legends', tcg: 'one-piece', release_date: addDays(21), type: 'booster-box', description: 'Featuring Shanks and Buggy' },
+    { name: 'Aetherdrift', tcg: 'magic', release_date: addDays(28), type: 'booster-box', description: 'New Magic: The Gathering expansion' },
+    { name: 'Azurite Sea', tcg: 'lorcana', release_date: addDays(35), type: 'booster-box', description: 'Disney Lorcana expansion' },
+    { name: 'OP-12 Wings of the Captain', tcg: 'one-piece', release_date: addDays(56), type: 'booster-box', description: 'Featuring Whitebeard Pirates' },
+    { name: 'Shrouded Fable', tcg: 'pokemon', release_date: addDays(63), type: 'booster-box', description: 'Pokemon TCG expansion' },
+    { name: 'Riftbound Ascension', tcg: 'riftbound', release_date: addDays(77), type: 'booster-box', description: 'League of Legends TCG expansion' },
+    { name: 'Yu-Gi-Oh! 25th Mega Set', tcg: 'yugioh', release_date: addDays(91), type: 'collection', description: 'Anniversary celebration set' },
+  ];
+};
 
 // No fallback mock posts - only show real X API posts
 
@@ -98,10 +108,8 @@ Deno.serve(async (req) => {
 
     // 1. Update TCG Drops cache
     try {
-      // Filter to only future releases
-      const futureDrops = KNOWN_DROPS.filter(drop => 
-        new Date(drop.release_date) >= now
-      )
+      // Get dynamically calculated drops (always future)
+      const futureDrops = getUpcomingDrops()
 
       for (const drop of futureDrops) {
         const { error } = await supabase
