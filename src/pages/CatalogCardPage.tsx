@@ -77,10 +77,10 @@ const CatalogCardPage = () => {
             "description": pageDescription,
             "image": card.image_url,
             "brand": { "@type": "Brand", "name": gameLabels[card.game] || card.game },
-            "offers": price?.median_usd ? {
+            "offers": price?.has_price && price?.price_usd ? {
               "@type": "Offer",
               "priceCurrency": "USD",
-              "price": price.median_usd,
+              "price": price.price_usd,
             } : undefined
           })}
         </script>

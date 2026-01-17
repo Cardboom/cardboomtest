@@ -313,6 +313,13 @@ export type Database = {
             foreignKeyName: "ai_trending_cards_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "ai_trending_cards_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -680,6 +687,13 @@ export type Database = {
             foreignKeyName: "auctions_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "auctions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -786,8 +800,22 @@ export type Database = {
             foreignKeyName: "auto_buy_logs_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "auto_buy_logs_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auto_buy_logs_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "auto_buy_logs_market_item_id_fkey"
@@ -863,6 +891,13 @@ export type Database = {
             foreignKeyName: "auto_match_queue_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "auto_match_queue_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -922,6 +957,13 @@ export type Database = {
             foreignKeyName: "auto_relist_settings_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: true
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "auto_relist_settings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -974,6 +1016,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bids_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "bids_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -1102,6 +1151,13 @@ export type Database = {
             foreignKeyName: "boom_pack_cards_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "boom_pack_cards_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -1154,6 +1210,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "boom_packs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "boom_pack_inventory_pool_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "boom_pack_inventory_pool_market_item_id_fkey"
@@ -1421,6 +1484,13 @@ export type Database = {
             foreignKeyName: "buy_order_fills_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "buy_order_fills_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -1513,6 +1583,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "public_profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buy_orders_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "buy_orders_market_item_id_fkey"
@@ -1748,6 +1825,13 @@ export type Database = {
             foreignKeyName: "card_instances_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "card_instances_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -1812,6 +1896,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "card_price_estimates_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: true
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "card_price_estimates_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -1955,6 +2046,13 @@ export type Database = {
             foreignKeyName: "card_reels_tagged_card_id_fkey"
             columns: ["tagged_card_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "card_reels_tagged_card_id_fkey"
+            columns: ["tagged_card_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -2091,8 +2189,22 @@ export type Database = {
             foreignKeyName: "card_wars_card_a_id_fkey"
             columns: ["card_a_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "card_wars_card_a_id_fkey"
+            columns: ["card_a_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "card_wars_card_b_id_fkey"
+            columns: ["card_b_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "card_wars_card_b_id_fkey"
@@ -2361,7 +2473,60 @@ export type Database = {
             foreignKeyName: "catalog_card_listings_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "catalog_card_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_card_map: {
+        Row: {
+          canonical_key: string
+          catalog_card_id: string
+          confidence: number | null
+          market_item_id: string
+          matched_at: string | null
+        }
+        Insert: {
+          canonical_key: string
+          catalog_card_id: string
+          confidence?: number | null
+          market_item_id: string
+          matched_at?: string | null
+        }
+        Update: {
+          canonical_key?: string
+          catalog_card_id?: string
+          confidence?: number | null
+          market_item_id?: string
+          matched_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_card_map_catalog_card_id_fkey"
+            columns: ["catalog_card_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_card_map_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "catalog_card_map_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
         ]
@@ -2480,8 +2645,22 @@ export type Database = {
             foreignKeyName: "community_card_votes_card_a_id_fkey"
             columns: ["card_a_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "community_card_votes_card_a_id_fkey"
+            columns: ["card_a_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_card_votes_card_b_id_fkey"
+            columns: ["card_b_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "community_card_votes_card_b_id_fkey"
@@ -2592,6 +2771,13 @@ export type Database = {
           participant_2?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "conversations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
           {
             foreignKeyName: "conversations_listing_id_fkey"
             columns: ["listing_id"]
@@ -2904,6 +3090,13 @@ export type Database = {
             foreignKeyName: "creator_market_calls_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "creator_market_calls_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -2947,6 +3140,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "creator_profiles"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_picks_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "creator_picks_market_item_id_fkey"
@@ -3222,6 +3422,13 @@ export type Database = {
             foreignKeyName: "creator_watchlist_items_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "creator_watchlist_items_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -3482,6 +3689,13 @@ export type Database = {
             foreignKeyName: "digital_product_codes_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "digital_product_codes_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -3676,6 +3890,13 @@ export type Database = {
           upvotes?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "discussions_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "discussions_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -4107,6 +4328,13 @@ export type Database = {
             foreignKeyName: "external_liquidity_signals_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "external_liquidity_signals_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -4190,8 +4418,22 @@ export type Database = {
             foreignKeyName: "featured_items_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "featured_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "featured_items_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "featured_items_market_item_id_fkey"
@@ -4355,8 +4597,22 @@ export type Database = {
             foreignKeyName: "fractional_listings_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "fractional_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fractional_listings_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "fractional_listings_market_item_id_fkey"
@@ -4686,8 +4942,22 @@ export type Database = {
             foreignKeyName: "grading_donations_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "grading_donations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grading_donations_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "grading_donations_market_item_id_fkey"
@@ -4985,8 +5255,22 @@ export type Database = {
             foreignKeyName: "grading_orders_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "grading_orders_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grading_orders_source_listing_id_fkey"
+            columns: ["source_listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
           },
           {
             foreignKeyName: "grading_orders_source_listing_id_fkey"
@@ -5266,6 +5550,13 @@ export type Database = {
             foreignKeyName: "item_views_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "item_views_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -5405,8 +5696,22 @@ export type Database = {
             foreignKeyName: "listing_card_data_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: true
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_card_data_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_card_data_matched_market_item_id_fkey"
+            columns: ["matched_market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "listing_card_data_matched_market_item_id_fkey"
@@ -5440,6 +5745,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "listing_comments_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
           {
             foreignKeyName: "listing_comments_listing_id_fkey"
             columns: ["listing_id"]
@@ -5490,6 +5802,13 @@ export type Database = {
           status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "listing_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
           {
             foreignKeyName: "listing_reports_listing_id_fkey"
             columns: ["listing_id"]
@@ -5668,6 +5987,13 @@ export type Database = {
             foreignKeyName: "listings_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "listings_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -5817,6 +6143,13 @@ export type Database = {
           sales_count_30d?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "market_item_grades_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "market_item_grades_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -6066,6 +6399,13 @@ export type Database = {
             foreignKeyName: "market_memory_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "market_memory_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -6115,6 +6455,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "match_review_queue_proposed_market_item_id_fkey"
+            columns: ["proposed_market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "match_review_queue_proposed_market_item_id_fkey"
             columns: ["proposed_market_item_id"]
@@ -6296,6 +6643,13 @@ export type Database = {
           status?: Database["public"]["Enums"]["offer_status"]
         }
         Relationships: [
+          {
+            foreignKeyName: "offers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
           {
             foreignKeyName: "offers_listing_id_fkey"
             columns: ["listing_id"]
@@ -6624,6 +6978,13 @@ export type Database = {
             foreignKeyName: "orders_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "orders_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -6697,8 +7058,22 @@ export type Database = {
             foreignKeyName: "organic_transactions_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "organic_transactions_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organic_transactions_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "organic_transactions_market_item_id_fkey"
@@ -6982,6 +7357,13 @@ export type Database = {
             foreignKeyName: "portfolio_items_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "portfolio_items_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -7059,6 +7441,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "price_alerts_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "price_alerts_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -7150,6 +7539,13 @@ export type Database = {
             foreignKeyName: "price_events_matched_market_item_id_fkey"
             columns: ["matched_market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "price_events_matched_market_item_id_fkey"
+            columns: ["matched_market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -7191,6 +7587,13 @@ export type Database = {
             foreignKeyName: "price_history_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "price_history_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -7219,6 +7622,13 @@ export type Database = {
           vote_type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "price_votes_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
           {
             foreignKeyName: "price_votes_listing_id_fkey"
             columns: ["listing_id"]
@@ -7888,8 +8298,22 @@ export type Database = {
             foreignKeyName: "receipts_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "receipts_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipts_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "receipts_market_item_id_fkey"
@@ -8220,6 +8644,13 @@ export type Database = {
             foreignKeyName: "reference_listings_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "reference_listings_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -8521,6 +8952,13 @@ export type Database = {
           views_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "regret_simulations_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "regret_simulations_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -8938,6 +9376,13 @@ export type Database = {
           view_duration_seconds?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "shadow_wishlists_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
           {
             foreignKeyName: "shadow_wishlists_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -9488,6 +9933,13 @@ export type Database = {
             foreignKeyName: "trade_preferences_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "trade_preferences_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -9904,8 +10356,22 @@ export type Database = {
             foreignKeyName: "user_market_signals_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "user_market_signals_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_market_signals_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
           },
           {
             foreignKeyName: "user_market_signals_market_item_id_fkey"
@@ -10274,6 +10740,13 @@ export type Database = {
             foreignKeyName: "vault_items_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "vault_items_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -10552,6 +11025,13 @@ export type Database = {
             foreignKeyName: "watchlist_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "watchlist_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
@@ -10816,6 +11296,13 @@ export type Database = {
             foreignKeyName: "grading_donations_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "grading_donations_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
             referencedRelation: "listings"
             referencedColumns: ["id"]
           },
@@ -10823,7 +11310,40 @@ export type Database = {
             foreignKeyName: "grading_donations_market_item_id_fkey"
             columns: ["market_item_id"]
             isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "grading_donations_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
             referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_card_active_listings: {
+        Row: {
+          canonical_key: string | null
+          catalog_card_id: string | null
+          condition: string | null
+          image_url: string | null
+          listing_created_at: string | null
+          listing_id: string | null
+          mapping_confidence: number | null
+          market_item_id: string | null
+          market_item_name: string | null
+          price: number | null
+          seller_id: string | null
+          status: Database["public"]["Enums"]["listing_status"] | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_card_map_catalog_card_id_fkey"
+            columns: ["catalog_card_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
             referencedColumns: ["id"]
           },
         ]
@@ -11076,6 +11596,33 @@ export type Database = {
           liquidity_count: number
           median_usd: number
           snapshot_date: string
+        }[]
+      }
+      get_catalog_card_listings: {
+        Args: { p_catalog_card_id: string }
+        Returns: {
+          condition: string
+          image_url: string
+          listing_id: string
+          mapping_confidence: number
+          market_item_id: string
+          price: number
+          seller_avatar: string
+          seller_id: string
+          seller_name: string
+          status: string
+          title: string
+        }[]
+      }
+      get_catalog_card_resolved_price: {
+        Args: { p_catalog_card_id: string }
+        Returns: {
+          confidence: number
+          has_price: boolean
+          last_updated: string
+          liquidity_count: number
+          price_source: string
+          price_usd: number
         }[]
       }
       get_current_user_email: { Args: never; Returns: string }
