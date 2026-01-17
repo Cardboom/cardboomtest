@@ -71,9 +71,9 @@ const TIER_LABELS: Record<SubscriptionTier, string> = {
   enterprise: 'Enterprise',
 };
 
-// Base conversion: 1 Coin = $0.001 USD (1000 coins = $1)
-// Updated from $0.01 (10x deflation)
-const GEM_FACE_VALUE_USD = 0.001;
+// Base conversion: 1 Coin = $0.105 USD (~9.5 coins per $1)
+// $5 = 47.5 coins as requested
+const GEM_FACE_VALUE_USD = 0.105263;
 
 export const GemsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [displayMode, setDisplayModeState] = useState<PriceDisplayMode>(() => {

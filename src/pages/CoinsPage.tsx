@@ -21,15 +21,15 @@ import { toast } from 'sonner';
 import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 // Boom Coin pack options with prices in USD
-// Updated: 1 coin = $0.001, so 1000 coins = $1
-// Previous: 1 coin = $0.01, so 100 coins = $1
+// Pricing: 1 coin = $0.105 (~9.5 coins per $1)
+// $5 = 47.5 coins as base
 const COIN_PACKS = [
-  { coins: 5000, usd: 5, popular: false, bonus: 0 },        // $5 = 5000 coins
-  { coins: 10000, usd: 10, popular: false, bonus: 0 },      // $10 = 10000 coins
-  { coins: 25000, usd: 25, popular: true, bonus: 1000 },    // $25 = 25000 coins + 1000 bonus
-  { coins: 50000, usd: 50, popular: false, bonus: 2500 },   // $50 = 50000 coins + 2500 bonus
-  { coins: 100000, usd: 100, popular: false, bonus: 6000 }, // $100 = 100000 coins + 6000 bonus
-  { coins: 250000, usd: 250, popular: false, bonus: 20000 },// $250 = 250000 coins + 20000 bonus
+  { coins: 47, usd: 5, popular: false, bonus: 0 },         // $5 = 47.5 coins
+  { coins: 95, usd: 10, popular: false, bonus: 5 },        // $10 = 95 + 5 bonus
+  { coins: 238, usd: 25, popular: true, bonus: 12 },       // $25 = 238 + 12 bonus
+  { coins: 475, usd: 50, popular: false, bonus: 25 },      // $50 = 475 + 25 bonus
+  { coins: 950, usd: 100, popular: false, bonus: 50 },     // $100 = 950 + 50 bonus
+  { coins: 2375, usd: 250, popular: false, bonus: 125 },   // $250 = 2375 + 125 bonus
 ];
 
 const CoinsPage: React.FC = () => {

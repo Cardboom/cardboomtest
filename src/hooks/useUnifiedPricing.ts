@@ -8,12 +8,12 @@ import { useCurrency, Currency } from '@/contexts/CurrencyContext';
  * Combines GemsContext and CurrencyContext for consistent pricing across the site.
  * 
  * Rules:
- * - Boom Coins are ALWAYS in fixed USD conversion (1 Boom Coin = $0.001 USD)
- * - When displayMode is 'gems': Show price in Boom Coins (USD × 1000)
+ * - Boom Coins are ALWAYS in fixed USD conversion (1 Boom Coin = $0.105 USD)
+ * - When displayMode is 'gems': Show price in Boom Coins (~9.5 coins per $1)
  * - When displayMode is 'usd': Show price in selected fiat currency (USD/EUR/TRY)
  * - Turkish users see TRY equivalent with same markup as USD
  * 
- * UPDATED: 10x deflation - was $0.01/coin (100 per $1), now $0.001/coin (1000 per $1)
+ * Pricing: $5 = 47.5 coins
  */
 
 export interface UnifiedPricingResult {
