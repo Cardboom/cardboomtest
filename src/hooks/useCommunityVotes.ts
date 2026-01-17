@@ -105,7 +105,8 @@ export const useCommunityVotes = (userId?: string) => {
     }
 
     try {
-      const voteWeight = isPro ? 2 : 1; // Pro votes count double
+      // Non-pro users vote with weight 1, pro users get weight 2
+      const voteWeight = isPro ? 2 : 1;
 
       const { error } = await supabase.from('community_vote_entries').insert({
         poll_id: todaysPoll.id,

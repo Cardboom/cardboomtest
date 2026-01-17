@@ -90,18 +90,35 @@ export const useCardWars = (userId?: string) => {
     fetchUserVotes();
   }, [fetchActiveWars, fetchUserVotes]);
 
-  const vote = async (warId: string, voteFor: 'card_a' | 'card_b', isPro: boolean) => {
+  const vote = async (warId: string, voteFor: 'card_a' | 'card_b', isPro: boolean = false) => {
     if (!userId) { toast.error('Please sign in to vote'); return false; }
     if (userVotes[warId]) { toast.error('You already voted!'); return false; }
 
-    const { error } = await supabase.from('card_war_votes').insert({
-      card_war_id: warId, user_id: userId, vote_for: voteFor, is_pro_vote: isPro, vote_value: isPro ? 2.5 : 0,
-    });
+    try {
+      // Non-pro users can always vote with is_pro_vote = false and vote_value = 0
+      const { error } = await supabase.from('card_war_votes').insert({
+        card_war_id: warId, 
+        user_id: userId, 
+        vote_for: voteFor, 
+        is_pro_vote: isPro, 
+        vote_value: isPro ? 2.5 : 0,
+      });
 
-    if (error) { toast.error('Failed to vote'); return false; }
-    toast.success('Vote cast!' + (isPro ? ' Your $2.50 is in the pot!' : ''));
-    fetchActiveWars(); fetchUserVotes();
-    return true;
+      if (error) { 
+        console.error('Vote error:', error);
+        toast.error('Failed to vote'); 
+        return false; 
+      }
+      
+      toast.success('Vote cast!' + (isPro ? ' Your $2.50 is in the pot!' : ''));
+      fetchActiveWars(); 
+      fetchUserVotes();
+      return true;
+    } catch (error) {
+      console.error('Vote exception:', error);
+      toast.error('Failed to vote');
+      return false;
+    }
   };
 
   return { activeWars, userVotes, loading, vote, refetch: () => { fetchActiveWars(); fetchUserVotes(); } };
