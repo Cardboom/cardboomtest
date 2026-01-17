@@ -20,6 +20,8 @@ interface PortfolioImportProps {
 interface ImportedCard {
   name: string;
   category?: string;
+  set?: string;
+  cardNumber?: string;
   grade?: string;
   purchasePrice?: number;
   quantity?: number;
@@ -34,28 +36,99 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
   const [certNumbers, setCertNumbers] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Parse CSV line handling quoted values with commas
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    result.push(current.trim());
+    return result;
+  };
+
   const parseCSV = (text: string): ImportedCard[] => {
-    const lines = text.trim().split('\n');
+    const lines = text.trim().split('\n').filter(line => line.trim());
     if (lines.length < 2) return [];
 
-    const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
-    const nameIndex = headers.findIndex(h => h.includes('name') || h.includes('card') || h.includes('title'));
-    const categoryIndex = headers.findIndex(h => h.includes('category') || h.includes('type'));
-    const gradeIndex = headers.findIndex(h => h.includes('grade') || h.includes('condition'));
-    const priceIndex = headers.findIndex(h => h.includes('price') || h.includes('cost') || h.includes('value'));
+    const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+    
+    // Find column indices - support multiple CSV formats
+    const productNameIndex = headers.findIndex(h => h === 'product name');
+    const nameIndex = productNameIndex >= 0 ? productNameIndex : headers.findIndex(h => h.includes('name') || h.includes('card') || h.includes('title'));
+    const categoryIndex = headers.findIndex(h => h === 'category' || h.includes('type'));
+    const setIndex = headers.findIndex(h => h === 'set');
+    const gradeIndex = headers.findIndex(h => h === 'grade');
+    const conditionIndex = headers.findIndex(h => h.includes('condition'));
+    const avgCostIndex = headers.findIndex(h => h.includes('average cost') || h.includes('cost paid'));
+    const priceIndex = avgCostIndex >= 0 ? avgCostIndex : headers.findIndex(h => h.includes('price') || h.includes('cost') || h.includes('value'));
     const quantityIndex = headers.findIndex(h => h.includes('quantity') || h.includes('qty') || h.includes('count'));
+    const marketPriceIndex = headers.findIndex(h => h.includes('market price'));
+    const priceOverrideIndex = headers.findIndex(h => h.includes('price override'));
+    const cardNumberIndex = headers.findIndex(h => h.includes('card number'));
+    const rarityIndex = headers.findIndex(h => h === 'rarity');
+    const notesIndex = headers.findIndex(h => h === 'notes');
 
     return lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+      const values = parseCSVLine(line);
+      
+      // Build card name with set info for better matching
+      let cardName = values[nameIndex] || values[0] || '';
+      const setName = setIndex >= 0 ? values[setIndex] : '';
+      const cardNumber = cardNumberIndex >= 0 ? values[cardNumberIndex] : '';
+      
+      // Clean up the name
+      cardName = cardName.replace(/\s+/g, ' ').trim();
+      
+      // Get price - try purchase price first, then market price, then override
+      let purchasePrice: number | undefined;
+      const avgCostStr = avgCostIndex >= 0 ? values[avgCostIndex]?.replace(/[,$]/g, '') : '';
+      const marketPriceStr = marketPriceIndex >= 0 ? values[marketPriceIndex]?.replace(/[,$]/g, '') : '';
+      const overrideStr = priceOverrideIndex >= 0 ? values[priceOverrideIndex]?.replace(/[,$]/g, '') : '';
+      
+      // Try average cost first, if 0 or invalid try market price, then override
+      purchasePrice = parseFloat(avgCostStr) || undefined;
+      if (!purchasePrice || purchasePrice === 0) {
+        purchasePrice = parseFloat(overrideStr) || parseFloat(marketPriceStr) || undefined;
+      }
+      
+      // Get grade info
+      const gradeVal = gradeIndex >= 0 ? values[gradeIndex] : '';
+      const conditionVal = conditionIndex >= 0 ? values[conditionIndex] : '';
+      const grade = gradeVal || conditionVal || undefined;
+      
+      // Get category
+      const category = categoryIndex >= 0 ? values[categoryIndex] : undefined;
+      
+      // Get quantity
+      const quantity = quantityIndex >= 0 ? parseInt(values[quantityIndex]) || 1 : 1;
+
       return {
-        name: values[nameIndex] || values[0] || 'Unknown',
-        category: categoryIndex >= 0 ? values[categoryIndex] : undefined,
-        grade: gradeIndex >= 0 ? values[gradeIndex] : undefined,
-        purchasePrice: priceIndex >= 0 ? parseFloat(values[priceIndex]) || undefined : undefined,
-        quantity: quantityIndex >= 0 ? parseInt(values[quantityIndex]) || 1 : 1,
+        name: cardName,
+        category,
+        set: setName,
+        cardNumber,
+        grade,
+        purchasePrice,
+        quantity,
         status: 'pending' as const,
       };
-    }).filter(card => card.name && card.name !== 'Unknown');
+    }).filter(card => card.name && card.name.length > 0);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,29 +202,73 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
       setProgress(((i + 1) / cards.length) * 100);
 
       try {
-        // Try to find matching market item
-        const { data: marketItem } = await supabase
-          .from('market_items')
-          .select('id, current_price')
-          .ilike('name', `%${card.name}%`)
-          .limit(1)
-          .maybeSingle();
+        // Try to find matching market item with multiple search strategies
+        let marketItem: { id: string; current_price: number } | null = null;
+        
+        // Strategy 1: Search by exact name + set
+        if (card.set && card.name) {
+          const { data } = await supabase
+            .from('market_items')
+            .select('id, current_price')
+            .ilike('name', `%${card.name}%`)
+            .ilike('set_name', `%${card.set}%`)
+            .limit(1)
+            .maybeSingle();
+          marketItem = data;
+        }
+        
+        // Strategy 2: Search by name only if no set match
+        if (!marketItem && card.name) {
+          // Clean up name for better matching - remove parentheses content like (SP), (JP)
+          const cleanName = card.name.replace(/\s*\([^)]*\)\s*/g, ' ').trim();
+          const { data } = await supabase
+            .from('market_items')
+            .select('id, current_price')
+            .ilike('name', `%${cleanName}%`)
+            .limit(1)
+            .maybeSingle();
+          marketItem = data;
+        }
 
-        // Add to portfolio - safely handle grade transformation
-        const rawGrade = card.grade 
-          ? card.grade.toLowerCase().replace(/\s+/g, '').replace(/\./g, '_') 
-          : 'raw';
+        // Parse grade properly - handle formats like "PSA 10.0", "BGS 9.5", "CGC 10.0", "Ungraded"
+        let normalizedGrade: string = 'raw';
+        if (card.grade) {
+          const gradeStr = card.grade.toLowerCase().trim();
+          
+          if (gradeStr.includes('ungraded') || gradeStr === 'near mint' || gradeStr === 'mint') {
+            normalizedGrade = 'raw';
+          } else if (gradeStr.includes('psa')) {
+            // Extract number from "PSA 10.0" -> "psa10"
+            const match = gradeStr.match(/psa\s*(\d+)/);
+            if (match) normalizedGrade = `psa${match[1]}`;
+          } else if (gradeStr.includes('bgs')) {
+            const match = gradeStr.match(/bgs\s*(\d+\.?\d*)/);
+            if (match) {
+              const num = match[1].replace('.', '_');
+              normalizedGrade = `bgs${num}`;
+            }
+          } else if (gradeStr.includes('cgc')) {
+            const match = gradeStr.match(/cgc\s*(\d+\.?\d*)/);
+            if (match) {
+              const num = match[1].replace('.', '_');
+              normalizedGrade = `cgc${num}`;
+            }
+          }
+        }
         
         // Validate grade is a valid enum value
         type CardCondition = 'raw' | 'psa1' | 'psa2' | 'psa3' | 'psa4' | 'psa5' | 'psa6' | 'psa7' | 'psa8' | 'psa9' | 'psa10' | 'bgs9' | 'bgs9_5' | 'bgs10' | 'cgc9' | 'cgc9_5' | 'cgc10';
         const validGrades: CardCondition[] = ['raw', 'psa1', 'psa2', 'psa3', 'psa4', 'psa5', 'psa6', 'psa7', 'psa8', 'psa9', 'psa10', 'bgs9', 'bgs9_5', 'bgs10', 'cgc9', 'cgc9_5', 'cgc10'];
-        const normalizedGrade: CardCondition = validGrades.includes(rawGrade as CardCondition) ? rawGrade as CardCondition : 'raw';
+        const finalGrade: CardCondition = validGrades.includes(normalizedGrade as CardCondition) ? normalizedGrade as CardCondition : 'raw';
+        
+        // Construct custom name with set info if no market match
+        const customName = marketItem ? null : `${card.name}${card.set ? ` - ${card.set}` : ''}${card.cardNumber ? ` #${card.cardNumber}` : ''}`;
         
         const { error } = await supabase.from('portfolio_items').insert([{
           user_id: user.id,
           market_item_id: marketItem?.id ?? null,
-          custom_name: marketItem ? null : card.name,
-          grade: normalizedGrade,
+          custom_name: customName,
+          grade: finalGrade,
           purchase_price: card.purchasePrice ?? marketItem?.current_price ?? null,
           quantity: card.quantity ?? 1,
         }]);
@@ -161,6 +278,7 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
         updatedCards[i] = { ...card, status: 'success', message: marketItem ? 'Matched!' : 'Added manually' };
         successCount++;
       } catch (error: any) {
+        console.error('Import error for card:', card.name, error);
         updatedCards[i] = { ...card, status: 'error', message: error.message };
       }
 
@@ -222,8 +340,9 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
             </Card>
 
             <div className="text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Expected columns:</p>
-              <p>Name/Card, Category (optional), Grade (optional), Price (optional), Quantity (optional)</p>
+              <p className="font-medium mb-1">Supported CSV formats:</p>
+              <p>Product Name, Category, Set, Grade, Quantity, Average Cost Paid / Market Price</p>
+              <p className="mt-1 text-muted-foreground/70">Works with exports from collection managers, TCGPlayer, and similar tools.</p>
             </div>
           </TabsContent>
 
