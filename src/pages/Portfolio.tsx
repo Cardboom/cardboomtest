@@ -320,7 +320,7 @@ const Portfolio = () => {
                     tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                     tickFormatter={(value) => formatPrice(value)}
                     width={80}
-                    domain={['dataMin - 50000', 'dataMax + 50000']}
+                    domain={[(dataMin: number) => Math.max(0, dataMin * 0.9), (dataMax: number) => dataMax * 1.1]}
                   />
                   <Tooltip 
                     contentStyle={{ 
