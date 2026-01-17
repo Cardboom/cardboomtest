@@ -458,12 +458,15 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             {user && <CardboomPointsBadge />}
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <PriceDisplayToggle />
-            <ThemeToggle />
-            <LanguageSelector />
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            {/* Hide these on mobile to prevent overflow */}
+            <div className="hidden sm:flex items-center gap-1">
+              <PriceDisplayToggle />
+              <ThemeToggle />
+              <LanguageSelector />
+            </div>
             {user && (
-              <div className="hidden sm:flex lg:hidden items-center gap-1">
+              <div className="hidden md:flex lg:hidden items-center">
                 <CardboomPointsBadge />
               </div>
             )}
@@ -747,6 +750,23 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     </Link>
                   </>
                 )}
+                
+                {/* Settings section for mobile */}
+                <div className="py-2 px-3 mt-2">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Settings</span>
+                </div>
+                <div className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors">
+                  <span className="text-sm text-muted-foreground">Currency / Coins:</span>
+                  <PriceDisplayToggle />
+                </div>
+                <div className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors">
+                  <span className="text-sm text-muted-foreground">Theme:</span>
+                  <ThemeToggle />
+                </div>
+                <div className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors">
+                  <span className="text-sm text-muted-foreground">Language:</span>
+                  <LanguageSelector />
+                </div>
                 
                 {/* Auth section */}
                 <div className="mt-4 pt-4 border-t border-border">
