@@ -202,8 +202,9 @@ export function usePostComment() {
       toast.success('Comment posted');
     },
     onError: (error: Error) => {
-      if (error.message.includes('new row violates')) {
-        toast.error('You need more activity before you can comment');
+      console.error('Comment error:', error);
+      if (error.message.includes('length')) {
+        toast.error('Comment must be at least 10 characters');
       } else {
         toast.error('Failed to post comment');
       }
