@@ -20,7 +20,7 @@ interface PlatformSetting {
 
 export function BoomCoinsPricingManager() {
   const queryClient = useQueryClient();
-  const [coinRate, setCoinRate] = useState("0.001");
+  const [coinRate, setCoinRate] = useState("0.105263");
   const [markupFree, setMarkupFree] = useState("12");
   const [markupLite, setMarkupLite] = useState("10");
   const [markupPro, setMarkupPro] = useState("8");
@@ -180,7 +180,7 @@ export function BoomCoinsPricingManager() {
                 placeholder="0.001"
               />
               <p className="text-xs text-muted-foreground">
-                Current: $0.001 (1000 coins = $1). Previous: $0.01 (100 coins = $1)
+                Current: $0.105 (~9.5 coins/$1, $5 = 47.5 coins)
               </p>
             </div>
             <div className="space-y-2">
@@ -190,7 +190,7 @@ export function BoomCoinsPricingManager() {
                   1 Coin = ${parseFloat(coinRate || "0").toFixed(4)} USD
                 </p>
                 <p className="font-mono text-sm text-muted-foreground">
-                  $1 = {Math.round(1 / (parseFloat(coinRate) || 0.001)).toLocaleString()} Coins
+                  $5 = {(5 / (parseFloat(coinRate) || 0.105)).toFixed(1)} Coins
                 </p>
               </div>
             </div>
@@ -321,40 +321,40 @@ export function BoomCoinsPricingManager() {
             variant="outline"
             size="sm"
             onClick={() => {
-              setCoinRate("0.001");
+              setCoinRate("0.105263");
               setMarkupFree("12");
               setMarkupLite("10");
               setMarkupPro("8");
               setMarkupEnterprise("5");
             }}
           >
-            Default (1000 coins/$1)
+            Default ($5 = 47.5 coins)
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              setCoinRate("0.01");
+              setCoinRate("0.10");
               setMarkupFree("12");
               setMarkupLite("10");
               setMarkupPro("8");
               setMarkupEnterprise("5");
             }}
           >
-            Legacy (100 coins/$1)
+            Round ($5 = 50 coins)
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              setCoinRate("0.0001");
+              setCoinRate("0.05");
               setMarkupFree("15");
               setMarkupLite("12");
               setMarkupPro("10");
               setMarkupEnterprise("7");
             }}
           >
-            High Volume (10000 coins/$1)
+            Budget ($5 = 100 coins)
           </Button>
         </CardContent>
       </Card>

@@ -15,9 +15,9 @@
 
 export type SubscriptionTier = 'free' | 'lite' | 'pro' | 'enterprise';
 
-// Face value: 1 Coin = $0.001 USD (1000 coins = $1)
-// Previously was $0.01 (100 coins = $1), now 10x deflation
-export const GEM_FACE_VALUE_USD = 0.001;
+// Face value: 1 Coin = $0.105 USD (~9.5 coins per $1, $5 = 47.5 coins)
+// Updated: $5 = 47.5 coins as requested
+export const GEM_FACE_VALUE_USD = 0.105263;
 
 // Markup percentages for Coins top-up
 export const GEMS_MARKUP_PERCENT = {
