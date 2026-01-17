@@ -11714,6 +11714,8 @@ export type Database = {
           has_price: boolean
           last_updated: string
           liquidity_count: number
+          listing_count: number
+          min_listing_price: number
           price_source: string
           price_usd: number
         }[]

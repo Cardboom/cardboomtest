@@ -30,6 +30,8 @@ export interface ResolvedPrice {
   liquidity_count: number;
   confidence: number;
   last_updated: string | null;
+  min_listing_price: number | null;
+  listing_count: number;
 }
 
 export interface CatalogListing {
