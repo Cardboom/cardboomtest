@@ -181,7 +181,7 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
     <>
     <header className="fixed top-0 left-0 right-0 z-[10000] bg-background/95 backdrop-blur-xl border-b border-border/40 shadow-sm">
       <div className="w-full px-4 lg:px-6">
-        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4 overflow-hidden">
+        <div className="flex items-center justify-between h-16 gap-2 sm:gap-4">
           {/* Logo - pushed to the left edge */}
           <Link 
             to="/" 
