@@ -63,6 +63,7 @@ import { GradingCalibrationDashboard } from '@/components/admin/GradingCalibrati
 import { AdminListingsManager } from '@/components/admin/AdminListingsManager';
 import { CreatorManagement } from '@/components/admin/CreatorManagement';
 import { BoomCoinsPricingManager } from '@/components/admin/BoomCoinsPricingManager';
+import { CoachVerificationQueue } from '@/components/admin/CoachVerificationQueue';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -248,6 +249,8 @@ const Admin = () => {
         return <CreatorManagement />;
       case 'verification':
         return <SellerVerificationQueue />;
+      case 'coach-verification':
+        return <CoachVerificationQueue />;
       case 'whale':
         return <WhaleInviteManager />;
       case 'system-accounts':
