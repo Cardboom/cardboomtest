@@ -177,7 +177,8 @@ const Index = () => {
       salesCount: 0,
       source: 'listing',
       listingId: listing.id,
-    } as Collectible & { source: string; listingId?: string }));
+      slug: listing.slug,
+    } as Collectible & { source: string; listingId?: string; slug?: string }));
   }, [listings]);
 
   // Combine both market items and listings
@@ -213,9 +214,14 @@ const Index = () => {
   };
 
   // Handle click on collectible - open in new tab for listings, modal for market items
-  const handleCollectibleClick = (collectible: Collectible & { source?: string; listingId?: string; category?: string }) => {
+  const handleCollectibleClick = (collectible: Collectible & { source?: string; listingId?: string; category?: string; slug?: string }) => {
     if (collectible.source === 'listing' && collectible.listingId) {
-      const url = generateListingUrl({ id: collectible.listingId, category: collectible.category || 'other', title: collectible.name });
+      const url = generateListingUrl({ 
+        id: collectible.listingId, 
+        category: collectible.category || 'other', 
+        slug: collectible.slug,
+        title: collectible.name 
+      });
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       setSelectedCollectible(collectible);
