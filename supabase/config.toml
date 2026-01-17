@@ -149,3 +149,9 @@ verify_jwt = false
 
 [functions.sync-catalog-cards]
 verify_jwt = false
+
+[functions.sync-popular-prices]
+verify_jwt = false
+
+[functions.cleanup-duplicates]
+verify_jwt = false
