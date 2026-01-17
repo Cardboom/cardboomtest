@@ -11,13 +11,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { 
   Plus, TrendingUp, TrendingDown, Search, Trash2, 
   Edit, ExternalLink, Package, DollarSign, PieChart, Clock, Upload, Share2,
-  Wallet, CheckSquare, Square
+  Wallet, CheckSquare, Square, Folder, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AddToPortfolioDialog } from '@/components/portfolio/AddToPortfolioDialog';
 import { PortfolioImport } from '@/components/portfolio/PortfolioImport';
+import { PortfolioCollections, AssignToCollectionDropdown } from '@/components/portfolio/PortfolioCollections';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatDistanceToNow, subDays, format } from 'date-fns';
 import { formatGrade, CardGrade } from '@/hooks/useGradePrices';
@@ -33,6 +34,7 @@ interface PortfolioItem {
   quantity: number;
   inVault: boolean;
   image: string;
+  collection_id?: string | null;
 }
 
 const Portfolio = () => {
@@ -45,6 +47,8 @@ const Portfolio = () => {
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
+  const [showCollectionsSidebar, setShowCollectionsSidebar] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -77,6 +81,7 @@ const Portfolio = () => {
         quantity: item.quantity || 1,
         inVault: false,
         image: item.image_url || item.market_item?.image_url || '/placeholder.svg',
+        collection_id: item.collection_id,
       }));
     },
     enabled: !!user,
@@ -225,9 +230,26 @@ const Portfolio = () => {
     ? ((netWorth - chartData[0].value) / chartData[0].value) * 100 
     : 0;
 
-  const filteredPortfolio = portfolioItems.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter by collection and search
+  const filteredPortfolio = useMemo(() => {
+    let items = portfolioItems;
+    
+    // Filter by collection
+    if (selectedCollectionId === 'uncategorized') {
+      items = items.filter(item => !item.collection_id);
+    } else if (selectedCollectionId) {
+      items = items.filter(item => item.collection_id === selectedCollectionId);
+    }
+    
+    // Filter by search
+    if (searchQuery) {
+      items = items.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    return items;
+  }, [portfolioItems, selectedCollectionId, searchQuery]);
 
   if (!user) {
     return (
@@ -378,49 +400,101 @@ const Portfolio = () => {
           {/* Fractional section temporarily disabled */}
         </div>
 
-        {/* Search and Bulk Actions */}
-        <div className="mb-6 flex flex-wrap items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search your portfolio..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+        {/* Main Content with Collections Sidebar */}
+        <div className="flex gap-6">
+          {/* Collections Sidebar */}
+          <div className={cn(
+            "transition-all duration-300",
+            showCollectionsSidebar ? "w-64 min-w-[16rem]" : "w-0 min-w-0 overflow-hidden"
+          )}>
+            <div className="glass rounded-xl p-4 sticky top-24">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm">Collections</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setShowCollectionsSidebar(false)}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+              </div>
+              <PortfolioCollections
+                userId={user.id}
+                selectedCollectionId={selectedCollectionId}
+                onSelectCollection={setSelectedCollectionId}
+              />
+            </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          {/* Toggle button when sidebar is hidden */}
+          {!showCollectionsSidebar && (
             <Button
-              variant={isSelectionMode ? "secondary" : "outline"}
+              variant="outline"
               size="sm"
-              onClick={() => {
-                setIsSelectionMode(!isSelectionMode);
-                if (isSelectionMode) setSelectedItems(new Set());
-              }}
-              className="gap-2"
+              onClick={() => setShowCollectionsSidebar(true)}
+              className="fixed left-4 top-24 z-10 gap-2"
             >
-              <CheckSquare className="w-4 h-4" />
-              {isSelectionMode ? 'Cancel' : 'Select'}
+              <Folder className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" />
             </Button>
-            
-            {isSelectionMode && (
-              <>
+          )}
+
+          {/* Portfolio Content */}
+          <div className="flex-1 min-w-0">
+            {/* Search and Bulk Actions */}
+            <div className="mb-6 flex flex-wrap items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search your portfolio..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant={isSelectionMode ? "secondary" : "outline"}
                   size="sm"
-                  onClick={toggleSelectAll}
-                >
-                  {selectedItems.size === filteredPortfolio.length ? 'Deselect All' : 'Select All'}
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDelete}
-                  disabled={selectedItems.size === 0}
+                  onClick={() => {
+                    setIsSelectionMode(!isSelectionMode);
+                    if (isSelectionMode) setSelectedItems(new Set());
+                  }}
                   className="gap-2"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <CheckSquare className="w-4 h-4" />
+                  {isSelectionMode ? 'Cancel' : 'Select'}
+                </Button>
+                
+                {isSelectionMode && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={toggleSelectAll}
+                    >
+                      {selectedItems.size === filteredPortfolio.length ? 'Deselect All' : 'Select All'}
+                    </Button>
+                    {selectedItems.size > 0 && user && (
+                      <AssignToCollectionDropdown
+                        userId={user.id}
+                        itemIds={Array.from(selectedItems)}
+                        onAssigned={() => {
+                          refetchPortfolio();
+                          setSelectedItems(new Set());
+                        }}
+                      />
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                      disabled={selectedItems.size === 0}
+                      className="gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
                   Delete ({selectedItems.size})
                 </Button>
               </>
@@ -585,6 +659,8 @@ const Portfolio = () => {
                 );
               })
             )}
+          </div>
+        </div>
           </div>
         </div>
       </main>
