@@ -30,6 +30,9 @@ const COIN_PACKS = [
   { coins: 475, usd: 50, popular: false, bonus: 25 },      // $50 = 475 + 25 bonus
   { coins: 950, usd: 100, popular: false, bonus: 50 },     // $100 = 950 + 50 bonus
   { coins: 2375, usd: 250, popular: false, bonus: 125 },   // $250 = 2375 + 125 bonus
+  { coins: 4750, usd: 500, popular: false, bonus: 300 },   // $500 = 4750 + 300 bonus
+  { coins: 9500, usd: 1000, popular: false, bonus: 750 },  // $1000 = 9500 + 750 bonus
+  { coins: 19000, usd: 2000, popular: false, bonus: 2000 },// $2000 = 19000 + 2000 bonus
 ];
 
 const CoinsPage: React.FC = () => {
