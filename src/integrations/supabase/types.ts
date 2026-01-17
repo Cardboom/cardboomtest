@@ -5692,18 +5692,26 @@ export type Database = {
           ai_indexed_at: string | null
           avg_days_to_sell: number | null
           base_price: number
+          blended_market_price: number | null
+          card_code: string | null
           card_number: string | null
           card_type: string | null
+          cardmarket_id: string | null
+          cardmarket_trend: number | null
+          cardmarket_url: string | null
           category: string
           change_24h: number | null
           change_30d: number | null
           change_7d: number | null
           character_name: string | null
+          collector_number: string | null
           created_at: string
           current_price: number | null
           current_price_cents: number | null
           cvi_key: string | null
           data_source: string | null
+          ebay_avg_30d: number | null
+          external_canonical_key: string | null
           external_id: string | null
           id: string
           image_url: string | null
@@ -5714,11 +5722,15 @@ export type Database = {
           liquidity: Database["public"]["Enums"]["liquidity_level"] | null
           listing_median_price: number | null
           listing_sample_count: number
+          match_confidence: number | null
+          match_source: string | null
           name: string
           price_24h_ago: number | null
           price_30d_ago: number | null
           price_7d_ago: number | null
+          price_confidence: string | null
           price_status: string
+          price_updated_at: string | null
           psa10_price: number | null
           psa9_price: number | null
           rarity: string | null
@@ -5729,6 +5741,7 @@ export type Database = {
           set_code: string | null
           set_name: string | null
           subcategory: string | null
+          tcg: string | null
           updated_at: string
           variant: string | null
           verified_at: string | null
@@ -5744,18 +5757,26 @@ export type Database = {
           ai_indexed_at?: string | null
           avg_days_to_sell?: number | null
           base_price?: number
+          blended_market_price?: number | null
+          card_code?: string | null
           card_number?: string | null
           card_type?: string | null
+          cardmarket_id?: string | null
+          cardmarket_trend?: number | null
+          cardmarket_url?: string | null
           category: string
           change_24h?: number | null
           change_30d?: number | null
           change_7d?: number | null
           character_name?: string | null
+          collector_number?: string | null
           created_at?: string
           current_price?: number | null
           current_price_cents?: number | null
           cvi_key?: string | null
           data_source?: string | null
+          ebay_avg_30d?: number | null
+          external_canonical_key?: string | null
           external_id?: string | null
           id?: string
           image_url?: string | null
@@ -5766,11 +5787,15 @@ export type Database = {
           liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
           listing_median_price?: number | null
           listing_sample_count?: number
+          match_confidence?: number | null
+          match_source?: string | null
           name: string
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
+          price_confidence?: string | null
           price_status?: string
+          price_updated_at?: string | null
           psa10_price?: number | null
           psa9_price?: number | null
           rarity?: string | null
@@ -5781,6 +5806,7 @@ export type Database = {
           set_code?: string | null
           set_name?: string | null
           subcategory?: string | null
+          tcg?: string | null
           updated_at?: string
           variant?: string | null
           verified_at?: string | null
@@ -5796,18 +5822,26 @@ export type Database = {
           ai_indexed_at?: string | null
           avg_days_to_sell?: number | null
           base_price?: number
+          blended_market_price?: number | null
+          card_code?: string | null
           card_number?: string | null
           card_type?: string | null
+          cardmarket_id?: string | null
+          cardmarket_trend?: number | null
+          cardmarket_url?: string | null
           category?: string
           change_24h?: number | null
           change_30d?: number | null
           change_7d?: number | null
           character_name?: string | null
+          collector_number?: string | null
           created_at?: string
           current_price?: number | null
           current_price_cents?: number | null
           cvi_key?: string | null
           data_source?: string | null
+          ebay_avg_30d?: number | null
+          external_canonical_key?: string | null
           external_id?: string | null
           id?: string
           image_url?: string | null
@@ -5818,11 +5852,15 @@ export type Database = {
           liquidity?: Database["public"]["Enums"]["liquidity_level"] | null
           listing_median_price?: number | null
           listing_sample_count?: number
+          match_confidence?: number | null
+          match_source?: string | null
           name?: string
           price_24h_ago?: number | null
           price_30d_ago?: number | null
           price_7d_ago?: number | null
+          price_confidence?: string | null
           price_status?: string
+          price_updated_at?: string | null
           psa10_price?: number | null
           psa9_price?: number | null
           rarity?: string | null
@@ -5833,6 +5871,7 @@ export type Database = {
           set_code?: string | null
           set_name?: string | null
           subcategory?: string | null
+          tcg?: string | null
           updated_at?: string
           variant?: string | null
           verified_at?: string | null
@@ -5886,6 +5925,59 @@ export type Database = {
           {
             foreignKeyName: "market_memory_market_item_id_fkey"
             columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_review_queue: {
+        Row: {
+          created_at: string
+          external_data: Json | null
+          id: string
+          notes: string | null
+          proposed_confidence: number | null
+          proposed_market_item_id: string | null
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source: string
+          source_event_id: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          external_data?: Json | null
+          id?: string
+          notes?: string | null
+          proposed_confidence?: number | null
+          proposed_market_item_id?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source: string
+          source_event_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          external_data?: Json | null
+          id?: string
+          notes?: string | null
+          proposed_confidence?: number | null
+          proposed_market_item_id?: string | null
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string
+          source_event_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_review_queue_proposed_market_item_id_fkey"
+            columns: ["proposed_market_item_id"]
             isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
@@ -6614,6 +6706,45 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_collections: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          sort_order: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_heat_scores: {
         Row: {
           calculated_at: string
@@ -6649,6 +6780,7 @@ export type Database = {
       }
       portfolio_items: {
         Row: {
+          collection_id: string | null
           created_at: string
           custom_name: string | null
           grade: Database["public"]["Enums"]["card_condition"] | null
@@ -6665,6 +6797,7 @@ export type Database = {
           vault_item_id: string | null
         }
         Insert: {
+          collection_id?: string | null
           created_at?: string
           custom_name?: string | null
           grade?: Database["public"]["Enums"]["card_condition"] | null
@@ -6681,6 +6814,7 @@ export type Database = {
           vault_item_id?: string | null
         }
         Update: {
+          collection_id?: string | null
           created_at?: string
           custom_name?: string | null
           grade?: Database["public"]["Enums"]["card_condition"] | null
@@ -6697,6 +6831,13 @@ export type Database = {
           vault_item_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "portfolio_items_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_collections"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "portfolio_items_market_item_id_fkey"
             columns: ["market_item_id"]
@@ -6781,6 +6922,83 @@ export type Database = {
           {
             foreignKeyName: "price_alerts_market_item_id_fkey"
             columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      price_events: {
+        Row: {
+          created_at: string
+          currency: string
+          event_type: string | null
+          external_canonical_key: string | null
+          external_url: string | null
+          id: string
+          ingested_at: string | null
+          is_outlier: boolean | null
+          is_processed: boolean | null
+          match_confidence: number | null
+          matched_market_item_id: string | null
+          outlier_reason: string | null
+          raw_json: Json | null
+          sold_at: string | null
+          source: string
+          source_event_id: string | null
+          total_eur: number | null
+          total_price: number
+          total_try: number | null
+          total_usd: number | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          event_type?: string | null
+          external_canonical_key?: string | null
+          external_url?: string | null
+          id?: string
+          ingested_at?: string | null
+          is_outlier?: boolean | null
+          is_processed?: boolean | null
+          match_confidence?: number | null
+          matched_market_item_id?: string | null
+          outlier_reason?: string | null
+          raw_json?: Json | null
+          sold_at?: string | null
+          source: string
+          source_event_id?: string | null
+          total_eur?: number | null
+          total_price: number
+          total_try?: number | null
+          total_usd?: number | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          event_type?: string | null
+          external_canonical_key?: string | null
+          external_url?: string | null
+          id?: string
+          ingested_at?: string | null
+          is_outlier?: boolean | null
+          is_processed?: boolean | null
+          match_confidence?: number | null
+          matched_market_item_id?: string | null
+          outlier_reason?: string | null
+          raw_json?: Json | null
+          sold_at?: string | null
+          source?: string
+          source_event_id?: string | null
+          total_eur?: number | null
+          total_price?: number
+          total_try?: number | null
+          total_usd?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_events_matched_market_item_id_fkey"
+            columns: ["matched_market_item_id"]
             isOneToOne: false
             referencedRelation: "market_items"
             referencedColumns: ["id"]
