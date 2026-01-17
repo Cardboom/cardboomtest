@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -23,8 +23,16 @@ const gameFilters = [
 
 const CatalogExplorer = () => {
   const navigate = useNavigate();
+  const { game: gameParam } = useParams<{ game?: string }>();
   const { formatPrice } = useCurrency();
-  const [selectedGame, setSelectedGame] = useState('');
+  const [selectedGame, setSelectedGame] = useState(gameParam || '');
+
+  // Sync URL param to state
+  useEffect(() => {
+    if (gameParam) {
+      setSelectedGame(gameParam);
+    }
+  }, [gameParam]);
 
   // Fetch featured/trending catalog cards
   const { data: featuredCards, isLoading } = useQuery({

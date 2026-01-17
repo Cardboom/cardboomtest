@@ -168,6 +168,7 @@ const AppContent = () => {
           <Route path="/cards/:category/:slug" element={<CardPage />} />
           {/* Catalog Card Pages - Canonical pricing with clean separation */}
           <Route path="/catalog" element={<CatalogExplorer />} />
+          <Route path="/catalog/:game" element={<CatalogExplorer />} />
           <Route path="/catalog/:game/:canonicalKey" element={<CatalogCardPage />} />
           {/* Legacy routes - redirect to canonical */}
           <Route path="/:category/:slug" element={<LegacyCardRedirect />} />
