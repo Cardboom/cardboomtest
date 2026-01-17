@@ -3,6 +3,7 @@
 
 # Sitemaps
 Sitemap: https://cardboomtest.lovable.app/sitemap-static.xml
+Sitemap: https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/sitemap?type=index
 
 # Google
 User-agent: Googlebot
