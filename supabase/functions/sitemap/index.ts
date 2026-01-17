@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
     const url = new URL(req.url)
     const type = url.searchParams.get('type') || 'index'
     const page = parseInt(url.searchParams.get('page') || '1')
-    const baseUrl = 'https://cardboomtest.lovable.app'
+    const baseUrl = 'https://www.cardboom.com'
     const today = new Date().toISOString().split('T')[0]
 
     // Sitemap Index
