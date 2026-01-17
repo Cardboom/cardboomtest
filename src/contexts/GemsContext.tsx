@@ -5,11 +5,13 @@ import { supabase } from '@/integrations/supabase/client';
  * Boom Coins Pricing Context
  * 
  * Implements CardBoom's Boom Coins pricing rules:
- * - 1 Boom Coin = $0.01 USD (internal face value)
+ * - 1 Boom Coin = $0.001 USD (internal face value) - 1000 coins = $1
  * - +12% markup for standard users
  * - +8% markup for Pro subscribers
  * - +5% markup for Enterprise subscribers
  * - Boom Coins display mode for marketplace
+ * 
+ * UPDATED: 10x deflation (was $0.01 per coin, now $0.001)
  */
 
 export type PriceDisplayMode = 'gems' | 'usd';
@@ -36,17 +38,17 @@ interface GemsContextType {
   subscriptionTier: SubscriptionTier;
   /** Current pricing configuration based on tier */
   pricing: GemsPricing;
-  /** Convert USD price to Gems (including markup for top-ups) */
+  /** Convert USD price to Coins (face value, no markup) */
   usdToGems: (usdAmount: number) => number;
-  /** Convert Gems to USD (face value, no markup) */
+  /** Convert Coins to USD (face value, no markup) */
   gemsToUsd: (gemsAmount: number) => number;
-  /** Calculate what user pays in USD for X Gems (includes markup) */
+  /** Calculate what user pays in USD for X Coins (includes markup) */
   getGemsTopUpCost: (gemsAmount: number) => number;
-  /** Calculate how many Gems user receives for USD payment (includes markup) */
+  /** Calculate how many Coins user receives for USD payment (includes markup) */
   getGemsFromPayment: (usdPayment: number) => number;
   /** Format a USD price for display (respects displayMode) */
   formatPriceDisplay: (priceUSD: number) => string;
-  /** Format gems amount with symbol */
+  /** Format coins amount with symbol */
   formatGems: (gems: number) => string;
   /** Is loading tier information */
   isLoading: boolean;
@@ -69,8 +71,9 @@ const TIER_LABELS: Record<SubscriptionTier, string> = {
   enterprise: 'Enterprise',
 };
 
-// Base conversion: 1 Gem = $0.01 USD
-const GEM_FACE_VALUE_USD = 0.01;
+// Base conversion: 1 Coin = $0.001 USD (1000 coins = $1)
+// Updated from $0.01 (10x deflation)
+const GEM_FACE_VALUE_USD = 0.001;
 
 export const GemsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [displayMode, setDisplayModeState] = useState<PriceDisplayMode>(() => {

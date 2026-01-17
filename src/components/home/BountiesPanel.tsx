@@ -119,7 +119,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       const result = data as { success?: boolean; gems_awarded?: number; error?: string } | null;
       
       if (result?.success) {
-        toast.success(`🎉 Claimed ${((result.gems_awarded || 0) / 100).toFixed(0)} coins!`);
+        toast.success(`🎉 Claimed ${(result.gems_awarded || 0).toLocaleString()} coins ($${((result.gems_awarded || 0) / 1000).toFixed(2)})!`);
         fetchBounties();
         
         // Dispatch event to refresh coins balance in header
@@ -276,7 +276,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                         {currentCount}/{bounty.target_count}
                       </span>
                       <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-sans">
-                        ${(bounty.reward_gems / 100).toFixed(0)}
+                        ${(bounty.reward_gems / 1000).toFixed(2)}
                       </span>
                     </div>
                     
