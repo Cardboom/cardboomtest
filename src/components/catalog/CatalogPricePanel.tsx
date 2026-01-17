@@ -1,12 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { TrendingUp, TrendingDown, Activity, HelpCircle, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
+import { Activity, HelpCircle, ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import type { PriceSnapshot } from '@/hooks/useCatalogCard';
+import type { ResolvedPrice } from '@/hooks/useCatalogCard';
 
 interface CatalogPricePanelProps {
-  price: PriceSnapshot | null;
+  price: ResolvedPrice | null;
   isLoading?: boolean;
 }
 
@@ -17,6 +17,15 @@ const getConfidenceBadge = (confidence: number) => {
     return { label: 'Medium', icon: Shield, className: 'bg-warning/20 text-warning' };
   } else {
     return { label: 'Low', icon: ShieldAlert, className: 'bg-loss/20 text-loss' };
+  }
+};
+
+const getSourceLabel = (source: string) => {
+  switch (source) {
+    case 'snapshot': return 'Verified sales';
+    case 'market_item': return 'Market data';
+    case 'listing_median': return 'Active listings';
+    default: return 'Estimated';
   }
 };
 
@@ -34,7 +43,8 @@ export const CatalogPricePanel = ({ price, isLoading }: CatalogPricePanelProps) 
     );
   }
 
-  if (!price || price.median_usd === null) {
+  // Only show "insufficient data" if truly no price exists
+  if (!price || !price.has_price || price.price_usd === null) {
     return (
       <Card className="glass border-muted">
         <CardContent className="p-6 text-center">
@@ -65,7 +75,7 @@ export const CatalogPricePanel = ({ price, isLoading }: CatalogPricePanelProps) 
               </TooltipTrigger>
               <TooltipContent className="max-w-xs">
                 <p className="text-sm">
-                  Based on {price.liquidity_count} verified sales. 
+                  Based on {price.liquidity_count} {getSourceLabel(price.price_source).toLowerCase()}. 
                   Higher sample = higher confidence.
                 </p>
               </TooltipContent>
@@ -75,14 +85,16 @@ export const CatalogPricePanel = ({ price, isLoading }: CatalogPricePanelProps) 
         <CardContent className="pt-2">
           <div className="flex items-baseline gap-2 mb-4">
             <span className="font-display text-4xl font-bold">
-              {formatPrice(price.median_usd)}
+              {formatPrice(price.price_usd)}
             </span>
             <Tooltip>
               <TooltipTrigger>
                 <HelpCircle className="w-4 h-4 text-muted-foreground" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-sm">Median of {price.liquidity_count} recent sales (outliers removed)</p>
+                <p className="text-sm">
+                  Source: {getSourceLabel(price.price_source)} ({price.liquidity_count} data points)
+                </p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -90,15 +102,17 @@ export const CatalogPricePanel = ({ price, isLoading }: CatalogPricePanelProps) 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Sales (30d):</span>
+              <span className="text-muted-foreground">Data points:</span>
               <span className="font-semibold">{price.liquidity_count}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Last updated:</span>
-              <span className="font-semibold">
-                {new Date(price.snapshot_date).toLocaleDateString()}
-              </span>
-            </div>
+            {price.last_updated && (
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Updated:</span>
+                <span className="font-semibold">
+                  {new Date(price.last_updated).toLocaleDateString()}
+                </span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
