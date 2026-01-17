@@ -127,11 +127,15 @@ Deno.serve(async (req) => {
     if (fetchError) throw fetchError
     
     console.log(`[ingest-price-events] Processing ${items?.length || 0} items`)
+    if (items?.length) {
+      console.log(`[ingest-price-events] First item: ${items[0].name} (${items[0].category}), set_code: ${items[0].set_code}, card_number: ${items[0].card_number}`)
+    }
 
     for (const item of items || []) {
       try {
         // Build canonical key
         const canonicalKey = buildCanonicalKey(item)
+        console.log(`[ingest-price-events] Item ${item.name} -> canonical key: ${canonicalKey}`)
         
         // Update market_items with canonical key if not set
         if (canonicalKey && !item.external_canonical_key) {
@@ -155,6 +159,8 @@ Deno.serve(async (req) => {
           
           // Fetch SOLD listings
           const soldUrl = `https://ebay-search-result.p.rapidapi.com/search/${encodeURIComponent(searchQuery)}?page=1&type=sold`
+          console.log(`[ingest-price-events] eBay search: ${soldUrl}`)
+          
           const soldResponse = await fetch(soldUrl, {
             headers: {
               'X-RapidAPI-Key': ebayKey,
@@ -162,13 +168,18 @@ Deno.serve(async (req) => {
             },
           })
           
+          console.log(`[ingest-price-events] eBay response status: ${soldResponse.status}`)
+          
           if (soldResponse.ok) {
             const soldData = await soldResponse.json()
-            const soldResults = soldData.results || []
+            console.log(`[ingest-price-events] eBay data: ${JSON.stringify(soldData).slice(0, 500)}`)
+            const soldResults = soldData.results || soldData.data || soldData.items || []
+            console.log(`[ingest-price-events] Found ${soldResults.length} sold listings`)
             
             // Create price events for each sold item
             for (const listing of soldResults.slice(0, 10)) {
-              const price = parseFloat(listing.price || listing.sold_price || '0')
+              const price = parseFloat(listing.price || listing.sold_price || listing.soldPrice || '0')
+              console.log(`[ingest-price-events] Processing listing: ${listing.title?.slice(0, 50)}, price: ${price}`)
               if (price <= 0) continue
               
               // Check if this is an outlier (lot, bundle, damaged, etc.)
@@ -176,32 +187,37 @@ Deno.serve(async (req) => {
               const isOutlier = ['lot', 'bundle', 'proxy', 'custom', 'digital', 'damaged', 'case only', 'empty', 'box only']
                 .some(term => title.includes(term))
               
-              const eventId = listing.id || `ebay_${Date.now()}_${Math.random().toString(36).slice(2)}`
+              const eventId = listing.id || listing.itemId || `ebay_${Date.now()}_${Math.random().toString(36).slice(2)}`
               
               const { error: insertError } = await supabase
                 .from('price_events')
                 .upsert({
                   source: 'ebay',
-                  source_event_id: eventId,
-                  external_url: listing.link || listing.url,
+                  source_event_id: String(eventId),
+                  external_url: listing.link || listing.url || listing.itemUrl,
                   raw_json: listing,
                   external_canonical_key: canonicalKey,
                   currency: 'USD',
                   total_price: price,
                   total_usd: price,
                   event_type: 'sale',
-                  sold_at: listing.sold_date ? new Date(listing.sold_date).toISOString() : new Date().toISOString(),
+                  sold_at: listing.sold_date || listing.soldDate ? new Date(listing.sold_date || listing.soldDate).toISOString() : new Date().toISOString(),
                   matched_market_item_id: item.id,
                   match_confidence: canonicalKey ? 1.0 : 0.85,
                   is_outlier: isOutlier,
                   outlier_reason: isOutlier ? 'Filtered keywords detected in title' : null,
                 }, { onConflict: 'source,source_event_id' })
               
-              if (!insertError) {
+              if (insertError) {
+                console.log(`[ingest-price-events] Insert error: ${insertError.message}`)
+              } else {
                 results.events_created++
               }
             }
             results.items_matched++
+          } else {
+            const errText = await soldResponse.text()
+            console.log(`[ingest-price-events] eBay error: ${errText.slice(0, 200)}`)
           }
           
           // Rate limit
@@ -222,6 +238,8 @@ Deno.serve(async (req) => {
           
           // Search for card on Cardmarket
           const searchUrl = `https://cardmarket-api-tcg.p.rapidapi.com/${game}/cards?search=${encodeURIComponent(item.name)}&page=1`
+          console.log(`[ingest-price-events] Cardmarket search: ${searchUrl}`)
+          
           const searchResponse = await fetch(searchUrl, {
             headers: {
               'X-RapidAPI-Key': cardmarketKey,
@@ -229,9 +247,13 @@ Deno.serve(async (req) => {
             },
           })
           
+          console.log(`[ingest-price-events] Cardmarket response status: ${searchResponse.status}`)
+          
           if (searchResponse.ok) {
             const searchData = await searchResponse.json()
-            const cards = searchData.data || searchData.cards || []
+            console.log(`[ingest-price-events] Cardmarket data keys: ${Object.keys(searchData).join(', ')}`)
+            const cards = searchData.data || searchData.cards || searchData.products || []
+            console.log(`[ingest-price-events] Found ${cards.length} cards`)
             
             // Find best match
             let bestMatch = null
