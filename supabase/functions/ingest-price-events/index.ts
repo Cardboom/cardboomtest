@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
           if (searchResponse.ok) {
             const searchData = await searchResponse.json()
             console.log(`[ingest-price-events] Cardmarket data keys: ${Object.keys(searchData).join(', ')}`)
-            const cards = searchData.data || searchData.cards || searchData.products || []
+            const cards = searchData.results || searchData.data || searchData.cards || searchData.products || []
             console.log(`[ingest-price-events] Found ${cards.length} cards`)
             
             // Find best match
