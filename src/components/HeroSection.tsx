@@ -103,7 +103,7 @@ export const HeroSection = ({ isLoggedIn = false }: HeroSectionProps) => {
   }
 
   return (
-    <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[85vh] flex items-center overflow-hidden z-0">
       {/* Video Background */}
       <div className="absolute inset-0 z-0">
         <video
