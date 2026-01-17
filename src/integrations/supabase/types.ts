@@ -1093,6 +1093,14 @@ export type Database = {
           is_in_vault: boolean
           is_shipped: boolean
           market_item_id: string | null
+          normalization_error: string | null
+          normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url: string | null
           origin_tag: string
           rarity: string
           user_id: string
@@ -1110,6 +1118,14 @@ export type Database = {
           is_in_vault?: boolean
           is_shipped?: boolean
           market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           origin_tag?: string
           rarity?: string
           user_id: string
@@ -1127,6 +1143,14 @@ export type Database = {
           is_in_vault?: boolean
           is_shipped?: boolean
           market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           origin_tag?: string
           rarity?: string
           user_id?: string
@@ -1756,6 +1780,14 @@ export type Database = {
           locked_at: string | null
           locked_by_order_id: string | null
           market_item_id: string | null
+          normalization_error: string | null
+          normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url: string | null
           owner_user_id: string
           source_grading_order_id: string | null
           source_listing_id: string | null
@@ -1784,6 +1816,14 @@ export type Database = {
           locked_at?: string | null
           locked_by_order_id?: string | null
           market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           owner_user_id: string
           source_grading_order_id?: string | null
           source_listing_id?: string | null
@@ -1812,6 +1852,14 @@ export type Database = {
           locked_at?: string | null
           locked_by_order_id?: string | null
           market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           owner_user_id?: string
           source_grading_order_id?: string | null
           source_listing_id?: string | null
@@ -2544,6 +2592,14 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          normalization_error: string | null
+          normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url: string | null
           normalized_key: string | null
           rarity: string | null
           set_code: string | null
@@ -2560,6 +2616,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           normalized_key?: string | null
           rarity?: string | null
           set_code?: string | null
@@ -2576,6 +2640,14 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           normalized_key?: string | null
           rarity?: string | null
           set_code?: string | null
@@ -5045,6 +5117,14 @@ export type Database = {
           auto_list_enabled: boolean | null
           auto_list_price: number | null
           back_image_url: string | null
+          back_normalization_error: string | null
+          back_normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          back_normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          back_normalized_image_url: string | null
           batch_discount_percent: number | null
           batch_size: number | null
           calibration_version: string | null
@@ -5076,6 +5156,14 @@ export type Database = {
           eye_appeal_grade: number | null
           final_grade: number | null
           front_image_url: string | null
+          front_normalization_error: string | null
+          front_normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          front_normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          front_normalized_image_url: string | null
           grade_label: string | null
           grading_notes: string | null
           id: string
@@ -5125,6 +5213,14 @@ export type Database = {
           auto_list_enabled?: boolean | null
           auto_list_price?: number | null
           back_image_url?: string | null
+          back_normalization_error?: string | null
+          back_normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          back_normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          back_normalized_image_url?: string | null
           batch_discount_percent?: number | null
           batch_size?: number | null
           calibration_version?: string | null
@@ -5156,6 +5252,14 @@ export type Database = {
           eye_appeal_grade?: number | null
           final_grade?: number | null
           front_image_url?: string | null
+          front_normalization_error?: string | null
+          front_normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          front_normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          front_normalized_image_url?: string | null
           grade_label?: string | null
           grading_notes?: string | null
           id?: string
@@ -5205,6 +5309,14 @@ export type Database = {
           auto_list_enabled?: boolean | null
           auto_list_price?: number | null
           back_image_url?: string | null
+          back_normalization_error?: string | null
+          back_normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          back_normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          back_normalized_image_url?: string | null
           batch_discount_percent?: number | null
           batch_size?: number | null
           calibration_version?: string | null
@@ -5236,6 +5348,14 @@ export type Database = {
           eye_appeal_grade?: number | null
           final_grade?: number | null
           front_image_url?: string | null
+          front_normalization_error?: string | null
+          front_normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          front_normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          front_normalized_image_url?: string | null
           grade_label?: string | null
           grading_notes?: string | null
           id?: string
@@ -5338,6 +5458,42 @@ export type Database = {
           request_hash?: string
           response?: Json | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      image_normalization_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          record_id: string
+          source_image_url: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["normalization_status"] | null
+          table_name: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          record_id: string
+          source_image_url: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["normalization_status"] | null
+          table_name: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          record_id?: string
+          source_image_url?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["normalization_status"] | null
+          table_name?: string
         }
         Relationships: []
       }
@@ -5889,6 +6045,14 @@ export type Database = {
           is_open_to_offers: boolean | null
           language: string | null
           market_item_id: string | null
+          normalization_error: string | null
+          normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url: string | null
           price: number
           price_cents: number | null
           rarity: string | null
@@ -5941,6 +6105,14 @@ export type Database = {
           is_open_to_offers?: boolean | null
           language?: string | null
           market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           price: number
           price_cents?: number | null
           rarity?: string | null
@@ -5993,6 +6165,14 @@ export type Database = {
           is_open_to_offers?: boolean | null
           language?: string | null
           market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           price?: number
           price_cents?: number | null
           rarity?: string | null
@@ -6228,6 +6408,14 @@ export type Database = {
           match_confidence: number | null
           match_source: string | null
           name: string
+          normalization_error: string | null
+          normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url: string | null
           normalized_key: string | null
           price_24h_ago: number | null
           price_30d_ago: number | null
@@ -6294,6 +6482,14 @@ export type Database = {
           match_confidence?: number | null
           match_source?: string | null
           name: string
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           normalized_key?: string | null
           price_24h_ago?: number | null
           price_30d_ago?: number | null
@@ -6360,6 +6556,14 @@ export type Database = {
           match_confidence?: number | null
           match_source?: string | null
           name?: string
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           normalized_key?: string | null
           price_24h_ago?: number | null
           price_30d_ago?: number | null
@@ -9601,6 +9805,14 @@ export type Database = {
           image_url: string | null
           looking_for: string | null
           min_cash_addon: number | null
+          normalization_error: string | null
+          normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url: string | null
           status: string | null
           title: string
           updated_at: string
@@ -9621,6 +9833,14 @@ export type Database = {
           image_url?: string | null
           looking_for?: string | null
           min_cash_addon?: number | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           status?: string | null
           title: string
           updated_at?: string
@@ -9641,6 +9861,14 @@ export type Database = {
           image_url?: string | null
           looking_for?: string | null
           min_cash_addon?: number | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           status?: string | null
           title?: string
           updated_at?: string
@@ -10756,6 +10984,14 @@ export type Database = {
           last_storage_charge_at: string | null
           listing_id: string | null
           matched_market_item_id: string | null
+          normalization_error: string | null
+          normalization_status:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url: string | null
           order_id: string | null
           owner_id: string
           quick_sell_offer_price: number | null
@@ -10786,6 +11022,14 @@ export type Database = {
           last_storage_charge_at?: string | null
           listing_id?: string | null
           matched_market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           order_id?: string | null
           owner_id: string
           quick_sell_offer_price?: number | null
@@ -10816,6 +11060,14 @@ export type Database = {
           last_storage_charge_at?: string | null
           listing_id?: string | null
           matched_market_item_id?: string | null
+          normalization_error?: string | null
+          normalization_status?:
+            | Database["public"]["Enums"]["normalization_status"]
+            | null
+          normalized_image_type?:
+            | Database["public"]["Enums"]["normalized_image_type"]
+            | null
+          normalized_image_url?: string | null
           order_id?: string | null
           owner_id?: string
           quick_sell_offer_price?: number | null
@@ -11966,6 +12218,8 @@ export type Database = {
         | "adjustment"
       liquidity_level: "high" | "medium" | "low"
       listing_status: "active" | "sold" | "cancelled" | "reserved"
+      normalization_status: "PENDING" | "DONE" | "FAILED"
+      normalized_image_type: "SLAB" | "RAW"
       offer_status:
         | "pending"
         | "accepted"
@@ -12229,6 +12483,8 @@ export const Constants = {
       ],
       liquidity_level: ["high", "medium", "low"],
       listing_status: ["active", "sold", "cancelled", "reserved"],
+      normalization_status: ["PENDING", "DONE", "FAILED"],
+      normalized_image_type: ["SLAB", "RAW"],
       offer_status: [
         "pending",
         "accepted",
