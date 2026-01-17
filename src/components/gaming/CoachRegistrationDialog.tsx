@@ -91,7 +91,7 @@ export const CoachRegistrationDialog = ({ open, onOpenChange }: CoachRegistratio
       for (const service of enabledServices) {
         const gameName = GAMES.find(g => g.id === service.game)?.name || service.game;
         
-        await supabase.from('listings').insert({
+        await supabase.from('listings').insert([{
           seller_id: user.id,
           title: `${gameName} Coaching - 1 Hour Session`,
           description: service.description || `Professional ${gameName} coaching by ${displayName || 'Pro Coach'}. Rank: ${rank}. ${experience} experience.`,
@@ -102,8 +102,8 @@ export const CoachRegistrationDialog = ({ open, onOpenChange }: CoachRegistratio
           allows_shipping: false,
           allows_trade: false,
           allows_vault: false,
-          status: 'pending', // Requires admin verification
-        });
+          status: 'cancelled', // Set to cancelled until admin verification, then activated
+        }]);
       }
 
       toast.success('Coach application submitted! An admin will review and verify your profile.');
