@@ -7760,6 +7760,8 @@ export type Database = {
           banned_reason: string | null
           bio: string | null
           checkout_discount_percent: number | null
+          coach_verified_at: string | null
+          coach_verified_by: string | null
           country_code: string | null
           created_at: string
           custom_guru: string | null
@@ -7779,6 +7781,7 @@ export type Database = {
           is_beta_tester: boolean | null
           is_fan_account: boolean | null
           is_id_verified: boolean | null
+          is_verified_coach: boolean | null
           is_verified_seller: boolean | null
           last_auto_action_at: string | null
           last_ip_address: string | null
@@ -7843,6 +7846,8 @@ export type Database = {
           banned_reason?: string | null
           bio?: string | null
           checkout_discount_percent?: number | null
+          coach_verified_at?: string | null
+          coach_verified_by?: string | null
           country_code?: string | null
           created_at?: string
           custom_guru?: string | null
@@ -7862,6 +7867,7 @@ export type Database = {
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          is_verified_coach?: boolean | null
           is_verified_seller?: boolean | null
           last_auto_action_at?: string | null
           last_ip_address?: string | null
@@ -7926,6 +7932,8 @@ export type Database = {
           banned_reason?: string | null
           bio?: string | null
           checkout_discount_percent?: number | null
+          coach_verified_at?: string | null
+          coach_verified_by?: string | null
           country_code?: string | null
           created_at?: string
           custom_guru?: string | null
@@ -7945,6 +7953,7 @@ export type Database = {
           is_beta_tester?: boolean | null
           is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          is_verified_coach?: boolean | null
           is_verified_seller?: boolean | null
           last_auto_action_at?: string | null
           last_ip_address?: string | null
@@ -10734,6 +10743,7 @@ export type Database = {
       vault_items: {
         Row: {
           admin_notes: string | null
+          card_match_verified: boolean | null
           category: string
           condition: string
           created_at: string
@@ -10745,6 +10755,7 @@ export type Database = {
           image_url: string | null
           last_storage_charge_at: string | null
           listing_id: string | null
+          matched_market_item_id: string | null
           order_id: string | null
           owner_id: string
           quick_sell_offer_price: number | null
@@ -10762,6 +10773,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          card_match_verified?: boolean | null
           category: string
           condition: string
           created_at?: string
@@ -10773,6 +10785,7 @@ export type Database = {
           image_url?: string | null
           last_storage_charge_at?: string | null
           listing_id?: string | null
+          matched_market_item_id?: string | null
           order_id?: string | null
           owner_id: string
           quick_sell_offer_price?: number | null
@@ -10790,6 +10803,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          card_match_verified?: boolean | null
           category?: string
           condition?: string
           created_at?: string
@@ -10801,6 +10815,7 @@ export type Database = {
           image_url?: string | null
           last_storage_charge_at?: string | null
           listing_id?: string | null
+          matched_market_item_id?: string | null
           order_id?: string | null
           owner_id?: string
           quick_sell_offer_price?: number | null
@@ -10829,6 +10844,20 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vault_items_matched_market_item_id_fkey"
+            columns: ["matched_market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "vault_items_matched_market_item_id_fkey"
+            columns: ["matched_market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
             referencedColumns: ["id"]
           },
           {

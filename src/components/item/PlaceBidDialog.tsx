@@ -53,6 +53,18 @@ export const PlaceBidDialog = ({
       return;
     }
 
+    // Max 8 digits = $99,999,999.99
+    const MAX_BID_USD = 99999999.99;
+    const bidValue = parseFloat(bidAmount);
+    if (bidValue > MAX_BID_USD) {
+      toast.error('Maximum bid is $99,999,999.99 USD');
+      return;
+    }
+    if (maxBid && parseFloat(maxBid) > MAX_BID_USD) {
+      toast.error('Maximum auto-bid is $99,999,999.99 USD');
+      return;
+    }
+
     setLoading(true);
 
     try {
