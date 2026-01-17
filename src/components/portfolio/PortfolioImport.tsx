@@ -458,9 +458,13 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
                       onCheckedChange={() => toggleCard(originalIndex)}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm truncate">{card.name}</div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {card.set && <span>{card.set}</span>}
+                      <div className="font-medium text-sm truncate">
+                        {card.name}
+                        {card.cardNumber && <span className="text-muted-foreground font-normal"> [{card.cardNumber}]</span>}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                        {card.set && <span className="truncate max-w-[150px]">{card.set}</span>}
+                        {card.category && <span>• {card.category}</span>}
                         {card.grade && <span className="text-primary">• {card.grade}</span>}
                         {card.quantity && card.quantity > 1 && <span>• x{card.quantity}</span>}
                       </div>
