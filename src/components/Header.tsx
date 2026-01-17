@@ -35,6 +35,7 @@ import { XPProgressBar } from '@/components/XPProgressBar';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { PriceDisplayToggle } from '@/components/PriceDisplayToggle';
+import { MobileCurrencyToggle } from '@/components/MobileCurrencyToggle';
 import { AIMarketInsight } from '@/components/AIMarketInsight';
 import { cn } from '@/lib/utils';
 import { SmartSearch } from '@/components/SmartSearch';
@@ -459,7 +460,11 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-1.5">
-            {/* Hide these on mobile to prevent overflow */}
+            {/* Compact currency toggle for mobile only */}
+            <div className="flex sm:hidden">
+              <MobileCurrencyToggle />
+            </div>
+            {/* Full toggles for desktop */}
             <div className="hidden sm:flex items-center gap-1">
               <PriceDisplayToggle />
               <ThemeToggle />
