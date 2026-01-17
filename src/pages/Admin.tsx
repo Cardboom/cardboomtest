@@ -62,6 +62,7 @@ import { MarketItemsManager } from '@/components/admin/MarketItemsManager';
 import { GradingCalibrationDashboard } from '@/components/admin/GradingCalibrationDashboard';
 import { AdminListingsManager } from '@/components/admin/AdminListingsManager';
 import { CreatorManagement } from '@/components/admin/CreatorManagement';
+import { BoomCoinsPricingManager } from '@/components/admin/BoomCoinsPricingManager';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -277,6 +278,8 @@ const Admin = () => {
         return <AuctionManager />;
       case 'points':
         return <PointsManager />;
+      case 'coins-pricing':
+        return <BoomCoinsPricingManager />;
       case 'promos':
         return <PromoManager />;
       case 'support':

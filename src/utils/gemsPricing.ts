@@ -4,19 +4,22 @@
  * Core pricing logic for CardBoom's Boom Coins system.
  * 
  * Rules:
- * - 1 Boom Coin = $0.01 USD (internal face value)
+ * - 1 Boom Coin = $0.001 USD (internal face value) - 1000 coins = $1
  * - Top-up markup: +12% standard, +8% Pro, +5% Enterprise
  * - Marketplace: display prices in Boom Coins (derived from USD)
  * - IBAN checkout: USD only
  * - Card checkout: Boom Coins only (for TR users)
+ * 
+ * UPDATED: Divided by 10x (was $0.01, now $0.001)
  */
 
 export type SubscriptionTier = 'free' | 'lite' | 'pro' | 'enterprise';
 
-// Face value: 1 Gem = $0.01 USD
-export const GEM_FACE_VALUE_USD = 0.01;
+// Face value: 1 Coin = $0.001 USD (1000 coins = $1)
+// Previously was $0.01 (100 coins = $1), now 10x deflation
+export const GEM_FACE_VALUE_USD = 0.001;
 
-// Markup percentages for Gems top-up
+// Markup percentages for Coins top-up
 export const GEMS_MARKUP_PERCENT = {
   free: 12,
   lite: 10,
@@ -25,8 +28,8 @@ export const GEMS_MARKUP_PERCENT = {
 } as const;
 
 /**
- * Convert USD price to Gems (face value, no markup)
- * Formula: Gems = USD / 0.01 = USD × 100
+ * Convert USD price to Coins (face value, no markup)
+ * Formula: Coins = USD / 0.001 = USD × 1000
  */
 export const usdToGems = (usd: number): number => {
   return Math.round(usd / GEM_FACE_VALUE_USD);
