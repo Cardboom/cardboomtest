@@ -8,6 +8,7 @@ import { LiveTickerPrice } from './LiveTickerPrice';
 import { Badge } from '@/components/ui/badge';
 import { formatCategoryName } from '@/lib/categoryFormatter';
 import { getSmallThumbnailUrl } from '@/lib/imageUtils';
+import { generateListingUrl } from '@/lib/listingUrl';
 
 interface MarketItem {
   id: string;
@@ -20,6 +21,8 @@ interface MarketItem {
   liquidity?: string;
   salesCount?: number;
   source?: string;
+  listingId?: string;
+  slug?: string;
 }
 
 interface LiveMarketTableProps {
@@ -85,10 +88,15 @@ export const LiveMarketTable = ({ items, title }: LiveMarketTableProps) => {
         {/* Rows */}
         {items.slice(0, 5).map((item, index) => {
           const isPositive = item.priceChange >= 0;
+          // Determine the correct URL based on source
+          const itemUrl = item.source === 'listing' && item.listingId
+            ? generateListingUrl({ id: item.listingId, category: item.category, slug: item.slug, title: item.name })
+            : `/item/${item.id}`;
+          
           return (
             <a 
               key={item.id}
-              href={`/item/${item.id}`}
+              href={itemUrl}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
