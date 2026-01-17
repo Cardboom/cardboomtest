@@ -32,12 +32,7 @@ const CatalogExplorer = () => {
     queryFn: async () => {
       let query = supabase
         .from('catalog_cards')
-        .select(`
-          id, name, game, canonical_key, set_name, image_url, rarity,
-          card_price_snapshots (
-            median_usd, liquidity_count, confidence, snapshot_date
-          )
-        `)
+        .select('id, name, game, canonical_key, set_name, image_url, rarity')
         .order('created_at', { ascending: false })
         .limit(24);
 

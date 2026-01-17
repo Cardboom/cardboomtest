@@ -13,6 +13,34 @@ function buildCanonicalKey(game: string, setCode: string, cardNumber: string, va
   return parts.join(':')
 }
 
+// Extract card number from name (e.g., "Nami EB03-053" -> "EB03-053")
+function extractCardInfo(name: string): { setCode?: string; cardNumber?: string } {
+  const patterns = [
+    /\b([A-Z]{2,4})[-]?(\d{2,4})\b/i,
+    /\[.*?\]\s*([A-Z]{2,4})[-]?(\d{2,4})/i,
+  ]
+  
+  for (const pattern of patterns) {
+    const match = name.match(pattern)
+    if (match) {
+      return { setCode: match[1].toUpperCase(), cardNumber: match[2] }
+    }
+  }
+  return {}
+}
+
+// Normalize category to game
+function categoryToGame(category: string): string {
+  const cat = category?.toLowerCase() || ''
+  if (cat.includes('pokemon')) return 'pokemon'
+  if (cat.includes('magic') || cat === 'mtg') return 'mtg'
+  if (cat.includes('one piece') || cat.includes('onepiece') || cat === 'one-piece') return 'onepiece'
+  if (cat.includes('yugioh') || cat.includes('yu-gi-oh')) return 'yugioh'
+  if (cat.includes('lorcana')) return 'lorcana'
+  if (cat.includes('digimon')) return 'digimon'
+  return 'other'
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -24,57 +52,72 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const body = await req.json().catch(() => ({}))
-    const { game, limit = 100, syncFromMarketItems = true } = body
+    const { game, limit = 500, syncFromMarketItems = true } = body
 
     const results = {
       processed: 0,
       created: 0,
       updated: 0,
+      skipped: 0,
       linked_price_events: 0,
       errors: [] as string[]
     }
 
     if (syncFromMarketItems) {
-      // Sync catalog_cards from existing market_items
+      const tcgCategories = ['pokemon', 'mtg', 'onepiece', 'one-piece', 'yugioh', 'lorcana', 'digimon']
+      
       let query = supabase
         .from('market_items')
         .select('id, name, category, set_code, set_name, card_number, variant, rarity, image_url, tcg, external_canonical_key')
-        .not('external_canonical_key', 'is', null)
+        .in('category', tcgCategories)
         .limit(limit)
 
       if (game) {
-        query = query.eq('tcg', game)
+        query = query.or(`tcg.eq.${game},category.eq.${game}`)
       }
 
       const { data: marketItems, error: fetchError } = await query
 
       if (fetchError) throw fetchError
 
+      console.log(`[sync-catalog-cards] Found ${marketItems?.length || 0} TCG market items`)
+
       for (const item of marketItems || []) {
         try {
+
+          const itemGame = item.tcg || categoryToGame(item.category)
+          if (itemGame === 'other') {
+            results.skipped++
+            continue
+          }
+          
+          let setCode = item.set_code
+          let cardNumber = item.card_number
+          
+          if (!setCode || !cardNumber) {
+            const extracted = extractCardInfo(item.name)
+            setCode = setCode || extracted.setCode
+            cardNumber = cardNumber || extracted.cardNumber
+          }
+          
+          if (!setCode || !cardNumber) {
+            results.skipped++
+            continue
+          }
+          
           results.processed++
 
-          // Determine game from tcg or category
-          const itemGame = item.tcg || 
-            (item.category?.toLowerCase().includes('pokemon') ? 'pokemon' :
-             item.category?.toLowerCase().includes('magic') || item.category?.toLowerCase().includes('mtg') ? 'mtg' :
-             item.category?.toLowerCase().includes('one piece') ? 'onepiece' :
-             item.category?.toLowerCase().includes('yugioh') || item.category?.toLowerCase().includes('yu-gi-oh') ? 'yugioh' :
-             'other')
-
-          // Use existing canonical key or build one
           const canonicalKey = item.external_canonical_key || 
-            buildCanonicalKey(itemGame, item.set_code || 'unknown', item.card_number || item.id.slice(0, 8), item.variant || undefined)
+            buildCanonicalKey(itemGame, setCode, cardNumber, item.variant || undefined)
 
-          // Upsert catalog card
           const { data: catalogCard, error: upsertError } = await supabase
             .from('catalog_cards')
             .upsert({
               game: itemGame,
               canonical_key: canonicalKey,
-              set_code: item.set_code,
+              set_code: setCode,
               set_name: item.set_name,
-              card_number: item.card_number,
+              card_number: cardNumber,
               variant: item.variant,
               rarity: item.rarity,
               image_url: item.image_url,
@@ -87,7 +130,6 @@ serve(async (req) => {
             .single()
 
           if (upsertError) {
-            // If it's a duplicate key constraint, try to fetch existing
             if (upsertError.code === '23505') {
               const { data: existing } = await supabase
                 .from('catalog_cards')
@@ -97,7 +139,6 @@ serve(async (req) => {
               
               if (existing) {
                 results.updated++
-                // Link price events
                 const { data: updatedEvents } = await supabase
                   .from('price_events')
                   .update({ catalog_card_id: existing.id })
@@ -116,7 +157,6 @@ serve(async (req) => {
           if (catalogCard) {
             results.created++
             
-            // Link existing price_events to this catalog card
             const { data: linkedEvents } = await supabase
               .from('price_events')
               .update({ catalog_card_id: catalogCard.id })
