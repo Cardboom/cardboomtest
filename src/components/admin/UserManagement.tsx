@@ -1102,7 +1102,7 @@ export const UserManagement = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-right font-mono">
-                        ₺{(wallets[user.id]?.balance || 0).toLocaleString()}
+                        ${(wallets[user.id]?.balance || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </TableCell>
                       <TableCell>{getStatusBadge(user.account_status)}</TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
