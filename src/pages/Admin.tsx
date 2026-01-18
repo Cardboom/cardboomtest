@@ -66,6 +66,7 @@ import { BoomCoinsPricingManager } from '@/components/admin/BoomCoinsPricingMana
 import { CoachVerificationQueue } from '@/components/admin/CoachVerificationQueue';
 import { ImageNormalizationManager } from '@/components/admin/ImageNormalizationManager';
 import { CatalogOpsPanel } from '@/components/admin/CatalogOpsPanel';
+import { SampleDataManager } from '@/components/admin/SampleDataManager';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -313,6 +314,8 @@ const Admin = () => {
         return <DataSyncManager />;
       case 'autobuy':
         return <AutoBuyManager />;
+      case 'sample-data':
+        return <SampleDataManager />;
       case 'inventory':
         return <InventoryIntegrityDashboard />;
       case 'digital-products':
