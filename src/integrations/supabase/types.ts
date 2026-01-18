@@ -10968,9 +10968,55 @@ export type Database = {
         }
         Relationships: []
       }
+      vault_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          scan_session_id: string | null
+          user_id: string
+          vault_item_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          scan_session_id?: string | null
+          user_id: string
+          vault_item_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          scan_session_id?: string | null
+          user_id?: string
+          vault_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_audit_log_vault_item_id_fkey"
+            columns: ["vault_item_id"]
+            isOneToOne: false
+            referencedRelation: "vault_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vault_items: {
         Row: {
           admin_notes: string | null
+          ai_confidence: number | null
+          ai_detected_name: string | null
+          ai_detected_number: string | null
+          ai_detected_set: string | null
+          back_image_url: string | null
           card_match_verified: boolean | null
           category: string
           condition: string
@@ -10979,6 +11025,7 @@ export type Database = {
           estimated_value: number | null
           first_card_bonus_amount: number | null
           first_card_bonus_applied: boolean | null
+          front_image_url: string | null
           id: string
           image_url: string | null
           last_storage_charge_at: string | null
@@ -10998,6 +11045,8 @@ export type Database = {
           quick_sell_requested: boolean | null
           received_at: string | null
           return_shipping_fee: number | null
+          scan_completed_at: string | null
+          scan_session_id: string | null
           shipped_at: string | null
           shipping_fee_paid: number | null
           status: string | null
@@ -11006,9 +11055,15 @@ export type Database = {
           total_storage_fees_paid_cents: number | null
           tracking_number: string | null
           verified_at: string | null
+          video_url: string | null
         }
         Insert: {
           admin_notes?: string | null
+          ai_confidence?: number | null
+          ai_detected_name?: string | null
+          ai_detected_number?: string | null
+          ai_detected_set?: string | null
+          back_image_url?: string | null
           card_match_verified?: boolean | null
           category: string
           condition: string
@@ -11017,6 +11072,7 @@ export type Database = {
           estimated_value?: number | null
           first_card_bonus_amount?: number | null
           first_card_bonus_applied?: boolean | null
+          front_image_url?: string | null
           id?: string
           image_url?: string | null
           last_storage_charge_at?: string | null
@@ -11036,6 +11092,8 @@ export type Database = {
           quick_sell_requested?: boolean | null
           received_at?: string | null
           return_shipping_fee?: number | null
+          scan_completed_at?: string | null
+          scan_session_id?: string | null
           shipped_at?: string | null
           shipping_fee_paid?: number | null
           status?: string | null
@@ -11044,9 +11102,15 @@ export type Database = {
           total_storage_fees_paid_cents?: number | null
           tracking_number?: string | null
           verified_at?: string | null
+          video_url?: string | null
         }
         Update: {
           admin_notes?: string | null
+          ai_confidence?: number | null
+          ai_detected_name?: string | null
+          ai_detected_number?: string | null
+          ai_detected_set?: string | null
+          back_image_url?: string | null
           card_match_verified?: boolean | null
           category?: string
           condition?: string
@@ -11055,6 +11119,7 @@ export type Database = {
           estimated_value?: number | null
           first_card_bonus_amount?: number | null
           first_card_bonus_applied?: boolean | null
+          front_image_url?: string | null
           id?: string
           image_url?: string | null
           last_storage_charge_at?: string | null
@@ -11074,6 +11139,8 @@ export type Database = {
           quick_sell_requested?: boolean | null
           received_at?: string | null
           return_shipping_fee?: number | null
+          scan_completed_at?: string | null
+          scan_session_id?: string | null
           shipped_at?: string | null
           shipping_fee_paid?: number | null
           status?: string | null
@@ -11082,8 +11149,16 @@ export type Database = {
           total_storage_fees_paid_cents?: number | null
           tracking_number?: string | null
           verified_at?: string | null
+          video_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_vault_items_scan_session"
+            columns: ["scan_session_id"]
+            isOneToOne: false
+            referencedRelation: "vault_scan_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vault_items_listing_id_fkey"
             columns: ["listing_id"]
@@ -11117,6 +11192,68 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vault_scan_sessions: {
+        Row: {
+          ai_confidence: number | null
+          ai_detected_category: string | null
+          ai_detected_name: string | null
+          ai_detected_number: string | null
+          ai_detected_set: string | null
+          back_image_url: string | null
+          completed_at: string | null
+          created_at: string
+          front_image_url: string
+          id: string
+          image_hash: string | null
+          scan_status: string
+          user_id: string
+          vault_item_id: string | null
+          video_url: string | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          ai_detected_category?: string | null
+          ai_detected_name?: string | null
+          ai_detected_number?: string | null
+          ai_detected_set?: string | null
+          back_image_url?: string | null
+          completed_at?: string | null
+          created_at?: string
+          front_image_url: string
+          id?: string
+          image_hash?: string | null
+          scan_status?: string
+          user_id: string
+          vault_item_id?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          ai_detected_category?: string | null
+          ai_detected_name?: string | null
+          ai_detected_number?: string | null
+          ai_detected_set?: string | null
+          back_image_url?: string | null
+          completed_at?: string | null
+          created_at?: string
+          front_image_url?: string
+          id?: string
+          image_hash?: string | null
+          scan_status?: string
+          user_id?: string
+          vault_item_id?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_scan_sessions_vault_item_id_fkey"
+            columns: ["vault_item_id"]
+            isOneToOne: false
+            referencedRelation: "vault_items"
             referencedColumns: ["id"]
           },
         ]

@@ -1,18 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Vault, Package, MapPin, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles, Zap } from 'lucide-react';
+import { Vault, Package, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles, Lock, ScanLine, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { formatCategoryName } from '@/lib/categoryFormatter';
+import { CardScannerUpload } from './CardScannerUpload';
+import { CardReviewModal, ReviewedCardData } from './card-scan/CardReviewModal';
+import { CardAnalysis } from '@/hooks/useCardAnalysis';
 
 interface SendToVaultDialogProps {
   open: boolean;
@@ -27,28 +25,26 @@ const WAREHOUSE_ADDRESS = {
   city: 'Çankaya, Ankara',
   country: 'Türkiye',
   postalCode: '06700',
-  phone: '+90 312 XXX XX XX',
 };
 
-const categories = ['pokemon', 'mtg', 'yugioh', 'onepiece', 'lorcana', 'nba', 'football', 'figures', 'tcg'];
-const conditions = ['Mint', 'Near Mint', 'Excellent', 'Good', 'Fair', 'Poor'];
+type VaultStep = 'scan' | 'review' | 'confirm' | 'shipping';
 
 export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps) => {
-  const { t } = useLanguage();
-  const { formatPrice, currency } = useCurrency();
-  const [step, setStep] = useState(1);
+  const { formatPrice } = useCurrency();
+  const [step, setStep] = useState<VaultStep>('scan');
   const [submitting, setSubmitting] = useState(false);
   const [shippingRate, setShippingRate] = useState({ try: 50, usd: 5 });
   const [isFirstCard, setIsFirstCard] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: 'pokemon',
-    condition: 'Near Mint',
-    estimatedValue: '',
-    estimatedValueTRY: '',
-    images: [] as File[],
-  });
+  
+  // Scan data
+  const [scanAnalysis, setScanAnalysis] = useState<CardAnalysis | null>(null);
+  const [frontImageFile, setFrontImageFile] = useState<File | null>(null);
+  const [frontImagePreview, setFrontImagePreview] = useState<string | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  
+  // Final confirmed data
+  const [confirmedData, setConfirmedData] = useState<ReviewedCardData | null>(null);
+  const [scanSessionId, setScanSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -83,21 +79,69 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
     setIsFirstCard(!profile?.first_vault_card_sent);
   };
 
-  const estimatedValueTRY = formData.estimatedValueTRY 
-    ? parseFloat(formData.estimatedValueTRY) 
-    : (parseFloat(formData.estimatedValue) || 0) * 35; // Rough USD to TRY
+  const handleScanComplete = (analysis: CardAnalysis, imageFile: File, previewUrl: string) => {
+    setScanAnalysis(analysis);
+    setFrontImageFile(imageFile);
+    setFrontImagePreview(previewUrl);
+    
+    // Show review modal for user confirmation
+    setShowReviewModal(true);
+  };
 
-  const bonusEligible = isFirstCard && estimatedValueTRY >= 1000;
+  const handleReviewConfirm = async (reviewedData: ReviewedCardData) => {
+    setConfirmedData(reviewedData);
+    setShowReviewModal(false);
+    
+    // Create scan session in database
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error('Please sign in first');
+        return;
+      }
 
-  const handleCopyAddress = () => {
-    const fullAddress = `${WAREHOUSE_ADDRESS.company}\n${WAREHOUSE_ADDRESS.name}\n${WAREHOUSE_ADDRESS.address}\n${WAREHOUSE_ADDRESS.district}\n${WAREHOUSE_ADDRESS.city}, ${WAREHOUSE_ADDRESS.country}`;
-    navigator.clipboard.writeText(fullAddress);
-    toast.success(t.vault?.addressCopied || 'Address copied to clipboard');
+      // Upload front image to storage
+      const frontImagePath = `${session.user.id}/vault-scans/${Date.now()}-front.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from('listing-images')
+        .upload(frontImagePath, frontImageFile!);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl: frontPublicUrl } } = supabase.storage
+        .from('listing-images')
+        .getPublicUrl(frontImagePath);
+
+      // Create scan session record
+      const { data: scanSession, error: scanError } = await supabase
+        .from('vault_scan_sessions')
+        .insert({
+          user_id: session.user.id,
+          front_image_url: frontPublicUrl,
+          ai_detected_name: reviewedData.cardName,
+          ai_detected_set: reviewedData.setName,
+          ai_detected_number: reviewedData.cardNumber,
+          ai_detected_category: reviewedData.category,
+          ai_confidence: reviewedData.confidence,
+          scan_status: 'completed',
+          completed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (scanError) throw scanError;
+
+      setScanSessionId(scanSession.id);
+      setStep('confirm');
+    } catch (error) {
+      console.error('Error creating scan session:', error);
+      toast.error('Failed to save scan. Please try again.');
+    }
   };
 
   const handleSubmit = async () => {
-    if (!formData.title.trim()) {
-      toast.error(t.vault?.enterCardTitle || 'Please enter a card title');
+    if (!scanSessionId || !confirmedData) {
+      toast.error('Scan required. Please scan your card first.');
       return;
     }
 
@@ -106,434 +150,326 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error(t.auth?.signIn || 'Please sign in first');
+        toast.error('Please sign in first');
         return;
       }
 
-      const estimatedValue = formData.estimatedValue ? parseFloat(formData.estimatedValue) : null;
+      // Get the front image URL from scan session
+      const { data: scanSession } = await supabase
+        .from('vault_scan_sessions')
+        .select('front_image_url')
+        .eq('id', scanSessionId)
+        .single();
 
-      // Create a pending vault item
+      // Create vault item linked to scan session
       const { data: vaultItem, error } = await supabase
         .from('vault_items')
         .insert({
           owner_id: session.user.id,
-          title: formData.title,
-          description: formData.description || `Pending arrival - ${formData.category}`,
-          category: formData.category,
-          condition: formData.condition,
-          estimated_value: estimatedValue,
+          title: confirmedData.cardName || 'Unknown Card',
+          description: `${confirmedData.setName || ''} ${confirmedData.cardNumber || ''}`.trim() || 'Scanned card',
+          category: confirmedData.category || 'tcg',
+          condition: 'Pending Verification',
           status: 'pending_shipment',
           shipping_fee_paid: shippingRate.usd,
+          scan_session_id: scanSessionId,
+          ai_detected_name: confirmedData.cardName,
+          ai_detected_set: confirmedData.setName,
+          ai_detected_number: confirmedData.cardNumber,
+          ai_confidence: confirmedData.confidence,
+          scan_completed_at: new Date().toISOString(),
+          image_url: scanSession?.front_image_url,
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Check and apply first card bonus
-      if (bonusEligible && vaultItem) {
-        await supabase.rpc('apply_first_vault_card_bonus', {
-          p_user_id: session.user.id,
-          p_vault_item_id: vaultItem.id,
-          p_estimated_value_try: estimatedValueTRY
-        });
-        toast.success('🎉 First card bonus of ₺50 applied to your wallet!');
-      }
+      // Update scan session with vault_item_id
+      await supabase
+        .from('vault_scan_sessions')
+        .update({ vault_item_id: vaultItem.id })
+        .eq('id', scanSessionId);
 
-      toast.success(t.vault?.requestSubmitted || 'Vault request submitted! Ship your card to the address shown.');
-      setStep(3);
+      // Log the action
+      await supabase.from('vault_audit_log').insert({
+        user_id: session.user.id,
+        action: 'vault_item_created',
+        vault_item_id: vaultItem.id,
+        scan_session_id: scanSessionId,
+        details: {
+          card_name: confirmedData.cardName,
+          set_name: confirmedData.setName,
+          confidence: confirmedData.confidence,
+        },
+      });
+
+      toast.success('Vault request submitted! Ship your card to the address shown.');
+      setStep('shipping');
     } catch (error) {
       console.error('Error creating vault request:', error);
-      toast.error(t.vault?.submitFailed || 'Failed to submit vault request');
+      toast.error('Failed to submit vault request');
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleCopyAddress = () => {
+    const fullAddress = `${WAREHOUSE_ADDRESS.company}\n${WAREHOUSE_ADDRESS.name}\n${WAREHOUSE_ADDRESS.address}\n${WAREHOUSE_ADDRESS.district}\n${WAREHOUSE_ADDRESS.city}, ${WAREHOUSE_ADDRESS.country} ${WAREHOUSE_ADDRESS.postalCode}`;
+    navigator.clipboard.writeText(fullAddress);
+    toast.success('Address copied to clipboard');
+  };
+
   const handleClose = () => {
-    setStep(1);
-    setFormData({
-      title: '',
-      description: '',
-      category: 'pokemon',
-      condition: 'Near Mint',
-      estimatedValue: '',
-      estimatedValueTRY: '',
-      images: [],
-    });
+    setStep('scan');
+    setScanAnalysis(null);
+    setFrontImageFile(null);
+    setFrontImagePreview(null);
+    setConfirmedData(null);
+    setScanSessionId(null);
     onOpenChange(false);
   };
 
   const stepIndicators = [
-    { num: 1, label: t.vault?.step1Label || 'Card Details', icon: Camera },
-    { num: 2, label: t.vault?.step2Label || 'Package Safely', icon: Package },
-    { num: 3, label: t.vault?.step3Label || 'Ship to Vault', icon: Truck },
+    { id: 'scan', num: 1, label: 'Scan Card', icon: ScanLine },
+    { id: 'confirm', num: 2, label: 'Confirm', icon: CheckCircle },
+    { id: 'shipping', num: 3, label: 'Ship', icon: Truck },
   ];
 
+  const currentStepIndex = step === 'scan' ? 0 : step === 'review' ? 0 : step === 'confirm' ? 1 : 2;
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Vault className="h-5 w-5 text-primary" />
-            {t.vault?.title || 'Send Your Card to Vault'}
-          </DialogTitle>
-          <DialogDescription>
-            {t.vault?.subtitle || 'Store your cards securely in our insured facility'}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Vault className="h-5 w-5 text-primary" />
+              Send Card to Vault
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-1.5">
+              <Lock className="h-3 w-3" />
+              Only you can see cards in your Vault
+            </DialogDescription>
+          </DialogHeader>
 
-        {/* Step Indicator */}
-        <div className="flex items-center justify-between py-4 border-b border-border/50">
-          {stepIndicators.map((s, i) => (
-            <div key={s.num} className="flex items-center flex-1">
-              <div className={`flex items-center gap-2 ${step >= s.num ? 'text-primary' : 'text-muted-foreground'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step > s.num ? 'bg-primary text-primary-foreground' : 
-                  step === s.num ? 'bg-primary/20 border-2 border-primary text-primary' : 
-                  'bg-muted text-muted-foreground'
-                }`}>
-                  {step > s.num ? <CheckCircle className="h-4 w-4" /> : s.num}
-                </div>
-                <span className="text-xs font-medium hidden sm:block">{s.label}</span>
-              </div>
-              {i < stepIndicators.length - 1 && (
-                <div className={`flex-1 h-0.5 mx-2 ${step > s.num ? 'bg-primary' : 'bg-muted'}`} />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* First Card Bonus Banner */}
-        {step === 1 && isFirstCard && (
-          <Card className="border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-600/5">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-amber-500/20">
-                  <Gift className="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
-                    First Card Bonus! <Sparkles className="h-4 w-4" />
-                  </h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Send your first card worth ₺1,000+ to earn <span className="font-bold text-amber-600">₺50 bonus</span> credit!
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 1: Card Details */}
-        {step === 1 && (
-          <div className="space-y-4 py-4">
-            <Card className="border-primary/20 bg-primary/5">
-              <CardContent className="p-4">
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-primary" />
-                  {t.vault?.step1Title || 'Enter Card Details'}
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  {t.vault?.step1Desc || 'Provide information about the card you want to store in the vault.'}
-                </p>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="title">{t.vault?.cardName || 'Card Name'} *</Label>
-                <Input
-                  id="title"
-                  placeholder={t.vault?.cardNamePlaceholder || 'e.g., Charizard Base Set 1st Edition PSA 10'}
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="mt-1.5"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>{t.sell?.category || 'Category'}</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                  >
-                    <SelectTrigger className="mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {formatCategoryName(cat)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>{t.sell?.condition || 'Condition'}</Label>
-                  <Select
-                    value={formData.condition}
-                    onValueChange={(value) => setFormData({ ...formData, condition: value })}
-                  >
-                    <SelectTrigger className="mt-1.5">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {conditions.map((cond) => (
-                        <SelectItem key={cond} value={cond}>
-                          {cond}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="estimatedValue">Estimated Value (USD)</Label>
-                  <div className="relative mt-1.5">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                    <Input
-                      id="estimatedValue"
-                      type="number"
-                      placeholder="0.00"
-                      value={formData.estimatedValue}
-                      onChange={(e) => setFormData({ ...formData, estimatedValue: e.target.value })}
-                      className="pl-7"
-                    />
+          {/* Step Indicator */}
+          <div className="flex items-center justify-between py-4 border-b border-border/50">
+            {stepIndicators.map((s, i) => (
+              <div key={s.id} className="flex items-center flex-1">
+                <div className={`flex items-center gap-2 ${currentStepIndex >= i ? 'text-primary' : 'text-muted-foreground'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    currentStepIndex > i ? 'bg-primary text-primary-foreground' : 
+                    currentStepIndex === i ? 'bg-primary/20 border-2 border-primary text-primary' : 
+                    'bg-muted text-muted-foreground'
+                  }`}>
+                    {currentStepIndex > i ? <CheckCircle className="h-4 w-4" /> : s.num}
                   </div>
+                  <span className="text-xs font-medium hidden sm:block">{s.label}</span>
                 </div>
-                <div>
-                  <Label htmlFor="estimatedValueTRY">or in TRY</Label>
-                  <div className="relative mt-1.5">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₺</span>
-                    <Input
-                      id="estimatedValueTRY"
-                      type="number"
-                      placeholder="0"
-                      value={formData.estimatedValueTRY}
-                      onChange={(e) => setFormData({ ...formData, estimatedValueTRY: e.target.value })}
-                      className="pl-7"
-                    />
-                  </div>
-                </div>
+                {i < stepIndicators.length - 1 && (
+                  <div className={`flex-1 h-0.5 mx-2 ${currentStepIndex > i ? 'bg-primary' : 'bg-muted'}`} />
+                )}
               </div>
-
-              {bonusEligible && (
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-gain/10 border border-gain/20">
-                  <CheckCircle className="h-4 w-4 text-gain" />
-                  <span className="text-sm text-gain font-medium">Eligible for ₺50 first card bonus!</span>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="description">{t.vault?.additionalNotes || 'Additional Notes'}</Label>
-                <Textarea
-                  id="description"
-                  placeholder={t.vault?.notesPlaceholder || 'Any special instructions or notes about your card...'}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="mt-1.5"
-                  rows={2}
-                />
-              </div>
-            </div>
+            ))}
           </div>
-        )}
 
-        {/* Step 2: Packaging Instructions */}
-        {step === 2 && (
-          <div className="space-y-4 py-4">
-            <Card className="border-primary/20 bg-primary/5">
+          {/* First Card Bonus Banner */}
+          {step === 'scan' && isFirstCard && (
+            <Card className="border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-amber-600/5">
               <CardContent className="p-4">
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <Package className="h-4 w-4 text-primary" />
-                  {t.vault?.step2Title || 'Package Your Card Safely'}
-                </h4>
-                <p className="text-sm text-muted-foreground">
-                  {t.vault?.step2Desc || 'Follow these instructions to ensure your card arrives safely.'}
-                </p>
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-amber-500/20">
+                    <Gift className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                      First Card Bonus! <Sparkles className="h-4 w-4" />
+                    </h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Send your first card worth ₺1,000+ to earn <span className="font-bold text-amber-600">₺50 bonus</span> credit!
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
+          )}
 
-            {/* Shipping Fee Info */}
-            <Card className="border-blue-500/20 bg-blue-500/5">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Truck className="h-5 w-5 text-blue-500" />
-                    <div>
-                      <p className="font-medium">Shipping Fee</p>
-                      <p className="text-xs text-muted-foreground">Paid by sender</p>
+          {/* Step: Scan */}
+          {step === 'scan' && (
+            <div className="space-y-4 py-4">
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <Camera className="h-4 w-4 text-primary" />
+                    Scan Your Card
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Upload a clear photo of your card's front. Our AI will identify it automatically.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <CardScannerUpload 
+                onScanComplete={handleScanComplete}
+                mode="grading"
+              />
+
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border">
+                <Shield className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div className="text-xs text-muted-foreground">
+                  <p className="font-medium text-foreground mb-1">Vaulted – Private Storage</p>
+                  <p>Your vault items are only visible to you. They won't appear in search, marketplace, or public profiles.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step: Confirm */}
+          {step === 'confirm' && confirmedData && (
+            <div className="space-y-4 py-4">
+              <Card className="border-emerald-500/20 bg-emerald-500/5">
+                <CardContent className="p-4">
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    Card Identified
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Review the details below before submitting.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-2 gap-4">
+                {frontImagePreview && (
+                  <div className="aspect-[3/4] rounded-lg overflow-hidden border bg-muted">
+                    <img src={frontImagePreview} alt="Card front" className="w-full h-full object-contain" />
+                  </div>
+                )}
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Card Name</p>
+                    <p className="font-medium">{confirmedData.cardName || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Set</p>
+                    <p className="text-sm">{confirmedData.setName || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Card Number</p>
+                    <p className="text-sm">{confirmedData.cardNumber || 'Unknown'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">AI Confidence</p>
+                    <Badge variant={confirmedData.confidence >= 0.75 ? 'default' : 'outline'}>
+                      {Math.round((confirmedData.confidence || 0) * 100)}%
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shipping Fee Info */}
+              <Card className="border-blue-500/20 bg-blue-500/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Truck className="h-5 w-5 text-blue-500" />
+                      <div>
+                        <p className="font-medium">Intake Fee</p>
+                        <p className="text-xs text-muted-foreground">One-time processing</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg">₺{shippingRate.try}</p>
+                      <p className="text-xs text-muted-foreground">~${shippingRate.usd} USD</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg">₺{shippingRate.try}</p>
-                    <p className="text-xs text-muted-foreground">~${shippingRate.usd} USD</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <div className="space-y-3">
-              <Card className="border-accent/30">
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep('scan')} className="flex-1">
+                  <X className="h-4 w-4 mr-2" />
+                  Rescan
+                </Button>
+                <Button onClick={handleSubmit} disabled={submitting} className="flex-1">
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                  )}
+                  Confirm & Continue
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step: Shipping */}
+          {step === 'shipping' && (
+            <div className="space-y-4 py-4">
+              <Card className="border-emerald-500/20 bg-emerald-500/5">
                 <CardContent className="p-4">
-                  <h5 className="font-medium mb-3 flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-accent" />
-                    {t.vault?.packagingGuide || 'Packaging Guide'}
-                  </h5>
-                  <ol className="text-sm text-muted-foreground space-y-3 list-decimal list-inside">
-                    <li className="flex items-start gap-2">
-                      <span className="min-w-[20px]">1.</span>
-                      <span>{t.vault?.packStep1 || 'Place card in a penny sleeve or soft sleeve'}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="min-w-[20px]">2.</span>
-                      <span>{t.vault?.packStep2 || 'Insert sleeved card into a toploader or card saver'}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="min-w-[20px]">3.</span>
-                      <span>{t.vault?.packStep3 || 'Secure toploader with painters tape (not on the card!)'}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="min-w-[20px]">4.</span>
-                      <span>{t.vault?.packStep4 || 'Place between two pieces of cardboard for rigidity'}</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="min-w-[20px]">5.</span>
-                      <span>{t.vault?.packStep5 || 'Use a padded envelope or small box for shipping'}</span>
-                    </li>
-                  </ol>
+                  <h4 className="font-medium mb-2 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    Request Submitted!
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Ship your card to the address below. Include your CardBoom username in the package.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Package className="h-5 w-5 text-primary" />
+                      <span className="font-medium">Ship To</span>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={handleCopyAddress} className="gap-1.5">
+                      <Copy className="h-3 w-3" />
+                      Copy
+                    </Button>
+                  </div>
+                  <div className="text-sm space-y-1 text-muted-foreground">
+                    <p className="font-medium text-foreground">{WAREHOUSE_ADDRESS.company}</p>
+                    <p>{WAREHOUSE_ADDRESS.name}</p>
+                    <p>{WAREHOUSE_ADDRESS.address}</p>
+                    <p>{WAREHOUSE_ADDRESS.district}</p>
+                    <p>{WAREHOUSE_ADDRESS.city}, {WAREHOUSE_ADDRESS.country}</p>
+                    <p>{WAREHOUSE_ADDRESS.postalCode}</p>
+                  </div>
                 </CardContent>
               </Card>
 
               <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
                 <AlertCircle className="h-4 w-4 text-destructive mt-0.5" />
                 <div className="text-xs text-muted-foreground">
-                  <p className="font-medium text-foreground mb-1">{t.vault?.important || 'Important'}:</p>
+                  <p className="font-medium text-foreground mb-1">Important</p>
                   <ul className="list-disc list-inside space-y-0.5">
-                    <li>{t.vault?.importantTip1 || 'Write your CardBoom username inside the package'}</li>
-                    <li>{t.vault?.importantTip2 || 'Use tracked shipping for valuable cards'}</li>
-                    <li>{t.vault?.importantTip3 || 'Do NOT use rubber bands on cards'}</li>
+                    <li>Write your CardBoom username inside the package</li>
+                    <li>Use tracked shipping for valuable cards</li>
+                    <li>Package cards safely in toploaders</li>
                   </ul>
                 </div>
               </div>
+
+              <Button onClick={handleClose} className="w-full">
+                Done
+              </Button>
             </div>
-          </div>
-        )}
-
-        {/* Step 3: Shipping Address */}
-        {step === 3 && (
-          <div className="space-y-4 py-4">
-            <div className="text-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-gain/20 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="h-8 w-8 text-gain" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{t.vault?.requestCreated || 'Request Created!'}</h3>
-              <p className="text-muted-foreground text-sm">
-                {t.vault?.nowShip || 'Now ship your card to our secure vault facility.'}
-              </p>
-            </div>
-
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="font-medium mb-2">{t.vault?.shipToAddress || 'Ship to this address'}:</h4>
-                    <div className="text-sm space-y-0.5 bg-background/50 rounded-lg p-3 border border-border/50">
-                      <p className="font-semibold text-foreground">{WAREHOUSE_ADDRESS.company}</p>
-                      <p className="text-primary font-medium">{WAREHOUSE_ADDRESS.name}</p>
-                      <p className="text-muted-foreground">{WAREHOUSE_ADDRESS.address}</p>
-                      <p className="text-muted-foreground">{WAREHOUSE_ADDRESS.district}</p>
-                      <p className="text-muted-foreground">{WAREHOUSE_ADDRESS.city}, {WAREHOUSE_ADDRESS.country}</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-3 gap-2"
-                      onClick={handleCopyAddress}
-                    >
-                      <Copy className="h-3 w-3" />
-                      {t.vault?.copyAddress || 'Copy Address'}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Sell Teaser */}
-            <Card className="border-amber-500/20 bg-gradient-to-r from-amber-500/5 to-orange-500/5">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-amber-500/20 shrink-0">
-                    <Zap className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-foreground flex items-center gap-2">
-                      Quick Sell Available
-                      <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30">
-                        60% Value
-                      </Badge>
-                    </h4>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Once verified, you can instantly sell to CardBoom at 60% of market value — 
-                      no listing required, payment within 24 hours!
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-accent/20">
-              <CardContent className="p-4">
-                <h5 className="font-medium mb-2 flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-accent" />
-                  {t.vault?.whatsNext || "What's Next?"}
-                </h5>
-                <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                  <li>{t.vault?.nextStep1 || 'Ship your packaged card to the address above'}</li>
-                  <li>{t.vault?.nextStep2 || 'We receive and verify your card (3-5 business days)'}</li>
-                  <li>{t.vault?.nextStep3 || 'Your card appears in your vault, ready to sell, trade, or Quick Sell!'}</li>
-                </ol>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        <DialogFooter>
-          {step === 1 && (
-            <>
-              <Button variant="outline" onClick={handleClose}>
-                {t.common?.cancel || 'Cancel'}
-              </Button>
-              <Button onClick={() => setStep(2)} disabled={!formData.title.trim()}>
-                <Package className="h-4 w-4 mr-2" />
-                {t.common?.next || 'Next'}
-              </Button>
-            </>
           )}
-          {step === 2 && (
-            <>
-              <Button variant="outline" onClick={() => setStep(1)}>
-                {t.common?.back || 'Back'}
-              </Button>
-              <Button onClick={handleSubmit} disabled={submitting}>
-                {submitting ? (t.common?.loading || 'Submitting...') : (t.vault?.confirmSubmit || 'Confirm & Get Address')}
-              </Button>
-            </>
-          )}
-          {step === 3 && (
-            <Button onClick={handleClose} className="w-full">
-              {t.vault?.done || 'Done'}
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Card Review Modal */}
+      <CardReviewModal
+        open={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        onConfirm={handleReviewConfirm}
+        analysis={scanAnalysis}
+        imagePreview={frontImagePreview}
+      />
+    </>
   );
 };

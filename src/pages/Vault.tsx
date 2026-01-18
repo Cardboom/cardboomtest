@@ -53,12 +53,17 @@ interface VaultItem {
   listing_id: string | null;
 }
 
+// Vault status progression: scanned -> in_transit -> received -> verified -> stored -> released
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  scanned: { label: 'Scanned', color: 'bg-primary/10 text-primary', icon: <Sparkles className="w-3 h-3" /> },
   pending_shipment: { label: 'Awaiting Shipment', color: 'bg-amber-500/10 text-amber-500', icon: <Clock className="w-3 h-3" /> },
   pending_seller_shipment: { label: 'Seller Shipping', color: 'bg-cyan-500/10 text-cyan-500', icon: <Truck className="w-3 h-3" /> },
+  in_transit: { label: 'In Transit', color: 'bg-blue-500/10 text-blue-500', icon: <Truck className="w-3 h-3" /> },
   shipped: { label: 'In Transit', color: 'bg-blue-500/10 text-blue-500', icon: <Truck className="w-3 h-3" /> },
   received: { label: 'Received', color: 'bg-purple-500/10 text-purple-500', icon: <Package className="w-3 h-3" /> },
-  verified: { label: 'Verified & Stored', color: 'bg-emerald-500/10 text-emerald-500', icon: <CheckCircle className="w-3 h-3" /> },
+  verified: { label: 'Verified', color: 'bg-teal-500/10 text-teal-500', icon: <CheckCircle className="w-3 h-3" /> },
+  stored: { label: 'Stored', color: 'bg-emerald-500/10 text-emerald-500', icon: <VaultIcon className="w-3 h-3" /> },
+  released: { label: 'Released', color: 'bg-gray-500/10 text-gray-500', icon: <Package className="w-3 h-3" /> },
   return_requested: { label: 'Return Requested', color: 'bg-orange-500/10 text-orange-500', icon: <Truck className="w-3 h-3" /> },
   cancelled: { label: 'Cancelled', color: 'bg-red-500/10 text-red-500', icon: <X className="w-3 h-3" /> },
 };
@@ -196,19 +201,19 @@ const VaultPage = () => {
                       Vault
                     </h1>
                     <p className="text-muted-foreground">
-                      Secure storage for your collectibles
+                      Private, secure storage for your collectibles
                     </p>
                   </div>
                 </div>
                 
                 <div className="flex flex-wrap gap-3">
                   <Badge variant="outline" className="gap-1.5 px-3 py-1.5 bg-background/50">
-                    <Shield className="w-3.5 h-3.5 text-emerald-500" />
-                    Fully Insured
+                    <Lock className="w-3.5 h-3.5 text-primary" />
+                    Only You Can See
                   </Badge>
                   <Badge variant="outline" className="gap-1.5 px-3 py-1.5 bg-background/50">
-                    <Lock className="w-3.5 h-3.5 text-primary" />
-                    Bank-Grade Security
+                    <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                    Fully Insured
                   </Badge>
                   <Badge variant="outline" className="gap-1.5 px-3 py-1.5 bg-background/50">
                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -367,21 +372,22 @@ const VaultPage = () => {
                 >
                   <Card className="p-12 text-center border-dashed">
                     <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
-                      <VaultIcon className="h-10 w-10 text-muted-foreground" />
+                      <VaultIcon className="h-10 w-10 text-muted-foreground/30" />
                     </div>
                     <h2 className="text-xl font-semibold text-foreground mb-2">
-                      {activeTab === 'all' ? 'Your vault is empty' : `No ${activeTab} items`}
+                      {activeTab === 'all' ? 'Your Vault is empty' : `No ${activeTab} items`}
                     </h2>
-                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                      Send your collectibles to our secure warehouse for free storage, authentication, and easy selling.
+                    <p className="text-muted-foreground mb-2 max-w-md mx-auto">
+                      Secure your first card.
+                    </p>
+                    <p className="text-sm text-muted-foreground/70 mb-6 max-w-md mx-auto flex items-center justify-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5" />
+                      Only you can see cards in your Vault
                     </p>
                     <div className="flex gap-3 justify-center">
-                      <Button onClick={() => setSendToVaultOpen(true)} variant="outline" className="gap-2">
+                      <Button onClick={() => setSendToVaultOpen(true)} className="gap-2">
                         <Send className="h-4 w-4" />
-                        Send Your Cards
-                      </Button>
-                      <Button onClick={() => navigate('/')}>
-                        Browse Marketplace
+                        Send Card to Vault
                       </Button>
                     </div>
                   </Card>
@@ -447,31 +453,17 @@ const VaultPage = () => {
                               </span>
                             </div>
                             <div className="flex gap-2 mt-4">
-                              {item.status === 'verified' ? (
+                              {(item.status === 'verified' || item.status === 'stored') ? (
                                 <div className="space-y-2 w-full">
-                                  {/* Quick Sell Option for verified items with estimated value */}
-                                  {item.estimated_value && item.estimated_value > 0 && (
-                                    <QuickSellOffer
-                                      vaultItemId={item.id}
-                                      itemTitle={item.title}
-                                      marketPrice={item.estimated_value}
-                                      imageUrl={item.image_url}
-                                      category={formatCategoryName(item.category)}
-                                      onAccept={fetchVaultItems}
-                                      compact
-                                    />
-                                  )}
                                   <div className="flex gap-2">
                                     <Button 
-                                      variant="default" 
+                                      variant="outline" 
                                       size="sm" 
                                       className="flex-1"
-                                      onClick={() => {
-                                        setSelectedListingItem(item);
-                                        setShowListingWizard(true);
-                                      }}
+                                      onClick={() => navigate('/grading')}
                                     >
-                                      List for Sale
+                                      <Shield className="h-4 w-4 mr-1.5" />
+                                      Request Grading
                                     </Button>
                                     <Button 
                                       variant="outline" 
