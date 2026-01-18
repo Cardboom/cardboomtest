@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, Sparkles, Award, Truck, AlertCircle } from 'lucide-react';
+import { Bell, Check, CheckCheck, TrendingDown, MessageSquare, Package, UserPlus, Star, Gift, Sparkles, Award, Truck, AlertCircle, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -54,13 +54,38 @@ const isActionRequired = (type: string) => {
 
 export const NotificationCenter = () => {
   const navigate = useNavigate();
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead, refetch } = useNotifications();
   const { toast } = useToast();
+  const [isOpen, setIsOpen] = useState(false);
   
   const [canClaimXP, setCanClaimXP] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [xpReward, setXpReward] = useState(0);
   const [isClaiming, setIsClaiming] = useState(false);
+
+  // Mark all as read when dropdown opens
+  useEffect(() => {
+    if (isOpen && unreadCount > 0) {
+      markAllAsRead();
+    }
+  }, [isOpen, unreadCount, markAllAsRead]);
+
+  // Delete notification
+  const deleteNotification = async (notificationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId);
+      
+      if (error) throw error;
+      refetch();
+      toast({ title: 'Notification deleted' });
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
 
   const checkDailyXP = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -144,7 +169,7 @@ export const NotificationCenter = () => {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-9 w-9">
           <Bell className="h-5 w-5" />
@@ -237,7 +262,7 @@ export const NotificationCenter = () => {
               return (
                 <DropdownMenuItem
                   key={notification.id}
-                  className={`flex items-start gap-3 p-3 cursor-pointer ${
+                  className={`flex items-start gap-3 p-3 cursor-pointer group ${
                     !notification.is_read ? 'bg-accent/50' : ''
                   } ${isActionRequired(notification.type) ? 'border-l-2 border-l-yellow-500' : ''}`}
                   onClick={handleNotificationClick}
@@ -263,9 +288,14 @@ export const NotificationCenter = () => {
                       })}
                     </p>
                   </div>
-                  {!notification.is_read && (
-                    <div className="w-2 h-2 bg-primary rounded-full mt-1" />
-                  )}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    onClick={(e) => deleteNotification(notification.id, e)}
+                  >
+                    <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                  </Button>
                 </DropdownMenuItem>
               );
             })

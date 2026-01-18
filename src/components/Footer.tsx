@@ -70,7 +70,6 @@ export const Footer = () => {
               <li><FooterLink to="/careers" className="hover:text-foreground transition-colors">{t.footer.careers}</FooterLink></li>
               <li><FooterLink to="/creators" className="hover:text-foreground transition-colors">{t.footer.creatorsAmbassadors}</FooterLink></li>
               <li><FooterLink to="/pricing" className="hover:text-foreground transition-colors">{t.footer.pricingPro}</FooterLink></li>
-              <li className="pl-4 text-xs opacity-70">Lite: $9.99/mo • Pro: $25/mo • Enterprise: $50/mo</li>
               <li><FooterLink to="/blog" className="hover:text-foreground transition-colors">{t.footer.blog}</FooterLink></li>
               <li><FooterLink to="/press" className="hover:text-foreground transition-colors">{t.footer.press}</FooterLink></li>
             </ul>
