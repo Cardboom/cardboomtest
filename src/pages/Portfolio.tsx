@@ -45,6 +45,7 @@ const Portfolio = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importTargetCollection, setImportTargetCollection] = useState<{ id: string; name: string } | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
@@ -423,6 +424,10 @@ const Portfolio = () => {
                 userId={user.id}
                 selectedCollectionId={selectedCollectionId}
                 onSelectCollection={setSelectedCollectionId}
+                onImportToCollection={(collectionId, collectionName) => {
+                  setImportTargetCollection({ id: collectionId, name: collectionName });
+                  setShowImportDialog(true);
+                }}
               />
             </div>
           </div>
@@ -670,8 +675,16 @@ const Portfolio = () => {
       <AddToPortfolioDialog open={showAddDialog} onOpenChange={setShowAddDialog} />
       <PortfolioImport 
         open={showImportDialog} 
-        onOpenChange={setShowImportDialog}
-        onImportComplete={() => {}}
+        onOpenChange={(open) => {
+          setShowImportDialog(open);
+          if (!open) setImportTargetCollection(null);
+        }}
+        onImportComplete={() => {
+          refetchPortfolio();
+          setImportTargetCollection(null);
+        }}
+        targetCollectionId={importTargetCollection?.id}
+        targetCollectionName={importTargetCollection?.name}
       />
     </div>
   );

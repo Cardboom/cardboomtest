@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
@@ -16,6 +17,8 @@ interface PortfolioImportProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onImportComplete: () => void;
+  targetCollectionId?: string | null; // Optional: import directly to this collection
+  targetCollectionName?: string | null; // For display purposes
 }
 
 interface ImportedCard {
@@ -33,7 +36,7 @@ interface ImportedCard {
 
 type ImportStep = 'upload' | 'select' | 'importing' | 'results';
 
-export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: PortfolioImportProps) => {
+export const PortfolioImport = ({ open, onOpenChange, onImportComplete, targetCollectionId, targetCollectionName }: PortfolioImportProps) => {
   const [step, setStep] = useState<ImportStep>('upload');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -302,6 +305,7 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
           grade: finalGrade,
           purchase_price: card.purchasePrice ?? null, // ONLY use CSV price
           quantity: card.quantity ?? 1,
+          collection_id: targetCollectionId || null, // Import to specific collection if provided
         }]);
 
         if (error) throw error;
@@ -317,7 +321,8 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
     }
 
     if (successCount > 0) {
-      toast.success(`Successfully added ${successCount} cards to your Digital Vault!`);
+      const collectionNote = targetCollectionName ? ` to "${targetCollectionName}"` : '';
+      toast.success(`Successfully added ${successCount} cards${collectionNote}!`);
       onImportComplete();
     }
   };
@@ -341,10 +346,18 @@ export const PortfolioImport = ({ open, onOpenChange, onImportComplete }: Portfo
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="w-6 h-6 text-primary" />
             Import to Digital Vault
+            {targetCollectionName && (
+              <Badge variant="secondary" className="ml-2">
+                → {targetCollectionName}
+              </Badge>
+            )}
           </DialogTitle>
           <DialogDescription className="flex items-center gap-2">
             <Lock className="w-3.5 h-3.5" />
-            Private collection — only you can see these items
+            {targetCollectionName 
+              ? `Cards will be imported directly to "${targetCollectionName}" collection`
+              : 'Private collection — only you can see these items'
+            }
           </DialogDescription>
         </DialogHeader>
 

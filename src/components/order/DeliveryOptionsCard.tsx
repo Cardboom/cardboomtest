@@ -77,7 +77,8 @@ export function DeliveryOptionsCard({
     postalCode: '',
   });
 
-  // Can only edit if buyer, not shipped yet, and order not completed
+  // Can edit if buyer, not shipped yet, and order not completed
+  // Allow editing during disputes so buyer can still provide address or choose vault
   const canEdit = isBuyer && !hasTracking && !['completed', 'shipped', 'delivered', 'refunded'].includes(orderStatus);
 
   // Fetch saved addresses
