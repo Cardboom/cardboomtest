@@ -109,12 +109,30 @@ export function CatalogOpsPanel() {
   };
 
   const fetchSetMappings = async () => {
-    const { data } = await supabase
-      .from('pricecharting_set_map' as any)
-      .select('*')
-      .order('console_name');
-    
-    setSetMappings((data as SetMapping[]) || []);
+    try {
+      // Use raw query since table might not be in generated types yet
+      const { data, error } = await (supabase as any)
+        .from('pricecharting_set_map')
+        .select('*')
+        .order('console_name');
+      
+      if (error) {
+        console.error('Error fetching set mappings:', error);
+        return;
+      }
+      
+      if (data) {
+        setSetMappings(data.map((item: any) => ({
+          id: item.id || item.console_name,
+          console_name: item.console_name,
+          game: item.game,
+          set_code: item.set_code,
+          language: item.language || 'EN',
+        })));
+      }
+    } catch (err) {
+      console.error('Failed to fetch set mappings:', err);
+    }
   };
 
   const runNormalization = async () => {
