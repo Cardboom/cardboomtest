@@ -99,16 +99,42 @@ const CardPage = () => {
           }
         }
         
-        // If no card code found in slug, try full slug match
-        const { data: fullSlugMatch } = await supabase
+        // If no card code found in slug, try matching name + set_name from slug
+        // Slug format: {name}-{set-name} e.g., "monkey-d-luffy-carrying-on-his-will"
+        const slugParts = (slug || '').split('-');
+        const slugText = slugParts.join(' ');
+        
+        // Try to find by matching both name and set_name
+        const { data: nameSetMatches } = await supabase
           .from('market_items')
           .select('*')
           .or(`category.ilike.one-piece%,category.ilike.onepiece%`)
-          .ilike('name', `%${slug?.replace(/-/g, ' ')}%`)
-          .limit(1)
-          .maybeSingle();
+          .limit(20);
         
-        if (fullSlugMatch) return fullSlugMatch;
+        if (nameSetMatches && nameSetMatches.length > 0) {
+          // Score each match based on how well it matches the slug
+          const scoredMatches = nameSetMatches.map(item => {
+            const normalizedName = item.name.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+            const normalizedSet = (item.set_name || '').toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+            const combinedText = `${normalizedName} ${normalizedSet}`;
+            
+            // Count matching words
+            let score = 0;
+            slugParts.forEach(part => {
+              if (part.length >= 2 && combinedText.includes(part.toLowerCase())) {
+                score += part.length; // Longer matches score higher
+              }
+            });
+            
+            return { item, score };
+          });
+          
+          // Sort by score descending and return best match
+          scoredMatches.sort((a, b) => b.score - a.score);
+          if (scoredMatches[0] && scoredMatches[0].score > 5) {
+            return scoredMatches[0].item;
+          }
+        }
         
         // One Piece: DO NOT use name-based fallbacks to avoid collisions
         console.error(`[CardPage] One Piece card not found for slug: ${slug}`);
