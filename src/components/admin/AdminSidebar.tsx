@@ -41,6 +41,7 @@ import {
   Target,
   Store,
   Trash2,
+  Image,
 } from "lucide-react";
 
 interface NavItem {
@@ -157,6 +158,7 @@ const navGroups: NavGroup[] = [
       { id: "vault", label: "Vault", icon: Vault },
       { id: "grading", label: "Grading", icon: Shield },
       { id: "grading-calibration", label: "AI Calibration", icon: Target },
+      { id: "image-normalization", label: "Image AI", icon: Image },
       { id: "datasync", label: "Data Sync", icon: RefreshCw },
       { id: "autobuy", label: "Deal Scooper", icon: Timer },
     ],
