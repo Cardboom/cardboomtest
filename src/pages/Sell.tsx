@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { formatCategoryName } from '@/lib/categoryFormatter';
@@ -22,6 +22,7 @@ import { CardScanner } from '@/components/CardScanner';
 import { CardPricingIntelligence } from '@/components/CardPricingIntelligence';
 import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { toast } from 'sonner';
+import { useSubscription } from '@/hooks/useSubscription';
 import { CreateCollectiveDialog } from '@/components/collective';
 import { useAchievementTriggers } from '@/hooks/useAchievementTriggers';
 import { useCardAnalysis, CardAnalysis } from '@/hooks/useCardAnalysis';
@@ -46,6 +47,7 @@ import { useCardIndexer } from '@/hooks/useCardIndexer';
 import { CertificationToggle, CertificationTier } from '@/components/listing/CertificationToggle';
 // AuctionToggle removed - feature disabled
 import { processImageFile, isHeicFile } from '@/lib/heic-converter';
+import { SellerFeeDisplay } from '@/components/seller/SellerFeeDisplay';
 interface Listing {
   id: string;
   title: string;
@@ -698,10 +700,7 @@ const SellPage = () => {
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <div className="px-4 py-2 rounded-lg bg-background/80 border border-border">
-                  <p className="text-xs text-muted-foreground">Seller Fee</p>
-                  <p className="text-lg font-bold text-foreground">6%</p>
-                </div>
+                <SellerFeeDisplay userId={userId} />
                 <div className="px-4 py-2 rounded-lg bg-background/80 border border-border">
                   <p className="text-xs text-muted-foreground">Active Listings</p>
                   <p className="text-lg font-bold text-foreground">{listings.filter(l => l.status === 'active').length}</p>

@@ -1,15 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Vault, Package, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles, Lock, ScanLine, X, Loader2 } from 'lucide-react';
+import { Vault, Package, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles, Lock, ScanLine, X, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useCurrency } from '@/contexts/CurrencyContext';
+import { useCurrency, Currency } from '@/contexts/CurrencyContext';
 import { CardScannerUpload } from './CardScannerUpload';
 import { CardReviewModal, ReviewedCardData } from './card-scan/CardReviewModal';
 import { CardAnalysis } from '@/hooks/useCardAnalysis';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Calculate yearly insurance fee based on card value
+const getInsuranceFee = (estimatedValueUSD: number): number => {
+  if (estimatedValueUSD >= 1000) return 10; // $1000-10000+
+  if (estimatedValueUSD >= 100) return 4;   // $100-999
+  return 2;                                  // $0-99
+};
 
 interface SendToVaultDialogProps {
   open: boolean;
@@ -29,11 +37,12 @@ const WAREHOUSE_ADDRESS = {
 type VaultStep = 'scan' | 'review' | 'confirm' | 'shipping';
 
 export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps) => {
-  const { formatPrice } = useCurrency();
+  const { formatPrice, currency, convertFromUSD, exchangeRates } = useCurrency();
   const [step, setStep] = useState<VaultStep>('scan');
   const [submitting, setSubmitting] = useState(false);
   const [shippingRate, setShippingRate] = useState({ try: 50, usd: 5 });
   const [isFirstCard, setIsFirstCard] = useState(false);
+  const [estimatedValueUSD, setEstimatedValueUSD] = useState<number>(50); // Default estimate
   
   // Scan data
   const [scanAnalysis, setScanAnalysis] = useState<CardAnalysis | null>(null);
@@ -371,9 +380,10 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
                 </div>
               </div>
 
-              {/* Shipping Fee Info */}
+              {/* Fees Info */}
               <Card className="border-blue-500/20 bg-blue-500/5">
-                <CardContent className="p-4">
+                <CardContent className="p-4 space-y-4">
+                  {/* Intake Fee */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Truck className="h-5 w-5 text-blue-500" />
@@ -383,8 +393,53 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">₺{shippingRate.try}</p>
-                      <p className="text-xs text-muted-foreground">~${shippingRate.usd} USD</p>
+                      <p className="font-bold text-lg">
+                        {currency === 'TRY' ? `₺${shippingRate.try}` : 
+                         currency === 'EUR' ? `€${(shippingRate.usd * exchangeRates.USD_EUR).toFixed(2)}` : 
+                         `$${shippingRate.usd}`}
+                      </p>
+                      {currency !== 'USD' && (
+                        <p className="text-xs text-muted-foreground">~${shippingRate.usd} USD</p>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Yearly Insurance Fee */}
+                  <div className="flex items-center justify-between border-t border-border/50 pt-4">
+                    <div className="flex items-center gap-3">
+                      <Shield className="h-5 w-5 text-emerald-500" />
+                      <div>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="font-medium flex items-center gap-1 cursor-help">
+                                Storage Insurance
+                                <Info className="h-3 w-3 text-muted-foreground" />
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <div className="text-xs space-y-1">
+                                <p className="font-semibold">Yearly Protection Tiers:</p>
+                                <p>• $0-99 value: $2/year</p>
+                                <p>• $100-999 value: $4/year</p>
+                                <p>• $1,000+ value: $10/year</p>
+                                <p className="mt-2 text-muted-foreground">Covers loss, damage & theft while in vault storage.</p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <p className="text-xs text-muted-foreground">Annual protection fee</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-lg text-emerald-600">
+                        {currency === 'TRY' ? `₺${(getInsuranceFee(estimatedValueUSD) * exchangeRates.USD_TRY).toFixed(0)}` : 
+                         currency === 'EUR' ? `€${(getInsuranceFee(estimatedValueUSD) * exchangeRates.USD_EUR).toFixed(2)}` : 
+                         `$${getInsuranceFee(estimatedValueUSD)}`}/yr
+                      </p>
+                      {currency !== 'USD' && (
+                        <p className="text-xs text-muted-foreground">~${getInsuranceFee(estimatedValueUSD)} USD</p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
