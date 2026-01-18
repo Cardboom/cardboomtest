@@ -89,10 +89,11 @@ export function CreatorManagement() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      // Fetch applications
+      // Fetch only pending applications (approved/rejected ones are processed)
       const { data: appsData, error: appsError } = await supabase
         .from('creator_applications')
         .select('*')
+        .in('status', ['pending', 'waitlisted'])
         .order('created_at', { ascending: false });
 
       if (appsError) throw appsError;
