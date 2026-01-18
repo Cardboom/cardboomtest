@@ -34,6 +34,7 @@ import { ShippingSelector } from '@/components/order/ShippingSelector';
 import { OrderReceipt } from '@/components/order/OrderReceipt';
 import { ContactPartyButton } from '@/components/order/ContactPartyButton';
 import { OrderNextSteps } from '@/components/order/OrderNextSteps';
+import { DeliveryOptionsCard } from '@/components/order/DeliveryOptionsCard';
 import { useState as useCartState } from 'react';
 
 interface OrderAction {
@@ -438,6 +439,18 @@ export default function OrderDetail() {
               deliveryOption={order.delivery_option}
             />
 
+            {/* Delivery Options - Buyer can change delivery method */}
+            {currentUserId && (isBuyer || isSeller) && (
+              <DeliveryOptionsCard
+                orderId={order.id}
+                currentDeliveryOption={order.delivery_option}
+                currentShippingAddress={order.shipping_address}
+                isBuyer={isBuyer}
+                hasTracking={!!order.tracking_number}
+                orderStatus={order.status}
+              />
+            )}
+
             {/* Item Card */}
             <Card>
               <CardHeader>
@@ -801,56 +814,42 @@ export default function OrderDetail() {
               </CardContent>
             </Card>
 
-            {/* Shipping & Delivery */}
+            {/* Shipping Status & Tracking - Show for ship orders */}
             {order.delivery_option === 'ship' && (
               <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Truck className="w-5 h-5 text-primary" />
-                      Shipping Details
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Tracking Number */}
-                    {order.tracking_number ? (
-                      <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">Tracking Number</p>
-                        <p className="font-mono text-sm font-medium break-all">{order.tracking_number}</p>
-                        <Badge variant="secondary" className="mt-2 text-xs">
-                          <Truck className="w-3 h-3 mr-1" />
-                          In Transit
-                        </Badge>
-                      </div>
-                    ) : (
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <p className="text-sm text-muted-foreground flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          Awaiting shipping from seller
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Shipping Address */}
-                    {order.shipping_address && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-2">Delivery Address</p>
-                        <div className="text-sm space-y-0.5">
-                          <p className="font-medium">{order.shipping_address.name}</p>
-                          <p>{order.shipping_address.address}</p>
-                          <p>{order.shipping_address.district}, {order.shipping_address.city}</p>
-                          <p>{order.shipping_address.postalCode}</p>
-                          {order.shipping_address.phone && (
-                            <p className="text-muted-foreground">{order.shipping_address.phone}</p>
-                          )}
+                {/* Tracking Info - only show if there's tracking or seller needs to ship */}
+                {(order.tracking_number || isSeller) && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Truck className="w-5 h-5 text-primary" />
+                        Shipping Status
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {order.tracking_number ? (
+                        <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                          <p className="text-xs text-muted-foreground mb-1">Tracking Number</p>
+                          <p className="font-mono text-sm font-medium break-all">{order.tracking_number}</p>
+                          <Badge variant="secondary" className="mt-2 text-xs">
+                            <Truck className="w-3 h-3 mr-1" />
+                            In Transit
+                          </Badge>
                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      ) : (
+                        <div className="p-3 bg-muted/50 rounded-lg">
+                          <p className="text-sm text-muted-foreground flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            Awaiting shipping from seller
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Shipping Selector - Show for seller if no tracking yet */}
-                {!order.tracking_number && currentUserId && (
+                {!order.tracking_number && currentUserId && isSeller && (
                   <ShippingSelector
                     orderId={order.id}
                     shippingAddress={order.shipping_address}
@@ -864,50 +863,25 @@ export default function OrderDetail() {
               </>
             )}
 
-            {/* Vault Delivery */}
-            {order.delivery_option === 'vault' && (
-              <>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Package className="w-5 h-5 text-primary" />
-                      Vault Storage
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-                      <p className="text-sm">
-                        This item will be stored securely in the CardBoom Vault.
-                      </p>
-                      <Badge variant="secondary" className="mt-2 text-xs">
-                        <ShieldCheck className="w-3 h-3 mr-1" />
-                        Secure Storage
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Shipping Request Card - only for vault orders */}
-                {currentUserId && (isBuyer || isSeller) && (
-                  <ShippingRequestCard
-                    orderId={order.id}
-                    currentUserId={currentUserId}
-                    isBuyer={isBuyer}
-                    isSeller={isSeller}
-                    deliveryOption={order.delivery_option}
-                    shippingRequestedAt={order.shipping_requested_at}
-                    shippingRequestedBy={order.shipping_requested_by}
-                    buyerApprovedShipping={order.buyer_approved_shipping}
-                    sellerApprovedShipping={order.seller_approved_shipping}
-                    buyerShippingApprovedAt={order.buyer_shipping_approved_at}
-                    sellerShippingApprovedAt={order.seller_shipping_approved_at}
-                    buyerUsername={order.buyer_profile?.username || null}
-                    sellerUsername={order.seller_profile?.username || null}
-                    buyerId={order.buyer_id}
-                    sellerId={order.seller_id}
-                  />
-                )}
-              </>
+            {/* Vault Shipping Request - only for vault orders */}
+            {order.delivery_option === 'vault' && currentUserId && (isBuyer || isSeller) && (
+              <ShippingRequestCard
+                orderId={order.id}
+                currentUserId={currentUserId}
+                isBuyer={isBuyer}
+                isSeller={isSeller}
+                deliveryOption={order.delivery_option}
+                shippingRequestedAt={order.shipping_requested_at}
+                shippingRequestedBy={order.shipping_requested_by}
+                buyerApprovedShipping={order.buyer_approved_shipping}
+                sellerApprovedShipping={order.seller_approved_shipping}
+                buyerShippingApprovedAt={order.buyer_shipping_approved_at}
+                sellerShippingApprovedAt={order.seller_shipping_approved_at}
+                buyerUsername={order.buyer_profile?.username || null}
+                sellerUsername={order.seller_profile?.username || null}
+                buyerId={order.buyer_id}
+                sellerId={order.seller_id}
+              />
             )}
 
             {/* Contact Support */}
