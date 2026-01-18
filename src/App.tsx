@@ -75,6 +75,9 @@ import GradingNew from "./pages/GradingNew";
 import GradingOrders from "./pages/GradingOrders";
 import GradingOrderDetail from "./pages/GradingOrderDetail";
 import GradingCreditsPage from "./pages/GradingCreditsPage";
+import GradingSuccess from "./pages/GradingSuccess";
+import GradingFailed from "./pages/GradingFailed";
+import GradingCanceled from "./pages/GradingCanceled";
 import NotFound from "./pages/NotFound";
 import CardWars from "./pages/CardWars";
 import CardBoomPass from "./pages/CardBoomPass";
@@ -208,6 +211,9 @@ const AppContent = () => {
           <Route path="/grading/orders" element={<GradingOrders />} />
           <Route path="/grading/orders/:id" element={<GradingOrderDetail />} />
           <Route path="/grading/credits" element={<GradingCreditsPage />} />
+          <Route path="/grading/success" element={<GradingSuccess />} />
+          <Route path="/grading/failed" element={<GradingFailed />} />
+          <Route path="/grading/canceled" element={<GradingCanceled />} />
           {/* Creator Routes */}
           <Route path="/@:username" element={<CreatorPage />} />
           <Route path="/creators" element={<CreatorInvite />} />

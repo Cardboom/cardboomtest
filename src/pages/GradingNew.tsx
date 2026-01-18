@@ -397,7 +397,10 @@ export default function GradingNew() {
       }
       
       const success = await submitAndPay(order.id, order.idempotency_key);
-      if (success) { setCreatedOrder(order); setStep('success'); refetchCredits(); }
+      if (success) { 
+        // Redirect to dedicated success page for conversion tracking
+        navigate('/grading/success?order_id=' + order.id);
+      }
     } catch (e) { console.error(e); } finally { setIsSubmitting(false); }
   };
   
