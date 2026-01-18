@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -14,17 +15,24 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Percent,
-  RefreshCw
+  RefreshCw,
+  RotateCcw
 } from 'lucide-react';
-import { useCurrency } from '@/contexts/CurrencyContext';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend } from 'recharts';
 import { format, subDays, startOfMonth, subMonths } from 'date-fns';
+import { toast } from 'sonner';
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
+// Format price in USD for admin dashboard
+const formatUSD = (amount: number) => {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+};
+
 export const RevenueDashboard = () => {
-  const { formatPrice } = useCurrency();
+  const queryClient = useQueryClient();
   const [period, setPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [statsResetDate, setStatsResetDate] = useState<Date | null>(null);
 
   // Calculate date range
   const getDateRange = () => {
@@ -68,17 +76,19 @@ export const RevenueDashboard = () => {
     }
   });
 
-  // Fetch all top-ups (credit card deposits)
+  // Fetch all top-ups (credit card deposits) - exclude admin adjustments
   const { data: topUpsData } = useQuery({
-    queryKey: ['admin-topups', period],
+    queryKey: ['admin-topups', period, statsResetDate],
     queryFn: async () => {
-      const startDate = getDateRange();
-      const { data, error } = await supabase
+      const startDate = statsResetDate || getDateRange();
+      let query = supabase
         .from('transactions')
         .select('amount, type, created_at, description')
         .eq('type', 'topup')
-        .gte('created_at', startDate.toISOString());
+        .gte('created_at', (startDate instanceof Date ? startDate : getDateRange()).toISOString())
+        .not('description', 'ilike', 'Admin adjustment%'); // Exclude admin top-ups
 
+      const { data, error } = await query;
       if (error) throw error;
       return data || [];
     }
@@ -190,22 +200,58 @@ export const RevenueDashboard = () => {
     );
   }
 
+  const handleResetStats = () => {
+    setStatsResetDate(new Date());
+    queryClient.invalidateQueries({ queryKey: ['admin-topups'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-revenue-orders'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-wire-transfers'] });
+    toast.success('Stats reset from now. Previous data excluded.');
+  };
+
+  const handleClearReset = () => {
+    setStatsResetDate(null);
+    queryClient.invalidateQueries({ queryKey: ['admin-topups'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-revenue-orders'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-wire-transfers'] });
+    toast.success('Stats reset cleared. Showing all data.');
+  };
+
   return (
     <div className="space-y-6">
       {/* Period Selector */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Revenue Dashboard</h2>
-        <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="90d">Last 90 days</SelectItem>
-            <SelectItem value="all">All time</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-semibold">Revenue Dashboard</h2>
+          {statsResetDate && (
+            <Badge variant="outline" className="bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
+              Stats from {format(statsResetDate, 'dd MMM yyyy HH:mm')}
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {statsResetDate ? (
+            <Button variant="outline" size="sm" onClick={handleClearReset} className="gap-1">
+              <RotateCcw className="w-4 h-4" />
+              Clear Reset
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={handleResetStats} className="gap-1 text-yellow-600 border-yellow-500/30 hover:bg-yellow-500/10">
+              <RotateCcw className="w-4 h-4" />
+              Reset Stats
+            </Button>
+          )}
+          <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="90d">Last 90 days</SelectItem>
+              <SelectItem value="all">All time</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Summary Cards - Row 1: Volume Metrics */}
@@ -218,7 +264,7 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total GMV</p>
-                <p className="text-2xl font-bold">{formatPrice(totalGMV)}</p>
+                <p className="text-2xl font-bold">{formatUSD(totalGMV)}</p>
                 <p className="text-xs text-muted-foreground">{ordersData?.length || 0} orders</p>
               </div>
             </div>
@@ -233,8 +279,8 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Top-ups</p>
-                <p className="text-2xl font-bold text-cyan-500">{formatPrice(totalTopUps)}</p>
-                <p className="text-xs text-muted-foreground">{topUpsData?.length || 0} deposits</p>
+                <p className="text-2xl font-bold text-cyan-500">{formatUSD(totalTopUps)}</p>
+                <p className="text-xs text-muted-foreground">{topUpsData?.length || 0} deposits (excl. admin)</p>
               </div>
             </div>
           </CardContent>
@@ -248,7 +294,7 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Wire Deposits</p>
-                <p className="text-2xl font-bold text-violet-500">{formatPrice(totalWireDeposits)}</p>
+                <p className="text-2xl font-bold text-violet-500">{formatUSD(totalWireDeposits)}</p>
                 <p className="text-xs text-muted-foreground">{wireTransfersData?.length || 0} confirmed</p>
               </div>
             </div>
@@ -263,7 +309,7 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Avg Order Value</p>
-                <p className="text-2xl font-bold text-amber-500">{formatPrice(avgOrderValue)}</p>
+                <p className="text-2xl font-bold text-amber-500">{formatUSD(avgOrderValue)}</p>
               </div>
             </div>
           </CardContent>
@@ -280,7 +326,7 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground font-medium">💰 Total Revenue</p>
-                <p className="text-2xl font-bold text-emerald-500">{formatPrice(totalRevenue)}</p>
+                <p className="text-2xl font-bold text-emerald-500">{formatUSD(totalRevenue)}</p>
                 <p className="text-xs text-muted-foreground">All profit sources</p>
               </div>
             </div>
@@ -295,7 +341,7 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Platform Fees</p>
-                <p className="text-2xl font-bold text-emerald-500">{formatPrice(totalPlatformFees)}</p>
+                <p className="text-2xl font-bold text-emerald-500">{formatUSD(totalPlatformFees)}</p>
                 <p className="text-xs text-muted-foreground">{takeRate.toFixed(1)}% take rate</p>
               </div>
             </div>
@@ -310,8 +356,8 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">CC Top-up Profit</p>
-                <p className="text-2xl font-bold text-pink-500">{formatPrice(topUpProfit)}</p>
-                <p className="text-xs text-muted-foreground">0.4% of {formatPrice(totalTopUps)}</p>
+                <p className="text-2xl font-bold text-pink-500">{formatUSD(topUpProfit)}</p>
+                <p className="text-xs text-muted-foreground">0.4% of {formatUSD(totalTopUps)}</p>
               </div>
             </div>
           </CardContent>
@@ -325,7 +371,7 @@ export const RevenueDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Subscriptions</p>
-                <p className="text-2xl font-bold text-blue-500">{formatPrice(subscriptionRevenue)}/mo</p>
+                <p className="text-2xl font-bold text-blue-500">{formatUSD(subscriptionRevenue)}/mo</p>
                 <p className="text-xs text-muted-foreground">{subscriptionsData?.length || 0} active</p>
               </div>
             </div>
@@ -425,7 +471,7 @@ export const RevenueDashboard = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-primary">{formatPrice(seller.total)}</p>
+                  <p className="font-bold text-primary">{formatUSD(seller.total)}</p>
                 </div>
               </div>
             ))}
