@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, TrendingUp, Clock, Sparkles } from 'lucide-react';
+import { Search, X, TrendingUp, Clock, Sparkles, Tag, ShoppingCart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCategoryIcon } from '@/lib/categoryLabels';
 import { generateCardUrl } from '@/lib/seoSlug';
+import { resolveSearchImage } from '@/lib/catalogImageResolver';
 
-interface SearchResult {
+interface CardResult {
   id: string;
   name: string;
   category: string;
@@ -20,6 +22,19 @@ interface SearchResult {
   set_name: string | null;
   series: string | null;
   external_id: string | null;
+}
+
+interface ListingResult {
+  id: string;
+  title: string;
+  price: number;
+  condition: string | null;
+  category: string;
+  is_sample: boolean;
+  canonical_card_key: string | null;
+  set_name: string | null;
+  // Resolved from catalog
+  catalog_image_url: string | null;
 }
 
 interface SmartSearchProps {
@@ -33,13 +48,17 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [cardResults, setCardResults] = useState<CardResult[]>([]);
+  const [listingResults, setListingResults] = useState<ListingResult[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Combined results for keyboard navigation
+  const allResults = [...cardResults.map(r => ({ type: 'card' as const, data: r })), ...listingResults.map(r => ({ type: 'listing' as const, data: r }))];
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -67,25 +86,54 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
   // Debounced search
   useEffect(() => {
     if (!query.trim()) {
-      setResults([]);
+      setCardResults([]);
+      setListingResults([]);
       return;
     }
 
     const timer = setTimeout(async () => {
       setIsLoading(true);
       try {
-        // Maximize search results - include items even without images
-        const { data, error } = await supabase
-          .from('market_items')
-          .select('id, name, category, current_price, change_24h, image_url, is_trending, set_name, series, external_id')
-          .ilike('name', `%${query}%`)
-          .gt('current_price', 0)
-          .order('is_trending', { ascending: false })
-          .order('current_price', { ascending: false })
-          .limit(12);
+        // Search cards (market_items) and listings in parallel
+        const [cardsResponse, listingsResponse] = await Promise.all([
+          supabase
+            .from('market_items')
+            .select('id, name, category, current_price, change_24h, image_url, is_trending, set_name, series, external_id')
+            .ilike('name', `%${query}%`)
+            .gt('current_price', 0)
+            .order('is_trending', { ascending: false })
+            .order('current_price', { ascending: false })
+            .limit(8),
+          supabase
+            .from('listings')
+            .select(`
+              id, title, price, condition, category, is_sample, canonical_card_key, set_name,
+              catalog_cards!listings_canonical_card_key_fkey(image_url)
+            `)
+            .eq('status', 'active')
+            .ilike('title', `%${query}%`)
+            .order('price', { ascending: true })
+            .limit(6)
+        ]);
 
-        if (!error && data) {
-          setResults(data);
+        if (!cardsResponse.error && cardsResponse.data) {
+          setCardResults(cardsResponse.data);
+        }
+
+        if (!listingsResponse.error && listingsResponse.data) {
+          // Transform listings with resolved images
+          const transformed: ListingResult[] = listingsResponse.data.map((listing: any) => ({
+            id: listing.id,
+            title: listing.title,
+            price: listing.price,
+            condition: listing.condition,
+            category: listing.category,
+            is_sample: listing.is_sample || false,
+            canonical_card_key: listing.canonical_card_key,
+            set_name: listing.set_name,
+            catalog_image_url: listing.catalog_cards?.image_url || null,
+          }));
+          setListingResults(transformed);
         }
       } catch (err) {
         console.error('Search error:', err);
@@ -114,14 +162,19 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => Math.min(prev + 1, results.length - 1));
+      setSelectedIndex(prev => Math.min(prev + 1, allResults.length - 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setSelectedIndex(prev => Math.max(prev - 1, -1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (selectedIndex >= 0 && results[selectedIndex]) {
-        handleSelectResult(results[selectedIndex]);
+      if (selectedIndex >= 0 && allResults[selectedIndex]) {
+        const item = allResults[selectedIndex];
+        if (item.type === 'card') {
+          handleSelectCard(item.data as CardResult);
+        } else {
+          handleSelectListing(item.data as ListingResult);
+        }
       } else if (query.trim()) {
         handleSearch();
       }
@@ -130,7 +183,7 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
     }
   };
 
-  const handleSelectResult = (result: SearchResult) => {
+  const handleSelectCard = (result: CardResult) => {
     saveRecentSearch(result.name);
     setIsOpen(false);
     setQuery('');
@@ -143,6 +196,13 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
       external_id: result.external_id || undefined,
     });
     navigate(seoUrl);
+  };
+
+  const handleSelectListing = (listing: ListingResult) => {
+    saveRecentSearch(listing.title);
+    setIsOpen(false);
+    setQuery('');
+    navigate(`/listing/${listing.id}`);
   };
 
   const handleSearch = () => {
@@ -162,7 +222,8 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
 
   const clearSearch = () => {
     setQuery('');
-    setResults([]);
+    setCardResults([]);
+    setListingResults([]);
     inputRef.current?.focus();
   };
 
@@ -199,7 +260,7 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
 
       {/* Dropdown */}
       {isOpen && (query || recentSearches.length > 0) && (
-        <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full mt-2 w-full bg-card border border-border rounded-lg shadow-xl z-50 overflow-hidden max-h-[70vh] overflow-y-auto">
           {/* Loading state */}
           {isLoading && (
             <div className="p-4 text-center text-sm text-muted-foreground">
@@ -208,23 +269,26 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
             </div>
           )}
 
-          {/* Results */}
-          {!isLoading && results.length > 0 && (
+          {/* Card Results */}
+          {!isLoading && cardResults.length > 0 && (
             <div className="py-2">
-              <div className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase">Results</div>
-              {results.map((result, idx) => (
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase flex items-center gap-1">
+                <Tag className="w-3 h-3" />
+                Cards
+              </div>
+              {cardResults.map((result, idx) => (
                 <button
                   key={result.id}
                   className={cn(
                     "w-full px-3 py-2 flex items-center gap-3 hover:bg-secondary/50 transition-colors text-left",
                     selectedIndex === idx && "bg-secondary/50"
                   )}
-                  onClick={() => handleSelectResult(result)}
+                  onClick={() => handleSelectCard(result)}
                   onMouseEnter={() => setSelectedIndex(idx)}
                 >
                   {result.image_url ? (
                     <img 
-                      src={result.image_url} 
+                      src={resolveSearchImage(result.image_url, null, result.category)} 
                       alt="" 
                       className="w-10 h-10 rounded object-cover bg-secondary"
                     />
@@ -252,8 +316,54 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
             </div>
           )}
 
+          {/* Listing Results */}
+          {!isLoading && listingResults.length > 0 && (
+            <div className="py-2 border-t border-border">
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase flex items-center gap-1">
+                <ShoppingCart className="w-3 h-3" />
+                Listings for Sale
+              </div>
+              {listingResults.map((listing, idx) => {
+                const globalIdx = cardResults.length + idx;
+                const imageUrl = resolveSearchImage(listing.catalog_image_url, null, listing.category);
+                
+                return (
+                  <button
+                    key={listing.id}
+                    className={cn(
+                      "w-full px-3 py-2 flex items-center gap-3 hover:bg-secondary/50 transition-colors text-left",
+                      selectedIndex === globalIdx && "bg-secondary/50"
+                    )}
+                    onClick={() => handleSelectListing(listing)}
+                    onMouseEnter={() => setSelectedIndex(globalIdx)}
+                  >
+                    <img 
+                      src={imageUrl} 
+                      alt="" 
+                      className="w-10 h-10 rounded object-cover bg-secondary"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-sm truncate flex items-center gap-2">
+                        {listing.title}
+                        {listing.is_sample && (
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 text-muted-foreground border-muted-foreground/30">
+                            Sample
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className="font-semibold text-foreground">{formatPrice(listing.price)}</span>
+                        {listing.condition && <span>• {listing.condition}</span>}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* No results */}
-          {!isLoading && query && results.length === 0 && (
+          {!isLoading && query && cardResults.length === 0 && listingResults.length === 0 && (
             <div className="p-4 text-center text-sm text-muted-foreground">
               No results for "{query}"
             </div>

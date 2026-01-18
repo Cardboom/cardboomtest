@@ -167,3 +167,12 @@ verify_jwt = false
 
 [functions.sync-cardmarket-prices]
 verify_jwt = false
+
+[functions.seed-sample-listings]
+verify_jwt = false
+
+[functions.purge-sample-listings]
+verify_jwt = false
+
+[functions.validate-images]
+verify_jwt = false
