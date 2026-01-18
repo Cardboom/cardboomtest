@@ -67,6 +67,7 @@ import { CoachVerificationQueue } from '@/components/admin/CoachVerificationQueu
 import { ImageNormalizationManager } from '@/components/admin/ImageNormalizationManager';
 import { CatalogOpsPanel } from '@/components/admin/CatalogOpsPanel';
 import { SampleDataManager } from '@/components/admin/SampleDataManager';
+import { BoomPacksManager } from '@/components/admin/BoomPacksManager';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -320,6 +321,8 @@ const Admin = () => {
         return <InventoryIntegrityDashboard />;
       case 'digital-products':
         return <DigitalProductsManager />;
+      case 'boom-packs':
+        return <BoomPacksManager />;
       case 'launch-check':
         return <LaunchCheckDashboard />;
       case 'system-status':
