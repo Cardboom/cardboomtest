@@ -116,7 +116,7 @@ const Profile = () => {
     enabled: !!profile?.id,
   });
 
-  // Fetch user's orders (bought and sold)
+  // Fetch user's orders (bought and sold) - include snapshot columns for deleted listings
   const { data: userOrders } = useQuery({
     queryKey: ['user-orders', profile?.id],
     queryFn: async () => {
@@ -124,18 +124,28 @@ const Profile = () => {
       const [boughtRes, soldRes] = await Promise.all([
         supabase
           .from('orders')
-          .select('*, listing:listings(*)')
+          .select('*, listing:listings(*), item_title, item_image_url')
           .eq('buyer_id', profile.id)
           .order('created_at', { ascending: false }),
         supabase
           .from('orders')
-          .select('*, listing:listings(*)')
+          .select('*, listing:listings(*), item_title, item_image_url')
           .eq('seller_id', profile.id)
           .order('created_at', { ascending: false }),
       ]);
+      
+      // Transform to use snapshot columns as fallback
+      const transformOrder = (order: any) => ({
+        ...order,
+        listing: order.listing || {
+          title: order.item_title || 'Unknown Item',
+          image_url: order.item_image_url || null,
+        }
+      });
+      
       return {
-        bought: boughtRes.data || [],
-        sold: soldRes.data || [],
+        bought: (boughtRes.data || []).map(transformOrder),
+        sold: (soldRes.data || []).map(transformOrder),
       };
     },
     enabled: !!profile?.id,
