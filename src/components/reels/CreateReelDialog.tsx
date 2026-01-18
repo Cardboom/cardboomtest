@@ -92,42 +92,60 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
     // Check duration and auto-generate thumbnail from first frame
     const video = document.createElement('video');
     video.preload = 'metadata';
-    video.crossOrigin = 'anonymous'; // Required for canvas to capture frame
-    video.src = URL.createObjectURL(file);
+    // Don't set crossOrigin for blob URLs - it causes issues
+    const blobUrl = URL.createObjectURL(file);
+    video.src = blobUrl;
+    
+    video.onerror = () => {
+      console.error('Failed to load video for thumbnail generation');
+      URL.revokeObjectURL(blobUrl);
+      setError('Failed to process video. Please try again.');
+    };
     
     video.onloadedmetadata = () => {
       if (video.duration > 60) {
         setError(t.reels?.tooLong || 'Video must be 60 seconds or less');
-        URL.revokeObjectURL(video.src);
+        URL.revokeObjectURL(blobUrl);
         return;
       }
       
       setVideoDuration(Math.round(video.duration));
       setVideoFile(file);
-      setVideoPreview(video.src);
+      setVideoPreview(blobUrl);
       setError(null);
       
-      // Auto-generate cover picture from video frame at 1 second
-      video.currentTime = Math.min(1, video.duration / 2);
+      // Auto-generate cover picture from video frame at 1 second or midpoint
+      const targetTime = Math.min(1, video.duration / 2);
+      video.currentTime = targetTime;
     };
 
     video.onseeked = () => {
       // Create canvas to capture frame as thumbnail
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const thumbnailFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
-            setThumbnailFile(thumbnailFile);
-            setThumbnailPreview(URL.createObjectURL(blob));
-          }
-        }, 'image/jpeg', 0.85);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 720;
+        canvas.height = video.videoHeight || 1280;
+        const ctx = canvas.getContext('2d');
+        if (ctx && video.videoWidth > 0 && video.videoHeight > 0) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (blob && blob.size > 0) {
+              const thumbnailFile = new File([blob], 'thumbnail.jpg', { type: 'image/jpeg' });
+              setThumbnailFile(thumbnailFile);
+              setThumbnailPreview(URL.createObjectURL(blob));
+            } else {
+              console.warn('Failed to generate thumbnail blob, proceeding without');
+            }
+            setStep('details');
+          }, 'image/jpeg', 0.85);
+        } else {
+          console.warn('Video dimensions not available, proceeding without thumbnail');
+          setStep('details');
+        }
+      } catch (err) {
+        console.error('Thumbnail generation failed:', err);
+        setStep('details');
       }
-      setStep('details');
     };
   };
 
