@@ -196,6 +196,20 @@ const Index = () => {
     if (selectedCategory !== 'all') {
       items = items.filter((item) => item.category === selectedCategory);
     }
+    
+    // Deduplicate by name to show variety (prioritize unique card names)
+    // Keep first occurrence of each name, but allow up to 2 duplicates for popular items
+    const nameCount = new Map<string, number>();
+    items = items.filter((item) => {
+      const baseName = item.name.toLowerCase().replace(/\s+(psa|cgc|bgs)\s*\d+.*/i, '').trim();
+      const count = nameCount.get(baseName) || 0;
+      if (count < 2) {
+        nameCount.set(baseName, count + 1);
+        return true;
+      }
+      return false;
+    });
+    
     return items;
   }, [selectedCategory, collectiblesWithLivePrices]);
 
