@@ -217,6 +217,7 @@ export const NotificationCenter = () => {
                   notificationType === 'order_confirmed';
                 const isShippingNotification = notificationType === 'shipping_approval_required' ||
                   notificationType === 'shipping_approved';
+                const isOfferAccepted = notificationType === 'offer_accepted';
                 
                 if (notificationData?.grading_order_id) {
                   navigate(`/grading/order/${notificationData.grading_order_id}`);
@@ -225,6 +226,9 @@ export const NotificationCenter = () => {
                   navigate(`/order/${notificationData.order_id}`);
                 } else if (notificationData?.order_id) {
                   navigate(`/order/${notificationData.order_id}`);
+                } else if (isOfferAccepted && notificationData?.listing_id) {
+                  // Offer accepted - take buyer to listing with checkout param
+                  navigate(`/listing/${notificationData.listing_id}?checkout=true`);
                 } else if (notificationData?.listing_id) {
                   navigate(`/listing/${notificationData.listing_id}`);
                 }

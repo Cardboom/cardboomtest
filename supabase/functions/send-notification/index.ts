@@ -8,7 +8,7 @@ const corsHeaders = getCorsHeaders();
 
 interface NotificationPayload {
   user_id: string;
-  type: 'price_alert' | 'new_offer' | 'message' | 'new_message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee' | 'sale' | 'daily_xp' | 'donation_complete' | 'donation_refund' | 'vault_shipping_required' | 'gift' | 'order_shipped' | 'order_delivered' | 'order_completed';
+  type: 'price_alert' | 'new_offer' | 'offer_accepted' | 'message' | 'new_message' | 'order_update' | 'follower' | 'review' | 'referral' | 'grading_complete' | 'listing_created' | 'outbid' | 'auction_won' | 'storage_fee' | 'sale' | 'daily_xp' | 'donation_complete' | 'donation_refund' | 'vault_shipping_required' | 'gift' | 'order_shipped' | 'order_delivered' | 'order_completed';
   title: string;
   body: string;
   data?: Record<string, unknown>;
@@ -97,6 +97,12 @@ const EMAIL_ENABLED_TYPES = [
   'vault_shipping_required',
   'donation_complete',
   'auction_won',
+  'offer_accepted',
+];
+
+// Types that should also trigger SMS notifications
+const SMS_ENABLED_TYPES = [
+  'offer_accepted',
 ];
 
 serve(async (req) => {
@@ -122,6 +128,7 @@ serve(async (req) => {
     const prefMap: Record<string, string> = {
       'price_alert': 'price_alerts',
       'new_offer': 'new_offers',
+      'offer_accepted': 'new_offers',
       'message': 'messages',
       'new_message': 'messages',
       'order_update': 'order_updates',
@@ -187,7 +194,10 @@ serve(async (req) => {
             let ctaUrl: string | undefined;
             let ctaText: string | undefined;
             
-            if (payload.data?.order_id) {
+            if (payload.type === 'offer_accepted' && payload.data?.listing_id) {
+              ctaUrl = `https://cardboom.com/listing/${payload.data.listing_id}?checkout=true`;
+              ctaText = 'Complete Purchase';
+            } else if (payload.data?.order_id) {
               ctaUrl = `https://cardboom.com/order/${payload.data.order_id}`;
               ctaText = 'View Order Details';
             } else if (payload.data?.listing_id) {
@@ -223,7 +233,51 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true, notification, emailSent }), {
+    // Send SMS for critical notifications
+    let smsSent = false;
+    if (SMS_ENABLED_TYPES.includes(payload.type)) {
+      try {
+        // Get user's phone from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('id', payload.user_id)
+          .single();
+
+        if (profile?.phone) {
+          const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+          const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+          
+          // Call send-sms function
+          const smsResponse = await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseAnonKey}`,
+            },
+            body: JSON.stringify({
+              phone: profile.phone,
+              type: 'offer_accepted',
+              userId: payload.user_id,
+              data: {
+                offer_amount: payload.data?.offer_amount,
+                currency: payload.data?.currency,
+              },
+            }),
+          });
+
+          if (smsResponse.ok) {
+            smsSent = true;
+            console.log(`SMS sent to ${profile.phone} for ${payload.type}`);
+          }
+        }
+      } catch (smsError) {
+        console.error('Failed to send SMS notification:', smsError);
+        // Don't fail the whole request if SMS fails
+      }
+    }
+
+    return new Response(JSON.stringify({ success: true, notification, emailSent, smsSent }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
