@@ -149,26 +149,16 @@ export const CatalogCollectionsSection = () => {
                     <h3 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                       {game.name}
                     </h3>
-                    {game.cardCount > 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        {game.cardCount.toLocaleString()} cards
-                      </p>
-                    )}
                   </div>
                 </div>
 
                 {/* Price Preview */}
                 {game.pricePreview ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm">
-                      <TrendingUp className="w-4 h-4 text-gain" />
-                      <span className="text-muted-foreground">From</span>
-                      <span className="font-semibold text-foreground">
-                        {formatPrice(game.pricePreview.minPrice)}
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {game.pricePreview.listingCount} listings
+                  <div className="flex items-center gap-2 text-sm">
+                    <TrendingUp className="w-4 h-4 text-gain" />
+                    <span className="text-muted-foreground">From</span>
+                    <span className="font-semibold text-foreground">
+                      {formatPrice(game.pricePreview.minPrice)}
                     </span>
                   </div>
                 ) : (
