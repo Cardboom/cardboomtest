@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { getCorsHeaders } from "../_shared/cors.ts";
-
-// Tightened CORS - only allows cardboom.com and Lovable preview URLs
-const corsHeaders = getCorsHeaders();
+import { getCorsHeaders, handleCorsPreflightRequest } from "../_shared/cors.ts";
 
 // Patterns to detect contact info sharing attempts (NOT price/money discussions)
 // We explicitly ALLOW: prices, dollar amounts, offers, negotiations about value
@@ -36,11 +33,6 @@ const BLOCKED_PATTERNS = [
   /\b(?:my|send|here'?s?\s*my)\s*(?:number|phone|cell|mobile|email|mail|insta|ig|telegram|whatsapp|discord|snap|handle|username)\b/gi,
 ];
 
-// Words that suggest attempt to share contact but aren't definitive
-const WARNING_PATTERNS = [
-  /\b(?:outside|offline)\s*(?:contact|message|chat|talk)\b/gi,
-];
-
 function filterMessage(content: string): { filtered: boolean; filteredContent: string; reason?: string } {
   let filteredContent = content;
   let wasFiltered = false;
@@ -60,9 +52,15 @@ function filterMessage(content: string): { filtered: boolean; filteredContent: s
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  // Handle CORS preflight with origin-aware headers
+  const corsPreflightResponse = handleCorsPreflightRequest(req);
+  if (corsPreflightResponse) {
+    return corsPreflightResponse;
   }
+
+  // Get origin-specific CORS headers for all responses
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
 
   try {
     const authHeader = req.headers.get('Authorization');
