@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Search } from "lucide-react";
 import {
   LayoutDashboard,
   Users,
@@ -172,11 +173,13 @@ const navGroups: NavGroup[] = [
 interface AdminSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  onSearch?: () => void;
 }
 
 export function AdminSidebar({
   activeSection,
   onSectionChange,
+  onSearch,
 }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<string[]>(
@@ -210,9 +213,20 @@ export function AdminSidebar({
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 border-b border-border gap-2">
         {!collapsed && (
-          <h2 className="font-semibold text-lg text-foreground">Admin Panel</h2>
+          <h2 className="font-semibold text-lg text-foreground flex-1">Admin Panel</h2>
+        )}
+        {!collapsed && onSearch && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onSearch}
+            className="h-8 w-8"
+            title="Search (Ctrl+K)"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
         )}
         <Button
           variant="ghost"

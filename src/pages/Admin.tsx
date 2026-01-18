@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { 
   RefreshCw, 
   TrendingUp, 
@@ -93,12 +99,81 @@ const Admin = () => {
   const { isAdmin, isLoading: isCheckingAdmin } = useAdminRole();
   const [items, setItems] = useState<MarketItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [priceSearchQuery, setPriceSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedItem, setEditedItem] = useState<Partial<MarketItem>>({});
   const [isSyncing, setIsSyncing] = useState(false);
   const [activeSection, setActiveSection] = useState('revenue');
+  const [showSearch, setShowSearch] = useState(false);
+  const [adminSearchQuery, setAdminSearchQuery] = useState('');
+  const mainContentRef = useRef<HTMLDivElement>(null);
+
+  // Handle section change with scroll to top
+  const handleSectionChange = (section: string) => {
+    setActiveSection(section);
+    // Scroll main content to top
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  // All admin sections for search
+  const allSections = [
+    { id: 'revenue', label: 'Revenue Dashboard' },
+    { id: 'analytics', label: 'Analytics' },
+    { id: 'orders', label: 'Order Management' },
+    { id: 'wire-transfers', label: 'Wire Transfers' },
+    { id: 'payouts', label: 'Withdrawals' },
+    { id: 'disputes', label: 'Disputes' },
+    { id: 'users', label: 'User Management' },
+    { id: 'creators', label: 'Creator Management' },
+    { id: 'verification', label: 'Seller KYC' },
+    { id: 'coach-verification', label: 'Coach Verification' },
+    { id: 'whale', label: 'Whale Program' },
+    { id: 'system-accounts', label: 'System Accounts' },
+    { id: 'admin-storefronts', label: 'Admin Storefronts' },
+    { id: 'moderation', label: 'Moderation' },
+    { id: 'featured', label: 'Featured' },
+    { id: 'items-manager', label: 'Items Manager' },
+    { id: 'listings-manager', label: 'Listings Manager' },
+    { id: 'sample-data', label: 'Sample Data' },
+    { id: 'catalog-ops', label: 'Catalog Ops' },
+    { id: 'prices', label: 'Prices (Legacy)' },
+    { id: 'controls', label: 'Market Controls' },
+    { id: 'cardwars', label: 'Card Wars' },
+    { id: 'communityvotes', label: 'Community Votes' },
+    { id: 'fanaccounts', label: 'Boom Reels' },
+    { id: 'auctions', label: 'Auctions' },
+    { id: 'fractional', label: 'Fractional' },
+    { id: 'points', label: 'Points Manager' },
+    { id: 'coins-pricing', label: 'Coins Pricing' },
+    { id: 'bounties', label: 'Boom Challenges' },
+    { id: 'promos', label: 'Promos' },
+    { id: 'support', label: 'Support Tickets' },
+    { id: 'notifications', label: 'Notifications' },
+    { id: 'email', label: 'Email' },
+    { id: 'digital-products', label: 'Digital Products' },
+    { id: 'boom-packs', label: 'Boom Packs' },
+    { id: 'launch-check', label: 'Launch Check' },
+    { id: 'system-status', label: 'System Status' },
+    { id: 'api', label: 'API' },
+    { id: 'diagnostics', label: 'Diagnostics' },
+    { id: 'currency', label: 'Currency' },
+    { id: 'vault', label: 'Vault' },
+    { id: 'grading', label: 'Grading' },
+    { id: 'grading-calibration', label: 'AI Calibration' },
+    { id: 'image-normalization', label: 'Image AI' },
+    { id: 'datasync', label: 'Data Sync' },
+    { id: 'autobuy', label: 'Deal Scooper' },
+    { id: 'inventory', label: 'Inventory Integrity' },
+  ];
+
+  const filteredSections = allSections.filter(s => 
+    s.label.toLowerCase().includes(adminSearchQuery.toLowerCase()) ||
+    s.id.toLowerCase().includes(adminSearchQuery.toLowerCase())
+  );
 
   // Redirect if not admin - only after auth check is complete
   useEffect(() => {
@@ -147,8 +222,8 @@ const Admin = () => {
 
   // Filter items
   const filteredItems = items.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.name.toLowerCase().includes(priceSearchQuery.toLowerCase()) ||
+                          item.category.toLowerCase().includes(priceSearchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
@@ -419,8 +494,8 @@ const Admin = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={priceSearchQuery}
+              onChange={(e) => setPriceSearchQuery(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -578,7 +653,11 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <AdminSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      <AdminSidebar 
+        activeSection={activeSection} 
+        onSectionChange={handleSectionChange}
+        onSearch={() => setShowSearch(true)}
+      />
       
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
@@ -589,6 +668,15 @@ const Admin = () => {
                 {activeSection.replace(/-/g, ' ')}
               </h1>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowSearch(true)}
+              className="gap-2"
+            >
+              <Search className="h-4 w-4" />
+              Search
+            </Button>
             <Button variant="outline" size="sm" onClick={() => navigate('/')}>
               Back to Site
             </Button>
@@ -596,10 +684,48 @@ const Admin = () => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
+        <main ref={mainContentRef} className="flex-1 p-4 md:p-6 overflow-auto">
           {renderContent()}
         </main>
       </div>
+
+      {/* Search Dialog */}
+      <Dialog open={showSearch} onOpenChange={setShowSearch}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Quick Navigation</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Search admin sections..."
+              value={adminSearchQuery}
+              onChange={(e) => setAdminSearchQuery(e.target.value)}
+              autoFocus
+            />
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {filteredSections.map((section) => (
+                <Button
+                  key={section.id}
+                  variant={activeSection === section.id ? "secondary" : "ghost"}
+                  className="w-full justify-start"
+                  onClick={() => {
+                    handleSectionChange(section.id);
+                    setShowSearch(false);
+                    setAdminSearchQuery('');
+                  }}
+                >
+                  {section.label}
+                </Button>
+              ))}
+              {filteredSections.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No sections found
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

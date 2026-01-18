@@ -652,14 +652,49 @@ export default function OrderDetail() {
 
                 {/* Dispute Info */}
                 {isDisputed && (
-                  <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
-                    <h4 className="font-medium text-destructive mb-2 flex items-center gap-2">
+                  <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg space-y-3">
+                    <h4 className="font-medium text-destructive flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4" />
                       Dispute Active
                     </h4>
                     <p className="text-sm text-muted-foreground">
                       {order.escalation_reason || 'This order is under review by our support team.'}
                     </p>
+                    {/* Allow user who opened dispute to cancel it */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          // Update order to remove dispute status
+                          await supabase
+                            .from('orders')
+                            .update({
+                              escrow_status: 'held',
+                              admin_escalated_at: null,
+                              escalation_reason: null,
+                            })
+                            .eq('id', order.id);
+                          
+                          // Mark escalation as resolved
+                          await supabase
+                            .from('order_escalations')
+                            .update({
+                              resolved_at: new Date().toISOString(),
+                              resolution_notes: 'Cancelled by user',
+                            })
+                            .eq('order_id', order.id)
+                            .is('resolved_at', null);
+                          
+                          toast.success('Dispute cancelled');
+                          queryClient.invalidateQueries({ queryKey: ['order-detail', orderId] });
+                        } catch (error) {
+                          toast.error('Failed to cancel dispute');
+                        }
+                      }}
+                    >
+                      Cancel Dispute
+                    </Button>
                   </div>
                 )}
 
