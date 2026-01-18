@@ -56,6 +56,9 @@ interface CreatorProfile {
   pending_earnings_cents: number | null;
   approved_at: string | null;
   created_at: string;
+  total_views: number | null;
+  total_likes: number | null;
+  total_comments: number | null;
   profile?: {
     display_name: string | null;
     email: string | null;
@@ -114,7 +117,10 @@ export function CreatorManagement() {
           total_earnings_cents,
           pending_earnings_cents,
           approved_at,
-          created_at
+          created_at,
+          total_views,
+          total_likes,
+          total_comments
         `)
         .order('created_at', { ascending: false });
 
@@ -468,6 +474,7 @@ export function CreatorManagement() {
                     <TableRow>
                       <TableHead>Creator</TableHead>
                       <TableHead>User Account</TableHead>
+                      <TableHead className="text-right">Total Views</TableHead>
                       <TableHead>Revenue Share</TableHead>
                       <TableHead>Total Earnings</TableHead>
                       <TableHead>Status</TableHead>
@@ -487,6 +494,14 @@ export function CreatorManagement() {
                           <div>
                             <p className="text-sm">{creator.profile?.display_name || 'N/A'}</p>
                             <p className="text-xs text-muted-foreground">{creator.profile?.email}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex flex-col items-end">
+                            <span className="font-medium">{(creator.total_views || 0).toLocaleString()}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {creator.total_likes || 0} likes · {creator.total_comments || 0} comments
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>
