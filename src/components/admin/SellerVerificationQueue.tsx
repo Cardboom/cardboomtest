@@ -37,25 +37,69 @@ export const SellerVerificationQueue = () => {
   const [adminNotes, setAdminNotes] = useState('');
   const [activeTab, setActiveTab] = useState('pending');
 
-  // Fetch verifications
+  // Fetch verifications from both tables
   const { data: verifications, isLoading, refetch } = useQuery({
     queryKey: ['admin-seller-verifications', activeTab],
     queryFn: async () => {
-      let query = supabase
+      // Fetch from seller_verifications (KYC documents)
+      let kycQuery = supabase
         .from('seller_verifications')
         .select('*')
         .order('submitted_at', { ascending: false });
 
       if (activeTab !== 'all') {
-        query = query.eq('status', activeTab);
+        kycQuery = kycQuery.eq('status', activeTab);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data: kycData, error: kycError } = await kycQuery;
+      if (kycError) throw kycError;
 
-      // Fetch profile info for each verification
-      if (data && data.length > 0) {
-        const userIds = data.map(v => v.user_id);
+      // Fetch from verified_sellers (simple applications)
+      const simpleQueryBase = supabase
+        .from('verified_sellers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      // Build query based on active tab - handle enum type
+      const { data: simpleData, error: simpleError } = activeTab !== 'all' 
+        ? await simpleQueryBase.eq('verification_status', activeTab as 'pending' | 'approved' | 'rejected')
+        : await simpleQueryBase;
+
+      if (simpleError) console.warn('verified_sellers query error:', simpleError);
+
+      // Combine and normalize both sources
+      const combinedData: any[] = [];
+
+      // Add KYC verifications
+      (kycData || []).forEach(v => {
+        combinedData.push({
+          ...v,
+          source: 'kyc',
+          display_status: v.status
+        });
+      });
+
+      // Add simple verifications (convert status field name)
+      (simpleData || []).forEach(v => {
+        combinedData.push({
+          id: v.id,
+          user_id: v.user_id,
+          business_name: v.business_name,
+          status: v.verification_status,
+          created_at: v.created_at,
+          submitted_at: v.created_at,
+          source: 'simple',
+          display_status: v.verification_status,
+          business_address: v.business_address
+        });
+      });
+
+      // Sort by submission date
+      combinedData.sort((a, b) => new Date(b.submitted_at || b.created_at).getTime() - new Date(a.submitted_at || a.created_at).getTime());
+
+      // Fetch profile info for all users
+      if (combinedData.length > 0) {
+        const userIds = [...new Set(combinedData.map(v => v.user_id))];
         const { data: profiles } = await supabase
           .from('profiles')
           .select('id, display_name, email, avatar_url, created_at')
@@ -63,13 +107,13 @@ export const SellerVerificationQueue = () => {
 
         const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-        return data.map(v => ({
+        return combinedData.map(v => ({
           ...v,
           profile: profileMap.get(v.user_id) || null
-        })) as Array<typeof data[0] & { profile: { id: string; display_name: string | null; email: string | null; avatar_url: string | null; created_at: string } | null }>;
+        }));
       }
 
-      return (data || []).map(v => ({ ...v, profile: null }));
+      return combinedData.map(v => ({ ...v, profile: null }));
     }
   });
 

@@ -3127,6 +3127,47 @@ export type Database = {
           },
         ]
       }
+      creator_content_views: {
+        Row: {
+          content_id: string | null
+          content_type: string
+          creator_id: string
+          id: string
+          ip_hash: string | null
+          is_unique_daily: boolean | null
+          viewed_at: string
+          viewer_user_id: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          content_type: string
+          creator_id: string
+          id?: string
+          ip_hash?: string | null
+          is_unique_daily?: boolean | null
+          viewed_at?: string
+          viewer_user_id?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          content_type?: string
+          creator_id?: string
+          id?: string
+          ip_hash?: string | null
+          is_unique_daily?: boolean | null
+          viewed_at?: string
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_content_views_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_earnings: {
         Row: {
           created_at: string | null
@@ -3304,34 +3345,43 @@ export type Database = {
       }
       creator_picks: {
         Row: {
+          comment_count: number | null
           created_at: string
           creator_id: string
           id: string
           is_public: boolean | null
+          like_count: number | null
           market_item_id: string
           note: string | null
           pick_type: string
           price_at_pick: number | null
+          view_count: number | null
         }
         Insert: {
+          comment_count?: number | null
           created_at?: string
           creator_id: string
           id?: string
           is_public?: boolean | null
+          like_count?: number | null
           market_item_id: string
           note?: string | null
           pick_type: string
           price_at_pick?: number | null
+          view_count?: number | null
         }
         Update: {
+          comment_count?: number | null
           created_at?: string
           creator_id?: string
           id?: string
           is_public?: boolean | null
+          like_count?: number | null
           market_item_id?: string
           note?: string | null
           pick_type?: string
           price_at_pick?: number | null
+          view_count?: number | null
         }
         Relationships: [
           {
@@ -3381,7 +3431,9 @@ export type Database = {
           revenue_share_percent: number | null
           specialty_categories: string[] | null
           total_calls: number | null
+          total_comments: number | null
           total_earnings_cents: number | null
+          total_likes: number | null
           total_views: number | null
           updated_at: string
           user_id: string
@@ -3411,7 +3463,9 @@ export type Database = {
           revenue_share_percent?: number | null
           specialty_categories?: string[] | null
           total_calls?: number | null
+          total_comments?: number | null
           total_earnings_cents?: number | null
+          total_likes?: number | null
           total_views?: number | null
           updated_at?: string
           user_id: string
@@ -3441,7 +3495,9 @@ export type Database = {
           revenue_share_percent?: number | null
           specialty_categories?: string[] | null
           total_calls?: number | null
+          total_comments?: number | null
           total_earnings_cents?: number | null
+          total_likes?: number | null
           total_views?: number | null
           updated_at?: string
           user_id?: string
@@ -3579,6 +3635,53 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_view_rewards: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          paid_at: string | null
+          period_end: string
+          period_start: string
+          reward_gems: number
+          status: string
+          total_views: number
+          unique_viewer_views: number
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          paid_at?: string | null
+          period_end: string
+          period_start: string
+          reward_gems?: number
+          status?: string
+          total_views?: number
+          unique_viewer_views?: number
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          paid_at?: string | null
+          period_end?: string
+          period_start?: string
+          reward_gems?: number
+          status?: string
+          total_views?: number
+          unique_viewer_views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_view_rewards_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "creator_profiles"
             referencedColumns: ["id"]
           },
         ]

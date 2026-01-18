@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Youtube, Twitch, Twitter, Instagram, 
-  TrendingUp, TrendingDown, Eye, Users, Plus, Star, CheckCircle
+  TrendingUp, TrendingDown, Eye, Users, Plus, Star, CheckCircle, BarChart3
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
+import { CreatorInsightsPanel } from './CreatorInsightsPanel';
 
 const PLATFORM_ICONS: Record<string, any> = {
   youtube: Youtube,
@@ -247,6 +249,11 @@ export function CreatorDashboard({ userId }: CreatorDashboardProps) {
                 {creatorProfile?.is_verified && (
                   <CheckCircle className="h-5 w-5 text-primary fill-primary" />
                 )}
+                {creatorProfile?.is_approved && (
+                  <Badge variant="outline" className="text-emerald-500 border-emerald-500">
+                    Approved
+                  </Badge>
+                )}
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                 <PlatformIcon className="h-4 w-4" />
@@ -266,72 +273,94 @@ export function CreatorDashboard({ userId }: CreatorDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Cards I'm Watching */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            Cards I'm Watching
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {creatorPicks?.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No public picks yet
-            </div>
-          ) : (
-            <div className="grid gap-3">
-              {creatorPicks?.map((pick: any) => (
-                <motion.div
-                  key={pick.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center gap-4 p-3 rounded-lg bg-muted/50"
-                >
-                  <img
-                    src={pick.market_item?.image_url || '/placeholder.svg'}
-                    alt={pick.market_item?.name}
-                    className="w-12 h-12 rounded object-cover"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{pick.market_item?.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {pick.note || `Added at $${pick.price_at_pick?.toFixed(2)}`}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge className={cn(
-                      "mb-1",
-                      pick.pick_type === 'bullish' && "bg-green-500/20 text-green-500",
-                      pick.pick_type === 'bearish' && "bg-red-500/20 text-red-500",
-                      pick.pick_type === 'watching' && "bg-blue-500/20 text-blue-500",
-                      pick.pick_type === 'holding' && "bg-purple-500/20 text-purple-500"
-                    )}>
-                      {pick.pick_type}
-                    </Badge>
-                    <div className="text-sm font-medium">
-                      ${pick.market_item?.current_price?.toFixed(2)}
-                    </div>
-                    {pick.market_item?.change_24h && (
-                      <div className={cn(
-                        "text-xs flex items-center justify-end gap-1",
-                        pick.market_item.change_24h >= 0 ? "text-green-500" : "text-red-500"
-                      )}>
-                        {pick.market_item.change_24h >= 0 ? (
-                          <TrendingUp className="h-3 w-3" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3" />
-                        )}
-                        {Math.abs(pick.market_item.change_24h).toFixed(1)}%
+      {/* Creator Tabs */}
+      <Tabs defaultValue="picks" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="picks" className="gap-2">
+            <Eye className="h-4 w-4" />
+            My Picks
+          </TabsTrigger>
+          <TabsTrigger value="insights" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Creator Panel
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="picks" className="mt-6">
+          {/* Cards I'm Watching */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                Cards I'm Watching
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {creatorPicks?.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No public picks yet
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {creatorPicks?.map((pick: any) => (
+                    <motion.div
+                      key={pick.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex items-center gap-4 p-3 rounded-lg bg-muted/50"
+                    >
+                      <img
+                        src={pick.market_item?.image_url || '/placeholder.svg'}
+                        alt={pick.market_item?.name}
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{pick.market_item?.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {pick.note || `Added at $${pick.price_at_pick?.toFixed(2)}`}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                      <div className="text-right">
+                        <Badge className={cn(
+                          "mb-1",
+                          pick.pick_type === 'bullish' && "bg-green-500/20 text-green-500",
+                          pick.pick_type === 'bearish' && "bg-red-500/20 text-red-500",
+                          pick.pick_type === 'watching' && "bg-blue-500/20 text-blue-500",
+                          pick.pick_type === 'holding' && "bg-purple-500/20 text-purple-500"
+                        )}>
+                          {pick.pick_type}
+                        </Badge>
+                        <div className="text-sm font-medium">
+                          ${pick.market_item?.current_price?.toFixed(2)}
+                        </div>
+                        {pick.market_item?.change_24h && (
+                          <div className={cn(
+                            "text-xs flex items-center justify-end gap-1",
+                            pick.market_item.change_24h >= 0 ? "text-green-500" : "text-red-500"
+                          )}>
+                            {pick.market_item.change_24h >= 0 ? (
+                              <TrendingUp className="h-3 w-3" />
+                            ) : (
+                              <TrendingDown className="h-3 w-3" />
+                            )}
+                            {Math.abs(pick.market_item.change_24h).toFixed(1)}%
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="insights" className="mt-6">
+          {creatorProfile?.id && (
+            <CreatorInsightsPanel creatorId={creatorProfile.id} />
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
