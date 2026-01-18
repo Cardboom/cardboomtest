@@ -22,7 +22,8 @@ import {
   BarChart3,
   X,
   MapPin,
-  Copy
+  Copy,
+  Tag
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -47,8 +48,15 @@ interface VaultItem {
   status: string;
   created_at: string;
   verified_at: string | null;
-  order_id: string | null; // If set, this is a purchased item awaiting seller shipment
+  order_id: string | null;
   listing_id: string | null;
+  // Scan data fields
+  front_image_url: string | null;
+  back_image_url: string | null;
+  ai_detected_name: string | null;
+  ai_detected_set: string | null;
+  ai_detected_number: string | null;
+  scan_session_id: string | null;
 }
 
 // Vault status progression: scanned -> in_transit -> received -> verified -> stored -> released
@@ -453,12 +461,38 @@ const VaultPage = () => {
                             <div className="flex gap-2 mt-4">
                               {(item.status === 'verified' || item.status === 'stored') ? (
                                 <div className="space-y-2 w-full">
+                                  {/* Primary action: List for Sale */}
+                                  <Button 
+                                    variant="default" 
+                                    size="sm" 
+                                    className="w-full"
+                                    onClick={() => {
+                                      setSelectedListingItem(item);
+                                      setShowListingWizard(true);
+                                    }}
+                                  >
+                                    <Tag className="h-4 w-4 mr-1.5" />
+                                    List for Sale
+                                  </Button>
+                                  {/* Secondary actions */}
                                   <div className="flex gap-2">
                                     <Button 
                                       variant="outline" 
                                       size="sm" 
                                       className="flex-1"
-                                      onClick={() => navigate('/grading')}
+                                      onClick={() => {
+                                        // Navigate to grading with vault item data pre-filled
+                                        const params = new URLSearchParams({
+                                          vault_item_id: item.id,
+                                          front_image: item.front_image_url || item.image_url || '',
+                                          back_image: item.back_image_url || '',
+                                          card_name: item.ai_detected_name || item.title || '',
+                                          set_name: item.ai_detected_set || '',
+                                          card_number: item.ai_detected_number || '',
+                                          category: item.category || '',
+                                        });
+                                        navigate(`/grading?${params.toString()}`);
+                                      }}
                                     >
                                       <Shield className="h-4 w-4 mr-1.5" />
                                       Request Grading
