@@ -5,7 +5,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Zap, Building2, TrendingUp, PieChart, BarChart3, Shield, Headphones, Rocket, Percent, CreditCard, Banknote } from 'lucide-react';
+import { Check, Crown, Zap, Building2, TrendingUp, PieChart, BarChart3, Shield, Headphones, Rocket, Percent, CreditCard, Banknote, Clock, Award, ShieldCheck, Sparkles, Timer, Package } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -405,6 +405,226 @@ const Pricing = () => {
               </p>
             </Card>
           </div>
+        </div>
+
+        {/* Grading Prices Section */}
+        <div className="max-w-6xl mx-auto mt-20 pt-12 border-t border-border/50">
+          <div className="text-center mb-12">
+            <Badge variant="outline" className="mb-4 text-amber-500 border-amber-500/30">
+              <Award className="w-3 h-3 mr-1" />
+              Professional Grading
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Grading <span className="text-amber-500">Prices</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Get your cards professionally graded with PSA, BGS, or CGC through our trusted service
+            </p>
+          </div>
+
+          {/* Speed Tiers */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {/* Standard */}
+            <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300">
+              <CardHeader className="text-center pb-2">
+                <div className="w-12 h-12 rounded-xl bg-muted mx-auto mb-3 flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-muted-foreground" />
+                </div>
+                <CardTitle className="text-xl">Standard</CardTitle>
+                <CardDescription>Best value for patient collectors</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">$18</span>
+                  <span className="text-muted-foreground">/card</span>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-center gap-2 text-sm">
+                    <Timer className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Est. Delivery:</span>
+                    <Badge variant="outline" className="font-semibold">60-90 days</Badge>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-left">
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>PSA, BGS, or CGC grading</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Full authentication</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Protective case included</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Insurance up to $500</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/grading')}>
+                  Start Grading
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Express */}
+            <Card className="relative overflow-hidden border-primary shadow-lg scale-[1.02]">
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
+                POPULAR
+              </div>
+              <CardHeader className="text-center pb-2">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-3 flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Express</CardTitle>
+                <CardDescription>Faster turnaround for eager collectors</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">$35</span>
+                  <span className="text-muted-foreground">/card</span>
+                </div>
+                <div className="bg-primary/5 rounded-lg p-4 mb-6 border border-primary/20">
+                  <div className="flex items-center justify-center gap-2 text-sm">
+                    <Timer className="w-4 h-4 text-primary" />
+                    <span className="text-muted-foreground">Est. Delivery:</span>
+                    <Badge className="font-semibold bg-primary">20-30 days</Badge>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-left">
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Everything in Standard</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Priority queue processing</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Insurance up to $2,500</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Email status updates</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button className="w-full" onClick={() => navigate('/grading')}>
+                  Start Grading
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Priority */}
+            <Card className="relative overflow-hidden border-amber-500/50 hover:shadow-lg transition-all duration-300">
+              <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                FASTEST
+              </div>
+              <CardHeader className="text-center pb-2">
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 mx-auto mb-3 flex items-center justify-center">
+                  <Rocket className="w-6 h-6 text-amber-500" />
+                </div>
+                <CardTitle className="text-xl">Priority</CardTitle>
+                <CardDescription>Fastest possible turnaround</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">$75</span>
+                  <span className="text-muted-foreground">/card</span>
+                </div>
+                <div className="bg-amber-500/5 rounded-lg p-4 mb-6 border border-amber-500/20">
+                  <div className="flex items-center justify-center gap-2 text-sm">
+                    <Timer className="w-4 h-4 text-amber-500" />
+                    <span className="text-muted-foreground">Est. Delivery:</span>
+                    <Badge className="font-semibold bg-amber-500">5-10 days</Badge>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-left">
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Everything in Express</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>VIP queue placement</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Insurance up to $10,000</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-sm">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>Real-time tracking</span>
+                  </li>
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full border-amber-500/50 text-amber-600 hover:bg-amber-500/10" onClick={() => navigate('/grading')}>
+                  Start Grading
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+
+          {/* Grading Benefits */}
+          <div className="grid md:grid-cols-4 gap-4 mb-12">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="w-5 h-5 text-green-500" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Fully Insured</p>
+                <p className="text-xs text-muted-foreground">Cards protected in transit</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
+              <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <Package className="w-5 h-5 text-blue-500" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Free Shipping</p>
+                <p className="text-xs text-muted-foreground">Return shipping included</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
+              <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                <Award className="w-5 h-5 text-purple-500" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Certified Grades</p>
+                <p className="text-xs text-muted-foreground">PSA, BGS, CGC official</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Auto-List Option</p>
+                <p className="text-xs text-muted-foreground">List on marketplace instantly</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bulk Pricing Note */}
+          <Card className="p-6 bg-muted/30 border-dashed text-center">
+            <h3 className="font-semibold mb-2 flex items-center justify-center gap-2">
+              <Package className="w-5 h-5 text-primary" />
+              Bulk Grading Discounts
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Submitting 10+ cards? Contact us for special bulk pricing and dedicated support.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => navigate('/grading')}>
+              View Bulk Options
+            </Button>
+          </Card>
         </div>
 
         {/* FAQ */}
