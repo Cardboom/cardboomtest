@@ -161,6 +161,13 @@ export const UserManagement = () => {
   const [balanceType, setBalanceType] = useState<'add' | 'remove'>('add');
   const [balanceReason, setBalanceReason] = useState('');
 
+  // Boom Coins adjustment
+  const [boomCoinsDialogOpen, setBoomCoinsDialogOpen] = useState(false);
+  const [boomCoinsAmount, setBoomCoinsAmount] = useState('');
+  const [boomCoinsType, setBoomCoinsType] = useState<'add' | 'remove'>('add');
+  const [boomCoinsReason, setBoomCoinsReason] = useState('');
+  const [userBoomCoins, setUserBoomCoins] = useState<Record<string, { balance: number }>>({});
+
   // Role management
   const [userRoles, setUserRoles] = useState<Record<string, string[]>>({});
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
@@ -201,6 +208,19 @@ export const UserManagement = () => {
           subMap[s.user_id] = s as UserSubscription;
         });
         setSubscriptions(subMap);
+      }
+
+      // Fetch all boom coins balances
+      const { data: boomData } = await supabase
+        .from('cardboom_points')
+        .select('user_id, balance');
+
+      if (boomData) {
+        const boomMap: Record<string, { balance: number }> = {};
+        boomData.forEach(b => {
+          boomMap[b.user_id] = { balance: b.balance };
+        });
+        setUserBoomCoins(boomMap);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -670,6 +690,89 @@ export const UserManagement = () => {
     }
   };
 
+  const handleAdjustBoomCoins = async () => {
+    if (!selectedUser || !boomCoinsAmount || !boomCoinsReason) {
+      toast.error('Please enter amount and reason');
+      return;
+    }
+    
+    setIsProcessing(true);
+    try {
+      const amount = parseFloat(boomCoinsAmount);
+      if (isNaN(amount) || amount <= 0) {
+        toast.error('Invalid amount');
+        return;
+      }
+
+      const currentBalance = userBoomCoins[selectedUser.id]?.balance || 0;
+      const adjustmentAmount = boomCoinsType === 'add' ? amount : -amount;
+      const newBalance = currentBalance + adjustmentAmount;
+
+      if (newBalance < 0) {
+        toast.error('Insufficient Boom Coins to remove');
+        return;
+      }
+
+      // Upsert boom coins balance
+      const { error: pointsError } = await supabase
+        .from('cardboom_points')
+        .upsert({
+          user_id: selectedUser.id,
+          balance: newBalance,
+          total_earned: boomCoinsType === 'add' ? currentBalance + amount : currentBalance,
+          total_spent: boomCoinsType === 'remove' ? amount : 0,
+        }, { onConflict: 'user_id' });
+
+      if (pointsError) throw pointsError;
+
+      // Record in history
+      await supabase
+        .from('cardboom_points_history')
+        .insert({
+          user_id: selectedUser.id,
+          amount: adjustmentAmount,
+          transaction_type: boomCoinsType === 'add' ? 'earn' : 'spend',
+          source: 'admin_adjustment',
+          description: `Admin: ${boomCoinsReason}`,
+        });
+
+      // Log the adjustment
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
+      if (adminUser) {
+        await supabase
+          .from('admin_audit_log')
+          .insert({
+            admin_id: adminUser.id,
+            action: 'boom_coins_adjustment',
+            target_type: 'user',
+            target_id: selectedUser.id,
+            details: {
+              amount: adjustmentAmount,
+              previous_balance: currentBalance,
+              new_balance: newBalance,
+              reason: boomCoinsReason,
+            },
+          });
+      }
+
+      toast.success(`Boom Coins ${boomCoinsType === 'add' ? 'added' : 'removed'}: ${amount.toLocaleString()} 💣`);
+      setBoomCoinsDialogOpen(false);
+      setBoomCoinsAmount('');
+      setBoomCoinsReason('');
+
+      // Update local state
+      setUserBoomCoins(prev => ({
+        ...prev,
+        [selectedUser.id]: { balance: newBalance }
+      }));
+    } catch (error) {
+      console.error('Error adjusting Boom Coins:', error);
+      toast.error('Failed to adjust Boom Coins');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       (user.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
@@ -982,7 +1085,7 @@ export const UserManagement = () => {
               </div>
 
               {/* User Stats Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4">
                 <div className="p-3 bg-muted/50 rounded-lg">
                   <p className="text-xs text-muted-foreground">Balance</p>
                   <p className="text-lg font-bold">₺{(wallets[selectedUser.id]?.balance || 0).toLocaleString()}</p>
@@ -994,6 +1097,19 @@ export const UserManagement = () => {
                   >
                     <CreditCard className="w-3 h-3 mr-1" />
                     Adjust
+                  </Button>
+                </div>
+                <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                  <p className="text-xs text-muted-foreground">Boom Coins 💣</p>
+                  <p className="text-lg font-bold text-amber-500">{(userBoomCoins[selectedUser.id]?.balance || 0).toLocaleString()}</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBoomCoinsDialogOpen(true)}
+                    className="text-xs mt-1 h-6 px-2 text-amber-500"
+                  >
+                    <Gift className="w-3 h-3 mr-1" />
+                    Gift Coins
                   </Button>
                 </div>
                 <div className="p-3 bg-muted/50 rounded-lg">
@@ -1550,6 +1666,100 @@ export const UserManagement = () => {
             >
               {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
               {balanceType === 'add' ? 'Add' : 'Remove'} ₺{balanceAmount || '0'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Boom Coins Adjustment Dialog */}
+      <Dialog open={boomCoinsDialogOpen} onOpenChange={setBoomCoinsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-500">
+              💣 Gift Boom Coins
+            </DialogTitle>
+            <DialogDescription>
+              Add or remove Boom Coins from {selectedUser?.display_name}'s account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
+              <p className="text-sm text-muted-foreground">Current Balance</p>
+              <p className="text-2xl font-bold text-amber-500">{(userBoomCoins[selectedUser?.id || '']?.balance || 0).toLocaleString()} 💣</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Adjustment Type</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={boomCoinsType === 'add' ? 'default' : 'outline'}
+                  onClick={() => setBoomCoinsType('add')}
+                  className="flex-1 gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Gift Coins
+                </Button>
+                <Button
+                  type="button"
+                  variant={boomCoinsType === 'remove' ? 'destructive' : 'outline'}
+                  onClick={() => setBoomCoinsType('remove')}
+                  className="flex-1 gap-2"
+                >
+                  <Minus className="w-4 h-4" />
+                  Remove Coins
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="boom-coins-amount">Amount (Boom Coins)</Label>
+              <Input
+                id="boom-coins-amount"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Enter amount..."
+                value={boomCoinsAmount}
+                onChange={(e) => setBoomCoinsAmount(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="boom-coins-reason">Reason (required)</Label>
+              <Textarea
+                id="boom-coins-reason"
+                placeholder="Enter reason for this adjustment..."
+                value={boomCoinsReason}
+                onChange={(e) => setBoomCoinsReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            {boomCoinsAmount && !isNaN(parseFloat(boomCoinsAmount)) && (
+              <div className={`p-3 rounded-lg border ${boomCoinsType === 'add' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                <p className="text-sm">
+                  New balance will be:{' '}
+                  <span className="font-bold">
+                    {((userBoomCoins[selectedUser?.id || '']?.balance || 0) + (boomCoinsType === 'add' ? parseFloat(boomCoinsAmount) : -parseFloat(boomCoinsAmount))).toLocaleString()} 💣
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBoomCoinsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAdjustBoomCoins}
+              disabled={isProcessing || !boomCoinsAmount || !boomCoinsReason}
+              className={boomCoinsType === 'add' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-red-500 hover:bg-red-600'}
+            >
+              {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+              {boomCoinsType === 'add' ? 'Gift' : 'Remove'} {boomCoinsAmount || '0'} 💣
             </Button>
           </DialogFooter>
         </DialogContent>

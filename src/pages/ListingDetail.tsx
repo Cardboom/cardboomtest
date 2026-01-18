@@ -369,7 +369,7 @@ const ListingDetail = () => {
       }
     } catch (error) {
       console.error('Error fetching listing:', error);
-      toast.error('Failed to load listing');
+      setListing(null);
     } finally {
       setLoading(false);
     }
