@@ -30,7 +30,8 @@ import {
   CreditCard,
   Plus,
   Minus,
-  IdCard
+  IdCard,
+  Building
 } from 'lucide-react';
 import {
   Select,
@@ -149,10 +150,12 @@ export const UserManagement = () => {
   const [pauseDuration, setPauseDuration] = useState('7');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Pro subscription management
+  // Subscription management (Pro/Enterprise)
   const [subscriptions, setSubscriptions] = useState<Record<string, UserSubscription>>({});
   const [proDialogOpen, setProDialogOpen] = useState(false);
+  const [enterpriseDialogOpen, setEnterpriseDialogOpen] = useState(false);
   const [proDuration, setProDuration] = useState('30');
+  const [enterpriseDuration, setEnterpriseDuration] = useState('30');
   const [selectedUserSubscription, setSelectedUserSubscription] = useState<UserSubscription | null>(null);
 
   // Balance adjustment
@@ -332,6 +335,19 @@ export const UserManagement = () => {
 
       if (error) throw error;
 
+      // Send ban notification email
+      try {
+        await supabase.functions.invoke('send-account-status-email', {
+          body: {
+            user_id: selectedUser.id,
+            status: 'banned',
+            reason: actionReason || 'Violation of terms of service',
+          },
+        });
+      } catch (emailError) {
+        console.error('Failed to send ban email:', emailError);
+      }
+
       toast.success(`User ${selectedUser.display_name} has been banned`);
       setBanDialogOpen(false);
       setActionReason('');
@@ -369,6 +385,19 @@ export const UserManagement = () => {
         .eq('id', selectedUser.id);
 
       if (error) throw error;
+
+      // Send pause notification email
+      try {
+        await supabase.functions.invoke('send-account-status-email', {
+          body: {
+            user_id: selectedUser.id,
+            status: 'paused',
+            paused_until: pausedUntil.toISOString(),
+          },
+        });
+      } catch (emailError) {
+        console.error('Failed to send pause email:', emailError);
+      }
 
       toast.success(`User ${selectedUser.display_name} has been paused for ${pauseDuration} days`);
       setPauseDialogOpen(false);
@@ -521,6 +550,74 @@ export const UserManagement = () => {
     } catch (error) {
       console.error('Error revoking Pro:', error);
       toast.error('Failed to revoke Pro subscription');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleGrantEnterprise = async () => {
+    if (!selectedUser) return;
+    setIsProcessing(true);
+    try {
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + parseInt(enterpriseDuration));
+
+      const existingSub = subscriptions[selectedUser.id];
+
+      if (existingSub) {
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .update({
+            tier: 'enterprise',
+            started_at: new Date().toISOString(),
+            expires_at: expiresAt.toISOString(),
+            auto_renew: false,
+            price_monthly: 50,
+          })
+          .eq('user_id', selectedUser.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('user_subscriptions')
+          .insert({
+            user_id: selectedUser.id,
+            tier: 'enterprise',
+            price_monthly: 50,
+            started_at: new Date().toISOString(),
+            expires_at: expiresAt.toISOString(),
+            auto_renew: false,
+          });
+
+        if (error) throw error;
+      }
+
+      toast.success(`Enterprise subscription granted to ${selectedUser.display_name} for ${enterpriseDuration} days`);
+      setEnterpriseDialogOpen(false);
+      setEnterpriseDuration('30');
+      fetchUsers();
+      
+      // Update local subscription state
+      setSubscriptions(prev => ({
+        ...prev,
+        [selectedUser.id]: {
+          id: existingSub?.id || '',
+          user_id: selectedUser.id,
+          tier: 'enterprise',
+          expires_at: expiresAt.toISOString(),
+          started_at: new Date().toISOString(),
+        }
+      }));
+      setSelectedUserSubscription({
+        id: existingSub?.id || '',
+        user_id: selectedUser.id,
+        tier: 'enterprise',
+        expires_at: expiresAt.toISOString(),
+        started_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error granting Enterprise:', error);
+      toast.error('Failed to grant Enterprise subscription');
     } finally {
       setIsProcessing(false);
     }
@@ -1168,15 +1265,26 @@ export const UserManagement = () => {
                     Revoke Pro
                   </Button>
                 ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setProDialogOpen(true)}
-                    className="gap-1 text-amber-500 hover:text-amber-600"
-                  >
-                    <Gift className="w-4 h-4" />
-                    Grant Pro
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setProDialogOpen(true)}
+                      className="gap-1 text-amber-500 hover:text-amber-600"
+                    >
+                      <Gift className="w-4 h-4" />
+                      Grant Pro
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEnterpriseDialogOpen(true)}
+                      className="gap-1 text-purple-500 hover:text-purple-600"
+                    >
+                      <Building className="w-4 h-4" />
+                      Grant Enterprise
+                    </Button>
+                  </div>
                 )}
 
                 {selectedUser.account_status === 'active' && (
@@ -1571,6 +1679,65 @@ export const UserManagement = () => {
             >
               {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Crown className="w-4 h-4 mr-2" />}
               Grant Pro
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Grant Enterprise Dialog */}
+      <Dialog open={enterpriseDialogOpen} onOpenChange={setEnterpriseDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-purple-500">
+              <Building className="w-5 h-5" />
+              Grant Enterprise Subscription
+            </DialogTitle>
+            <DialogDescription>
+              Give {selectedUser?.display_name} free Enterprise access ($50/mo value).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Gift className="w-5 h-5 text-purple-500 mt-0.5" />
+                <p className="text-sm text-muted-foreground">
+                  Enterprise includes lowest fees (4%), API access, bulk tools, and dedicated support. 
+                  Great for power sellers and business partners.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="enterprise-duration">Duration</Label>
+              <Select value={enterpriseDuration} onValueChange={setEnterpriseDuration}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7">7 days</SelectItem>
+                  <SelectItem value="14">14 days</SelectItem>
+                  <SelectItem value="30">30 days (1 month)</SelectItem>
+                  <SelectItem value="90">90 days (3 months)</SelectItem>
+                  <SelectItem value="180">180 days (6 months)</SelectItem>
+                  <SelectItem value="365">365 days (1 year)</SelectItem>
+                  <SelectItem value="3650">10 years (lifetime)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEnterpriseDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleGrantEnterprise}
+              disabled={isProcessing}
+              className="bg-purple-500 hover:bg-purple-600 text-white"
+            >
+              {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : <Building className="w-4 h-4 mr-2" />}
+              Grant Enterprise
             </Button>
           </DialogFooter>
         </DialogContent>
