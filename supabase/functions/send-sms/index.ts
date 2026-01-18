@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 type OTPType = "verification" | "password_reset" | "login_otp";
-type NotificationType = "item_sold" | "grading_complete";
+type NotificationType = "item_sold" | "grading_complete" | "offer_accepted";
 type SMSType = OTPType | NotificationType;
 
 interface SMSRequest {
@@ -19,6 +19,8 @@ interface SMSRequest {
     sale_price?: string;
     grade?: string;
     psa_range?: string;
+    offer_amount?: number;
+    currency?: string;
   };
 }
 
@@ -71,34 +73,42 @@ const notificationMessages: Record<string, Record<NotificationType, (data: SMSRe
   tr: {
     item_sold: (data) => `CardBoom: 🎉 Ürününüz satıldı! "${data?.item_title || 'Ürün'}" ${data?.sale_price || ''} fiyatına satıldı. Detaylar için uygulamayı açın.`,
     grading_complete: (data) => `CardBoom: Derecelendirme tamamlandı! Kartınız ${data?.grade || 'N/A'}/10 aldı (${data?.psa_range || 'N/A'}). Detaylar için uygulamayı açın.`,
+    offer_accepted: (data) => `CardBoom: 🎉 Teklifiniz kabul edildi! ${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''} tutarındaki teklifiniz onaylandı. Ödemenizi tamamlamak için uygulamayı açın.`,
   },
   en: {
     item_sold: (data) => `CardBoom: 🎉 Your item sold! "${data?.item_title || 'Item'}" sold for ${data?.sale_price || ''}. Open the app for details.`,
     grading_complete: (data) => `CardBoom: Grading complete! Your card received ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Open the app for details.`,
+    offer_accepted: (data) => `CardBoom: 🎉 Your offer was accepted! Your ${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''} offer was approved. Open the app to complete your purchase.`,
   },
   de: {
     item_sold: (data) => `CardBoom: 🎉 Ihr Artikel wurde verkauft! "${data?.item_title || 'Artikel'}" für ${data?.sale_price || ''} verkauft. Öffnen Sie die App für Details.`,
     grading_complete: (data) => `CardBoom: Bewertung abgeschlossen! Ihre Karte erhielt ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Öffnen Sie die App.`,
+    offer_accepted: (data) => `CardBoom: 🎉 Ihr Angebot wurde angenommen! Ihr Angebot von ${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''} wurde akzeptiert. Öffnen Sie die App.`,
   },
   fr: {
     item_sold: (data) => `CardBoom: 🎉 Votre article a été vendu! "${data?.item_title || 'Article'}" vendu pour ${data?.sale_price || ''}. Ouvrez l'app pour les détails.`,
     grading_complete: (data) => `CardBoom: Notation terminée! Votre carte a reçu ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Ouvrez l'app.`,
+    offer_accepted: (data) => `CardBoom: 🎉 Votre offre a été acceptée! Votre offre de ${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''} a été approuvée. Ouvrez l'app.`,
   },
   es: {
     item_sold: (data) => `CardBoom: 🎉 Tu artículo se vendió! "${data?.item_title || 'Artículo'}" vendido por ${data?.sale_price || ''}. Abre la app para detalles.`,
     grading_complete: (data) => `CardBoom: Calificación completa! Tu carta recibió ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'}). Abre la app.`,
+    offer_accepted: (data) => `CardBoom: 🎉 Tu oferta fue aceptada! Tu oferta de ${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''} fue aprobada. Abre la app.`,
   },
   ja: {
     item_sold: (data) => `CardBoom: 🎉 商品が売れました！「${data?.item_title || '商品'}」が${data?.sale_price || ''}で売れました。アプリで詳細を確認。`,
     grading_complete: (data) => `CardBoom: グレーディング完了！カードは${data?.grade || 'N/A'}/10（${data?.psa_range || 'N/A'}）を獲得。アプリで確認。`,
+    offer_accepted: (data) => `CardBoom: 🎉 オファーが承認されました！${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''}のオファーが承認されました。アプリを開いて購入を完了してください。`,
   },
   ko: {
     item_sold: (data) => `CardBoom: 🎉 상품이 판매되었습니다! "${data?.item_title || '상품'}"이 ${data?.sale_price || ''}에 판매되었습니다. 앱에서 확인하세요.`,
     grading_complete: (data) => `CardBoom: 그레이딩 완료! 카드가 ${data?.grade || 'N/A'}/10 (${data?.psa_range || 'N/A'})을 받았습니다. 앱에서 확인.`,
+    offer_accepted: (data) => `CardBoom: 🎉 제안이 수락되었습니다! ${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''} 제안이 승인되었습니다. 앱에서 구매를 완료하세요.`,
   },
   zh: {
     item_sold: (data) => `CardBoom: 🎉 您的商品已售出！"${data?.item_title || '商品'}"以${data?.sale_price || ''}售出。打开应用查看详情。`,
     grading_complete: (data) => `CardBoom: 评级完成！您的卡片获得${data?.grade || 'N/A'}/10（${data?.psa_range || 'N/A'}）。打开应用查看。`,
+    offer_accepted: (data) => `CardBoom: 🎉 您的报价已被接受！您的${data?.currency === 'TRY' ? '₺' : data?.currency === 'EUR' ? '€' : '$'}${data?.offer_amount?.toLocaleString() || ''}报价已获批准。打开应用完成购买。`,
   },
 };
 

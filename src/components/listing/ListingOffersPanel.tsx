@@ -86,12 +86,39 @@ export const ListingOffersPanel = ({ listingId, sellerId, isOwner }: ListingOffe
 
   const handleAcceptOffer = async (offerId: string) => {
     try {
+      // Get the offer details first
+      const offer = offers.find(o => o.id === offerId);
+      if (!offer) throw new Error('Offer not found');
+
       const { error } = await supabase
         .from('offers')
         .update({ status: 'accepted' })
         .eq('id', offerId);
 
       if (error) throw error;
+
+      // Send notification to buyer (on-site, email, SMS)
+      try {
+        const { formattedAmount } = getOfferDisplayInfo(offer);
+        
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            user_id: offer.buyer_id,
+            type: 'offer_accepted',
+            title: '🎉 Your Offer Was Accepted!',
+            body: `Great news! Your offer of ${formattedAmount} has been accepted. Complete your purchase now.`,
+            data: { 
+              listing_id: listingId, 
+              offer_id: offerId,
+              offer_amount: offer.amount,
+              currency: offer.currency 
+            },
+          },
+        });
+      } catch (notifError) {
+        console.error('Failed to send offer accepted notification:', notifError);
+      }
+
       toast.success('Offer accepted! The buyer will be notified.');
       fetchOffers();
     } catch (error: any) {
