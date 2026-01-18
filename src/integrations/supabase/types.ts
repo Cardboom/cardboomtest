@@ -4015,6 +4015,7 @@ export type Database = {
           id: string
           insightful_count: number | null
           is_collapsed: boolean | null
+          mentioned_user_ids: string[] | null
           outdated_count: number | null
           parent_id: string | null
           price_at_post: number | null
@@ -4033,6 +4034,7 @@ export type Database = {
           id?: string
           insightful_count?: number | null
           is_collapsed?: boolean | null
+          mentioned_user_ids?: string[] | null
           outdated_count?: number | null
           parent_id?: string | null
           price_at_post?: number | null
@@ -4051,6 +4053,7 @@ export type Database = {
           id?: string
           insightful_count?: number | null
           is_collapsed?: boolean | null
+          mentioned_user_ids?: string[] | null
           outdated_count?: number | null
           parent_id?: string | null
           price_at_post?: number | null
@@ -4104,6 +4107,41 @@ export type Database = {
             columns: ["comment_id"]
             isOneToOne: false
             referencedRelation: "discussion_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discussion_subscriptions: {
+        Row: {
+          created_at: string | null
+          discussion_id: string
+          id: string
+          notify_on_mention: boolean | null
+          notify_on_reply: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          discussion_id: string
+          id?: string
+          notify_on_mention?: boolean | null
+          notify_on_reply?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          discussion_id?: string
+          id?: string
+          notify_on_mention?: boolean | null
+          notify_on_reply?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discussion_subscriptions_discussion_id_fkey"
+            columns: ["discussion_id"]
+            isOneToOne: false
+            referencedRelation: "discussions"
             referencedColumns: ["id"]
           },
         ]
@@ -6059,6 +6097,51 @@ export type Database = {
           },
         ]
       }
+      listing_analytics: {
+        Row: {
+          id: string
+          listing_id: string
+          offer_count: number | null
+          unique_viewers: number | null
+          view_count: number | null
+          view_date: string
+          watchlist_adds: number | null
+        }
+        Insert: {
+          id?: string
+          listing_id: string
+          offer_count?: number | null
+          unique_viewers?: number | null
+          view_count?: number | null
+          view_date?: string
+          watchlist_adds?: number | null
+        }
+        Update: {
+          id?: string
+          listing_id?: string
+          offer_count?: number | null
+          unique_viewers?: number | null
+          view_count?: number | null
+          view_date?: string
+          watchlist_adds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_analytics_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_analytics_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_card_data: {
         Row: {
           contributed_to_catalog: boolean | null
@@ -6222,6 +6305,51 @@ export type Database = {
           },
           {
             foreignKeyName: "listing_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_watchers: {
+        Row: {
+          created_at: string | null
+          id: string
+          listing_id: string
+          notify_on_expiry: boolean | null
+          notify_on_price_change: boolean | null
+          notify_on_sold: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          listing_id: string
+          notify_on_expiry?: boolean | null
+          notify_on_price_change?: boolean | null
+          notify_on_sold?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+          notify_on_expiry?: boolean | null
+          notify_on_price_change?: boolean | null
+          notify_on_sold?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_watchers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "listing_watchers_listing_id_fkey"
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "listings"
@@ -6999,40 +7127,58 @@ export type Database = {
       notification_preferences: {
         Row: {
           created_at: string
+          expiring_listings: boolean | null
           follower_activity: boolean | null
           id: string
+          listing_watched: boolean | null
           messages: boolean | null
           new_offers: boolean | null
           order_updates: boolean | null
           price_alerts: boolean | null
+          price_changes: boolean | null
           push_enabled: boolean | null
           push_subscription: Json | null
+          seller_new_listing: boolean | null
+          thread_mentions: boolean | null
+          thread_replies: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          expiring_listings?: boolean | null
           follower_activity?: boolean | null
           id?: string
+          listing_watched?: boolean | null
           messages?: boolean | null
           new_offers?: boolean | null
           order_updates?: boolean | null
           price_alerts?: boolean | null
+          price_changes?: boolean | null
           push_enabled?: boolean | null
           push_subscription?: Json | null
+          seller_new_listing?: boolean | null
+          thread_mentions?: boolean | null
+          thread_replies?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          expiring_listings?: boolean | null
           follower_activity?: boolean | null
           id?: string
+          listing_watched?: boolean | null
           messages?: boolean | null
           new_offers?: boolean | null
           order_updates?: boolean | null
           price_alerts?: boolean | null
+          price_changes?: boolean | null
           push_enabled?: boolean | null
           push_subscription?: Json | null
+          seller_new_listing?: boolean | null
+          thread_mentions?: boolean | null
+          thread_replies?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -7299,6 +7445,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "order_escalations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_history: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          order_id: string
+          previous_status: string | null
+          status: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id: string
+          previous_status?: string | null
+          status: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          order_id?: string
+          previous_status?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
@@ -9765,6 +9952,60 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_metrics: {
+        Row: {
+          avg_rating: number | null
+          avg_response_time_hours: number | null
+          avg_ship_time_hours: number | null
+          cancelled_orders: number | null
+          completed_orders: number | null
+          created_at: string | null
+          dispute_rate: number | null
+          disputed_orders: number | null
+          fulfillment_rate: number | null
+          id: string
+          last_calculated_at: string | null
+          seller_id: string
+          total_orders: number | null
+          total_reviews: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_rating?: number | null
+          avg_response_time_hours?: number | null
+          avg_ship_time_hours?: number | null
+          cancelled_orders?: number | null
+          completed_orders?: number | null
+          created_at?: string | null
+          dispute_rate?: number | null
+          disputed_orders?: number | null
+          fulfillment_rate?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          seller_id: string
+          total_orders?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_rating?: number | null
+          avg_response_time_hours?: number | null
+          avg_ship_time_hours?: number | null
+          cancelled_orders?: number | null
+          completed_orders?: number | null
+          created_at?: string | null
+          dispute_rate?: number | null
+          disputed_orders?: number | null
+          fulfillment_rate?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          seller_id?: string
+          total_orders?: number | null
+          total_reviews?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       seller_trust_scores: {
         Row: {
           avg_delivery_days: number | null
@@ -9894,6 +10135,30 @@ export type Database = {
         }
         Relationships: []
       }
+      seller_watchers: {
+        Row: {
+          created_at: string | null
+          id: string
+          notify_on_new_listing: boolean | null
+          seller_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notify_on_new_listing?: boolean | null
+          seller_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notify_on_new_listing?: boolean | null
+          seller_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       set_aliases: {
         Row: {
           alias: string
@@ -9955,6 +10220,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      set_watchers: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          notify_on_new_listing: boolean | null
+          set_name: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          notify_on_new_listing?: boolean | null
+          set_name: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          notify_on_new_listing?: boolean | null
+          set_name?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       shadow_wishlists: {
         Row: {
