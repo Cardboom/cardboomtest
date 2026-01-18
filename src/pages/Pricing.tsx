@@ -407,189 +407,236 @@ const Pricing = () => {
           </div>
         </div>
 
-        {/* Grading Prices Section */}
+        {/* CBGI Grading Section */}
         <div className="max-w-6xl mx-auto mt-20 pt-12 border-t border-border/50">
           <div className="text-center mb-12">
-            <Badge variant="outline" className="mb-4 text-amber-500 border-amber-500/30">
+            <Badge variant="outline" className="mb-4 text-primary border-primary/30">
               <Award className="w-3 h-3 mr-1" />
-              Professional Grading
+              CBGI Grading
             </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Grading <span className="text-amber-500">Prices</span>
+              CardBoom <span className="text-primary">Grading Index</span>
             </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Get your cards professionally graded with PSA, BGS, or CGC through our trusted service
+            <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
+              Our proprietary grading system with AI-powered online pre-grading and full physical certification with CBGI slab protection & ultrasonic welding
             </p>
           </div>
 
-          {/* Speed Tiers */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {/* Standard */}
-            <Card className="relative overflow-hidden border-border/50 hover:shadow-lg transition-all duration-300">
-              <CardHeader className="text-center pb-2">
-                <div className="w-12 h-12 rounded-xl bg-muted mx-auto mb-3 flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-muted-foreground" />
+          {/* Two Service Types */}
+          <div className="grid lg:grid-cols-2 gap-8 mb-12">
+            {/* Online Pre-Grading */}
+            <Card className="relative overflow-hidden border-2 border-blue-500/30 hover:shadow-xl transition-all duration-300">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500" />
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 rounded-2xl bg-blue-500/10 mx-auto mb-4 flex items-center justify-center">
+                  <Sparkles className="w-8 h-8 text-blue-500" />
                 </div>
-                <CardTitle className="text-xl">Standard</CardTitle>
-                <CardDescription>Best value for patient collectors</CardDescription>
+                <Badge className="mb-2 bg-blue-500/10 text-blue-600 border-blue-500/30">AI-Powered</Badge>
+                <CardTitle className="text-2xl">Online Pre-Grading</CardTitle>
+                <CardDescription className="text-base">Instant AI analysis from your photos</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$18</span>
-                  <span className="text-muted-foreground">/card</span>
+              <CardContent>
+                <div className="text-center mb-6">
+                  <span className="text-5xl font-bold text-blue-500">FREE</span>
+                  <p className="text-sm text-muted-foreground mt-1">with signup credits</p>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-4 mb-6">
+                
+                <div className="bg-blue-500/5 rounded-xl p-4 mb-6 border border-blue-500/20">
                   <div className="flex items-center justify-center gap-2 text-sm">
-                    <Timer className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Est. Delivery:</span>
-                    <Badge variant="outline" className="font-semibold">60-90 days</Badge>
+                    <Zap className="w-4 h-4 text-blue-500" />
+                    <span className="font-medium text-blue-600">Results in 30 seconds</span>
                   </div>
                 </div>
-                <ul className="space-y-2 text-left">
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>PSA, BGS, or CGC grading</span>
+
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-blue-500" />
+                    </div>
+                    <span>Upload front & back photos</span>
                   </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Full authentication</span>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-blue-500" />
+                    </div>
+                    <span>AI analyzes corners, edges, surface & centering</span>
                   </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Protective case included</span>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-blue-500" />
+                    </div>
+                    <span>Get estimated CBGI score (1-10)</span>
                   </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Insurance up to $500</span>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-blue-500" />
+                    </div>
+                    <span>Decide if worth sending for full certification</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-blue-500" />
+                    </div>
+                    <span>Perfect for screening your collection</span>
                   </li>
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full" onClick={() => navigate('/grading')}>
-                  Start Grading
+                <Button variant="outline" className="w-full border-blue-500/50 text-blue-600 hover:bg-blue-500/10" onClick={() => navigate('/grading')}>
+                  Try Pre-Grading Free
                 </Button>
               </CardFooter>
             </Card>
 
-            {/* Express */}
-            <Card className="relative overflow-hidden border-primary shadow-lg scale-[1.02]">
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
-                POPULAR
+            {/* Full CBGI Certification */}
+            <Card className="relative overflow-hidden border-2 border-primary shadow-xl">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-amber-500" />
+              <div className="absolute top-4 right-4">
+                <Badge className="bg-primary text-primary-foreground">FULL SERVICE</Badge>
               </div>
-              <CardHeader className="text-center pb-2">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 mx-auto mb-3 flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-primary" />
+              <CardHeader className="text-center pb-4">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 mx-auto mb-4 flex items-center justify-center">
+                  <ShieldCheck className="w-8 h-8 text-primary" />
                 </div>
-                <CardTitle className="text-xl">Express</CardTitle>
-                <CardDescription>Faster turnaround for eager collectors</CardDescription>
+                <Badge className="mb-2 bg-amber-500/10 text-amber-600 border-amber-500/30">After Vault Submission</Badge>
+                <CardTitle className="text-2xl">Full CBGI Certification</CardTitle>
+                <CardDescription className="text-base">Physical grading with slab protection & welding</CardDescription>
               </CardHeader>
-              <CardContent className="text-center">
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$35</span>
-                  <span className="text-muted-foreground">/card</span>
-                </div>
-                <div className="bg-primary/5 rounded-lg p-4 mb-6 border border-primary/20">
-                  <div className="flex items-center justify-center gap-2 text-sm">
-                    <Timer className="w-4 h-4 text-primary" />
-                    <span className="text-muted-foreground">Est. Delivery:</span>
-                    <Badge className="font-semibold bg-primary">20-30 days</Badge>
+              <CardContent>
+                <div className="text-center mb-6">
+                  <span className="text-sm text-muted-foreground">Starting from</span>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-5xl font-bold">$18</span>
+                    <span className="text-muted-foreground">/card</span>
                   </div>
                 </div>
-                <ul className="space-y-2 text-left">
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Everything in Standard</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Priority queue processing</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Insurance up to $2,500</span>
-                  </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Email status updates</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full" onClick={() => navigate('/grading')}>
-                  Start Grading
-                </Button>
-              </CardFooter>
-            </Card>
 
-            {/* Priority */}
-            <Card className="relative overflow-hidden border-amber-500/50 hover:shadow-lg transition-all duration-300">
-              <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                FASTEST
-              </div>
-              <CardHeader className="text-center pb-2">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/10 mx-auto mb-3 flex items-center justify-center">
-                  <Rocket className="w-6 h-6 text-amber-500" />
-                </div>
-                <CardTitle className="text-xl">Priority</CardTitle>
-                <CardDescription>Fastest possible turnaround</CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">$75</span>
-                  <span className="text-muted-foreground">/card</span>
-                </div>
-                <div className="bg-amber-500/5 rounded-lg p-4 mb-6 border border-amber-500/20">
-                  <div className="flex items-center justify-center gap-2 text-sm">
-                    <Timer className="w-4 h-4 text-amber-500" />
-                    <span className="text-muted-foreground">Est. Delivery:</span>
-                    <Badge className="font-semibold bg-amber-500">5-10 days</Badge>
+                {/* Speed Tiers */}
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">Standard</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground">20-25 days</span>
+                      <Badge variant="outline" className="font-bold">$18</Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/30">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-primary" />
+                      <span className="font-medium">Express</span>
+                      <Badge variant="secondary" className="text-[10px] h-4">Popular</Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground">7-10 days</span>
+                      <Badge className="font-bold bg-primary">$35</Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 border border-amber-500/30">
+                    <div className="flex items-center gap-2">
+                      <Rocket className="w-4 h-4 text-amber-500" />
+                      <span className="font-medium">Priority</span>
+                      <Badge className="text-[10px] h-4 bg-amber-500">Fastest</Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground">2-3 days</span>
+                      <Badge className="font-bold bg-amber-500">$75</Badge>
+                    </div>
                   </div>
                 </div>
-                <ul className="space-y-2 text-left">
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Everything in Express</span>
+
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-green-500" />
+                    </div>
+                    <span>Submit card via Vault for physical inspection</span>
                   </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>VIP queue placement</span>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-green-500" />
+                    </div>
+                    <span>Expert graders verify condition & authenticity</span>
                   </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Insurance up to $10,000</span>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-green-500" />
+                    </div>
+                    <span><strong>CBGI Certification</strong> with official grade</span>
                   </li>
-                  <li className="flex items-start gap-2 text-sm">
-                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span>Real-time tracking</span>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-green-500" />
+                    </div>
+                    <span><strong>Ultrasonic welded slab</strong> for tamper protection</span>
+                  </li>
+                  <li className="flex items-start gap-3 text-sm">
+                    <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Check className="w-3 h-3 text-green-500" />
+                    </div>
+                    <span>QR-verified label with blockchain registry</span>
                   </li>
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full border-amber-500/50 text-amber-600 hover:bg-amber-500/10" onClick={() => navigate('/grading')}>
-                  Start Grading
+                <Button className="w-full" onClick={() => navigate('/vault')}>
+                  Submit via Vault
                 </Button>
               </CardFooter>
             </Card>
           </div>
 
-          {/* Grading Benefits */}
+          {/* How It Works */}
+          <div className="mb-12">
+            <h3 className="text-xl font-bold text-center mb-6">How CBGI Grading Works</h3>
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="relative p-4 rounded-xl bg-muted/30 text-center">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">1</div>
+                <Sparkles className="w-8 h-8 mx-auto mb-3 text-blue-500" />
+                <p className="font-medium text-sm">Pre-Grade Online</p>
+                <p className="text-xs text-muted-foreground mt-1">Upload photos for instant AI analysis</p>
+              </div>
+              <div className="relative p-4 rounded-xl bg-muted/30 text-center">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">2</div>
+                <Package className="w-8 h-8 mx-auto mb-3 text-purple-500" />
+                <p className="font-medium text-sm">Send to Vault</p>
+                <p className="text-xs text-muted-foreground mt-1">Ship card to our secure facility</p>
+              </div>
+              <div className="relative p-4 rounded-xl bg-muted/30 text-center">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">3</div>
+                <Award className="w-8 h-8 mx-auto mb-3 text-amber-500" />
+                <p className="font-medium text-sm">Expert Grading</p>
+                <p className="text-xs text-muted-foreground mt-1">Physical inspection & certification</p>
+              </div>
+              <div className="relative p-4 rounded-xl bg-muted/30 text-center">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">4</div>
+                <ShieldCheck className="w-8 h-8 mx-auto mb-3 text-green-500" />
+                <p className="font-medium text-sm">Slab & Ship</p>
+                <p className="text-xs text-muted-foreground mt-1">Welded slab returned to you</p>
+              </div>
+            </div>
+          </div>
+
+          {/* CBGI Benefits */}
           <div className="grid md:grid-cols-4 gap-4 mb-12">
             <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
               <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
                 <ShieldCheck className="w-5 h-5 text-green-500" />
               </div>
               <div>
-                <p className="font-medium text-sm">Fully Insured</p>
-                <p className="text-xs text-muted-foreground">Cards protected in transit</p>
+                <p className="font-medium text-sm">Ultrasonic Welding</p>
+                <p className="text-xs text-muted-foreground">Tamper-proof slab protection</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
               <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                <Package className="w-5 h-5 text-blue-500" />
+                <Sparkles className="w-5 h-5 text-blue-500" />
               </div>
               <div>
-                <p className="font-medium text-sm">Free Shipping</p>
-                <p className="text-xs text-muted-foreground">Return shipping included</p>
+                <p className="font-medium text-sm">AI Pre-Screen</p>
+                <p className="text-xs text-muted-foreground">Know before you send</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
@@ -597,17 +644,17 @@ const Pricing = () => {
                 <Award className="w-5 h-5 text-purple-500" />
               </div>
               <div>
-                <p className="font-medium text-sm">Certified Grades</p>
-                <p className="text-xs text-muted-foreground">PSA, BGS, CGC official</p>
+                <p className="font-medium text-sm">CBGI Certified</p>
+                <p className="text-xs text-muted-foreground">Trusted CardBoom grades</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/30">
               <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-amber-500" />
+                <Package className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <p className="font-medium text-sm">Auto-List Option</p>
-                <p className="text-xs text-muted-foreground">List on marketplace instantly</p>
+                <p className="font-medium text-sm">Insured Shipping</p>
+                <p className="text-xs text-muted-foreground">Protected both ways</p>
               </div>
             </div>
           </div>
