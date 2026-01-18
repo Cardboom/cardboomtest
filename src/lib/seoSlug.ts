@@ -9,7 +9,26 @@ export interface CardSlugData {
   external_id?: string | null; // card number
   series?: string | null; // can contain year
   category: string;
+  card_code?: string | null; // Full card code e.g. EB03-053, OP01-016
 }
+
+/**
+ * Extracts card code from name for One Piece cards
+ * Matches patterns like: EB03-053, OP01-016, ST01-001
+ */
+export const extractCardCode = (name: string): string | null => {
+  // Match One Piece card codes: 2-3 letters + 2 digits + hyphen + 3 digits
+  const match = name.match(/\b([A-Z]{2,3}\d{1,2}-\d{2,3})\b/i);
+  return match ? match[1].toUpperCase() : null;
+};
+
+/**
+ * Checks if category is One Piece
+ */
+export const isOnePieceCategory = (category: string): boolean => {
+  const normalized = category.toLowerCase().replace(/[^a-z]/g, '');
+  return normalized === 'onepiece' || normalized === 'one-piece' || normalized === 'onepiecetcg';
+};
 
 /**
  * Normalizes text for URL slugs:
@@ -41,10 +60,19 @@ export const extractYear = (text?: string | null): string | null => {
 
 /**
  * Generates a canonical SEO slug from card data
- * Format: card-name-set-name-card-number-year
- * Example: charizard-base-set-4-1999
+ * For One Piece: Uses card_code directly (e.g., eb03-053)
+ * For other TCGs: Uses name-set-number format
  */
 export const generateCardSlug = (card: CardSlugData): string => {
+  // For One Piece, use card_code as the unique identifier
+  if (isOnePieceCategory(card.category)) {
+    const cardCode = card.card_code || extractCardCode(card.name);
+    if (cardCode) {
+      // Format: card-code (e.g., eb03-053)
+      return cardCode.toLowerCase();
+    }
+  }
+  
   const parts: string[] = [];
   
   // Card name (required)
@@ -74,10 +102,11 @@ export const generateCardSlug = (card: CardSlugData): string => {
 
 /**
  * Generates the full canonical URL path for a card
- * Format: /cards/:category/:slug
+ * For One Piece: /cards/one-piece/{card_code}
+ * For other TCGs: /cards/:category/:slug
  */
 export const generateCardUrl = (card: CardSlugData): string => {
-  const categorySlug = normalizeSlug(card.category);
+  const categorySlug = normalizeCategory(card.category);
   const cardSlug = generateCardSlug(card);
   return `/cards/${categorySlug}/${cardSlug}`;
 };
@@ -107,6 +136,30 @@ export const generateCardUrlWithVariants = (
 };
 
 /**
+ * Parses a One Piece card code from slug
+ * Returns the card code if it matches the OP pattern (anywhere in the slug)
+ * Handles: eb03-053, nami-op01-016-romance-dawn, op01016, etc.
+ */
+export const parseOnePieceCardCode = (slug: string): string | null => {
+  // Normalize slug for matching
+  const normalized = slug.toLowerCase();
+  
+  // Pattern 1: Card code with hyphen (EB03-053, OP01-016)
+  const hyphenMatch = normalized.match(/\b([a-z]{2,3})(\d{1,2})-(\d{2,3})\b/i);
+  if (hyphenMatch) {
+    return `${hyphenMatch[1].toUpperCase()}${hyphenMatch[2]}-${hyphenMatch[3]}`;
+  }
+  
+  // Pattern 2: Card code without hyphen but in specific format (eb03053, op01016)
+  const compactMatch = normalized.match(/\b([a-z]{2,3})(\d{1,2})(\d{3})\b/i);
+  if (compactMatch) {
+    return `${compactMatch[1].toUpperCase()}${compactMatch[2]}-${compactMatch[3]}`;
+  }
+  
+  return null;
+};
+
+/**
  * Parses a slug back to search components
  * This is a best-effort reverse of generateCardSlug
  */
@@ -114,7 +167,17 @@ export const parseSlug = (slug: string): {
   searchTerms: string;
   possibleYear?: string;
   possibleCardNumber?: string;
+  onePieceCardCode?: string;
 } => {
+  // First try to extract One Piece card code from anywhere in the slug
+  const onePieceCode = parseOnePieceCardCode(slug);
+  if (onePieceCode) {
+    return {
+      searchTerms: onePieceCode,
+      onePieceCardCode: onePieceCode,
+    };
+  }
+  
   const parts = slug.split('-');
   let possibleYear: string | undefined;
   let possibleCardNumber: string | undefined;

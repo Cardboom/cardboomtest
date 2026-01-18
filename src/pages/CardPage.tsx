@@ -28,7 +28,9 @@ import {
   generateCardSlug, 
   parseSlug, 
   normalizeCategory,
-  normalizeSlug 
+  normalizeSlug,
+  isOnePieceCategory,
+  extractCardCode 
 } from '@/lib/seoSlug';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -53,16 +55,67 @@ const CardPage = () => {
   }, []);
 
   // Parse slug to extract search components
-  const { searchTerms, possibleYear, possibleCardNumber } = parseSlug(slug || '');
+  const { searchTerms, possibleYear, possibleCardNumber, onePieceCardCode } = parseSlug(slug || '');
   
   // Split search terms into words for flexible matching (filter short words)
   const searchWords = searchTerms.split(' ').filter(w => w.length >= 3);
+  
+  // Check if this is a One Piece category
+  const isOnepiece = isOnePieceCategory(category || '');
 
   // Fetch item by slug resolution - improved matching logic
   const { data: item, isLoading, isError } = useQuery({
     queryKey: ['card-page-seo', category, slug],
     queryFn: async () => {
       const normalizedCategory = normalizeCategory(category || '');
+      
+      // STRATEGY 0: For One Piece, use EXACT card_code matching (NO FALLBACKS)
+      if (isOnepiece) {
+        const cardCode = onePieceCardCode || extractCardCode(slug || '');
+        
+        if (cardCode) {
+          // Try exact match on name containing the card code
+          const { data: exactCodeMatch } = await supabase
+            .from('market_items')
+            .select('*')
+            .or(`category.ilike.one-piece%,category.ilike.onepiece%`)
+            .ilike('name', `%${cardCode}%`)
+            .limit(5);
+          
+          if (exactCodeMatch && exactCodeMatch.length > 0) {
+            // Find the exact match where the card code in name matches exactly
+            const exactMatch = exactCodeMatch.find(item => {
+              const itemCode = extractCardCode(item.name);
+              return itemCode === cardCode;
+            });
+            
+            if (exactMatch) {
+              return exactMatch;
+            }
+            
+            // If no exact match, return first result (should not happen with proper data)
+            console.warn(`[CardPage] One Piece card code ${cardCode} had multiple matches, using first`);
+            return exactCodeMatch[0];
+          }
+        }
+        
+        // If no card code found in slug, try full slug match
+        const { data: fullSlugMatch } = await supabase
+          .from('market_items')
+          .select('*')
+          .or(`category.ilike.one-piece%,category.ilike.onepiece%`)
+          .ilike('name', `%${slug?.replace(/-/g, ' ')}%`)
+          .limit(1)
+          .maybeSingle();
+        
+        if (fullSlugMatch) return fullSlugMatch;
+        
+        // One Piece: DO NOT use name-based fallbacks to avoid collisions
+        console.error(`[CardPage] One Piece card not found for slug: ${slug}`);
+        return null;
+      }
+      
+      // NON-ONE PIECE: Use existing fuzzy matching strategies
       
       // Strategy 1: Try exact external_id match
       if (possibleCardNumber) {
@@ -161,13 +214,30 @@ const CardPage = () => {
       const currentPath = location.pathname;
       const canonicalPath = `/cards/${canonicalCategory}/${canonicalSlug}`;
       
-      // Only redirect if the current slug is a reasonable match for this item
-      // This prevents redirect loops when fuzzy matching returns a different card
+      // For One Piece: Use card code validation (strict matching)
+      if (isOnepiece) {
+        const requestedCode = onePieceCardCode || extractCardCode(slug);
+        const itemCode = extractCardCode(item.name);
+        
+        // Validate that we got the right card
+        if (requestedCode && itemCode && requestedCode !== itemCode) {
+          console.error(`[CardPage] One Piece routing mismatch! Requested: ${requestedCode}, Got: ${itemCode}`);
+          // Don't redirect - this is an error state
+          return;
+        }
+        
+        // Redirect to canonical card code URL if needed
+        if (currentPath !== canonicalPath && itemCode) {
+          navigate(canonicalPath + location.search, { replace: true });
+        }
+        return;
+      }
+      
+      // NON-ONE PIECE: Use fuzzy word matching for redirects
       const currentSlugNormalized = normalizeSlug(slug).toLowerCase();
       const itemNameNormalized = normalizeSlug(item.name).toLowerCase();
       
       // Check if the original slug contains significant parts of the item name
-      // or if the item name contains significant parts of the slug
       const slugWords = currentSlugNormalized.split('-').filter(w => w.length >= 3);
       const nameWords = itemNameNormalized.split('-').filter(w => w.length >= 3);
       
@@ -181,7 +251,7 @@ const CardPage = () => {
         navigate(canonicalPath + location.search, { replace: true });
       }
     }
-  }, [item, isLoading, slug, location.pathname, location.search, navigate]);
+  }, [item, isLoading, slug, location.pathname, location.search, navigate, isOnepiece, onePieceCardCode]);
 
   // Fetch watchlist count
   const { data: watchlistCount } = useQuery({
