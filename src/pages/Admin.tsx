@@ -65,6 +65,7 @@ import { CreatorManagement } from '@/components/admin/CreatorManagement';
 import { BoomCoinsPricingManager } from '@/components/admin/BoomCoinsPricingManager';
 import { CoachVerificationQueue } from '@/components/admin/CoachVerificationQueue';
 import { ImageNormalizationManager } from '@/components/admin/ImageNormalizationManager';
+import { CatalogOpsPanel } from '@/components/admin/CatalogOpsPanel';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -306,6 +307,8 @@ const Admin = () => {
         return <GradingCalibrationDashboard />;
       case 'image-normalization':
         return <ImageNormalizationManager />;
+      case 'catalog-ops':
+        return <CatalogOpsPanel />;
       case 'datasync':
         return <DataSyncManager />;
       case 'autobuy':
