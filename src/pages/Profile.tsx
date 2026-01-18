@@ -217,14 +217,14 @@ const Profile = () => {
       // Add listings values
       const listingsValue = listings.reduce((sum, listing) => sum + (listing.price || 0), 0);
       
-      // Add current wallet balance to total value
+      // Get wallet balance for PnL calculation only (not included in displayed portfolio value)
       const walletBalance = wallet?.balance || 0;
       
-      // Total value = portfolio + instances + listings + wallet balance
-      const totalValue = portfolioValue + instancesValue + listingsValue + walletBalance;
+      // Total portfolio value = cards only (portfolio + instances + listings) - excludes wallet
+      const totalValue = portfolioValue + instancesValue + listingsValue;
       
-      // PnL = Current total value - Total cash deposited/earned into platform
-      const pnl = totalValue - totalCashIn;
+      // PnL = (Current portfolio value + wallet) - Total cash deposited/earned into platform
+      const pnl = (totalValue + walletBalance) - totalCashIn;
       const pnlPercent = totalCashIn > 0 ? ((pnl / totalCashIn) * 100) : 0;
       
       return {
