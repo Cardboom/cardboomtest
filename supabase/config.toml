@@ -155,3 +155,15 @@ verify_jwt = false
 
 [functions.cleanup-duplicates]
 verify_jwt = false
+
+[functions.catalog-normalize]
+verify_jwt = false
+
+[functions.catalog-ingest-pricecharting]
+verify_jwt = false
+
+[functions.catalog-ingest-ebay]
+verify_jwt = false
+
+[functions.sync-cardmarket-prices]
+verify_jwt = false
