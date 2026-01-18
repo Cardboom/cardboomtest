@@ -1052,11 +1052,12 @@ export const UserManagement = () => {
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Contact</TableHead>
+                    <TableHead>National ID</TableHead>
                     <TableHead className="text-center">Pro</TableHead>
                     <TableHead className="text-center">ID Verified</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Joined</TableHead>
+                    <TableHead>Last Activity</TableHead>
                     <TableHead className="text-center">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -1080,6 +1081,9 @@ export const UserManagement = () => {
                           <p className="text-xs text-muted-foreground">{user.phone || 'No phone'}</p>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <p className="text-sm font-mono">{user.national_id || '-'}</p>
+                      </TableCell>
                       <TableCell className="text-center">
                         {isUserPro(user.id) ? (
                           <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/30">
@@ -1102,7 +1106,16 @@ export const UserManagement = () => {
                       </TableCell>
                       <TableCell>{getStatusBadge(user.account_status)}</TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                        {format(new Date(user.created_at), 'dd MMM yyyy')}
+                        <div className="flex flex-col">
+                          <span className="text-xs">
+                            {user.last_login_at 
+                              ? format(new Date(user.last_login_at), 'dd MMM HH:mm')
+                              : 'Never'}
+                          </span>
+                          <span className="text-xs text-muted-foreground/60">
+                            Joined {format(new Date(user.created_at), 'dd MMM yyyy')}
+                          </span>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Button
