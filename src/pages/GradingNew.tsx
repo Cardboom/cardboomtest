@@ -139,10 +139,49 @@ export default function GradingNew() {
   const backInputRef = useRef<HTMLInputElement>(null);
   const frontInputRef = useRef<HTMLInputElement>(null);
 
-  // Check for listing ID in URL params
+  // Check for listing ID or vault item in URL params
   useEffect(() => {
     const listingId = searchParams.get('listing');
-    if (listingId) {
+    const vaultItemId = searchParams.get('vault_item_id');
+    
+    if (vaultItemId) {
+      // Pre-populate from vault item data passed via URL
+      setGradeMode('new');
+      const frontImage = searchParams.get('front_image');
+      const backImage = searchParams.get('back_image');
+      const cardName = searchParams.get('card_name');
+      const setName = searchParams.get('set_name');
+      const cardNumber = searchParams.get('card_number');
+      const category = searchParams.get('category');
+      
+      if (frontImage) {
+        setFrontPreview(frontImage);
+      }
+      if (backImage) {
+        setBackPreview(backImage);
+      }
+      
+      // Pre-fill card analysis data from vault
+      if (cardName || setName || cardNumber) {
+        setReviewedCardData({
+          cardName: cardName || '',
+          cardNameEnglish: cardName || '',
+          setName: setName || '',
+          setCode: '',
+          cardNumber: cardNumber || '',
+          category: category || 'pokemon',
+          language: 'English',
+          rarity: '',
+          cviKey: null,
+          confidence: 100,
+        });
+      }
+      
+      toast({
+        title: "Vault Card Loaded",
+        description: "Your vault card details have been pre-filled for grading",
+      });
+    } else if (listingId) {
       setGradeMode('listing');
       // Fetch the listing details
       supabase
@@ -163,7 +202,7 @@ export default function GradingNew() {
           }
         });
     }
-  }, [searchParams]);
+  }, [searchParams, toast]);
 
   // Check authentication and redirect if not logged in
   useEffect(() => {
