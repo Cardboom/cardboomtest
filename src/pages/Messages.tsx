@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -93,13 +93,19 @@ const Messages = () => {
     };
   }, [user, selectedConversation]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = useCallback(() => {
+    // Use requestAnimationFrame to ensure DOM is updated before scrolling
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
+    });
+  }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only scroll within the messages container, not the whole page
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages, scrollToBottom]);
 
   const fetchConversations = async (userId: string) => {
     try {
