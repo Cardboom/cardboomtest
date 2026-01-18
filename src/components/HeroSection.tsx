@@ -134,9 +134,12 @@ export const HeroSection = ({ isLoggedIn = false }: HeroSectionProps) => {
         >
           {/* Headline */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-6">
-            <span className="text-foreground">Don't just track your portfolio.</span>
+            <span className="text-primary">Grade</span>
+            <span className="text-foreground"> Your Portfolio.</span>
             <br />
-            <span className="text-primary">Trade & sell it.</span>
+            <span className="text-foreground">Track Your Portfolio.</span>
+            <br />
+            <span className="text-foreground">Trade It.</span>
           </h1>
           
           {/* Subtitle */}
