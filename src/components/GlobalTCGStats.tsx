@@ -182,9 +182,9 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               transition={{ duration: 0.5 }}
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 leading-[1.05]"
             >
-              Don't just track your collection.
+              Don't Only Track Your Collection,
               <span className="block mt-1">
-                <span className="text-primary">Grade it.</span> <span className="text-foreground">Value it.</span> <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">Trade it.</span>
+                <span className="text-primary">Grade It</span>, Trade It.
               </span>
             </motion.h1>
             
