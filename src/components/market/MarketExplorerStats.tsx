@@ -24,40 +24,53 @@ export const MarketExplorerStats = () => {
         .from('market_items')
         .select('*', { count: 'exact', head: true });
 
-      if (marketError) throw marketError;
+      if (marketError) {
+        console.error('Market items error:', marketError);
+      }
 
       // Fetch active listings count and total value (exclude coaching)
+      // Query only active listings to work with anon RLS policy
       const { data: listings, error: listingsError } = await supabase
         .from('listings')
         .select('price, status')
+        .eq('status', 'active')
         .neq('category', 'coaching');
 
-      if (listingsError) throw listingsError;
+      if (listingsError) {
+        console.error('Listings error:', listingsError);
+      }
 
-      const activeListings = listings?.filter(l => l.status === 'active') || [];
-      const totalValue = activeListings.reduce((sum, l) => sum + Number(l.price), 0);
+      const activeListings = listings || [];
+      const totalListingValue = activeListings.reduce((sum, l) => sum + Number(l.price || 0), 0);
 
       // Fetch users count from profiles
       const { count: usersCount, error: usersError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
 
-      if (usersError) throw usersError;
+      if (usersError) {
+        console.error('Users error:', usersError);
+      }
 
-      // Fetch completed orders for volume
+      // Fetch all orders for volume calculation
       const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('price');
 
-      if (ordersError) throw ordersError;
+      if (ordersError) {
+        console.error('Orders error:', ordersError);
+      }
 
-      const totalVolume = orders?.reduce((sum, o) => sum + Number(o.price), 0) || 0;
+      const ordersVolume = orders?.reduce((sum, o) => sum + Number(o.price || 0), 0) || 0;
+      
+      // Total volume = completed order value + active listings value
+      const calculatedVolume = ordersVolume + totalListingValue;
 
       setStats({
-        totalListings: listings?.length || 0,
+        totalListings: activeListings.length,
         activeListings: activeListings.length,
         totalUsers: usersCount || 0,
-        totalVolume: totalVolume + totalValue,
+        totalVolume: calculatedVolume,
         indexedItems: marketItemsCount || 0,
       });
     } catch (error) {
