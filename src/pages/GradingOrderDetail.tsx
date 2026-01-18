@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useGrading, GradingOrder, GRADING_CATEGORIES } from '@/hooks/useGrading';
+import { useAdminRole } from '@/hooks/useAdminRole';
 import { CBGIResultCard } from '@/components/grading/CBGIResultCard';
 import { GradingFeedbackDialog } from '@/components/grading/GradingFeedbackDialog';
 import { OrderStatusTimeline } from '@/components/grading/OrderStatusTimeline';
@@ -15,13 +16,14 @@ import { CartDrawer } from '@/components/CartDrawer';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award, Timer, Loader2, ShoppingCart, Tag } from 'lucide-react';
+import { ArrowLeft, Clock, Mail, RefreshCw, Calendar, DollarSign, Award, Timer, Loader2, ShoppingCart, Tag, Zap } from 'lucide-react';
 import { format, addDays, addHours, differenceInSeconds } from 'date-fns';
 
 export default function GradingOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getOrder } = useGrading();
+  const { isAdmin } = useAdminRole();
   const [order, setOrder] = useState<GradingOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
@@ -129,8 +131,20 @@ export default function GradingOrderDetail() {
 
         <div className="grid lg:grid-cols-2 gap-6">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
-            {isCompleted ? (
+            {/* Admin sees results immediately, regular users see countdown for pending */}
+            {isCompleted || (isAdmin && order.cbgi_score_0_100) ? (
               <>
+                {isAdmin && !isCompleted && (
+                  <Card className="border-amber-500/30 bg-amber-500/10 mb-4">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <Zap className="w-5 h-5 text-amber-500" />
+                      <div>
+                        <p className="font-semibold text-amber-600 dark:text-amber-400 text-sm">Admin Instant Access</p>
+                        <p className="text-xs text-muted-foreground">Viewing grading results before user reveal timer</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
                 <CBGIResultCard order={order} />
                 {order.cbgi_score_0_100 && (
                   <GradingFeedbackDialog orderId={order.id} cbgiScore={order.cbgi_score_0_100} />
@@ -138,8 +152,8 @@ export default function GradingOrderDetail() {
               </>
             ) : (
               <>
-                {/* Countdown Timer for Pending Orders */}
-                {isPending && order.paid_at && (
+                {/* Countdown Timer for Pending Orders - only for non-admins */}
+                {isPending && order.paid_at && !isAdmin && (
                   <Card className="border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 overflow-hidden">
                     <CardContent className="p-6 text-center relative">
                       {/* Animated background pulse */}
