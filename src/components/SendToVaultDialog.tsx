@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Vault, Package, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles, Lock, ScanLine, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { CardScannerUpload } from './CardScannerUpload';
 import { CardReviewModal, ReviewedCardData } from './card-scan/CardReviewModal';
@@ -45,6 +44,10 @@ export const SendToVaultDialog = ({ open, onOpenChange }: SendToVaultDialogProps
   // Final confirmed data
   const [confirmedData, setConfirmedData] = useState<ReviewedCardData | null>(null);
   const [scanSessionId, setScanSessionId] = useState<string | null>(null);
+  
+  // Note: Back image support ready for future enhancement
+  const [_backImageFile] = useState<File | null>(null);
+  const [_backImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {

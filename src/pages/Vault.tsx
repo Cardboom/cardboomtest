@@ -12,7 +12,6 @@ import {
   Vault as VaultIcon, 
   Package, 
   TrendingUp, 
-  ExternalLink, 
   Send, 
   Shield, 
   Clock, 
@@ -23,8 +22,7 @@ import {
   BarChart3,
   X,
   MapPin,
-  Copy,
-  Zap
+  Copy
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -79,7 +77,7 @@ const WAREHOUSE_ADDRESS = {
 
 const VaultPage = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  useLanguage();
   const { formatPrice } = useCurrency();
   const [items, setItems] = useState<VaultItem[]>([]);
   const [loading, setLoading] = useState(true);
