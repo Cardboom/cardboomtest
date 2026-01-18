@@ -51,6 +51,10 @@ import {
   Share2,
   Clock,
   Verified,
+  AlertTriangle,
+  Coins,
+  ShieldCheck,
+  TrendingDown,
 } from "lucide-react";
 
 const CreatorInvite = () => {
@@ -164,12 +168,34 @@ const CreatorInvite = () => {
     }
   };
 
+  // Payout structure - CPM based
+  const payoutRules = [
+    {
+      icon: Video,
+      title: "Views (CPM-Based)",
+      description: "Earn $0.50 – $1.50 per 1,000 qualified views. Qualified = ≥3 seconds, unique user, non-looped, fraud-checked.",
+      highlight: "$0.50–$1.50 CPM",
+    },
+    {
+      icon: Zap,
+      title: "Action Bonuses",
+      description: "Earn instant bonuses when viewers take action: App signup ($0.20), First card listed ($0.50), First grading order ($5.00).",
+      highlight: "Up to $5.00",
+    },
+    {
+      icon: TrendingUp,
+      title: "Dynamic Daily Limits",
+      description: "Default cap: $20/day. High-quality creators with strong retention & clean traffic unlock up to $1,000/day automatically.",
+      highlight: "Up to $1K/day",
+    },
+  ];
+
   const benefits = [
     {
       icon: DollarSign,
-      title: "Revenue Share",
-      description: "Earn up to 30% revenue share on tips, subscriptions, and referral commissions from your audience.",
-      highlight: "Up to 30%",
+      title: "CPM Earnings",
+      description: "Get paid for every 1,000 qualified views on your Boom Reels content.",
+      highlight: "$0.50–$1.50",
     },
     {
       icon: Users,
@@ -219,13 +245,13 @@ const CreatorInvite = () => {
     {
       step: 3,
       title: "Create & Share",
-      description: "Start posting Reels, sharing market calls, and building your CardBoom presence.",
+      description: "Start posting Boom Reels and building your CardBoom presence.",
       icon: Video,
     },
     {
       step: 4,
       title: "Earn & Grow",
-      description: "Monetize your content, grow your following, and unlock additional perks.",
+      description: "Get paid for views, earn action bonuses, and unlock higher daily limits.",
       icon: TrendingUp,
     },
   ];
@@ -241,14 +267,29 @@ const CreatorInvite = () => {
     { icon: Gift, text: "Monthly creator giveaways" },
   ];
 
+  const trustRules = [
+    { icon: Eye, text: "All views are fraud-checked before payout" },
+    { icon: ShieldCheck, text: "Artificial traffic, loops, or manipulation = disqualification" },
+    { icon: Clock, text: "Earnings held 7–14 days for verification" },
+    { icon: AlertTriangle, text: "Violations lead to clawbacks or removal" },
+  ];
+
   const faqs = [
     {
-      question: "What content can I post on CardBoom Reels?",
-      answer: "You can post TCG-related content including pack openings, card showcases, market analysis, collection tours, grading reveals, trade videos, and educational content. All content must be original and follow our community guidelines.",
+      question: "How do I get paid for views on Boom Reels?",
+      answer: "You earn $0.50 – $1.50 per 1,000 qualified views. A qualified view means the viewer watched at least 3 seconds, is a unique user, didn't loop the content, and passed our fraud checks. Earnings are credited as Boom Coins to your creator wallet.",
     },
     {
-      question: "How does the revenue share work?",
-      answer: "Creators earn through multiple streams: up to 30% of tips received, 20% of subscription fees from your followers, and 10% commission on sales generated through your referral links. Payments are processed monthly with a minimum threshold of $50.",
+      question: "What are action bonuses?",
+      answer: "You earn instant bonuses when viewers you bring take specific actions: $0.20 for app signup, $0.50 when they list their first card, and $5.00 when they place their first grading order. These are credited immediately.",
+    },
+    {
+      question: "What are the daily earning limits?",
+      answer: "All creators start with a $20/day cap. As you build trust through quality content, strong retention rates, and clean traffic, your cap automatically increases—up to $1,000/day for top creators.",
+    },
+    {
+      question: "How do Boom Coins work?",
+      answer: "All earnings are credited as Boom Coins (1 coin = $0.01). You can use coins for grading, vault storage, packs, or withdraw to your bank (minimum $50). Your wallet shows pending vs available balance.",
     },
     {
       question: "Do I need to post exclusively on CardBoom?",
@@ -256,11 +297,11 @@ const CreatorInvite = () => {
     },
     {
       question: "What are the requirements to become a verified creator?",
-      answer: "We look for creators with at least 1,000 followers on any platform, consistent TCG-related content, and a genuine passion for the hobby. Quality matters more than follower count.",
+      answer: "We look for creators with at least 1,000 followers on any platform, consistent TCG-related content, and a genuine passion for the hobby. Quality matters more than follower count—no minimums required.",
     },
     {
-      question: "How long does the application review take?",
-      answer: "Most applications are reviewed within 48 hours. You'll receive an email notification with the decision and next steps.",
+      question: "How does fraud protection work?",
+      answer: "We use advanced fraud detection to ensure fair payouts. Artificial traffic, view manipulation, or suspicious patterns result in disqualification. Earnings are held 7–14 days for verification before becoming available.",
     },
     {
       question: "Can I link my existing social media accounts?",
@@ -293,10 +334,10 @@ const CreatorInvite = () => {
   return (
     <>
       <Helmet>
-        <title>Become a Creator | CardBoom - Join the TCG Creator Community</title>
+        <title>Become a Creator | Boom Reels - Get Paid for Your TCG Content</title>
         <meta
           name="description"
-          content="Join CardBoom's creator program. Earn revenue, grow your audience, and connect with 50,000+ TCG collectors. Apply now for exclusive perks and verified status."
+          content="Join the Boom Reels Creators Program. Get paid $0.50–$1.50 per 1,000 views, earn action bonuses, and unlock up to $1,000/day. No follower minimums required."
         />
       </Helmet>
 
@@ -331,27 +372,26 @@ const CreatorInvite = () => {
               >
                 <Badge variant="secondary" className="mb-6 px-4 py-1.5 bg-background/80 backdrop-blur-sm">
                   <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                  Creator Program Now Open
+                  Boom Reels Creators Program
                 </Badge>
 
                 <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-                  Turn Your TCG Passion Into{" "}
-                  <span className="text-primary">Income</span>
+                  Get Paid While Doing What You{" "}
+                  <span className="text-primary">Love</span>
                 </h1>
 
                 <p className="text-lg md:text-xl text-muted-foreground mb-8">
-                  Join CardBoom's creator community. Share your collection, market insights,
-                  and pack openings with collectors who value your expertise.
+                  Post reels on Boom Reels. Get paid for views — earn more when your content drives real activity.
                 </p>
 
                 <div className="flex flex-wrap gap-4 mb-8">
                   <Button size="lg" className="gap-2" onClick={() => document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" })}>
-                    Apply Now
+                    Become a Creator
                     <ArrowRight className="w-4 h-4" />
                   </Button>
-                  <Button size="lg" variant="outline" className="gap-2 bg-background/50 backdrop-blur-sm" onClick={() => document.getElementById("benefits")?.scrollIntoView({ behavior: "smooth" })}>
-                    <Play className="w-4 h-4" />
-                    See Benefits
+                  <Button size="lg" variant="outline" className="gap-2 bg-background/50 backdrop-blur-sm" onClick={() => document.getElementById("payouts")?.scrollIntoView({ behavior: "smooth" })}>
+                    <DollarSign className="w-4 h-4" />
+                    View Payouts
                   </Button>
                 </div>
 
@@ -387,18 +427,103 @@ const CreatorInvite = () => {
               </div>
               <div className="text-center">
                 <div className="text-3xl md:text-4xl font-bold text-primary">
-                  {platformStats ? formatCurrency(platformStats.monthlyVolume) : '—'}
+                  $0.50–$1.50
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">Monthly Volume</div>
+                <div className="text-sm text-muted-foreground mt-1">Per 1K Views</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-primary">30%</div>
-                <div className="text-sm text-muted-foreground mt-1">Revenue Share</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary">$1K/day</div>
+                <div className="text-sm text-muted-foreground mt-1">Max Earnings</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl md:text-4xl font-bold text-primary">48hrs</div>
                 <div className="text-sm text-muted-foreground mt-1">Approval Time</div>
               </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* How You Get Paid Section */}
+        <section id="payouts" className="py-20">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                How You Get Paid
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Earn from qualified views. Get instant bonuses when users take action. Top creators unlock higher daily limits.
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-12">
+              {payoutRules.map((rule, i) => (
+                <motion.div
+                  key={rule.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Card className="h-full hover:border-primary/50 transition-colors group">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col items-center text-center gap-4">
+                        <div className="p-4 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                          <rule.icon className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <Badge variant="secondary" className="mb-2">
+                            {rule.highlight}
+                          </Badge>
+                          <h3 className="font-semibold text-lg mb-2">{rule.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {rule.description}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Qualified View Breakdown */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-2xl mx-auto"
+            >
+              <Card className="bg-muted/50 border-primary/20">
+                <CardContent className="p-6">
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                    What counts as a qualified view?
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span>≥3 seconds watched</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span>Unique user</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TrendingDown className="w-4 h-4 text-muted-foreground" />
+                      <span>Non-looped</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+                      <span>Fraud-checked</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
           </div>
         </section>
@@ -500,6 +625,86 @@ const CreatorInvite = () => {
           </div>
         </section>
 
+        {/* Fair Play & Trust System */}
+        <section className="py-16 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-3xl mx-auto"
+            >
+              <Card className="border-border/50">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <h2 className="text-xl font-bold">Fair Play & Trust System</h2>
+                  </div>
+                  
+                  <p className="text-muted-foreground mb-6">
+                    We're committed to fair payouts for genuine creators. Our systems protect the community and ensure quality content is rewarded.
+                  </p>
+                  
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {trustRules.map((rule, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+                        <rule.icon className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-sm">{rule.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Earnings & Wallet Section */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-3xl mx-auto text-center"
+            >
+              <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-primary/10 text-primary mb-4">
+                <Coins className="w-8 h-8" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">Your Earnings, Your Way</h2>
+              <p className="text-muted-foreground mb-8">
+                All earnings are credited as Boom Coins (1 coin = $0.01). Use them however you like.
+              </p>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <Card className="p-4 text-center">
+                  <div className="text-2xl mb-1">🎯</div>
+                  <div className="text-sm font-medium">Grading</div>
+                </Card>
+                <Card className="p-4 text-center">
+                  <div className="text-2xl mb-1">🏦</div>
+                  <div className="text-sm font-medium">Vault</div>
+                </Card>
+                <Card className="p-4 text-center">
+                  <div className="text-2xl mb-1">📦</div>
+                  <div className="text-sm font-medium">Packs</div>
+                </Card>
+                <Card className="p-4 text-center">
+                  <div className="text-2xl mb-1">💸</div>
+                  <div className="text-sm font-medium">Withdraw</div>
+                  <div className="text-xs text-muted-foreground">Min $50</div>
+                </Card>
+              </div>
+              
+              <p className="text-sm text-muted-foreground">
+                Your wallet shows pending vs available balance. Pending earnings clear after the verification period.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
         {/* Creator Perks Grid */}
         <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
@@ -513,7 +718,7 @@ const CreatorInvite = () => {
                 Exclusive Creator Perks
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Beyond revenue share, verified creators get access to premium benefits.
+                Beyond earnings, verified creators get access to premium benefits.
               </p>
             </motion.div>
 
@@ -540,8 +745,38 @@ const CreatorInvite = () => {
           </div>
         </section>
 
+        {/* Built for Collectors. Built for Creators. */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-3xl mx-auto text-center"
+            >
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">
+                Built for Collectors. Built for Creators.
+              </h2>
+              <div className="flex flex-wrap justify-center gap-4 text-sm">
+                <Badge variant="outline" className="px-4 py-2">
+                  <CheckCircle2 className="w-4 h-4 mr-2 text-primary" />
+                  No follower minimums
+                </Badge>
+                <Badge variant="outline" className="px-4 py-2">
+                  <CheckCircle2 className="w-4 h-4 mr-2 text-primary" />
+                  Niche audience that actually converts
+                </Badge>
+                <Badge variant="outline" className="px-4 py-2">
+                  <CheckCircle2 className="w-4 h-4 mr-2 text-primary" />
+                  Real payouts, not vanity metrics
+                </Badge>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
         {/* Application Form */}
-        <section id="apply" className="py-20">
+        <section id="apply" className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -727,7 +962,7 @@ const CreatorInvite = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 bg-muted/30">
+        <section className="py-20">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -766,7 +1001,7 @@ const CreatorInvite = () => {
         </section>
 
         {/* Final CTA */}
-        <section className="py-20">
+        <section className="py-20 bg-muted/30">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -775,14 +1010,14 @@ const CreatorInvite = () => {
               className="text-center max-w-2xl mx-auto"
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to Grow Your TCG Influence?
+                Ready to Get Paid for Your Passion?
               </h2>
               <p className="text-muted-foreground mb-8">
-                Join hundreds of creators already earning and growing on CardBoom.
+                Join creators already earning on Boom Reels.
                 Your audience is waiting.
               </p>
               <Button size="lg" onClick={() => document.getElementById("apply")?.scrollIntoView({ behavior: "smooth" })}>
-                Apply Now
+                Become a Creator
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </motion.div>
