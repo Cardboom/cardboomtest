@@ -2013,6 +2013,80 @@ export type Database = {
           },
         ]
       }
+      card_prices: {
+        Row: {
+          avg_price: number | null
+          canonical_card_key: string
+          catalog_card_id: string | null
+          condition: string | null
+          created_at: string | null
+          currency: string | null
+          grade_company: string | null
+          grade_value: number | null
+          high_price: number | null
+          id: string
+          last_sale_at: string | null
+          last_sale_price: number | null
+          low_price: number | null
+          market_price: number | null
+          price: number
+          raw_payload: Json | null
+          sample_size: number | null
+          source: string
+          updated_at: string | null
+        }
+        Insert: {
+          avg_price?: number | null
+          canonical_card_key: string
+          catalog_card_id?: string | null
+          condition?: string | null
+          created_at?: string | null
+          currency?: string | null
+          grade_company?: string | null
+          grade_value?: number | null
+          high_price?: number | null
+          id?: string
+          last_sale_at?: string | null
+          last_sale_price?: number | null
+          low_price?: number | null
+          market_price?: number | null
+          price: number
+          raw_payload?: Json | null
+          sample_size?: number | null
+          source: string
+          updated_at?: string | null
+        }
+        Update: {
+          avg_price?: number | null
+          canonical_card_key?: string
+          catalog_card_id?: string | null
+          condition?: string | null
+          created_at?: string | null
+          currency?: string | null
+          grade_company?: string | null
+          grade_value?: number | null
+          high_price?: number | null
+          id?: string
+          last_sale_at?: string | null
+          last_sale_price?: number | null
+          low_price?: number | null
+          market_price?: number | null
+          price?: number
+          raw_payload?: Json | null
+          sample_size?: number | null
+          source?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_prices_catalog_card_id_fkey"
+            columns: ["catalog_card_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       card_reels: {
         Row: {
           avg_watch_time: number | null
@@ -2654,6 +2728,54 @@ export type Database = {
           set_name?: string | null
           updated_at?: string | null
           variant?: string | null
+        }
+        Relationships: []
+      }
+      catalog_import_batches: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          game: string | null
+          id: string
+          invalid_records: number | null
+          notes: string | null
+          promoted_records: number | null
+          source: string
+          started_at: string | null
+          status: string | null
+          total_records: number | null
+          valid_records: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          game?: string | null
+          id?: string
+          invalid_records?: number | null
+          notes?: string | null
+          promoted_records?: number | null
+          source: string
+          started_at?: string | null
+          status?: string | null
+          total_records?: number | null
+          valid_records?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          game?: string | null
+          id?: string
+          invalid_records?: number | null
+          notes?: string | null
+          promoted_records?: number | null
+          source?: string
+          started_at?: string | null
+          status?: string | null
+          total_records?: number | null
+          valid_records?: number | null
         }
         Relationships: []
       }
@@ -7875,6 +7997,53 @@ export type Database = {
           },
         ]
       }
+      pricing_unmatched_items: {
+        Row: {
+          created_at: string | null
+          external_id: string | null
+          id: string
+          raw_payload: Json
+          reason: string
+          resolved_at: string | null
+          resolved_by: string | null
+          resolved_to_catalog_id: string | null
+          source: string
+          suggested_matches: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          external_id?: string | null
+          id?: string
+          raw_payload: Json
+          reason: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_to_catalog_id?: string | null
+          source: string
+          suggested_matches?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          external_id?: string | null
+          id?: string
+          raw_payload?: Json
+          reason?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_to_catalog_id?: string | null
+          source?: string
+          suggested_matches?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_unmatched_items_resolved_to_catalog_id_fkey"
+            columns: ["resolved_to_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_backgrounds: {
         Row: {
           created_at: string
@@ -11968,6 +12137,15 @@ export type Database = {
           updated_count: number
         }[]
       }
+      build_canonical_card_key: {
+        Args: {
+          p_game: string
+          p_language: string
+          p_normalized_card_number: string
+          p_set_code: string
+        }
+        Returns: string
+      }
       build_normalized_key: {
         Args: {
           card_code?: string
@@ -12191,6 +12369,10 @@ export type Database = {
       normalize_card_number: { Args: { input: string }; Returns: string }
       normalize_finish: {
         Args: { game: string; input: string }
+        Returns: string
+      }
+      normalize_onepiece_card_number: {
+        Args: { p_card_number: string; p_set_code: string }
         Returns: string
       }
       normalize_set_code: {
