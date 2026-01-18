@@ -71,6 +71,13 @@ export const generateCardSlug = (card: CardSlugData): string => {
       // Format: card-code (e.g., eb03-053)
       return cardCode.toLowerCase();
     }
+    // Fallback for One Piece without card code: include set name for uniqueness
+    const parts: string[] = [];
+    parts.push(normalizeSlug(card.name));
+    if (card.set_name) {
+      parts.push(normalizeSlug(card.set_name));
+    }
+    return parts.join('-');
   }
   
   const parts: string[] = [];

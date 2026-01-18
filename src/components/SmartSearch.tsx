@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCategoryIcon } from '@/lib/categoryLabels';
+import { generateCardUrl } from '@/lib/seoSlug';
 
 interface SearchResult {
   id: string;
@@ -16,6 +17,9 @@ interface SearchResult {
   change_24h: number | null;
   image_url: string | null;
   is_trending: boolean | null;
+  set_name: string | null;
+  series: string | null;
+  external_id: string | null;
 }
 
 interface SmartSearchProps {
@@ -73,7 +77,7 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
         // Maximize search results - include items even without images
         const { data, error } = await supabase
           .from('market_items')
-          .select('id, name, category, current_price, change_24h, image_url, is_trending')
+          .select('id, name, category, current_price, change_24h, image_url, is_trending, set_name, series, external_id')
           .ilike('name', `%${query}%`)
           .gt('current_price', 0)
           .order('is_trending', { ascending: false })
@@ -130,7 +134,15 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
     saveRecentSearch(result.name);
     setIsOpen(false);
     setQuery('');
-    navigate(`/item/${result.id}`);
+    // Use SEO-friendly URL directly instead of /item/:id
+    const seoUrl = generateCardUrl({
+      name: result.name,
+      category: result.category,
+      set_name: result.set_name || undefined,
+      series: result.series || undefined,
+      external_id: result.external_id || undefined,
+    });
+    navigate(seoUrl);
   };
 
   const handleSearch = () => {
