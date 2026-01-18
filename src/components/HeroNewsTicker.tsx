@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Newspaper, ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 
 interface NewsItem {
   id: string;
@@ -13,7 +13,7 @@ interface NewsItem {
   created_at: string;
 }
 
-export function HeroNewsTicker() {
+export const HeroNewsTicker = forwardRef<HTMLDivElement, {}>((props, ref) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   
   const { data: news } = useQuery({
@@ -60,7 +60,7 @@ export function HeroNewsTicker() {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto mb-6">
+    <div ref={ref} className="w-full max-w-2xl mx-auto mb-6" {...props}>
       <Link 
         to={`/news/${currentNews.slug}`}
         className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-card/60 border border-border/50 backdrop-blur-sm hover:border-primary/30 transition-all"
@@ -116,4 +116,5 @@ export function HeroNewsTicker() {
       </div>
     </div>
   );
-}
+});
+HeroNewsTicker.displayName = "HeroNewsTicker";

@@ -41,11 +41,44 @@ export function WhatsNewPanel() {
 
   if (!listings || listings.length === 0) {
     return (
-      <div className="glass rounded-xl p-12 text-center">
-        <ShoppingCart className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
-        <h3 className="text-xl font-semibold text-foreground mb-2">No new listings yet</h3>
-        <p className="text-muted-foreground mb-6">Be the first to list a card!</p>
-        <Button onClick={() => navigate('/sell')}>Create Listing</Button>
+      <div className="glass rounded-xl p-8 text-center space-y-6">
+        <div className="flex justify-center">
+          <div className="p-4 rounded-full bg-primary/10 animate-pulse">
+            <ShoppingCart className="h-12 w-12 text-primary" />
+          </div>
+        </div>
+        <div>
+          <h3 className="text-xl font-semibold text-foreground mb-2">No new listings yet</h3>
+          <p className="text-muted-foreground mb-4">Be the first to list a card and earn rewards!</p>
+        </div>
+        
+        {/* Popular categories to browse */}
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Browse popular categories:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {['Pokemon', 'Yu-Gi-Oh!', 'One Piece', 'NBA', 'Magic: The Gathering'].map((cat) => (
+              <Button 
+                key={cat}
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate(`/catalog?category=${cat.toLowerCase().replace(/[^a-z0-9]/g, '')}`)}
+                className="text-xs"
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button onClick={() => navigate('/sell')} className="gap-2">
+            <ShoppingCart className="w-4 h-4" />
+            List Your First Card
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/catalog')}>
+            Browse Catalog
+          </Button>
+        </div>
       </div>
     );
   }
