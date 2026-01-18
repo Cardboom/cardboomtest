@@ -467,7 +467,9 @@ export const usePurchase = () => {
               user_id: params.sellerId,
               variables: {
                 user_name: sellerName,
+                item_name: params.title,
                 item_title: params.title,
+                price: `${currencySymbol}${params.price.toFixed(2)}`,
                 sale_price: `${currencySymbol}${params.price.toFixed(2)}`,
                 payout_amount: `${currencySymbol}${sellerPayoutInWalletCurrency.toFixed(2)}`,
                 order_id: order.id,

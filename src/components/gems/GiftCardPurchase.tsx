@@ -61,6 +61,30 @@ export function GiftCardPurchase({ userBalance, onPurchaseComplete }: GiftCardPu
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Prevent self-sending gift cards
+      if (recipientType === 'email' && recipientEmail) {
+        if (recipientEmail.toLowerCase() === user.email?.toLowerCase()) {
+          toast.error('Cannot send to yourself', { description: 'You cannot send a gift card to your own email' });
+          setIsPurchasing(false);
+          return;
+        }
+      }
+      
+      if (recipientType === 'phone' && recipientPhone) {
+        // Get user's phone from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('phone')
+          .eq('id', user.id)
+          .single();
+        
+        if (profile?.phone && formatPhoneNumber(recipientPhone) === profile.phone) {
+          toast.error('Cannot send to yourself', { description: 'You cannot send a gift card to your own phone number' });
+          setIsPurchasing(false);
+          return;
+        }
+      }
+
       // Get user's wallet
       const { data: wallet, error: walletFetchError } = await supabase
         .from('wallets')

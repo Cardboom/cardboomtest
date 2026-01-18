@@ -48,10 +48,15 @@ const handler = async (req: Request): Promise<Response> => {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>You've Received CardBoom Gems!</title>
+          <title>You've Received CardBoom Boom Coins!</title>
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #0a0a0b; color: #ffffff; margin: 0; padding: 40px 20px;">
           <div style="max-width: 500px; margin: 0 auto; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 40px; border: 1px solid #333;">
+            <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(6, 182, 212, 0.2);">
+              <span style="font-size: 32px; margin-right: 8px;">🃏</span>
+              <span style="color: #ffffff; font-size: 28px; font-weight: 700;">Card</span><span style="color: #3CBCC3; font-size: 28px; font-weight: 700;">Boom</span>
+            </div>
+            
             <div style="text-align: center; margin-bottom: 30px;">
               <h1 style="color: #38bdf8; font-size: 28px; margin: 0;">🎁 You've Received a Gift!</h1>
             </div>
@@ -60,9 +65,9 @@ const handler = async (req: Request): Promise<Response> => {
               <strong style="color: #38bdf8;">${senderName}</strong> has sent you a gift of
             </p>
             
-            <div style="text-align: center; background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); border-radius: 12px; padding: 30px; margin-bottom: 30px;">
-              <p style="font-size: 48px; font-weight: bold; color: #000; margin: 0;">💎 ${gemAmount.toLocaleString()}</p>
-              <p style="font-size: 16px; color: #1a1a2e; margin: 5px 0 0 0;">CardBoom Gems</p>
+            <div style="text-align: center; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; padding: 30px; margin-bottom: 30px;">
+              <p style="font-size: 48px; font-weight: bold; color: #000; margin: 0;">💰 ${gemAmount.toLocaleString()}</p>
+              <p style="font-size: 16px; color: #1a1a2e; margin: 5px 0 0 0;">Boom Coins</p>
             </div>
             
             ${message ? `
@@ -78,23 +83,32 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <div style="text-align: center;">
-              <a href="https://cardboom.app/gems" style="display: inline-block; background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); color: #000; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold; font-size: 16px;">
-                Claim Your Gems
+              <a href="https://cardboom.com/coins" style="display: inline-block; background: linear-gradient(135deg, #3CBCC3 0%, #0891b2 100%); color: #0a0f1a; text-decoration: none; padding: 14px 32px; border-radius: 100px; font-weight: bold; font-size: 16px;">
+                Claim Your Coins
               </a>
             </div>
             
             <p style="text-align: center; color: #666; font-size: 12px; margin-top: 30px;">
-              This gift card expires in 1 year. Visit CardBoom to claim your gems!
+              This gift card expires in 1 year. Visit CardBoom to claim your coins!
             </p>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(60,188,195,0.1);">
+              <p style="color: #6b7280; font-size: 12px; margin: 0 0 10px;">© 2025 CardBoom. The trusted TCG marketplace.</p>
+              <p style="color: #4b5563; font-size: 11px; margin: 0;">
+                <a href="https://cardboom.com/unsubscribe?email=${recipient}" style="color: #4b5563; text-decoration: underline;">Unsubscribe</a> • 
+                <a href="mailto:support@cardboom.com" style="color: #4b5563; text-decoration: underline;">Support</a>
+              </p>
+            </div>
           </div>
         </body>
         </html>
       `;
 
+      const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@cardboom.com";
       const emailResponse = await resend.emails.send({
-        from: "CardBoom <noreply@updates.cardboom.com>",
+        from: `CardBoom <${fromEmail}>`,
         to: [recipient],
-        subject: `🎁 ${senderName} sent you ${gemAmount.toLocaleString()} CardBoom Gems!`,
+        subject: `🎁 ${senderName} sent you ${gemAmount.toLocaleString()} CardBoom Boom Coins!`,
         html: emailHtml,
       });
 
@@ -118,7 +132,7 @@ const handler = async (req: Request): Promise<Response> => {
         });
       }
 
-      const smsBody = `🎁 ${senderName} sent you ${gemAmount.toLocaleString()} CardBoom Gems! Use code: ${giftCode} at cardboom.app/gems to claim.${message ? ` Message: "${message}"` : ''}`;
+      const smsBody = `🎁 ${senderName} sent you ${gemAmount.toLocaleString()} CardBoom Boom Coins! Use code: ${giftCode} at cardboom.com/coins to claim.${message ? ` Message: "${message}"` : ''}`;
 
       const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`;
       const authHeader = btoa(`${twilioAccountSid}:${twilioAuthToken}`);
