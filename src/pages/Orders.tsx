@@ -66,7 +66,7 @@ export default function Orders() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // Fetch orders where user is buyer
+      // Fetch orders where user is buyer - include snapshot columns
       const { data: buyerOrders, error: buyerError } = await supabase
         .from('orders')
         .select(`
@@ -76,14 +76,16 @@ export default function Orders() {
           escrow_status,
           created_at,
           seller_id,
-          listing_id
+          listing_id,
+          item_title,
+          item_image_url
         `)
         .eq('buyer_id', user.id)
         .order('created_at', { ascending: false });
 
       if (buyerError) throw buyerError;
 
-      // Fetch orders where user is seller
+      // Fetch orders where user is seller - include snapshot columns
       const { data: sellerOrders, error: sellerError } = await supabase
         .from('orders')
         .select(`
@@ -93,7 +95,9 @@ export default function Orders() {
           escrow_status,
           created_at,
           buyer_id,
-          listing_id
+          listing_id,
+          item_title,
+          item_image_url
         `)
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false });
@@ -126,35 +130,41 @@ export default function Orders() {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // Transform buyer orders
-      const buyerOrdersMapped: Order[] = buyerOrders.map(order => ({
-        id: order.id,
-        price: order.price,
-        status: order.status,
-        escrow_status: order.escrow_status,
-        created_at: order.created_at,
-        role: 'buyer' as const,
-        listing: listingMap.get(order.listing_id) ? {
-          title: listingMap.get(order.listing_id)!.title,
-          image_url: listingMap.get(order.listing_id)!.image_url
-        } : null,
-        counterparty: profileMap.get(order.seller_id) || null,
-      }));
+      // Transform buyer orders - use snapshot columns as fallback
+      const buyerOrdersMapped: Order[] = buyerOrders.map(order => {
+        const listingFromDb = listingMap.get(order.listing_id);
+        return {
+          id: order.id,
+          price: order.price,
+          status: order.status,
+          escrow_status: order.escrow_status,
+          created_at: order.created_at,
+          role: 'buyer' as const,
+          listing: {
+            title: listingFromDb?.title || order.item_title || 'Order Item',
+            image_url: listingFromDb?.image_url || order.item_image_url || null
+          },
+          counterparty: profileMap.get(order.seller_id) || null,
+        };
+      });
 
-      // Transform seller orders
-      const sellerOrdersMapped: Order[] = sellerOrders.map(order => ({
-        id: order.id,
-        price: order.price,
-        status: order.status,
-        escrow_status: order.escrow_status,
-        created_at: order.created_at,
-        role: 'seller' as const,
-        listing: listingMap.get(order.listing_id) ? {
-          title: listingMap.get(order.listing_id)!.title,
-          image_url: listingMap.get(order.listing_id)!.image_url
-        } : null,
-        counterparty: profileMap.get(order.buyer_id) || null,
-      }));
+      // Transform seller orders - use snapshot columns as fallback
+      const sellerOrdersMapped: Order[] = sellerOrders.map(order => {
+        const listingFromDb = listingMap.get(order.listing_id);
+        return {
+          id: order.id,
+          price: order.price,
+          status: order.status,
+          escrow_status: order.escrow_status,
+          created_at: order.created_at,
+          role: 'seller' as const,
+          listing: {
+            title: listingFromDb?.title || order.item_title || 'Order Item',
+            image_url: listingFromDb?.image_url || order.item_image_url || null
+          },
+          counterparty: profileMap.get(order.buyer_id) || null,
+        };
+      });
 
       // Combine and sort by date
       return [...buyerOrdersMapped, ...sellerOrdersMapped].sort(

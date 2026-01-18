@@ -7228,6 +7228,12 @@ export type Database = {
           funds_released_at: string | null
           id: string
           inventory_locked_at: string | null
+          item_category: string | null
+          item_condition: string | null
+          item_grade: string | null
+          item_grading_company: string | null
+          item_image_url: string | null
+          item_title: string | null
           listing_currency: string | null
           listing_id: string
           payout_status: string | null
@@ -7278,6 +7284,12 @@ export type Database = {
           funds_released_at?: string | null
           id?: string
           inventory_locked_at?: string | null
+          item_category?: string | null
+          item_condition?: string | null
+          item_grade?: string | null
+          item_grading_company?: string | null
+          item_image_url?: string | null
+          item_title?: string | null
           listing_currency?: string | null
           listing_id: string
           payout_status?: string | null
@@ -7328,6 +7340,12 @@ export type Database = {
           funds_released_at?: string | null
           id?: string
           inventory_locked_at?: string | null
+          item_category?: string | null
+          item_condition?: string | null
+          item_grade?: string | null
+          item_grading_company?: string | null
+          item_image_url?: string | null
+          item_title?: string | null
           listing_currency?: string | null
           listing_id?: string
           payout_status?: string | null

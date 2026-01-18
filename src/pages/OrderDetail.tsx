@@ -155,10 +155,23 @@ export default function OrderDetail() {
 
       if (error) throw error;
 
-      // Fetch listing separately with more details
+      // Fetch listing separately with more details - but use snapshot as fallback
       const { data: listingData } = data.listing_id 
         ? await supabase.from('listings').select('title, image_url, condition, category, description, grade, grading_company, language, set_name').eq('id', data.listing_id).single()
         : { data: null };
+
+      // Build listing object with fallback to snapshot columns
+      const listing = listingData || {
+        title: data.item_title || 'Unknown Item',
+        image_url: data.item_image_url || null,
+        condition: data.item_condition || null,
+        category: data.item_category || null,
+        description: null,
+        grade: data.item_grade || null,
+        grading_company: data.item_grading_company || null,
+        language: null,
+        set_name: null,
+      };
 
       // Fetch profiles separately using display_name as username
       const [buyerProfile, sellerProfile] = await Promise.all([
@@ -168,7 +181,7 @@ export default function OrderDetail() {
 
       return {
         ...data,
-        listing: listingData,
+        listing,
         buyer_profile: buyerProfile.data ? { username: buyerProfile.data.display_name, avatar_url: buyerProfile.data.avatar_url } : null,
         seller_profile: sellerProfile.data ? { username: sellerProfile.data.display_name, avatar_url: sellerProfile.data.avatar_url, is_verified_seller: sellerProfile.data.instant_sale_eligible } : null,
       } as Order;
