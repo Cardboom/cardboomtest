@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageSquare, Send, Search, ChevronLeft, Loader2 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { MessageSquare, Send, Search, ChevronLeft, Loader2, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,7 +19,9 @@ interface Conversation {
   listing_id: string | null;
   last_message_at: string | null;
   created_at: string;
+  other_user_id?: string;
   other_user_name?: string;
+  other_user_avatar?: string;
   listing_title?: string;
   last_message?: string;
   unread_count?: number;
@@ -126,7 +129,7 @@ const Messages = () => {
 
       // Batch fetch profiles, listings, messages in parallel
       const [profilesResult, listingsResult, lastMessagesResult, unreadResult] = await Promise.all([
-        supabase.from('profiles').select('id, display_name').in('id', Array.from(otherUserIds)),
+        supabase.from('profiles').select('id, display_name, avatar_url').in('id', Array.from(otherUserIds)),
         listingIds.size > 0 
           ? supabase.from('listings').select('id, title').in('id', Array.from(listingIds))
           : { data: [] },
@@ -142,9 +145,9 @@ const Messages = () => {
       ]);
 
       // Build lookup maps
-      const profileMap = new Map<string, string>();
+      const profileMap = new Map<string, { name: string; avatar: string | null }>();
       for (const p of profilesResult.data || []) {
-        profileMap.set(p.id, p.display_name || 'User');
+        profileMap.set(p.id, { name: p.display_name || 'User', avatar: p.avatar_url });
       }
 
       const listingMap = new Map<string, string>();
@@ -167,9 +170,12 @@ const Messages = () => {
       // Enrich conversations
       const enrichedConvos = convos.map((conv) => {
         const otherId = conv.participant_1 === userId ? conv.participant_2 : conv.participant_1;
+        const profile = profileMap.get(otherId);
         return {
           ...conv,
-          other_user_name: profileMap.get(otherId) || 'User',
+          other_user_id: otherId,
+          other_user_name: profile?.name || 'User',
+          other_user_avatar: profile?.avatar || null,
           listing_title: conv.listing_id ? listingMap.get(conv.listing_id) || '' : '',
           last_message: lastMessageMap.get(conv.id) || '',
           unread_count: unreadCountMap.get(conv.id) || 0,
@@ -380,12 +386,25 @@ const Messages = () => {
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </Button>
-                  <div>
-                    <h3 className="font-semibold text-foreground">{currentConversation.other_user_name}</h3>
-                    {currentConversation.listing_title && (
-                      <p className="text-sm text-muted-foreground">{currentConversation.listing_title}</p>
-                    )}
-                  </div>
+                  <Link 
+                    to={`/seller/${currentConversation.other_user_id}`}
+                    className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={currentConversation.other_user_avatar || undefined} />
+                      <AvatarFallback>
+                        <User className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold text-foreground hover:text-primary transition-colors">
+                        {currentConversation.other_user_name}
+                      </h3>
+                      {currentConversation.listing_title && (
+                        <p className="text-sm text-muted-foreground">{currentConversation.listing_title}</p>
+                      )}
+                    </div>
+                  </Link>
                 </div>
 
                 {/* Messages */}
