@@ -6142,6 +6142,8 @@ export type Database = {
           boost_price_paid: number | null
           boost_purchased_at: string | null
           boost_tier: string | null
+          canonical_card_key: string | null
+          canonical_variant_key: string | null
           card_number: string | null
           category: string
           cbgi_completed_at: string | null
@@ -6165,6 +6167,7 @@ export type Database = {
           image_url: string | null
           is_auction: boolean
           is_open_to_offers: boolean | null
+          is_sample: boolean
           language: string | null
           market_item_id: string | null
           normalization_error: string | null
@@ -6178,11 +6181,13 @@ export type Database = {
           price: number
           price_cents: number | null
           rarity: string | null
+          sample_batch_id: string | null
           seller_id: string
           set_code: string | null
           set_name: string | null
           slug: string | null
           source: string
+          source_tag: string | null
           status: Database["public"]["Enums"]["listing_status"]
           title: string
           updated_at: string
@@ -6202,6 +6207,8 @@ export type Database = {
           boost_price_paid?: number | null
           boost_purchased_at?: string | null
           boost_tier?: string | null
+          canonical_card_key?: string | null
+          canonical_variant_key?: string | null
           card_number?: string | null
           category: string
           cbgi_completed_at?: string | null
@@ -6225,6 +6232,7 @@ export type Database = {
           image_url?: string | null
           is_auction?: boolean
           is_open_to_offers?: boolean | null
+          is_sample?: boolean
           language?: string | null
           market_item_id?: string | null
           normalization_error?: string | null
@@ -6238,11 +6246,13 @@ export type Database = {
           price: number
           price_cents?: number | null
           rarity?: string | null
+          sample_batch_id?: string | null
           seller_id: string
           set_code?: string | null
           set_name?: string | null
           slug?: string | null
           source?: string
+          source_tag?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           title: string
           updated_at?: string
@@ -6262,6 +6272,8 @@ export type Database = {
           boost_price_paid?: number | null
           boost_purchased_at?: string | null
           boost_tier?: string | null
+          canonical_card_key?: string | null
+          canonical_variant_key?: string | null
           card_number?: string | null
           category?: string
           cbgi_completed_at?: string | null
@@ -6285,6 +6297,7 @@ export type Database = {
           image_url?: string | null
           is_auction?: boolean
           is_open_to_offers?: boolean | null
+          is_sample?: boolean
           language?: string | null
           market_item_id?: string | null
           normalization_error?: string | null
@@ -6298,11 +6311,13 @@ export type Database = {
           price?: number
           price_cents?: number | null
           rarity?: string | null
+          sample_batch_id?: string | null
           seller_id?: string
           set_code?: string | null
           set_name?: string | null
           slug?: string | null
           source?: string
+          source_tag?: string | null
           status?: Database["public"]["Enums"]["listing_status"]
           title?: string
           updated_at?: string
@@ -6327,6 +6342,13 @@ export type Database = {
             columns: ["market_item_id"]
             isOneToOne: false
             referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listings_sample_batch_id_fkey"
+            columns: ["sample_batch_id"]
+            isOneToOne: false
+            referencedRelation: "sample_listing_batches"
             referencedColumns: ["id"]
           },
         ]
@@ -9544,6 +9566,36 @@ export type Database = {
           type?: Database["public"]["Enums"]["reward_type"]
           value_amount?: number | null
           xp_cost?: number
+        }
+        Relationships: []
+      }
+      sample_listing_batches: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          games: string[]
+          id: string
+          listings_count: number
+          notes: string | null
+          source_tag: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          games: string[]
+          id?: string
+          listings_count?: number
+          notes?: string | null
+          source_tag: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          games?: string[]
+          id?: string
+          listings_count?: number
+          notes?: string | null
+          source_tag?: string
         }
         Relationships: []
       }

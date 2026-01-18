@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ShoppingCart, User, AlertCircle } from 'lucide-react';
+import { ShoppingCart, User, AlertCircle, TestTube2 } from 'lucide-react';
 import { useCatalogCardListings, useCatalogCardMappings, type CatalogListing } from '@/hooks/useCatalogCard';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Link } from 'react-router-dom';
+import { resolveCardPageImage } from '@/lib/catalogImageResolver';
 
 interface CatalogCardListingsProps {
   catalogCardId: string;
@@ -36,6 +37,9 @@ export const CatalogCardListings = ({ catalogCardId }: CatalogCardListingsProps)
   // Debug: Show mapping info if no listings found but mappings exist
   const hasNoListings = !listings || listings.length === 0;
   const hasMappings = mappings && mappings.count > 0;
+  
+  // Check if all listings are samples
+  const allSamples = listings?.every((l: any) => l.is_sample) ?? false;
 
   if (hasNoListings) {
     return (
@@ -64,24 +68,45 @@ export const CatalogCardListings = ({ catalogCardId }: CatalogCardListingsProps)
   return (
     <Card className="glass">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-lg">Active Listings</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle className="text-lg">Active Listings</CardTitle>
+          {allSamples && (
+            <Badge variant="outline" className="text-xs text-muted-foreground border-muted-foreground/30">
+              <TestTube2 className="w-3 h-3 mr-1" />
+              Demo
+            </Badge>
+          )}
+        </div>
         <Badge variant="secondary">{listings.length}</Badge>
       </CardHeader>
       <CardContent>
+        {allSamples && (
+          <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1">
+            <TestTube2 className="w-3 h-3" />
+            These are sample listings for demonstration purposes
+          </p>
+        )}
         <div className="space-y-3">
-          {listings.map((item: CatalogListing) => (
+          {listings.map((item: any) => (
             <Link
               key={item.listing_id}
               to={`/listing/${item.listing_id}`}
               className="flex items-center gap-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
             >
               <img
-                src={item.image_url || '/placeholder.svg'}
+                src={resolveCardPageImage(item.image_url, null, item.category)}
                 alt={item.title}
                 className="w-16 h-16 object-cover rounded-md"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{item.title}</p>
+                <p className="font-medium truncate flex items-center gap-2">
+                  {item.title}
+                  {item.is_sample && (
+                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 text-muted-foreground border-muted-foreground/30">
+                      Sample
+                    </Badge>
+                  )}
+                </p>
                 <div className="flex items-center gap-2 mt-1">
                   {item.condition && (
                     <Badge variant="outline" className="text-xs">
