@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { 
   Plus, Folder, FolderOpen, MoreVertical, Pencil, Trash2, 
-  Palette, Star, Heart, Zap, Crown, Gem, Target, Sparkles
+  Palette, Star, Heart, Zap, Crown, Gem, Target, Sparkles, Upload
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -40,6 +40,7 @@ interface PortfolioCollectionsProps {
   userId: string;
   selectedCollectionId: string | null;
   onSelectCollection: (id: string | null) => void;
+  onImportToCollection?: (collectionId: string, collectionName: string) => void;
 }
 
 const COLLECTION_COLORS = [
@@ -71,6 +72,7 @@ export const PortfolioCollections = ({
   userId,
   selectedCollectionId,
   onSelectCollection,
+  onImportToCollection,
 }: PortfolioCollectionsProps) => {
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -270,6 +272,12 @@ export const PortfolioCollections = ({
                   <Pencil className="w-4 h-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
+                {onImportToCollection && (
+                  <DropdownMenuItem onClick={() => onImportToCollection(col.id, col.name)}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import CSV
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem 
                   onClick={() => deleteMutation.mutate(col.id)}
                   className="text-destructive"
