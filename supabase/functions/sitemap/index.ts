@@ -32,6 +32,9 @@ Deno.serve(async (req) => {
       const itemsPerSitemap = 5000
       const totalSitemaps = Math.ceil(totalItems / itemsPerSitemap)
 
+      // Use the edge function URL for child sitemaps
+      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/sitemap`
+      
       let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Static pages sitemap -->
@@ -40,10 +43,10 @@ Deno.serve(async (req) => {
     <lastmod>${today}</lastmod>
   </sitemap>
 `
-      // Add card sitemaps
+      // Add card sitemaps - point to edge function URL
       for (let i = 1; i <= totalSitemaps; i++) {
         xml += `  <sitemap>
-    <loc>${baseUrl}/api/sitemap?type=cards&amp;page=${i}</loc>
+    <loc>${edgeFunctionUrl}?type=cards&amp;page=${i}</loc>
     <lastmod>${today}</lastmod>
   </sitemap>
 `
@@ -84,8 +87,9 @@ Deno.serve(async (req) => {
         const changeFreq = Math.abs(item.change_24h || 0) > 5 ? 'hourly' : 
                           Math.abs(item.change_7d || 0) > 10 ? 'daily' : 'weekly'
 
+        // Use canonical /cards/ URL structure
         xml += `  <url>
-    <loc>${baseUrl}/${item.category}/${slug}</loc>
+    <loc>${baseUrl}/cards/${item.category}/${slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>${changeFreq}</changefreq>
     <priority>${priority}</priority>`
@@ -104,10 +108,11 @@ Deno.serve(async (req) => {
 `
         // Add grade-specific URLs for high-value items
         if (item.current_price > 100) {
+          // Use canonical /cards/ URL with grade query param
           const grades = ['psa10', 'psa9', 'raw']
           for (const grade of grades) {
             xml += `  <url>
-    <loc>${baseUrl}/${item.category}/${slug}/${grade}</loc>
+    <loc>${baseUrl}/cards/${item.category}/${slug}?grade=${grade}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -148,8 +153,9 @@ Deno.serve(async (req) => {
       for (const item of items || []) {
         const slug = slugify(item.name)
         const lastmod = item.updated_at?.split('T')[0] || today
+        // Use canonical /cards/ URL structure
         xml += `  <url>
-    <loc>${baseUrl}/${item.category}/${slug}</loc>
+    <loc>${baseUrl}/cards/${item.category}/${slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>

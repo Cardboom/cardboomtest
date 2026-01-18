@@ -1,13 +1,23 @@
 # CardBoom Robots.txt
 # https://www.cardboom.com
 
-# Sitemaps
+# Sitemaps - Static pages and dynamic sitemap index
 Sitemap: https://www.cardboom.com/sitemap-static.xml
 Sitemap: https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/sitemap?type=index
+
+# Canonical URL structure
+# Cards: /cards/{category}/{slug}
+# Listings: /listing/{category}/{slug}
 
 # Google
 User-agent: Googlebot
 Allow: /
+Allow: /cards/
+Allow: /cards/*
+Allow: /listing/
+Allow: /listing/*
+Allow: /catalog/
+Allow: /catalog/*
 Allow: /ai/
 Allow: /ai/*
 Disallow: /auth
