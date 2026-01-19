@@ -76,17 +76,24 @@ export function DisputeManagement() {
     queryKey: ["admin-disputes"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("order_disputes")
-        .select(`*, order:orders(id, price, status, listing:listings(title))`)
+        .from("order_escalations")
+        .select(`*, order:orders(id, price, status, buyer_id, seller_id, listing:listings(title))`)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       return (data || []).map((d: any) => ({
-        ...d,
-        initiator_id: d.opened_by,
-        reason: d.dispute_type,
-        resolution: d.resolution_type,
-        resolution_notes: d.admin_notes,
+        id: d.id,
+        order_id: d.order_id,
+        initiator_id: d.escalated_by,
+        reason: d.escalation_type,
+        description: d.reason,
+        status: d.resolved_at ? 'resolved' : 'pending',
+        resolution: null,
+        resolution_notes: d.resolution_notes,
+        refund_amount: null,
+        created_at: d.created_at,
+        resolved_at: d.resolved_at,
+        order: d.order,
       })) as Dispute[];
     },
   });
@@ -104,12 +111,9 @@ export function DisputeManagement() {
       refundAmount: number | null;
     }) => {
       const { error } = await supabase
-        .from("order_disputes")
+        .from("order_escalations")
         .update({
-          status: "resolved",
-          resolution,
           resolution_notes: notes,
-          refund_amount: refundAmount,
           resolved_at: new Date().toISOString(),
         })
         .eq("id", disputeId);
