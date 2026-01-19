@@ -6,13 +6,7 @@ import { Gift, Award, Sparkles, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
-
-// Speed tier definitions
-const GRADING_SPEED_TIERS = {
-  standard: { price: 20, daysMin: 5, daysMax: 7 },
-  express: { price: 35, daysMin: 3, daysMax: 5 },
-  priority: { price: 60, daysMin: 1, daysMax: 2 }
-};
+import { useGradingPricing } from '@/hooks/useGradingPricing';
 
 interface GiftGradingDialogProps {
   recipientId: string;
@@ -33,8 +27,9 @@ export const GiftGradingDialog = ({
   const [speedTier, setSpeedTier] = useState<'standard' | 'express' | 'priority'>('standard');
   const [isGifting, setIsGifting] = useState(false);
   const { formatPrice } = useCurrency();
+  const gradingPricing = useGradingPricing();
 
-  const tier = GRADING_SPEED_TIERS[speedTier];
+  const tier = gradingPricing[speedTier];
   const price = tier.price;
 
   const handleGift = async () => {
@@ -136,13 +131,13 @@ export const GiftGradingDialog = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="standard">
-                  Standard ({GRADING_SPEED_TIERS.standard.daysMin}-{GRADING_SPEED_TIERS.standard.daysMax} days) - {formatPrice(GRADING_SPEED_TIERS.standard.price)}
+                  Standard ({gradingPricing.standard.daysMin}-{gradingPricing.standard.daysMax} days) - {formatPrice(gradingPricing.standard.price)}
                 </SelectItem>
                 <SelectItem value="express">
-                  Express ({GRADING_SPEED_TIERS.express.daysMin}-{GRADING_SPEED_TIERS.express.daysMax} days) - {formatPrice(GRADING_SPEED_TIERS.express.price)}
+                  Express ({gradingPricing.express.daysMin}-{gradingPricing.express.daysMax} days) - {formatPrice(gradingPricing.express.price)}
                 </SelectItem>
                 <SelectItem value="priority">
-                  Priority ({GRADING_SPEED_TIERS.priority.daysMin}-{GRADING_SPEED_TIERS.priority.daysMax} days) - {formatPrice(GRADING_SPEED_TIERS.priority.price)}
+                  Priority ({gradingPricing.priority.daysMin}-{gradingPricing.priority.daysMax} days) - {formatPrice(gradingPricing.priority.price)}
                 </SelectItem>
               </SelectContent>
             </Select>

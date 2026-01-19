@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { useGrading, GradingOrder, GRADING_SPEED_TIERS } from '@/hooks/useGrading';
+import { useGrading, GradingOrder } from '@/hooks/useGrading';
+import { useGradingPricing } from '@/hooks/useGradingPricing';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,6 +26,7 @@ export default function GradingSuccess() {
   const [queuePosition, setQueuePosition] = useState<number | null>(null);
   const conversionFiredRef = useRef(false);
   const { getOrder } = useGrading();
+  const gradingPricing = useGradingPricing();
 
   useEffect(() => {
     const verifyAndLoad = async () => {
@@ -127,7 +129,7 @@ export default function GradingSuccess() {
   }
 
   const speedTier = order.speed_tier || 'standard';
-  const tierConfig = GRADING_SPEED_TIERS[speedTier];
+  const tierConfig = gradingPricing[speedTier];
   const estimatedDate = order.estimated_completion_at 
     ? new Date(order.estimated_completion_at)
     : addDays(new Date(), tierConfig.daysMax);

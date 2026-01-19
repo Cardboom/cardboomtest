@@ -5,7 +5,7 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Award, Clock, Shield, ChevronRight, Zap, CheckCircle, ArrowRight, Camera, CreditCard, BarChart3, Sparkles, Target, Eye, Layers, Star, TrendingUp, Users, FileCheck, Lock, Cpu, Globe, Fingerprint, History, QrCode, Link, Package, DollarSign, Percent, Scale, BadgeCheck, Trophy } from 'lucide-react';
-import { GRADING_PRICE_USD } from '@/hooks/useGrading';
+import { useGradingPricing } from '@/hooks/useGradingPricing';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
@@ -20,6 +20,7 @@ export default function Grading() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [totalGraded, setTotalGraded] = useState<number>(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const gradingPricing = useGradingPricing();
 
   // Fetch real grading count
   useEffect(() => {
@@ -90,7 +91,7 @@ export default function Grading() {
     { 
       icon: CreditCard, 
       title: 'Quick Payment', 
-      description: `Just $${GRADING_PRICE_USD} per card - no hidden fees`,
+      description: `Just $${gradingPricing.standard.price} per card - no hidden fees`,
       color: 'from-emerald-500/20 to-emerald-600/5',
       iconBg: 'bg-emerald-500/10',
       iconColor: 'text-emerald-500'
@@ -122,9 +123,9 @@ export default function Grading() {
   ];
 
   const pricingTiers = [
-    { name: 'Standard', price: 15, days: '20-25', description: 'Best value for non-urgent grading', popular: false },
-    { name: 'Express', price: 25, days: '7-10', description: 'Faster turnaround when time matters', popular: true },
-    { name: 'Priority', price: 50, days: '2-3', description: 'Rush service for urgent submissions', popular: false },
+    { name: 'Standard', price: gradingPricing.standard.price, days: `${gradingPricing.standard.daysMin}-${gradingPricing.standard.daysMax}`, description: 'Best value for non-urgent grading', popular: false },
+    { name: 'Express', price: gradingPricing.express.price, days: `${gradingPricing.express.daysMin}-${gradingPricing.express.daysMax}`, description: 'Faster turnaround when time matters', popular: true },
+    { name: 'Priority', price: gradingPricing.priority.price, days: `${gradingPricing.priority.daysMin}-${gradingPricing.priority.daysMax}`, description: 'Rush service for urgent submissions', popular: false },
   ];
 
   const addOns = [
@@ -218,7 +219,7 @@ export default function Grading() {
             "name": "AI Card Grading",
             "description": "Professional AI-powered card grading with subgrades"
           },
-          "price": GRADING_PRICE_USD,
+          "price": gradingPricing.standard.price,
           "priceCurrency": "USD"
         }
       ]
@@ -1037,7 +1038,7 @@ export default function Grading() {
                   </div>
                   
                   <h2 className="text-3xl md:text-5xl font-black text-primary-foreground mb-4">
-                    Starting at ${GRADING_PRICE_USD}/card
+                    Starting at ${gradingPricing.standard.price}/card
                   </h2>
                   <p className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
                     Professional certification with packaging, welding & holographic labels included.

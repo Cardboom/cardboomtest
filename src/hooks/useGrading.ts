@@ -73,13 +73,11 @@ export interface GradingOrder {
   listing_created_id: string | null;
 }
 
-export const GRADING_PRICE_USD = 15; // Base price (standard tier)
-
-export const GRADING_SPEED_TIERS = {
-  standard: { price: 15, daysMin: 20, daysMax: 25 },
-  express: { price: 25, daysMin: 7, daysMax: 10 },
-  priority: { price: 50, daysMin: 2, daysMax: 3 },
-};
+// Re-export from centralized pricing hook for backwards compatibility
+// These are now dynamic and fetched from platform_settings
+import { GRADING_PRICE_USD_DEFAULT, GRADING_SPEED_TIERS_DEFAULT } from './useGradingPricing';
+export const GRADING_PRICE_USD = GRADING_PRICE_USD_DEFAULT;
+export const GRADING_SPEED_TIERS = GRADING_SPEED_TIERS_DEFAULT;
 
 export const GRADING_CATEGORIES = [
   { id: 'pokemon', name: 'Pokémon', icon: '⚡' },
