@@ -526,9 +526,11 @@ export default function GradingNew() {
                       {/* Show image upload for selected listing */}
                       {selectedListing && (
                         <div className="mt-4 grid grid-cols-2 gap-4">
-                          {/* Front Image */}
+                          {/* Front Image - REQUIRED */}
                           <div>
-                            <p className="text-xs text-muted-foreground mb-2 font-medium">FRONT</p>
+                            <p className="text-xs text-muted-foreground mb-2 font-medium flex items-center gap-1">
+                              FRONT <span className="text-destructive">*</span>
+                            </p>
                             <input 
                               ref={frontInputRef} 
                               type="file" 
@@ -605,6 +607,35 @@ export default function GradingNew() {
                             </button>
                           </div>
                         </div>
+                      )}
+                      
+                      {/* Confirm Button for Listing Mode - only show when listing is selected */}
+                      {selectedListing && (
+                        <div className="pt-4 border-t border-border mt-4">
+                        <Button 
+                          className="w-full h-14 rounded-xl gap-2 text-base font-semibold shadow-lg" 
+                          size="lg"
+                          disabled={!frontPreview || !backPreview} 
+                          onClick={handleNext}
+                        >
+                          {(backPreview || backImage) ? (
+                            <>
+                              <CheckCircle2 className="w-5 h-5" />
+                              Confirm Card Details
+                            </>
+                          ) : (
+                            <>
+                              <Camera className="w-5 h-5" />
+                              Add Back Image to Continue
+                            </>
+                          )}
+                        </Button>
+                        {!backPreview && frontPreview && (
+                          <p className="text-xs text-center text-muted-foreground mt-2">
+                            Upload back image to proceed
+                          </p>
+                        )}
+                      </div>
                       )}
                     </CardContent>
                   </Card>
@@ -787,10 +818,10 @@ export default function GradingNew() {
                       <Button 
                         className="w-full h-14 rounded-xl gap-2 text-base font-semibold shadow-lg" 
                         size="lg"
-                        disabled={!frontImage || !backImage} 
+                        disabled={!(frontImage || frontPreview) || !(backImage || backPreview)} 
                         onClick={handleNext}
                       >
-                        {backImage ? (
+                        {(backImage || backPreview) ? (
                           <>
                             <CheckCircle2 className="w-5 h-5" />
                             Confirm Card Details
@@ -802,7 +833,7 @@ export default function GradingNew() {
                           </>
                         )}
                       </Button>
-                      {!backImage && frontImage && (
+                      {!(backImage || backPreview) && (frontImage || frontPreview) && (
                         <p className="text-xs text-center text-muted-foreground mt-2">
                           Upload back image to proceed
                         </p>
