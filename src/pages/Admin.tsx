@@ -66,6 +66,7 @@ import { SystemStatusDashboard } from '@/components/admin/SystemStatusDashboard'
 import { BountyManager } from '@/components/admin/BountyManager';
 import { MarketItemsManager } from '@/components/admin/MarketItemsManager';
 import { GradingCalibrationDashboard } from '@/components/admin/GradingCalibrationDashboard';
+import { GradingPricingManager } from '@/components/admin/GradingPricingManager';
 import { AdminListingsManager } from '@/components/admin/AdminListingsManager';
 import { CreatorManagement } from '@/components/admin/CreatorManagement';
 import { BoomCoinsPricingManager } from '@/components/admin/BoomCoinsPricingManager';
@@ -380,6 +381,8 @@ const Admin = () => {
         return <VaultManagement />;
       case 'grading':
         return <GradingManagement />;
+      case 'grading-pricing':
+        return <GradingPricingManager />;
       case 'grading-calibration':
         return <GradingCalibrationDashboard />;
       case 'image-normalization':

@@ -162,6 +162,7 @@ const navGroups: NavGroup[] = [
       { id: "currency", label: "Currency", icon: Wallet },
       { id: "vault", label: "Vault", icon: Vault },
       { id: "grading", label: "Grading", icon: Shield },
+      { id: "grading-pricing", label: "Grading Pricing", icon: DollarSign },
       { id: "grading-calibration", label: "AI Calibration", icon: Target },
       { id: "image-normalization", label: "Image AI", icon: Image },
       { id: "datasync", label: "Data Sync", icon: RefreshCw },
