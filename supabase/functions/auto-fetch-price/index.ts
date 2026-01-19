@@ -19,8 +19,23 @@ interface CardData {
 }
 
 // Build search query for PriceCharting
+// IMPORTANT: For One Piece, include card code for precise matching
 function buildPriceChartingQuery(card: CardData): string {
-  const parts: string[] = [card.name];
+  const parts: string[] = [];
+  
+  // For One Piece, prioritize card code for exact matching
+  if (card.category === 'onepiece' && card.setCode && card.cardNumber) {
+    // Build card code like OP13-065
+    const normalizedNumber = card.cardNumber.replace(/[^0-9]/g, '').padStart(3, '0');
+    const cardCode = `${card.setCode.toUpperCase()}-${normalizedNumber}`;
+    parts.push(cardCode);
+    parts.push('One Piece');
+    // Return early with just the code for precise search
+    return parts.join(' ');
+  }
+  
+  // Standard approach for other games
+  parts.push(card.name);
   
   // Add variant/rarity info for specific searches
   if (card.variant && card.variant !== 'regular') {
@@ -41,7 +56,12 @@ function buildPriceChartingQuery(card: CardData): string {
     parts.push(card.setCode);
   }
   
-  // Add game context - for English cards, use English set name
+  // Add card number for precision
+  if (card.cardNumber) {
+    parts.push(card.cardNumber);
+  }
+  
+  // Add game context
   const gameKeywords: Record<string, string> = {
     'pokemon': 'Pokemon',
     'mtg': 'Magic',
@@ -52,13 +72,6 @@ function buildPriceChartingQuery(card: CardData): string {
   
   if (card.category && gameKeywords[card.category]) {
     parts.push(gameKeywords[card.category]);
-  }
-  
-  // Add language context - English version is usually listed as "Azure Sea's Seven" not "Japanese Azure Sea's Seven"
-  // Only add "English" or use non-Japanese set name when language is English
-  if (card.language && card.language.toLowerCase() === 'english' && card.setName) {
-    // For One Piece English, set name already differentiates from Japanese
-    // Don't add "English" keyword as PriceCharting uses set name
   }
   
   return parts.join(' ');
@@ -93,8 +106,12 @@ function buildEbayQuery(card: CardData): string {
   return parts.join(' ');
 }
 
-// Fetch from PriceCharting
-async function fetchPriceCharting(query: string): Promise<{ price: number; id: string; productName: string } | null> {
+// Fetch from PriceCharting with validation
+// cardCode is optional - if provided, we verify the result matches
+async function fetchPriceCharting(
+  query: string, 
+  cardCode?: string
+): Promise<{ price: number; id: string; productName: string } | null> {
   if (!PRICECHARTING_API_KEY) return null;
   
   try {
@@ -106,18 +123,43 @@ async function fetchPriceCharting(query: string): Promise<{ price: number; id: s
     const data = await response.json();
     const products = data.products || [];
     
-    if (products.length > 0) {
-      const product = products[0];
-      // PriceCharting returns prices in cents
-      const loosePrice = product['loose-price'] ? product['loose-price'] / 100 : null;
+    if (products.length === 0) return null;
+    
+    // If we have a card code, try to find exact match first
+    let bestProduct = null;
+    if (cardCode) {
+      const normalizedCode = cardCode.toUpperCase().replace(/[^A-Z0-9-]/g, '');
       
-      if (loosePrice && loosePrice > 0) {
-        return {
-          price: loosePrice,
-          id: String(product.id),
-          productName: product['product-name'],
-        };
+      for (const product of products) {
+        const productName = (product['product-name'] || '').toUpperCase();
+        // Check if product name contains the card code
+        if (productName.includes(normalizedCode)) {
+          bestProduct = product;
+          console.log(`[auto-fetch-price] Found exact match for ${cardCode}: ${productName}`);
+          break;
+        }
       }
+      
+      // If no exact match found, log warning and skip
+      if (!bestProduct) {
+        console.log(`[auto-fetch-price] No exact match for ${cardCode} in ${products.length} results. First: ${products[0]?.['product-name']}`);
+        // Don't use first result blindly - return null to indicate no confident match
+        return null;
+      }
+    } else {
+      // No card code to verify - use first result (legacy behavior)
+      bestProduct = products[0];
+    }
+    
+    // PriceCharting returns prices in cents
+    const loosePrice = bestProduct['loose-price'] ? bestProduct['loose-price'] / 100 : null;
+    
+    if (loosePrice && loosePrice > 0) {
+      return {
+        price: loosePrice,
+        id: String(bestProduct.id),
+        productName: bestProduct['product-name'],
+      };
     }
     
     return null;
@@ -236,7 +278,14 @@ serve(async (req) => {
     const pcQuery = buildPriceChartingQuery(cardData);
     console.log(`[auto-fetch-price] PriceCharting query: ${pcQuery}`);
     
-    const pcResult = await fetchPriceCharting(pcQuery);
+    // Build card code for verification (One Piece format)
+    let cardCode: string | undefined;
+    if (cardData.category === 'onepiece' && cardData.setCode && cardData.cardNumber) {
+      const normalizedNumber = cardData.cardNumber.replace(/[^0-9]/g, '').padStart(3, '0');
+      cardCode = `${cardData.setCode.toUpperCase()}-${normalizedNumber}`;
+    }
+    
+    const pcResult = await fetchPriceCharting(pcQuery, cardCode);
     if (pcResult) {
       fetchedPrice = pcResult.price;
       dataSource = 'pricecharting';
