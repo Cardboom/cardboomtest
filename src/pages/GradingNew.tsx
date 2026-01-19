@@ -45,7 +45,8 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { GradingCreditsDisplay } from '@/components/grading/GradingCreditsDisplay';
 import { GradeAndFlipToggle } from '@/components/grading/GradeAndFlipToggle';
-import { SpeedTierSelector, SpeedTier, SPEED_TIERS } from '@/components/grading/SpeedTierSelector';
+import { SpeedTierSelector, SpeedTier } from '@/components/grading/SpeedTierSelector';
+import { useGradingPricing } from '@/hooks/useGradingPricing';
 import { useGradingCredits } from '@/hooks/useGradingCredits';
 import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { CardAnalysis } from '@/hooks/useCardAnalysis';
@@ -105,6 +106,7 @@ export default function GradingNew() {
   const { toast } = useToast();
   const { createOrder, submitAndPay, createOrderFromListing } = useGrading();
   const { isAdmin } = useAdminRole();
+  const gradingPricing = useGradingPricing();
   
   const [cartItems, setCartItems] = useState<Collectible[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -239,8 +241,8 @@ export default function GradingNew() {
   // Pro subscribers get 1 free grading/month for BASE certification only
   // Extras (protection, speed upgrades) still cost money
   const pricing = useMemo(() => {
-    const selectedSpeed = SPEED_TIERS.find(t => t.id === speedTier) || SPEED_TIERS[0];
-    const standardSpeed = SPEED_TIERS.find(t => t.id === 'standard') || SPEED_TIERS[0];
+    const selectedSpeed = gradingPricing[speedTier];
+    const standardSpeed = gradingPricing.standard;
     
     // Base grading cost (standard tier price) - this is what credits cover
     const baseGradingCost = standardSpeed.price;
@@ -286,7 +288,7 @@ export default function GradingNew() {
       totalExtras,
       gradingAfterCredits,
     };
-  }, [includeProtection, speedTier, creditsRemaining]);
+  }, [includeProtection, speedTier, creditsRemaining, gradingPricing]);
 
   const handleBackImageChange = (file: File | null) => {
     if (!file) return;

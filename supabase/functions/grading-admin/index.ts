@@ -5,7 +5,8 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Tightened CORS - only allows cardboom.com and Lovable preview URLs
 const corsHeaders = getCorsHeaders();
 
-const GRADING_PRICE_USD = 20;
+// Default fallback - actual price should be fetched from platform_settings
+const DEFAULT_GRADING_PRICE_USD = 18;
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -146,6 +147,9 @@ serve(async (req) => {
         );
       }
 
+      // Get refund amount from order's price_usd (actual paid amount)
+      const refundAmount = order.price_usd || DEFAULT_GRADING_PRICE_USD;
+
       // Get user wallet
       const { data: wallet, error: walletError } = await supabase
         .from('wallets')
@@ -160,11 +164,11 @@ serve(async (req) => {
         );
       }
 
-      // Refund to wallet
+      // Refund to wallet using actual order price
       const { error: refundError } = await supabase
         .from('wallets')
         .update({ 
-          balance: wallet.balance + GRADING_PRICE_USD,
+          balance: wallet.balance + refundAmount,
           updated_at: new Date().toISOString()
         })
         .eq('id', wallet.id);
@@ -182,7 +186,7 @@ serve(async (req) => {
         .insert({
           wallet_id: wallet.id,
           type: 'refund',
-          amount: GRADING_PRICE_USD,
+          amount: refundAmount,
           currency: 'USD',
           description: `Grading refund - Order ${orderId}`,
           reference_id: orderId
@@ -203,7 +207,7 @@ serve(async (req) => {
         );
       }
 
-      console.log(`Order ${orderId} refunded by admin ${user.id}`);
+      console.log(`Order ${orderId} refunded $${refundAmount} by admin ${user.id}`);
 
       return new Response(
         JSON.stringify({ success: true, order: updatedOrder }),

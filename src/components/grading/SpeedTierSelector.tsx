@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { useGradingPricing, GRADING_SPEED_TIERS_DEFAULT } from '@/hooks/useGradingPricing';
 
 export type SpeedTier = 'standard' | 'express' | 'priority';
 
@@ -20,22 +21,23 @@ interface SpeedTierOption {
   popular?: boolean;
 }
 
-const SPEED_TIERS: SpeedTierOption[] = [
+// Helper to build speed tiers from pricing data
+const buildSpeedTiers = (pricing: ReturnType<typeof useGradingPricing>): SpeedTierOption[] => [
   {
     id: 'standard',
     name: 'Standard',
-    price: 15,
-    daysMin: 20,
-    daysMax: 25,
+    price: pricing.standard.price,
+    daysMin: pricing.standard.daysMin,
+    daysMax: pricing.standard.daysMax,
     icon: Clock,
     description: 'Quality grading at our best price',
   },
   {
     id: 'express',
     name: 'Express',
-    price: 25,
-    daysMin: 7,
-    daysMax: 10,
+    price: pricing.express.price,
+    daysMin: pricing.express.daysMin,
+    daysMax: pricing.express.daysMax,
     icon: Zap,
     description: 'Faster turnaround for time-sensitive cards',
     popular: true,
@@ -44,14 +46,22 @@ const SPEED_TIERS: SpeedTierOption[] = [
   {
     id: 'priority',
     name: 'Priority',
-    price: 50,
-    daysMin: 2,
-    daysMax: 3,
+    price: pricing.priority.price,
+    daysMin: pricing.priority.daysMin,
+    daysMax: pricing.priority.daysMax,
     icon: Rocket,
     description: 'Our fastest service for urgent grading',
     badge: 'Fastest',
   },
 ];
+
+// Static fallback for non-hook contexts
+const SPEED_TIERS: SpeedTierOption[] = buildSpeedTiers({
+  ...GRADING_SPEED_TIERS_DEFAULT,
+  referralCommissionRate: 0.10,
+  creatorRevenueShare: 0.15,
+  isLoading: false,
+});
 
 interface SpeedTierSelectorProps {
   value: SpeedTier;
@@ -62,7 +72,9 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
   value,
   onChange,
 }) => {
-  const selectedTier = SPEED_TIERS.find(t => t.id === value) || SPEED_TIERS[0];
+  const pricing = useGradingPricing();
+  const dynamicTiers = buildSpeedTiers(pricing);
+  const selectedTier = dynamicTiers.find(t => t.id === value) || dynamicTiers[0];
 
   return (
     <div className="space-y-3">
@@ -72,7 +84,7 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
         onValueChange={(v) => onChange(v as SpeedTier)}
         className="grid gap-2"
       >
-        {SPEED_TIERS.map((tier) => {
+        {dynamicTiers.map((tier) => {
           const isSelected = value === tier.id;
           const Icon = tier.icon;
           
