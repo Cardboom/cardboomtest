@@ -232,13 +232,13 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <ul className="grid w-[260px] gap-1 p-2">
                       <li>
                         <NavigationMenuLink asChild>
-                          <Link to="/markets" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                          <Link to="/catalog" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
                             <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                               <TrendingUp className="w-3.5 h-3.5 text-primary" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs">{t.nav.markets}</div>
-                              <div className="text-[10px] text-muted-foreground">{t.nav.marketsDesc}</div>
+                              <div className="font-medium text-xs">Catalog</div>
+                              <div className="text-[10px] text-muted-foreground">Browse card prices</div>
                             </div>
                           </Link>
                         </NavigationMenuLink>
@@ -658,9 +658,9 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t.nav.trading}</span>
                 </div>
                 
-                <Link to="/markets" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                <Link to="/catalog" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <TrendingUp className="w-5 h-5 text-primary" />
-                  <span>{t.nav.markets}</span>
+                  <span>Catalog</span>
                 </Link>
                 <Link to="/cardswap" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <ArrowLeftRight className="w-5 h-5 text-blue-500" />
