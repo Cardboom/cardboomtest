@@ -225,33 +225,17 @@ export const BoomPacksManager: React.FC = () => {
   const fetchAdminListings = async () => {
     setLoadingListings(true);
     try {
-      // Get admin users first
-      const { data: adminProfiles } = await (supabase
-        .from('profiles')
-        .select('id')
-        .eq('role', 'admin') as any);
-      
-      const adminIds = (adminProfiles || []).map((p: any) => p.id);
-      
-      if (adminIds.length === 0) {
-        toast.error('No admin accounts found');
-        setLoadingListings(false);
-        return;
-      }
-
-      // Fetch listings from admin accounts that are active
-      const { data: listings, error } = await (supabase
+      // Get all active listings (admin can see all) - simplified query
+      const { data: listings, error } = await supabase
         .from('listings')
-        .select('id, title, image_url, category, rarity, price, market_item_id')
-        .in('seller_id', adminIds)
+        .select('id, title, image_url, category, rarity, price, market_item_id, seller_id')
         .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(100) as any);
+        .limit(100);
 
       if (error) throw error;
       setAdminListings(listings || []);
     } catch (error) {
-      console.error('Error fetching admin listings:', error);
+      console.error('Error fetching listings:', error);
       toast.error('Failed to fetch listings');
     } finally {
       setLoadingListings(false);
@@ -726,73 +710,157 @@ export const BoomPacksManager: React.FC = () => {
             </Card>
           </div>
 
-          {/* Add Inventory */}
-          <Dialog open={isAddingInventory} onOpenChange={setIsAddingInventory}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Inventory Item
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add to Inventory Pool</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Card Name</Label>
-                  <Input 
-                    value={inventoryForm.card_name} 
-                    onChange={(e) => setInventoryForm({ ...inventoryForm, card_name: e.target.value })}
-                    placeholder="e.g., Charizard VMAX"
-                  />
-                </div>
-                <div>
-                  <Label>Image URL</Label>
-                  <Input 
-                    value={inventoryForm.card_image_url} 
-                    onChange={(e) => setInventoryForm({ ...inventoryForm, card_image_url: e.target.value })}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+          {/* Add Inventory Buttons */}
+          <div className="flex gap-2">
+            <Dialog open={isAddingInventory} onOpenChange={setIsAddingInventory}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Manual Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add to Inventory Pool</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
                   <div>
-                    <Label>Category</Label>
-                    <Select value={inventoryForm.category} onValueChange={(v) => setInventoryForm({ ...inventoryForm, category: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>Card Name</Label>
+                    <Input 
+                      value={inventoryForm.card_name} 
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, card_name: e.target.value })}
+                      placeholder="e.g., Charizard VMAX"
+                    />
                   </div>
                   <div>
-                    <Label>Rarity</Label>
-                    <Select value={inventoryForm.rarity} onValueChange={(v) => setInventoryForm({ ...inventoryForm, rarity: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {RARITIES.map(r => (
-                          <SelectItem key={r} value={r}>{r.replace('_', ' ')}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label>Image URL</Label>
+                    <Input 
+                      value={inventoryForm.card_image_url} 
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, card_image_url: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Category</Label>
+                      <Select value={inventoryForm.category} onValueChange={(v) => setInventoryForm({ ...inventoryForm, category: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {CATEGORIES.map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Rarity</Label>
+                      <Select value={inventoryForm.rarity} onValueChange={(v) => setInventoryForm({ ...inventoryForm, rarity: v })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {RARITIES.map(r => (
+                            <SelectItem key={r} value={r}>{r.replace('_', ' ')}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Utility Value (Gems)</Label>
+                    <Input 
+                      type="number"
+                      value={inventoryForm.utility_value_gems} 
+                      onChange={(e) => setInventoryForm({ ...inventoryForm, utility_value_gems: parseInt(e.target.value) || 0 })}
+                    />
                   </div>
                 </div>
-                <div>
-                  <Label>Utility Value (Gems)</Label>
-                  <Input 
-                    type="number"
-                    value={inventoryForm.utility_value_gems} 
-                    onChange={(e) => setInventoryForm({ ...inventoryForm, utility_value_gems: parseInt(e.target.value) || 0 })}
-                  />
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddingInventory(false)}>Cancel</Button>
+                  <Button onClick={handleAddInventory} disabled={!inventoryForm.card_name}>Add</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Import from Listings */}
+            <Dialog open={isImportingFromListings} onOpenChange={(open) => {
+              setIsImportingFromListings(open);
+              if (open) {
+                fetchAdminListings();
+                setSelectedListings(new Set());
+              }
+            }}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Archive className="w-4 h-4 mr-2" />
+                  Import from Listings
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[80vh]">
+                <DialogHeader>
+                  <DialogTitle>Import from Active Listings</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  {loadingListings ? (
+                    <div className="flex items-center justify-center py-8">
+                      <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : adminListings.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">No active listings found</p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        Select listings to import into the inventory pool. {selectedListings.size} selected.
+                      </p>
+                      <div className="max-h-[50vh] overflow-y-auto space-y-2">
+                        {adminListings.map((listing) => (
+                          <div 
+                            key={listing.id}
+                            onClick={() => toggleListingSelection(listing.id)}
+                            className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                              selectedListings.has(listing.id) 
+                                ? 'border-primary bg-primary/10' 
+                                : 'border-border hover:bg-muted/50'
+                            }`}
+                          >
+                            {listing.image_url ? (
+                              <img src={listing.image_url} alt={listing.title} className="w-12 h-12 rounded object-cover" />
+                            ) : (
+                              <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                                <Box className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{listing.title}</p>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Badge variant="outline" className="text-xs">{listing.category}</Badge>
+                                <span>${listing.price?.toFixed(2) || '0.00'}</span>
+                              </div>
+                            </div>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                              selectedListings.has(listing.id) 
+                                ? 'border-primary bg-primary' 
+                                : 'border-muted-foreground'
+                            }`}>
+                              {selectedListings.has(listing.id) && (
+                                <span className="text-primary-foreground text-xs">✓</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddingInventory(false)}>Cancel</Button>
-                <Button onClick={handleAddInventory} disabled={!inventoryForm.card_name}>Add</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsImportingFromListings(false)}>Cancel</Button>
+                  <Button 
+                    onClick={handleImportListings} 
+                    disabled={selectedListings.size === 0}
+                  >
+                    Import {selectedListings.size} Item{selectedListings.size !== 1 ? 's' : ''}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
 
           {/* Inventory Table */}
           <Card>
