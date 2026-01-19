@@ -18,7 +18,9 @@ import {
   Play,
   Loader2,
   Link,
-  ExternalLink
+  ExternalLink,
+  Image,
+  Download
 } from "lucide-react";
 
 interface SyncResult {
@@ -55,9 +57,12 @@ export function CatalogOpsPanel() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("normalize");
   const [loading, setLoading] = useState(false);
+  const [imageSyncLoading, setImageSyncLoading] = useState(false);
   const [selectedGame, setSelectedGame] = useState<string>("all");
   const [limit, setLimit] = useState<number>(100);
   const [dryRun, setDryRun] = useState(true);
+  const [forceRefresh, setForceRefresh] = useState(false);
+  const [imageSyncResult, setImageSyncResult] = useState<any>(null);
   
   // Results state
   const [normalizeResult, setNormalizeResult] = useState<SyncResult | null>(null);
@@ -262,6 +267,39 @@ export function CatalogOpsPanel() {
     }
   };
 
+  const runImageSync = async () => {
+    setImageSyncLoading(true);
+    setImageSyncResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-catalog-images', {
+        body: {
+          game: selectedGame === 'all' ? undefined : selectedGame,
+          limit,
+          force_refresh: forceRefresh,
+          delay_ms: 300,
+        }
+      });
+      
+      if (error) throw error;
+      
+      setImageSyncResult(data);
+      toast({
+        title: "Image Sync Complete",
+        description: `Updated ${data.updated} images, skipped ${data.skipped}, errors: ${data.errors}`,
+      });
+      
+      fetchStats();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to sync images",
+        variant: "destructive",
+      });
+    } finally {
+      setImageSyncLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
@@ -315,6 +353,10 @@ export function CatalogOpsPanel() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="normalize">Normalize</TabsTrigger>
+          <TabsTrigger value="images">
+            <Image className="h-4 w-4 mr-1" />
+            Image Sync
+          </TabsTrigger>
           <TabsTrigger value="ingest">Price Ingest</TabsTrigger>
           <TabsTrigger value="unmatched">Unmatched Queue ({stats.unmatchedCount})</TabsTrigger>
           <TabsTrigger value="set-mappings">Set Mappings</TabsTrigger>
@@ -406,6 +448,126 @@ export function CatalogOpsPanel() {
                                 </TableCell>
                                 <TableCell className="font-mono text-xs">
                                   {sample.normalized?.canonical_key}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </ScrollArea>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="images" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Image className="h-5 w-5" />
+                Catalog Image Sync
+              </CardTitle>
+              <CardDescription>
+                Sync card images using deterministic card code matching (not fuzzy name search).
+                Uses OPTCG API for One Piece, Pokemon TCG API for Pokemon.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-4 items-end flex-wrap">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Game</label>
+                  <Select value={selectedGame} onValueChange={setSelectedGame}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Games</SelectItem>
+                      <SelectItem value="onepiece">One Piece</SelectItem>
+                      <SelectItem value="pokemon">Pokemon</SelectItem>
+                      <SelectItem value="yugioh">Yu-Gi-Oh</SelectItem>
+                      <SelectItem value="mtg">Magic: The Gathering</SelectItem>
+                      <SelectItem value="lorcana">Lorcana</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Limit</label>
+                  <Input 
+                    type="number" 
+                    value={limit} 
+                    onChange={(e) => setLimit(parseInt(e.target.value) || 100)}
+                    className="w-[100px]"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="forceRefresh"
+                    checked={forceRefresh}
+                    onChange={(e) => setForceRefresh(e.target.checked)}
+                    className="rounded"
+                  />
+                  <label htmlFor="forceRefresh" className="text-sm">Force refresh all</label>
+                </div>
+                <Button onClick={runImageSync} disabled={imageSyncLoading}>
+                  {imageSyncLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Download className="h-4 w-4 mr-2" />
+                  )}
+                  Sync Images
+                </Button>
+              </div>
+
+              <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                <strong>How it works:</strong>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>One Piece:</strong> Uses OPTCG API with exact card codes (OP01-120, EB03-053)</li>
+                  <li><strong>Pokemon:</strong> Uses Pokemon TCG API by set code + card number</li>
+                  <li><strong>Others:</strong> Uses Cardmarket API with set+number matching</li>
+                </ul>
+              </div>
+
+              {imageSyncResult && (
+                <div className="mt-4 p-4 bg-muted rounded-lg space-y-2">
+                  <div className="flex gap-4 flex-wrap">
+                    <Badge variant="default">Processed: {imageSyncResult.processed}</Badge>
+                    <Badge variant="secondary" className="bg-green-600 text-white">Updated: {imageSyncResult.updated}</Badge>
+                    <Badge variant="outline">Skipped: {imageSyncResult.skipped}</Badge>
+                    {imageSyncResult.errors > 0 && (
+                      <Badge variant="destructive">Errors: {imageSyncResult.errors}</Badge>
+                    )}
+                  </div>
+                  
+                  {imageSyncResult.details && imageSyncResult.details.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-medium mb-2">Results:</h4>
+                      <ScrollArea className="h-[200px]">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Card Name</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Image</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {imageSyncResult.details.slice(0, 50).map((item: any, i: number) => (
+                              <TableRow key={i}>
+                                <TableCell className="font-medium">{item.name?.slice(0, 40)}</TableCell>
+                                <TableCell>
+                                  <Badge variant={item.status === 'updated' ? 'default' : 'outline'}>
+                                    {item.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {item.image && (
+                                    <a href={item.image} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
+                                      View
+                                    </a>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             ))}
