@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCategoryName } from '@/lib/categoryFormatter';
@@ -25,6 +26,7 @@ import {
   Upload,
   Image as ImageIcon,
   Trash2,
+  CheckSquare,
   ChevronLeft,
   ChevronRight,
   Zap,
@@ -71,6 +73,8 @@ export const MarketItemsManager = () => {
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [isDeleting, setIsDeleting] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', display_name: '' });
   const [newItem, setNewItem] = useState<Partial<MarketItem>>({
     name: '',
@@ -300,6 +304,52 @@ export const MarketItemsManager = () => {
     }
   };
 
+  // Batch delete items
+  const handleBatchDelete = async () => {
+    if (selectedItems.size === 0) return;
+    
+    if (!confirm(`Are you sure you want to delete ${selectedItems.size} item(s)? This cannot be undone.`)) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('market_items')
+        .delete()
+        .in('id', Array.from(selectedItems));
+
+      if (error) throw error;
+
+      toast.success(`Successfully deleted ${selectedItems.size} item(s)`);
+      setSelectedItems(new Set());
+      fetchItems();
+    } catch (error) {
+      console.error('Error batch deleting items:', error);
+      toast.error('Failed to delete items');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // Toggle item selection
+  const toggleItemSelection = (id: string) => {
+    const newSelection = new Set(selectedItems);
+    if (newSelection.has(id)) {
+      newSelection.delete(id);
+    } else {
+      newSelection.add(id);
+    }
+    setSelectedItems(newSelection);
+  };
+
+  // Toggle select all on current page
+  const toggleSelectAll = () => {
+    if (selectedItems.size === items.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(items.map(item => item.id)));
+    }
+  };
+
   // Sync prices
   const handleSyncPrices = async () => {
     setIsSyncing(true);
@@ -324,8 +374,30 @@ export const MarketItemsManager = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-bold">Market Items Manager</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold">Market Items Manager</h2>
+          {selectedItems.size > 0 && (
+            <Badge variant="secondary" className="text-sm">
+              {selectedItems.size} selected
+            </Badge>
+          )}
+        </div>
         <div className="flex gap-2 flex-wrap">
+          {selectedItems.size > 0 && (
+            <Button 
+              variant="destructive" 
+              onClick={handleBatchDelete} 
+              disabled={isDeleting}
+              className="gap-2"
+            >
+              {isDeleting ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4" />
+              )}
+              Delete {selectedItems.size} Item{selectedItems.size > 1 ? 's' : ''}
+            </Button>
+          )}
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
               <Button className="gap-2">
@@ -571,6 +643,13 @@ export const MarketItemsManager = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={items.length > 0 && selectedItems.size === items.length}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
                   <TableHead className="w-24">Image</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
@@ -586,19 +665,26 @@ export const MarketItemsManager = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8">
+                    <TableCell colSpan={11} className="text-center py-8">
                       <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                       No items found
                     </TableCell>
                   </TableRow>
                 ) : (
                   items.map(item => (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className={selectedItems.has(item.id) ? 'bg-muted/50' : ''}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedItems.has(item.id)}
+                          onCheckedChange={() => toggleItemSelection(item.id)}
+                          aria-label={`Select ${item.name}`}
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="relative group w-16 h-16">
                           <div className="w-16 h-16 rounded overflow-hidden bg-muted">
