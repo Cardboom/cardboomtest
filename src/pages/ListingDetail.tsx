@@ -163,10 +163,16 @@ const ListingDetail = () => {
   useEffect(() => {
     if (listingIdentifier) {
       fetchListing();
-      fetchComments();
-      fetchVotes();
     }
-  }, [listingIdentifier, user]);
+  }, [listingIdentifier]);
+  
+  // Fetch comments and votes when listing is loaded (using the actual listing ID)
+  useEffect(() => {
+    if (listing?.id) {
+      fetchComments(listing.id);
+      fetchVotes(listing.id);
+    }
+  }, [listing?.id, user]);
 
   const fetchListing = async () => {
     try {
@@ -375,12 +381,13 @@ const ListingDetail = () => {
     }
   };
 
-  const fetchComments = async () => {
+  const fetchComments = async (listingId: string) => {
+    if (!listingId) return;
     try {
       const { data, error } = await supabase
         .from('listing_comments')
         .select('*')
-        .eq('listing_id', id)
+        .eq('listing_id', listingId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -390,12 +397,13 @@ const ListingDetail = () => {
     }
   };
 
-  const fetchVotes = async () => {
+  const fetchVotes = async (listingId: string) => {
+    if (!listingId) return;
     try {
       const { data: allVotes, error } = await supabase
         .from('price_votes')
         .select('*')
-        .eq('listing_id', id);
+        .eq('listing_id', listingId);
 
       if (error) throw error;
 
@@ -452,7 +460,7 @@ const ListingDetail = () => {
         toast.success(`You predict the price will go ${voteType}!`);
       }
 
-      fetchVotes();
+      if (listing?.id) fetchVotes(listing.id);
     } catch (error: any) {
       console.error('Error voting:', error);
       toast.error('Failed to vote');
@@ -478,7 +486,7 @@ const ListingDetail = () => {
       const { error } = await supabase
         .from('listing_comments')
         .insert({
-          listing_id: id,
+          listing_id: listing?.id,
           user_id: user.id,
           content: newComment.trim(),
         });
@@ -494,7 +502,7 @@ const ListingDetail = () => {
               type: 'message',
               title: 'New comment on your listing',
               body: `Someone commented on "${listing.title}"`,
-              data: { listing_id: id }
+              data: { listing_id: listing?.id }
             }
           });
         } catch (notifError) {
@@ -504,7 +512,7 @@ const ListingDetail = () => {
       
       toast.success('Comment added');
       setNewComment('');
-      fetchComments();
+      if (listing?.id) fetchComments(listing.id);
     } catch (error: any) {
       console.error('Error adding comment:', error);
       toast.error('Failed to add comment');
@@ -522,7 +530,7 @@ const ListingDetail = () => {
 
       if (error) throw error;
       toast.success('Comment deleted');
-      fetchComments();
+      if (listing?.id) fetchComments(listing.id);
     } catch (error) {
       console.error('Error deleting comment:', error);
       toast.error('Failed to delete comment');
