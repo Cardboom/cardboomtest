@@ -381,7 +381,17 @@ export default function GradingNew() {
           backImage, 
           speedTier, 
           autoListEnabled, 
-          autoListPrice
+          autoListPrice,
+          undefined, // batchInfo
+          {
+            cardName: reviewedCardData?.cardName || cardAnalysis?.cardName || undefined,
+            category: reviewedCardData?.category || cardAnalysis?.category || 'onepiece',
+            setCode: reviewedCardData?.setCode || cardAnalysis?.setCode || undefined,
+            cardNumber: reviewedCardData?.cardNumber || cardAnalysis?.cardNumber || undefined,
+            setName: reviewedCardData?.setName || cardAnalysis?.setName || undefined,
+            rarity: reviewedCardData?.rarity || undefined,
+            language: reviewedCardData?.language || undefined
+          }
         );
       }
       
