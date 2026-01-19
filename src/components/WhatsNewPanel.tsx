@@ -99,11 +99,9 @@ export function WhatsNewPanel() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {listings.slice(0, 8).map((listing) => (
-          <a
+          <div
             key={listing.id}
-            href={generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title })}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={() => navigate(generateListingUrl({ id: listing.id, category: listing.category, slug: (listing as any).slug, title: listing.title }))}
             className="glass rounded-xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all group block"
           >
             {/* Image with mini pedestal effect */}
@@ -183,7 +181,7 @@ export function WhatsNewPanel() {
                 </Badge>
               </div>
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </div>
