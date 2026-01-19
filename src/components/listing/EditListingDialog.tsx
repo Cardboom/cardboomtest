@@ -29,11 +29,13 @@ interface EditListingDialogProps {
     cbgi_score?: number | null;
   };
   onSuccess?: () => void;
+  trigger?: React.ReactNode;
 }
 
 export const EditListingDialog = ({
   listing,
   onSuccess,
+  trigger,
 }: EditListingDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -146,10 +148,12 @@ export const EditListingDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Pencil className="w-4 h-4" />
-          Edit Listing
-        </Button>
+        {trigger || (
+          <Button variant="outline" size="sm" className="gap-2">
+            <Pencil className="w-4 h-4" />
+            Edit Listing
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
 
