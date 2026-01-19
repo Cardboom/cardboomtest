@@ -18,6 +18,7 @@ interface CreateListingParams {
   currency?: 'USD' | 'EUR' | 'TRY';
   condition: string;
   description?: string;
+  manualTitle?: string; // User's manual title override
   allowsVault?: boolean;
   allowsTrade?: boolean;
   allowsShipping?: boolean;
@@ -186,6 +187,7 @@ export function useCardIndexer() {
     isOpenToOffers = false,
     certificationEnabled = false,
     certificationTier = 'standard',
+    manualTitle,
   }: CreateListingParams) => {
     try {
       // First, upsert the market item
@@ -196,7 +198,8 @@ export function useCardIndexer() {
       });
 
       // Build SEO-friendly full display name for listing title
-      const displayName = buildDisplayName(cardData);
+      // Use manual title if provided, otherwise build from card data
+      const displayName = manualTitle?.trim() || buildDisplayName(cardData);
       
       // Create the listing with currency
       const listingData: Record<string, unknown> = {

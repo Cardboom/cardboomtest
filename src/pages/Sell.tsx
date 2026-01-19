@@ -180,6 +180,13 @@ const SellPage = () => {
     }
   }, [location.state, navigate, location.pathname]);
 
+  // Fetch listings when switching to listings tab
+  useEffect(() => {
+    if (activeTab === 'listings') {
+      fetchListings();
+    }
+  }, [activeTab]);
+
   const fetchListings = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -379,6 +386,7 @@ const SellPage = () => {
         currency: formData.currency,
         condition: formData.condition,
         description: formData.description,
+        manualTitle: formData.title, // Pass user's manual title
         allowsVault: formData.allowsVault,
         allowsTrade: formData.allowsTrade,
         allowsShipping: formData.allowsShipping,

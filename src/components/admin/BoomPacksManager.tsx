@@ -79,6 +79,10 @@ export const BoomPacksManager: React.FC = () => {
 
   // Inventory Form
   const [isAddingInventory, setIsAddingInventory] = useState(false);
+  const [isImportingFromListings, setIsImportingFromListings] = useState(false);
+  const [adminListings, setAdminListings] = useState<any[]>([]);
+  const [selectedListings, setSelectedListings] = useState<Set<string>>(new Set());
+  const [loadingListings, setLoadingListings] = useState(false);
   const [inventoryForm, setInventoryForm] = useState({
     card_name: '',
     card_image_url: '',
@@ -215,6 +219,89 @@ export const BoomPacksManager: React.FC = () => {
       });
       fetchInventoryPool();
     }
+  };
+
+  // Fetch admin listings for import
+  const fetchAdminListings = async () => {
+    setLoadingListings(true);
+    try {
+      // Get admin users first
+      const { data: adminProfiles } = await (supabase
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin') as any);
+      
+      const adminIds = (adminProfiles || []).map((p: any) => p.id);
+      
+      if (adminIds.length === 0) {
+        toast.error('No admin accounts found');
+        setLoadingListings(false);
+        return;
+      }
+
+      // Fetch listings from admin accounts that are active
+      const { data: listings, error } = await (supabase
+        .from('listings')
+        .select('id, title, image_url, category, rarity, price, market_item_id')
+        .in('seller_id', adminIds)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(100) as any);
+
+      if (error) throw error;
+      setAdminListings(listings || []);
+    } catch (error) {
+      console.error('Error fetching admin listings:', error);
+      toast.error('Failed to fetch listings');
+    } finally {
+      setLoadingListings(false);
+    }
+  };
+
+  // Import selected listings to inventory pool
+  const handleImportListings = async () => {
+    if (selectedListings.size === 0) {
+      toast.error('No listings selected');
+      return;
+    }
+
+    const listingsToImport = adminListings.filter(l => selectedListings.has(l.id));
+    
+    const inventoryItems = listingsToImport.map(listing => ({
+      card_name: listing.title,
+      card_image_url: listing.image_url || null,
+      category: listing.category || 'mixed',
+      rarity: listing.rarity || 'common',
+      utility_value_gems: Math.round((listing.price || 10) * 10), // Convert price to gems
+      is_available: true,
+      market_item_id: listing.market_item_id || null,
+    }));
+
+    const { error } = await supabase
+      .from('boom_pack_inventory_pool')
+      .insert(inventoryItems);
+
+    if (error) {
+      toast.error('Failed to import listings');
+      console.error(error);
+    } else {
+      toast.success(`${listingsToImport.length} items imported to inventory pool`);
+      setSelectedListings(new Set());
+      setIsImportingFromListings(false);
+      fetchInventoryPool();
+    }
+  };
+
+  const toggleListingSelection = (id: string) => {
+    setSelectedListings(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
   };
 
   const resetForm = () => {

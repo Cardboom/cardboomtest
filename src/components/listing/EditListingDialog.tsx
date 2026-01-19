@@ -39,6 +39,7 @@ export const EditListingDialog = ({
 }: EditListingDialogProps) => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState(listing.title);
   const [price, setPrice] = useState(listing.price.toString());
   const [description, setDescription] = useState(listing.description || '');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -49,6 +50,7 @@ export const EditListingDialog = ({
 
   useEffect(() => {
     if (open) {
+      setTitle(listing.title);
       setPrice(listing.price.toString());
       setDescription(listing.description || '');
       setImageFile(null);
@@ -73,6 +75,10 @@ export const EditListingDialog = ({
   };
 
   const handleSave = async () => {
+    if (!title.trim()) {
+      toast.error('Please enter a title');
+      return;
+    }
     const priceNum = parseFloat(price);
     if (isNaN(priceNum) || priceNum <= 0) {
       toast.error('Please enter a valid price');
@@ -103,6 +109,7 @@ export const EditListingDialog = ({
 
       // Build update object
       const updates: Record<string, any> = {
+        title: title.trim(),
         price: priceNum,
         description: description || null,
       };
@@ -158,10 +165,15 @@ export const EditListingDialog = ({
       <DialogContent className="sm:max-w-md">
 
         <div className="space-y-4 py-4">
-          {/* Title (read-only) */}
+          {/* Title (editable) */}
           <div className="space-y-2">
-            <Label className="text-muted-foreground">Item</Label>
-            <p className="font-medium">{listing.title}</p>
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Card name"
+            />
           </div>
 
           {/* Price */}
