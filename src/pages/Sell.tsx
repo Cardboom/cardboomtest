@@ -48,6 +48,7 @@ import { CertificationToggle, CertificationTier } from '@/components/listing/Cer
 // AuctionToggle removed - feature disabled
 import { processImageFile, isHeicFile } from '@/lib/heic-converter';
 import { SellerFeeDisplay } from '@/components/seller/SellerFeeDisplay';
+import { EditListingDialog } from '@/components/listing/EditListingDialog';
 interface Listing {
   id: string;
   title: string;
@@ -61,6 +62,8 @@ interface Listing {
   allows_shipping: boolean;
   created_at: string;
   image_url: string | null;
+  grading_order_id?: string | null;
+  cbgi_score?: number | null;
 }
 
 const categories = ['nba', 'fifa', 'baseball', 'football', 'tcg', 'figures', 'pokemon', 'mtg', 'yugioh', 'onepiece', 'lorcana', 'gamepoints'];
@@ -1392,13 +1395,26 @@ const SellPage = () => {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon"
-                                  onClick={() => handleViewListing(listing.id)}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
+                                <EditListingDialog
+                                  listing={{
+                                    id: listing.id,
+                                    title: listing.title,
+                                    description: listing.description,
+                                    price: listing.price,
+                                    image_url: listing.image_url,
+                                    grading_order_id: listing.grading_order_id,
+                                    cbgi_score: listing.cbgi_score,
+                                  }}
+                                  onSuccess={() => {
+                                    // Refresh listings
+                                    fetchListings();
+                                  }}
+                                  trigger={
+                                    <Button variant="ghost" size="icon">
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                  }
+                                />
                                 <Button 
                                   variant="ghost" 
                                   size="icon" 
