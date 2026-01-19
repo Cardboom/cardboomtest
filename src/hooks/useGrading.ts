@@ -134,7 +134,8 @@ export function useGrading() {
     speedTier: 'standard' | 'express' | 'priority' = 'standard',
     autoListEnabled: boolean = false,
     autoListPrice: number | null = null,
-    batchInfo?: { isBatchDiscounted: boolean; batchSize: number; batchDiscountPercent: number }
+    batchInfo?: { isBatchDiscounted: boolean; batchSize: number; batchDiscountPercent: number },
+    cardData?: { cardName?: string; category?: string; setCode?: string; cardNumber?: string; setName?: string; rarity?: string; language?: string }
   ): Promise<GradingOrder | null> => {
     const tierConfig = GRADING_SPEED_TIERS[speedTier];
     try {
@@ -180,7 +181,7 @@ export function useGrading() {
           id: orderId,
           user_id: user.id,
           idempotency_key: idempotencyKey,
-          category: 'tcg', // Default category for all grading
+          category: cardData?.category || 'onepiece', // Default to onepiece instead of tcg
           status: 'pending_payment',
           front_image_url: frontUrl,
           back_image_url: backUrl,
@@ -190,7 +191,14 @@ export function useGrading() {
           estimated_days_max: tierConfig.daysMax,
           auto_list_enabled: autoListEnabled,
           auto_list_price: autoListPrice,
-          // Batch discount fields - batch orders don't count toward Boom Challenges
+          // Card metadata from AI scan
+          card_name: cardData?.cardName || null,
+          set_name: cardData?.setName || null,
+          set_code: cardData?.setCode || null,
+          card_number: cardData?.cardNumber || null,
+          rarity: cardData?.rarity || null,
+          language: cardData?.language || null,
+          // Batch discount fields
           is_batch_discounted: batchInfo?.isBatchDiscounted || false,
           batch_size: batchInfo?.batchSize || 1,
           batch_discount_percent: batchInfo?.batchDiscountPercent || 0,
