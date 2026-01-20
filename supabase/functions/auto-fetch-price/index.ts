@@ -108,9 +108,11 @@ function buildEbayQuery(card: CardData): string {
 
 // Fetch from PriceCharting with validation
 // cardCode is optional - if provided, we verify the result matches
+// rarity is used to filter out Alt Art versions for common cards
 async function fetchPriceCharting(
   query: string, 
-  cardCode?: string
+  cardCode?: string,
+  rarity?: string
 ): Promise<{ price: number; id: string; productName: string } | null> {
   if (!PRICECHARTING_API_KEY) return null;
   
@@ -125,6 +127,10 @@ async function fetchPriceCharting(
     
     if (products.length === 0) return null;
     
+    // Determine if this is a regular (non-alt-art) card based on rarity
+    const isRegularCard = rarity && ['C', 'UC', 'Common', 'Uncommon'].includes(rarity);
+    const altArtKeywords = ['ALTERNATE ART', 'ALT ART', '[MANGA]', 'MANGA ART', 'SPECIAL ART', 'PARALLEL', 'GIFT COLLECTION', '[PROMO]', '[FILM]', 'CHAMPIONSHIP'];
+    
     // If we have a card code, try to find exact match first
     let bestProduct = null;
     if (cardCode) {
@@ -132,18 +138,27 @@ async function fetchPriceCharting(
       
       for (const product of products) {
         const productName = (product['product-name'] || '').toUpperCase();
+        
         // Check if product name contains the card code
-        if (productName.includes(normalizedCode)) {
-          bestProduct = product;
-          console.log(`[auto-fetch-price] Found exact match for ${cardCode}: ${productName}`);
-          break;
+        if (!productName.includes(normalizedCode)) continue;
+        
+        // If this is a regular card, skip Alt Art versions
+        if (isRegularCard) {
+          const isAltArt = altArtKeywords.some(kw => productName.includes(kw));
+          if (isAltArt) {
+            console.log(`[auto-fetch-price] Skipping Alt Art match for regular card: ${productName}`);
+            continue;
+          }
         }
+        
+        bestProduct = product;
+        console.log(`[auto-fetch-price] Found exact match for ${cardCode}: ${productName}`);
+        break;
       }
       
       // If no exact match found, log warning and skip
       if (!bestProduct) {
-        console.log(`[auto-fetch-price] No exact match for ${cardCode} in ${products.length} results. First: ${products[0]?.['product-name']}`);
-        // Don't use first result blindly - return null to indicate no confident match
+        console.log(`[auto-fetch-price] No suitable match for ${cardCode} (rarity: ${rarity}) in ${products.length} results`);
         return null;
       }
     } else {
@@ -285,7 +300,7 @@ serve(async (req) => {
       cardCode = `${cardData.setCode.toUpperCase()}-${normalizedNumber}`;
     }
     
-    const pcResult = await fetchPriceCharting(pcQuery, cardCode);
+    const pcResult = await fetchPriceCharting(pcQuery, cardCode, cardData.rarity);
     if (pcResult) {
       fetchedPrice = pcResult.price;
       dataSource = 'pricecharting';
