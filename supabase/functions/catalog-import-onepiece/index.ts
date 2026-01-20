@@ -9,7 +9,6 @@ const corsHeaders = {
 // punk-records GitHub raw URLs - reliable static JSON dataset
 const PUNK_RECORDS_BASE = 'https://raw.githubusercontent.com/buhbbl/punk-records/main/english';
 const PACKS_URL = `${PUNK_RECORDS_BASE}/packs.json`;
-const CARDS_INDEX_URL = `${PUNK_RECORDS_BASE}/index/cards_by_id.json`;
 
 interface OnePieceCard {
   id: string; // e.g., "ST01-004", "OP01-001"
@@ -52,6 +51,24 @@ interface ImportResult {
   }>;
 }
 
+// Map pack numeric IDs to set codes
+const PACK_TO_SET: Record<string, string> = {
+  '569001': 'ST01', '569002': 'ST02', '569003': 'ST03', '569004': 'ST04',
+  '569005': 'ST05', '569006': 'ST06', '569007': 'ST07', '569008': 'ST08',
+  '569009': 'ST09', '569010': 'ST10', '569011': 'ST11', '569012': 'ST12',
+  '569013': 'ST13', '569014': 'ST14', '569015': 'ST15', '569016': 'ST16',
+  '569017': 'ST17', '569018': 'ST18', '569019': 'ST19', '569020': 'ST20',
+  '569021': 'ST21', '569022': 'ST22', '569023': 'ST23', '569024': 'ST24',
+  '569025': 'ST25', '569026': 'ST26', '569027': 'ST27', '569028': 'ST28',
+  '569101': 'OP01', '569102': 'OP02', '569103': 'OP03', '569104': 'OP04',
+  '569105': 'OP05', '569106': 'OP06', '569107': 'OP07', '569108': 'OP08',
+  '569109': 'OP09', '569110': 'OP10', '569111': 'OP11', '569112': 'OP12',
+  '569113': 'OP13',
+  '569201': 'EB01', '569202': 'EB02',
+  '569301': 'PRB01', '569302': 'PRB02',
+  '569801': 'OTH', '569901': 'P',
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -66,7 +83,7 @@ serve(async (req) => {
 
     console.log(`Fetching One Piece cards from punk-records, setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}`);
 
-    // First fetch available packs
+    // Fetch available packs
     console.log(`Fetching packs from: ${PACKS_URL}`);
     const packsResponse = await fetch(PACKS_URL);
     
@@ -77,32 +94,66 @@ serve(async (req) => {
     const packs: Pack[] = await packsResponse.json();
     console.log(`Found ${packs.length} packs`);
 
-    // Fetch all cards from the index
-    console.log(`Fetching cards index from: ${CARDS_INDEX_URL}`);
-    const cardsResponse = await fetch(CARDS_INDEX_URL);
-    
-    if (!cardsResponse.ok) {
-      throw new Error(`Failed to fetch cards index: ${cardsResponse.status}`);
-    }
-    
-    const cardsIndex: Record<string, OnePieceCard> = await cardsResponse.json();
-    let allCards = Object.values(cardsIndex);
-    console.log(`Found ${allCards.length} total cards in index`);
-
     // Build pack name lookup
     const packNames: Record<string, string> = {};
     for (const pack of packs) {
       packNames[pack.id] = pack.title_parts.title || pack.raw_title;
     }
 
-    // Filter by set if provided (match card ID prefix like "OP01-")
+    // Determine which packs to fetch
+    let targetPackIds: string[] = packs.map(p => p.id);
+    
     if (setFilter) {
       const filterUpper = setFilter.toUpperCase();
-      allCards = allCards.filter(c => 
-        c.id.toUpperCase().startsWith(filterUpper + '-') || 
-        c.id.toUpperCase().startsWith(filterUpper)
-      );
-      console.log(`Filtered to ${allCards.length} cards matching "${setFilter}"`);
+      // Check if setFilter matches a set code (like OP01) or pack ID (like 569101)
+      targetPackIds = packs.filter(p => {
+        const setCode = PACK_TO_SET[p.id] || '';
+        return p.id === setFilter || 
+               setCode === filterUpper || 
+               setCode.startsWith(filterUpper);
+      }).map(p => p.id);
+      console.log(`Filtered to ${targetPackIds.length} packs matching "${setFilter}"`);
+    }
+
+    const allCards: OnePieceCard[] = [];
+
+    // Fetch cards from each pack's JSON file
+    for (const packId of targetPackIds) {
+      try {
+        const setCode = PACK_TO_SET[packId];
+        
+        // Try numeric pack ID first (e.g., 569101.json), as that's how punk-records stores them
+        let cardsUrl = `${PUNK_RECORDS_BASE}/cards/${packId}.json`;
+        console.log(`Fetching cards from: ${cardsUrl}`);
+        
+        let cardsResponse = await fetch(cardsUrl);
+        
+        // If numeric ID fails, try set code (e.g., OP01.json)
+        if (!cardsResponse.ok && setCode) {
+          cardsUrl = `${PUNK_RECORDS_BASE}/cards/${setCode}.json`;
+          console.log(`  Trying alternate URL: ${cardsUrl}`);
+          cardsResponse = await fetch(cardsUrl);
+        }
+        
+        if (cardsResponse.ok) {
+          const cards: OnePieceCard[] = await cardsResponse.json();
+          allCards.push(...cards);
+          console.log(`  Got ${cards.length} cards from ${setCode || packId}`);
+        } else {
+          console.log(`  No cards found for ${setCode || packId} (${cardsResponse.status})`);
+        }
+        
+        // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check limit
+        if (allCards.length >= limit) {
+          console.log(`Reached limit of ${limit} cards`);
+          break;
+        }
+      } catch (e) {
+        console.error(`Error fetching pack ${packId}:`, e);
+      }
     }
     
     console.log(`Fetched ${allCards.length} total One Piece cards`);
@@ -115,7 +166,9 @@ serve(async (req) => {
     };
 
     // Process each card
-    for (const card of allCards.slice(0, limit)) {
+    const cardsToProcess = allCards.filter(c => c && c.id && c.name).slice(0, limit);
+    
+    for (const card of cardsToProcess) {
       try {
         // Parse card ID (e.g., "OP01-001" or "ST01-004")
         const idMatch = card.id.match(/^([A-Z]+\d+)-(\d+)$/i);
@@ -206,10 +259,10 @@ serve(async (req) => {
     }
 
     // Get unique sets for summary
-    const uniqueSets = [...new Set(allCards.map(c => {
-      const match = c.id.match(/^([A-Z]+\d+)-/i);
+    const uniqueSets = [...new Set(cardsToProcess.map(c => {
+      const match = c.id?.match(/^([A-Z]+\d+)-/i);
       return match ? match[1].toUpperCase() : c.pack_id;
-    }))].sort();
+    }).filter(Boolean))].sort();
 
     return new Response(
       JSON.stringify({
@@ -217,9 +270,13 @@ serve(async (req) => {
         dryRun,
         setFilter: setFilter || 'ALL',
         totalCards: allCards.length,
-        processedCards: Math.min(allCards.length, limit),
+        processedCards: cardsToProcess.length,
         uniqueSets,
-        availablePacks: packs.map(p => ({ id: p.id, title: p.title_parts.title })),
+        availablePacks: packs.map(p => ({ 
+          id: p.id, 
+          setCode: PACK_TO_SET[p.id] || p.id,
+          title: p.title_parts.title 
+        })),
         result,
         message: dryRun 
           ? `DRY RUN: Would import ${result.imported} cards. Set dryRun: false to actually import.`
@@ -276,11 +333,10 @@ function getOnePieceSetName(setCode: string): string {
     'OP11': 'Gear 5',
     'OP12': 'Impel Down',
     'OP13': 'Carrying On His Will',
-    'OP14': 'Sky Island Arc',
     'EB01': 'Memorial Collection',
     'EB02': 'Anime 25th Anniversary',
-    'EB03': 'Anime 25th Anniversary Vol.2',
     'PRB01': 'Premium Booster -ONE PIECE CARD THE BEST-',
+    'PRB02': 'Premium Booster -ONE PIECE CARD THE BEST vol.2-',
   };
   return setNames[setCode] || setCode;
 }
