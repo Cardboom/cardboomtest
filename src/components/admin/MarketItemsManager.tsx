@@ -56,7 +56,16 @@ interface MarketItem {
   psa10_price: number | null;
   psa9_price: number | null;
   raw_price: number | null;
+  // Catalog identity fields
+  set_code: string | null;
+  card_number: string | null;
+  cvi_key: string | null;
+  language: string | null;
+  variant: string | null;
+  normalized_key: string | null;
 }
+
+type DataQualityFilter = 'all' | 'missing_set_code' | 'missing_card_number' | 'missing_image';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -76,6 +85,11 @@ export const MarketItemsManager = () => {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', display_name: '' });
+  const [dataQualityFilter, setDataQualityFilter] = useState<DataQualityFilter>('all');
+  const [showBulkEditDialog, setShowBulkEditDialog] = useState(false);
+  const [bulkEditField, setBulkEditField] = useState<string>('set_code');
+  const [bulkEditValue, setBulkEditValue] = useState<string>('');
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [newItem, setNewItem] = useState<Partial<MarketItem>>({
     name: '',
     category: 'pokemon',
@@ -100,6 +114,14 @@ export const MarketItemsManager = () => {
       if (searchQuery) {
         countQuery = countQuery.ilike('name', `%${searchQuery}%`);
       }
+      // Apply data quality filters
+      if (dataQualityFilter === 'missing_set_code') {
+        countQuery = countQuery.or('set_code.is.null,set_code.eq.');
+      } else if (dataQualityFilter === 'missing_card_number') {
+        countQuery = countQuery.or('card_number.is.null,card_number.eq.');
+      } else if (dataQualityFilter === 'missing_image') {
+        countQuery = countQuery.or('image_url.is.null,image_url.eq.');
+      }
       
       const { count } = await countQuery;
       setTotalCount(count || 0);
@@ -118,6 +140,14 @@ export const MarketItemsManager = () => {
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
       }
+      // Apply data quality filters
+      if (dataQualityFilter === 'missing_set_code') {
+        query = query.or('set_code.is.null,set_code.eq.');
+      } else if (dataQualityFilter === 'missing_card_number') {
+        query = query.or('card_number.is.null,card_number.eq.');
+      } else if (dataQualityFilter === 'missing_image') {
+        query = query.or('image_url.is.null,image_url.eq.');
+      }
 
       const { data, error } = await query;
 
@@ -133,7 +163,7 @@ export const MarketItemsManager = () => {
 
   useEffect(() => {
     fetchItems();
-  }, [currentPage, categoryFilter]);
+  }, [currentPage, categoryFilter, dataQualityFilter]);
 
   // Debounced search
   useEffect(() => {
@@ -193,6 +223,12 @@ export const MarketItemsManager = () => {
           psa10_price: editingItem.psa10_price,
           psa9_price: editingItem.psa9_price,
           raw_price: editingItem.raw_price,
+          // Catalog identity fields
+          set_code: editingItem.set_code,
+          card_number: editingItem.card_number,
+          cvi_key: editingItem.cvi_key,
+          language: editingItem.language,
+          variant: editingItem.variant,
         })
         .eq('id', editingItem.id);
 
@@ -204,6 +240,38 @@ export const MarketItemsManager = () => {
     } catch (error) {
       console.error('Error updating item:', error);
       toast.error('Failed to update item');
+    }
+  };
+
+  // Bulk edit handler
+  const handleBulkEdit = async () => {
+    if (selectedItems.size === 0 || !bulkEditValue.trim()) {
+      toast.error('Select items and enter a value');
+      return;
+    }
+
+    setIsBulkUpdating(true);
+    try {
+      const updateData: Record<string, string> = {};
+      updateData[bulkEditField] = bulkEditValue.trim();
+
+      const { error } = await supabase
+        .from('market_items')
+        .update(updateData)
+        .in('id', Array.from(selectedItems));
+
+      if (error) throw error;
+
+      toast.success(`Updated ${selectedItems.size} item(s)`);
+      setShowBulkEditDialog(false);
+      setBulkEditValue('');
+      setSelectedItems(new Set());
+      fetchItems();
+    } catch (error) {
+      console.error('Error bulk updating items:', error);
+      toast.error('Failed to bulk update items');
+    } finally {
+      setIsBulkUpdating(false);
     }
   };
 
@@ -384,19 +452,29 @@ export const MarketItemsManager = () => {
         </div>
         <div className="flex gap-2 flex-wrap">
           {selectedItems.size > 0 && (
-            <Button 
-              variant="destructive" 
-              onClick={handleBatchDelete} 
-              disabled={isDeleting}
-              className="gap-2"
-            >
-              {isDeleting ? (
-                <RefreshCw className="w-4 h-4 animate-spin" />
-              ) : (
-                <Trash2 className="w-4 h-4" />
-              )}
-              Delete {selectedItems.size} Item{selectedItems.size > 1 ? 's' : ''}
-            </Button>
+            <>
+              <Button 
+                variant="outline"
+                onClick={() => setShowBulkEditDialog(true)}
+                className="gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Bulk Edit ({selectedItems.size})
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleBatchDelete} 
+                disabled={isDeleting}
+                className="gap-2"
+              >
+                {isDeleting ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                Delete {selectedItems.size}
+              </Button>
+            </>
           )}
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
@@ -629,12 +707,71 @@ export const MarketItemsManager = () => {
               ))}
             </SelectContent>
           </Select>
+          <Select value={dataQualityFilter} onValueChange={(value: DataQualityFilter) => {
+            setDataQualityFilter(value);
+            setCurrentPage(1);
+          }}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Data Quality" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Items</SelectItem>
+              <SelectItem value="missing_set_code">⚠️ Missing Set Code</SelectItem>
+              <SelectItem value="missing_card_number">⚠️ Missing Card #</SelectItem>
+              <SelectItem value="missing_image">⚠️ Missing Image</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" onClick={fetchItems} className="gap-2">
             <RefreshCw className="w-4 h-4" />
             Refresh
           </Button>
         </CardContent>
       </Card>
+
+      {/* Bulk Edit Dialog */}
+      <Dialog open={showBulkEditDialog} onOpenChange={setShowBulkEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Bulk Edit {selectedItems.size} Items</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Field to Update</Label>
+              <Select value={bulkEditField} onValueChange={setBulkEditField}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="set_code">Set Code</SelectItem>
+                  <SelectItem value="card_number">Card Number</SelectItem>
+                  <SelectItem value="set_name">Set Name</SelectItem>
+                  <SelectItem value="language">Language</SelectItem>
+                  <SelectItem value="variant">Variant</SelectItem>
+                  <SelectItem value="category">Category</SelectItem>
+                  <SelectItem value="rarity">Rarity</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>New Value</Label>
+              <Input
+                value={bulkEditValue}
+                onChange={(e) => setBulkEditValue(e.target.value)}
+                placeholder={`Enter ${bulkEditField.replace('_', ' ')}...`}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowBulkEditDialog(false)}>Cancel</Button>
+            <Button onClick={handleBulkEdit} disabled={isBulkUpdating}>
+              {isBulkUpdating ? (
+                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+              ) : null}
+              Update {selectedItems.size} Items
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Items Table */}
       <Card className="bg-card/50 border-border/50">
@@ -908,6 +1045,70 @@ export const MarketItemsManager = () => {
                                     />
                                     <Label>Trending</Label>
                                   </div>
+                                  
+                                  {/* Catalog Identity Fields */}
+                                  <div className="col-span-2 border-t pt-4 mt-2">
+                                    <p className="text-sm font-medium text-muted-foreground mb-3">📋 Catalog Identity (Quick Fix)</p>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Set Code</Label>
+                                    <Input
+                                      value={editingItem.set_code || ''}
+                                      onChange={(e) => setEditingItem({ ...editingItem, set_code: e.target.value })}
+                                      placeholder="OP05, SV01, etc."
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Card Number</Label>
+                                    <Input
+                                      value={editingItem.card_number || ''}
+                                      onChange={(e) => setEditingItem({ ...editingItem, card_number: e.target.value })}
+                                      placeholder="001, 016, etc."
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Language</Label>
+                                    <Select
+                                      value={editingItem.language || 'en'}
+                                      onValueChange={(value) => setEditingItem({ ...editingItem, language: value })}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="en">English</SelectItem>
+                                        <SelectItem value="jp">Japanese</SelectItem>
+                                        <SelectItem value="kr">Korean</SelectItem>
+                                        <SelectItem value="de">German</SelectItem>
+                                        <SelectItem value="fr">French</SelectItem>
+                                        <SelectItem value="es">Spanish</SelectItem>
+                                        <SelectItem value="it">Italian</SelectItem>
+                                        <SelectItem value="pt">Portuguese</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>Variant</Label>
+                                    <Input
+                                      value={editingItem.variant || ''}
+                                      onChange={(e) => setEditingItem({ ...editingItem, variant: e.target.value })}
+                                      placeholder="Alt Art, Full Art, SP, etc."
+                                    />
+                                  </div>
+                                  <div className="col-span-2 space-y-2">
+                                    <Label>CVI Key (auto-generated or manual)</Label>
+                                    <Input
+                                      value={editingItem.cvi_key || ''}
+                                      onChange={(e) => setEditingItem({ ...editingItem, cvi_key: e.target.value })}
+                                      placeholder="pokemon:en:sv01:001"
+                                    />
+                                  </div>
+                                  {editingItem.normalized_key && (
+                                    <div className="col-span-2">
+                                      <p className="text-xs text-muted-foreground">Normalized Key: {editingItem.normalized_key}</p>
+                                    </div>
+                                  )}
+                                  
                                   <div className="col-span-2 space-y-2">
                                     <Label>Image URL</Label>
                                     <Input
