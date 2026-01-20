@@ -6,36 +6,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// punk-records GitHub raw URLs - reliable static JSON dataset
-const PUNK_RECORDS_BASE = 'https://raw.githubusercontent.com/buhbbl/punk-records/main/english';
-const PACKS_URL = `${PUNK_RECORDS_BASE}/packs.json`;
+// nemesis312 GitHub - simpler JSON structure with all cards
+const CARDS_DB_URL = 'https://raw.githubusercontent.com/nemesis312/OnePieceTCGEngCardList/main/CardDb.json';
 
-interface OnePieceCard {
-  id: string; // e.g., "ST01-004", "OP01-001"
-  pack_id: string;
-  name: string;
-  rarity: string;
-  category: string; // Leader, Character, Event, Stage, Don
-  img_url: string;
-  img_full_url: string;
-  colors: string[];
-  cost: number | null;
-  attributes: string[];
-  power: number | null;
-  counter: number | null;
-  types: string[];
-  effect: string | null;
-  trigger: string | null;
+interface RawCard {
+  Name: string;
+  "Card number"?: string;
+  CardNum?: string;
+  Rarity: string;
+  "Card Type"?: string;
+  Type?: string;
+  "Primary color"?: string;
+  Color?: string;
+  Cost?: string;
+  Power?: string;
+  Counter?: string;
+  Attribute?: string;
+  Effect?: string;
+  Trigger?: string;
+  Img?: string;
+  ImgSrc?: string;
+  Alt?: string;
 }
 
-interface Pack {
-  id: string;
-  raw_title: string;
-  title_parts: {
-    prefix?: string;
-    title: string;
-    label?: string;
-  };
+interface CardDbResponse {
+  Cards: RawCard[];
 }
 
 interface ImportResult {
@@ -51,24 +46,6 @@ interface ImportResult {
   }>;
 }
 
-// Map pack numeric IDs to set codes
-const PACK_TO_SET: Record<string, string> = {
-  '569001': 'ST01', '569002': 'ST02', '569003': 'ST03', '569004': 'ST04',
-  '569005': 'ST05', '569006': 'ST06', '569007': 'ST07', '569008': 'ST08',
-  '569009': 'ST09', '569010': 'ST10', '569011': 'ST11', '569012': 'ST12',
-  '569013': 'ST13', '569014': 'ST14', '569015': 'ST15', '569016': 'ST16',
-  '569017': 'ST17', '569018': 'ST18', '569019': 'ST19', '569020': 'ST20',
-  '569021': 'ST21', '569022': 'ST22', '569023': 'ST23', '569024': 'ST24',
-  '569025': 'ST25', '569026': 'ST26', '569027': 'ST27', '569028': 'ST28',
-  '569101': 'OP01', '569102': 'OP02', '569103': 'OP03', '569104': 'OP04',
-  '569105': 'OP05', '569106': 'OP06', '569107': 'OP07', '569108': 'OP08',
-  '569109': 'OP09', '569110': 'OP10', '569111': 'OP11', '569112': 'OP12',
-  '569113': 'OP13',
-  '569201': 'EB01', '569202': 'EB02',
-  '569301': 'PRB01', '569302': 'PRB02',
-  '569801': 'OTH', '569901': 'P',
-};
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -81,82 +58,32 @@ serve(async (req) => {
 
     const { setFilter, dryRun = true, limit = 500 } = await req.json();
 
-    console.log(`Fetching One Piece cards from punk-records, setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}`);
+    console.log(`Fetching One Piece cards from nemesis312 CardDb, setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}`);
 
-    // Fetch available packs
-    console.log(`Fetching packs from: ${PACKS_URL}`);
-    const packsResponse = await fetch(PACKS_URL);
+    // Fetch all cards from the JSON database
+    console.log(`Fetching cards from: ${CARDS_DB_URL}`);
+    const response = await fetch(CARDS_DB_URL);
     
-    if (!packsResponse.ok) {
-      throw new Error(`Failed to fetch packs: ${packsResponse.status}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch cards: ${response.status}`);
     }
     
-    const packs: Pack[] = await packsResponse.json();
-    console.log(`Found ${packs.length} packs`);
+    const data: CardDbResponse = await response.json();
+    let allCards = data.Cards || [];
+    console.log(`Found ${allCards.length} total cards`);
 
-    // Build pack name lookup
-    const packNames: Record<string, string> = {};
-    for (const pack of packs) {
-      packNames[pack.id] = pack.title_parts.title || pack.raw_title;
-    }
-
-    // Determine which packs to fetch
-    let targetPackIds: string[] = packs.map(p => p.id);
-    
+    // Filter by set if provided (Card number format: "OP01-001")
     if (setFilter) {
       const filterUpper = setFilter.toUpperCase();
-      // Check if setFilter matches a set code (like OP01) or pack ID (like 569101)
-      targetPackIds = packs.filter(p => {
-        const setCode = PACK_TO_SET[p.id] || '';
-        return p.id === setFilter || 
-               setCode === filterUpper || 
-               setCode.startsWith(filterUpper);
-      }).map(p => p.id);
-      console.log(`Filtered to ${targetPackIds.length} packs matching "${setFilter}"`);
+      allCards = allCards.filter(c => {
+        const cardNum = String(c["Card number"] || c.CardNum || '');
+        // Extract set code from card number (e.g., "OP01" from "OP01-001")
+        const match = cardNum.match(/^([A-Z]+\d+)/i);
+        const setCode = match ? match[1].toUpperCase() : '';
+        return setCode === filterUpper || setCode.startsWith(filterUpper);
+      });
+      console.log(`Filtered to ${allCards.length} cards matching "${setFilter}"`);
     }
-
-    const allCards: OnePieceCard[] = [];
-
-    // Fetch cards from each pack's JSON file
-    for (const packId of targetPackIds) {
-      try {
-        const setCode = PACK_TO_SET[packId];
-        
-        // Try numeric pack ID first (e.g., 569101.json), as that's how punk-records stores them
-        let cardsUrl = `${PUNK_RECORDS_BASE}/cards/${packId}.json`;
-        console.log(`Fetching cards from: ${cardsUrl}`);
-        
-        let cardsResponse = await fetch(cardsUrl);
-        
-        // If numeric ID fails, try set code (e.g., OP01.json)
-        if (!cardsResponse.ok && setCode) {
-          cardsUrl = `${PUNK_RECORDS_BASE}/cards/${setCode}.json`;
-          console.log(`  Trying alternate URL: ${cardsUrl}`);
-          cardsResponse = await fetch(cardsUrl);
-        }
-        
-        if (cardsResponse.ok) {
-          const cards: OnePieceCard[] = await cardsResponse.json();
-          allCards.push(...cards);
-          console.log(`  Got ${cards.length} cards from ${setCode || packId}`);
-        } else {
-          console.log(`  No cards found for ${setCode || packId} (${cardsResponse.status})`);
-        }
-        
-        // Rate limiting
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Check limit
-        if (allCards.length >= limit) {
-          console.log(`Reached limit of ${limit} cards`);
-          break;
-        }
-      } catch (e) {
-        console.error(`Error fetching pack ${packId}:`, e);
-      }
-    }
-    
-    console.log(`Fetched ${allCards.length} total One Piece cards`);
 
     const result: ImportResult = {
       imported: 0,
@@ -166,68 +93,65 @@ serve(async (req) => {
     };
 
     // Process each card
-    const cardsToProcess = allCards.filter(c => c && c.id && c.name).slice(0, limit);
+    const cardsToProcess = allCards.slice(0, limit);
     
     for (const card of cardsToProcess) {
       try {
-        // Parse card ID (e.g., "OP01-001" or "ST01-004")
-        const idMatch = card.id.match(/^([A-Z]+\d+)-(\d+)$/i);
-        if (!idMatch) {
-          result.errors.push(`${card.name}: Invalid card ID format "${card.id}"`);
+        const cardNumRaw = String(card["Card number"] || card.CardNum || '');
+        
+        // Parse card number (e.g., "OP01-001")
+        const match = cardNumRaw.match(/^([A-Z]+\d+)-(\d+)/i);
+        if (!card.Name || !match) {
           result.skipped++;
           continue;
         }
 
-        const setCode = idMatch[1].toUpperCase(); // e.g., "OP01"
-        const cardNumber = idMatch[2]; // e.g., "001"
+        const setCode = match[1].toUpperCase();
+        const cardNumber = match[2].padStart(3, '0');
         const card_code = `${setCode}-${cardNumber}`;
         
         // Build canonical key: onepiece:english:SET:NUMBER
         const canonical_key = `onepiece:english:${setCode.toLowerCase()}:${cardNumber}`;
         
-        // Get set name from our pack data
-        const setName = packNames[card.pack_id] || getOnePieceSetName(setCode);
-        
-        // Determine rarity mapping
+        // Map rarity
         const rarityMap: Record<string, string> = {
-          'Common': 'C',
-          'Uncommon': 'UC',
-          'Rare': 'R',
-          'SuperRare': 'SR',
-          'SecretRare': 'SEC',
-          'Leader': 'L',
-          'Special': 'SP',
-          'TreasureRare': 'TR',
-          'Promo': 'P'
+          'C': 'C', 'Common': 'C',
+          'UC': 'UC', 'Uncommon': 'UC',
+          'R': 'R', 'Rare': 'R',
+          'SR': 'SR', 'Super Rare': 'SR',
+          'SEC': 'SEC', 'Secret': 'SEC',
+          'L': 'L', 'Leader': 'L',
+          'SP': 'SP', 'Special': 'SP',
+          'P': 'P', 'Promo': 'P',
         };
-        const rarity = rarityMap[card.rarity] || card.rarity;
+        const rarity = rarityMap[card.Rarity] || card.Rarity;
 
         const stagingRecord = {
           game: 'onepiece',
           canonical_key,
           set_code: setCode,
-          set_name: setName,
+          set_name: getOnePieceSetName(setCode),
           card_number: cardNumber,
-          card_name: card.name,
+          card_name: card.Name,
           variant: null,
           finish: null,
           rarity,
           language: 'english',
-          image_url: card.img_full_url || card.img_url,
-          image_url_hires: card.img_full_url,
+          image_url: card.ImgSrc || null,
+          image_url_hires: null,
           artist: null,
-          types: card.colors,
-          subtypes: card.types,
-          supertype: card.category,
-          hp: card.power?.toString() || null,
-          retreat_cost: card.cost,
-          tcg_id: card.id,
-          source_api: 'punk_records_github',
+          types: card.Color ? [card.Color] : null,
+          subtypes: card.Attribute ? [card.Attribute] : null,
+          supertype: card.Type,
+          hp: card.Power || null,
+          retreat_cost: card.Cost ? parseInt(card.Cost) : null,
+          tcg_id: card_code,
+          source_api: 'nemesis312_github',
           status: 'pending'
         };
 
         result.cards.push({
-          name: card.name,
+          name: card.Name,
           set: setCode,
           number: cardNumber,
           canonical_key,
@@ -243,7 +167,7 @@ serve(async (req) => {
             });
 
           if (error) {
-            result.errors.push(`${card.name} (${card_code}): ${error.message}`);
+            result.errors.push(`${card.Name} (${card_code}): ${error.message}`);
             result.skipped++;
           } else {
             result.imported++;
@@ -253,15 +177,16 @@ serve(async (req) => {
         }
       } catch (cardError) {
         const errorMsg = cardError instanceof Error ? cardError.message : 'Unknown error';
-        result.errors.push(`${card.name}: ${errorMsg}`);
+        result.errors.push(`${card.Name}: ${errorMsg}`);
         result.skipped++;
       }
     }
 
     // Get unique sets for summary
     const uniqueSets = [...new Set(cardsToProcess.map(c => {
-      const match = c.id?.match(/^([A-Z]+\d+)-/i);
-      return match ? match[1].toUpperCase() : c.pack_id;
+      const cardNum = String(c["Card number"] || c.CardNum || '');
+      const match = cardNum.match(/^([A-Z]+\d+)/i);
+      return match ? match[1].toUpperCase() : '';
     }).filter(Boolean))].sort();
 
     return new Response(
@@ -272,11 +197,6 @@ serve(async (req) => {
         totalCards: allCards.length,
         processedCards: cardsToProcess.length,
         uniqueSets,
-        availablePacks: packs.map(p => ({ 
-          id: p.id, 
-          setCode: PACK_TO_SET[p.id] || p.id,
-          title: p.title_parts.title 
-        })),
         result,
         message: dryRun 
           ? `DRY RUN: Would import ${result.imported} cards. Set dryRun: false to actually import.`
@@ -297,7 +217,6 @@ serve(async (req) => {
   }
 });
 
-// Fallback set name lookup
 function getOnePieceSetName(setCode: string): string {
   const setNames: Record<string, string> = {
     'ST01': 'Straw Hat Crew',
@@ -335,8 +254,7 @@ function getOnePieceSetName(setCode: string): string {
     'OP13': 'Carrying On His Will',
     'EB01': 'Memorial Collection',
     'EB02': 'Anime 25th Anniversary',
-    'PRB01': 'Premium Booster -ONE PIECE CARD THE BEST-',
-    'PRB02': 'Premium Booster -ONE PIECE CARD THE BEST vol.2-',
+    'PRB01': 'Premium Booster',
   };
   return setNames[setCode] || setCode;
 }
