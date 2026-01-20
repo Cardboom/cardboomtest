@@ -190,29 +190,28 @@ const ListingDetail = () => {
         data = result.data;
         error = result.error;
         
-        // If not found, try matching by the ID suffix at the end of the slug
-        // URL might be shortened (e.g., nami-cf5d22bd) but DB has full slug
+        // If not found, try matching by the ID prefix at the end of the slug
+        // URL slug format: {card-name}-{first-8-chars-of-uuid}
         if (!data && !error) {
-          // Extract ID suffix from the end of the URL slug (last 8 chars after hyphen)
-          const idSuffixMatch = slug.match(/-([a-f0-9]{8})$/i);
-          if (idSuffixMatch) {
-            const idSuffix = idSuffixMatch[1];
-            // First try matching by ID that starts with this suffix
-            const idResult = await supabase
+          // Extract ID prefix from the end of the URL slug (last 8 chars after hyphen)
+          const idPrefixMatch = slug.match(/-([a-f0-9]{8})$/i);
+          if (idPrefixMatch) {
+            const idPrefix = idPrefixMatch[1];
+            // Match by ID that starts with this prefix
+            const { data: allMatches, error: matchError } = await supabase
               .from('listings')
               .select('*')
-              .ilike('id', `${idSuffix}%`)
-              .maybeSingle();
+              .ilike('id', `${idPrefix}%`);
             
-            if (idResult.data) {
-              data = idResult.data;
-              error = idResult.error;
+            if (!matchError && allMatches && allMatches.length > 0) {
+              // If multiple matches, prefer active status
+              data = allMatches.find(l => l.status === 'active') || allMatches[0];
             } else {
-              // Fallback to slug matching
+              // Fallback to slug suffix matching
               const partialResult = await supabase
                 .from('listings')
                 .select('*')
-                .ilike('slug', `%-${idSuffix}`)
+                .ilike('slug', `%-${idPrefix}`)
                 .maybeSingle();
               data = partialResult.data;
               error = partialResult.error;
