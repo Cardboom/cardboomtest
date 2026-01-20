@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 
 interface Bounty {
   id: string;
@@ -119,7 +120,7 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
       const result = data as { success?: boolean; gems_awarded?: number; error?: string } | null;
       
       if (result?.success) {
-        toast.success(`🎉 Claimed ${(result.gems_awarded || 0).toLocaleString()} 💣 Boom Coins!`);
+        toast.success(`🎉 Claimed ${(result.gems_awarded || 0).toLocaleString()} Boom Coins!`);
         fetchBounties();
         
         // Dispatch event to refresh coins balance in header
@@ -275,8 +276,9 @@ export const BountiesPanel = ({ userId }: BountiesPanelProps) => {
                       <span className="text-[9px] md:text-[10px] text-gray-500 font-sans font-medium">
                         {currentCount}/{bounty.target_count}
                       </span>
-                      <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-sans">
-                        {bounty.reward_gems.toLocaleString()} 💣
+                      <span className="text-[10px] md:text-[11px] text-amber-400 font-bold font-sans flex items-center gap-0.5">
+                        {bounty.reward_gems.toLocaleString()}
+                        <BoomCoinIcon size="xs" className="text-amber-400" />
                       </span>
                     </div>
                     
