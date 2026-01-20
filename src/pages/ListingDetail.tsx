@@ -197,13 +197,26 @@ const ListingDetail = () => {
           const idSuffixMatch = slug.match(/-([a-f0-9]{8})$/i);
           if (idSuffixMatch) {
             const idSuffix = idSuffixMatch[1];
-            const partialResult = await supabase
+            // First try matching by ID that starts with this suffix
+            const idResult = await supabase
               .from('listings')
               .select('*')
-              .ilike('slug', `%-${idSuffix}`)
+              .ilike('id', `${idSuffix}%`)
               .maybeSingle();
-            data = partialResult.data;
-            error = partialResult.error;
+            
+            if (idResult.data) {
+              data = idResult.data;
+              error = idResult.error;
+            } else {
+              // Fallback to slug matching
+              const partialResult = await supabase
+                .from('listings')
+                .select('*')
+                .ilike('slug', `%-${idSuffix}`)
+                .maybeSingle();
+              data = partialResult.data;
+              error = partialResult.error;
+            }
           }
         }
         
