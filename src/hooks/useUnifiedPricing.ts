@@ -99,10 +99,10 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
     return formatFiatPrice(priceUSD);
   }, [isGemsMode, usdToGems, formatGems, formatFiatPrice]);
 
-  // Format coins price - always USD base, optionally show TRY equivalent
+  // Format coins price - always USD base, optionally show TRY equivalent (number only - use BoomCoinIcon separately)
   const formatGemsPrice = useCallback((priceUSD: number, showTRYEquivalent = false): string => {
     const gems = usdToGems(priceUSD);
-    const gemsStr = `${Math.round(gems).toLocaleString()} 💣`;
+    const gemsStr = Math.round(gems).toLocaleString();
     
     if (showTRYEquivalent) {
       const tryValue = getGemsTRYValue(gems);
@@ -138,12 +138,12 @@ export const useUnifiedPricing = (): UnifiedPricingResult => {
 };
 
 /**
- * Get currency symbol for current mode
+ * Get currency symbol for current mode (returns 'BC' for Boom Coins - use BoomCoinIcon for visual display)
  */
 export const usePricingSymbol = () => {
   const { isGemsMode, fiatCurrency } = useUnifiedPricing();
   
-  if (isGemsMode) return '💣';
+  if (isGemsMode) return 'BC';
   if (fiatCurrency === 'TRY') return '₺';
   if (fiatCurrency === 'EUR') return '€';
   return '$';

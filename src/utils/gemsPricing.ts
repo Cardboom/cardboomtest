@@ -69,11 +69,11 @@ export const getGemsFromPaymentUSD = (usd: number, tier: SubscriptionTier = 'fre
 };
 
 /**
- * Format Boom Coins amount with emoji
+ * Format Boom Coins amount (number only - use BoomCoinIcon separately for display)
  */
 export const formatGems = (gems: number): string => {
   const rounded = Math.round(gems);
-  return `${rounded.toLocaleString()} 💣`;
+  return rounded.toLocaleString();
 };
 
 /**

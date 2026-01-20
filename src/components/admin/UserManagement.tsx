@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -852,7 +853,7 @@ export const UserManagement = () => {
           });
       }
 
-      toast.success(`Boom Coins ${boomCoinsType === 'add' ? 'added' : 'removed'}: ${amount.toLocaleString()} 💣`);
+      toast.success(`Boom Coins ${boomCoinsType === 'add' ? 'added' : 'removed'}: ${amount.toLocaleString()}`);
       setBoomCoinsDialogOpen(false);
       setBoomCoinsAmount('');
       setBoomCoinsReason('');
@@ -1210,7 +1211,7 @@ export const UserManagement = () => {
                   </Button>
                 </div>
                 <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
-                  <p className="text-xs text-muted-foreground">Boom Coins 💣</p>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">Boom Coins <BoomCoinIcon size="xs" className="text-amber-500" /></p>
                   <p className="text-lg font-bold text-amber-500">{(userBoomCoins[selectedUser.id]?.balance || 0).toLocaleString()}</p>
                   <Button
                     variant="ghost"
@@ -1856,7 +1857,7 @@ export const UserManagement = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-amber-500">
-              💣 Gift Boom Coins
+              <BoomCoinIcon size="md" className="text-amber-500" /> Gift Boom Coins
             </DialogTitle>
             <DialogDescription>
               Add or remove Boom Coins from {selectedUser?.display_name}'s account.
@@ -1866,7 +1867,7 @@ export const UserManagement = () => {
           <div className="space-y-4">
             <div className="p-4 bg-amber-500/10 rounded-lg border border-amber-500/20">
               <p className="text-sm text-muted-foreground">Current Balance</p>
-              <p className="text-2xl font-bold text-amber-500">{(userBoomCoins[selectedUser?.id || '']?.balance || 0).toLocaleString()} 💣</p>
+              <p className="text-2xl font-bold text-amber-500 flex items-center gap-1">{(userBoomCoins[selectedUser?.id || '']?.balance || 0).toLocaleString()} <BoomCoinIcon size="md" className="text-amber-500" /></p>
             </div>
 
             <div className="space-y-2">
@@ -1919,10 +1920,10 @@ export const UserManagement = () => {
 
             {boomCoinsAmount && !isNaN(parseFloat(boomCoinsAmount)) && (
               <div className={`p-3 rounded-lg border ${boomCoinsType === 'add' ? 'bg-amber-500/10 border-amber-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
-                <p className="text-sm">
+                <p className="text-sm flex items-center gap-1">
                   New balance will be:{' '}
-                  <span className="font-bold">
-                    {((userBoomCoins[selectedUser?.id || '']?.balance || 0) + (boomCoinsType === 'add' ? parseFloat(boomCoinsAmount) : -parseFloat(boomCoinsAmount))).toLocaleString()} 💣
+                  <span className="font-bold flex items-center gap-1">
+                    {((userBoomCoins[selectedUser?.id || '']?.balance || 0) + (boomCoinsType === 'add' ? parseFloat(boomCoinsAmount) : -parseFloat(boomCoinsAmount))).toLocaleString()} <BoomCoinIcon size="sm" className="text-amber-500" />
                   </span>
                 </p>
               </div>
@@ -1939,7 +1940,7 @@ export const UserManagement = () => {
               className={boomCoinsType === 'add' ? 'bg-amber-500 hover:bg-amber-600' : 'bg-red-500 hover:bg-red-600'}
             >
               {isProcessing ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
-              {boomCoinsType === 'add' ? 'Gift' : 'Remove'} {boomCoinsAmount || '0'} 💣
+              {boomCoinsType === 'add' ? 'Gift' : 'Remove'} {boomCoinsAmount || '0'} <BoomCoinIcon size="sm" className="ml-1" />
             </Button>
           </DialogFooter>
         </DialogContent>
