@@ -149,7 +149,7 @@ export const trackGradingPurchase = (params: {
   // Google Ads conversion (via gtag)
   if (window.gtag) {
     window.gtag('event', 'conversion', {
-      send_to: 'AW-CONVERSION_ID/grading_purchase', // Replace with actual conversion ID
+      send_to: 'AW-17885952633/7FbfCL-2pugbEPn019BC',
       value,
       currency,
       transaction_id: orderId,
