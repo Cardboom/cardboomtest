@@ -6,30 +6,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// nemesis312 GitHub - simpler JSON structure with all cards
-const CARDS_DB_URL = 'https://raw.githubusercontent.com/nemesis312/OnePieceTCGEngCardList/main/CardDb.json';
+// OPTCG API - comprehensive One Piece TCG data source with all sets (OP01-OP12+)
+const OPTCG_API_BASE = 'https://optcgapi.com/api';
 
-interface RawCard {
-  Name: string;
-  CardNum: string; // Format: "#OP01-001"
-  "Card number"?: number; // Just the index
-  Rarity: string;
-  "Card Type"?: string;
-  "Primary color"?: string;
-  Power?: number;
-  "Cost/Life"?: number;
-  Attribute?: string;
-  Effect?: string;
-  Trigger?: string;
-  Img?: string;
-  TcgPlayer?: string;
-  Alt?: boolean;
-  "Type 1"?: string;
-  "Type 2"?: string;
-}
-
-interface CardDbResponse {
-  Cards: RawCard[];
+interface OPTCGCard {
+  id: string; // e.g., "OP01-001"
+  name: string;
+  rarity: string;
+  colors?: string[];
+  type?: string;
+  cost?: number;
+  power?: number;
+  counter?: number;
+  text?: string;
+  attribute?: string;
+  img?: string;
+  image?: string;
 }
 
 interface ImportResult {
@@ -57,32 +49,7 @@ serve(async (req) => {
 
     const { setFilter, dryRun = true, limit = 500 } = await req.json();
 
-    console.log(`Fetching One Piece cards from nemesis312 CardDb, setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}`);
-
-    // Fetch all cards from the JSON database
-    console.log(`Fetching cards from: ${CARDS_DB_URL}`);
-    const response = await fetch(CARDS_DB_URL);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to fetch cards: ${response.status}`);
-    }
-    
-    const data: CardDbResponse = await response.json();
-    let allCards = data.Cards || [];
-    console.log(`Found ${allCards.length} total cards`);
-
-    // Filter by set if provided (CardNum format: "#OP01-001")
-    if (setFilter) {
-      const filterUpper = setFilter.toUpperCase();
-      allCards = allCards.filter(c => {
-        // CardNum is "#OP01-001" format - strip # and extract set code
-        const cardNum = String(c.CardNum || '').replace(/^#/, '');
-        const match = cardNum.match(/^([A-Z]+\d+)/i);
-        const setCode = match ? match[1].toUpperCase() : '';
-        return setCode === filterUpper || setCode.startsWith(filterUpper);
-      });
-      console.log(`Filtered to ${allCards.length} cards matching "${setFilter}"`);
-    }
+    console.log(`[catalog-import-onepiece] Starting. setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}, limit: ${limit}`);
 
     const result: ImportResult = {
       imported: 0,
@@ -91,42 +58,65 @@ serve(async (req) => {
       cards: []
     };
 
-    // Process each card
+    // Build API URL - use specific set endpoint if provided
+    let apiUrl: string;
+    if (setFilter) {
+      apiUrl = `${OPTCG_API_BASE}/sets/${setFilter.toUpperCase()}/`;
+    } else {
+      apiUrl = `${OPTCG_API_BASE}/allSetCards/`;
+    }
+
+    console.log(`[catalog-import-onepiece] Fetching from: ${apiUrl}`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
+    let response: Response;
+    try {
+      response = await fetch(apiUrl, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' }
+      });
+      clearTimeout(timeoutId);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw new Error(`Failed to fetch from OPTCG API: ${err}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(`OPTCG API returned ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // API can return array or object with cards/data property
+    let allCards: OPTCGCard[] = Array.isArray(data) ? data : (data.cards || data.data || Object.values(data).flat());
+    console.log(`[catalog-import-onepiece] Fetched ${allCards.length} cards from API`);
+
+    // Additional filter for allSetCards if setFilter provided
+    if (setFilter && !apiUrl.includes(`/sets/${setFilter.toUpperCase()}/`)) {
+      const filterUpper = setFilter.toUpperCase();
+      allCards = allCards.filter(c => {
+        const cardId = (c.id || '').toUpperCase();
+        return cardId.startsWith(filterUpper);
+      });
+      console.log(`[catalog-import-onepiece] Filtered to ${allCards.length} cards for ${filterUpper}`);
+    }
+
     const cardsToProcess = allCards.slice(0, limit);
     
-    // Log first card structure for debugging
+    // Log sample for debugging
     if (cardsToProcess.length > 0) {
-      const sampleCard = cardsToProcess[0];
-      console.log('Sample card keys:', Object.keys(sampleCard));
-      console.log('Sample card:', JSON.stringify(sampleCard).slice(0, 500));
+      console.log('[catalog-import-onepiece] Sample card:', JSON.stringify(cardsToProcess[0]).slice(0, 500));
     }
-    
+
     for (const card of cardsToProcess) {
       try {
-        // CardNum format is "#OP01-001" - strip the # prefix
-        const cardNumRaw = String(card.CardNum || '').replace(/^#/, '');
+        const cardId = card.id || '';
         
-        if (!cardNumRaw) {
-          result.skipped++;
-          continue;
-        }
-        
-        // Parse card number (e.g., "OP01-001" or "OP-01-001")
-        let match = cardNumRaw.match(/^([A-Z]+-?\d+)-(\d+)/i);
-        
-        // Also try format without dash in set code
-        if (!match) {
-          match = cardNumRaw.match(/^([A-Z]+)(\d+)-(\d+)/i);
-          if (match) {
-            // Reconstruct: "OP" + "01" + "-" + "001"
-            match = [cardNumRaw, match[1] + match[2], match[3]];
-          }
-        }
-        
-        if (!card.Name || !match) {
-          if (cardsToProcess.indexOf(card) < 3) {
-            console.log(`Skipping card - Name: ${card.Name}, cardNumRaw: "${cardNumRaw}"`);
-          }
+        // Parse card ID (e.g., "OP01-001" or "ST01-004")
+        const match = cardId.match(/^([A-Z]+\d+)-(\d+)/i);
+        if (!card.name || !match) {
           result.skipped++;
           continue;
         }
@@ -134,10 +124,8 @@ serve(async (req) => {
         const setCode = match[1].toUpperCase();
         const cardNumber = match[2].padStart(3, '0');
         const card_code = `${setCode}-${cardNumber}`;
-        
-        // Build canonical key: onepiece:english:SET:NUMBER
         const canonical_key = `onepiece:english:${setCode.toLowerCase()}:${cardNumber}`;
-        
+
         // Map rarity
         const rarityMap: Record<string, string> = {
           'C': 'C', 'Common': 'C',
@@ -149,7 +137,10 @@ serve(async (req) => {
           'SP': 'SP', 'Special': 'SP',
           'P': 'P', 'Promo': 'P',
         };
-        const rarity = rarityMap[card.Rarity] || card.Rarity;
+        const rarity = rarityMap[card.rarity] || card.rarity || '';
+
+        // Get image URL
+        const imageUrl = card.image || card.img || null;
 
         const stagingRecord = {
           game: 'onepiece',
@@ -157,26 +148,26 @@ serve(async (req) => {
           set_code: setCode,
           set_name: getOnePieceSetName(setCode),
           card_number: cardNumber,
-          card_name: card.Name,
+          card_name: card.name,
           variant: null,
           finish: null,
           rarity,
           language: 'english',
-          image_url: card.Img || null,
-          image_url_hires: card.Img || null,
+          image_url: imageUrl,
+          image_url_hires: imageUrl,
           artist: null,
-          types: card["Primary color"] ? [card["Primary color"]] : null,
-          subtypes: card.Attribute ? [card.Attribute] : null,
-          supertype: card["Card Type"],
-          hp: card.Power?.toString() || null,
-          retreat_cost: card["Cost/Life"] || null,
+          types: card.colors || null,
+          subtypes: card.attribute ? [card.attribute] : null,
+          supertype: card.type || null,
+          hp: card.power?.toString() || null,
+          retreat_cost: card.cost || null,
           tcg_id: card_code,
-          source_api: 'nemesis312_github',
+          source_api: 'optcg_api',
           status: 'pending'
         };
 
         result.cards.push({
-          name: card.Name,
+          name: card.name,
           set: setCode,
           number: cardNumber,
           canonical_key,
@@ -187,12 +178,12 @@ serve(async (req) => {
           const { error } = await supabase
             .from('catalog_import_staging')
             .upsert(stagingRecord, { 
-              onConflict: 'canonical_key,source_api',
+              onConflict: 'canonical_key',
               ignoreDuplicates: false 
             });
 
           if (error) {
-            result.errors.push(`${card.Name} (${card_code}): ${error.message}`);
+            result.errors.push(`${card.name} (${card_code}): ${error.message}`);
             result.skipped++;
           } else {
             result.imported++;
@@ -202,17 +193,15 @@ serve(async (req) => {
         }
       } catch (cardError) {
         const errorMsg = cardError instanceof Error ? cardError.message : 'Unknown error';
-        result.errors.push(`${card.Name}: ${errorMsg}`);
+        result.errors.push(`Card error: ${errorMsg}`);
         result.skipped++;
       }
     }
 
-    // Get unique sets for summary
-    const uniqueSets = [...new Set(cardsToProcess.map(c => {
-      const cardNum = String(c.CardNum || '').replace(/^#/, '');
-      const match = cardNum.match(/^([A-Z]+\d+)/i);
-      return match ? match[1].toUpperCase() : '';
-    }).filter(Boolean))].sort();
+    // Get unique sets
+    const uniqueSets = [...new Set(result.cards.map(c => c.set))].sort();
+
+    console.log(`[catalog-import-onepiece] Complete. Imported: ${result.imported}, Skipped: ${result.skipped}`);
 
     return new Response(
       JSON.stringify({
@@ -231,7 +220,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Import error:', error);
+    console.error('[catalog-import-onepiece] Error:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
