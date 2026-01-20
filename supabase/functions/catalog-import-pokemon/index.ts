@@ -59,7 +59,8 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { setId, dryRun = true, pageSize = 250 } = await req.json();
+    // Use smaller page size to avoid timeouts
+    const { setId, dryRun = true, pageSize = 50, maxPages = 10 } = await req.json();
 
     if (!setId) {
       return new Response(
@@ -75,27 +76,42 @@ serve(async (req) => {
     let page = 1;
     let hasMore = true;
 
-    while (hasMore) {
+    while (hasMore && page <= maxPages) {
       const url = `${POKEMON_TCG_API}/cards?q=set.id:${setId}&page=${page}&pageSize=${pageSize}`;
       console.log(`Fetching page ${page}: ${url}`);
       
-      const response = await fetch(url);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000); // 25s timeout
       
-      if (!response.ok) {
-        throw new Error(`Pokemon TCG API error: ${response.status} ${await response.text()}`);
-      }
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`Pokemon TCG API error: ${response.status} ${await response.text()}`);
+        }
 
-      const data = await response.json();
-      allCards.push(...data.data);
-      
-      // Check if there are more pages
-      const totalCount = data.totalCount || 0;
-      hasMore = allCards.length < totalCount;
-      page++;
+        const data = await response.json();
+        allCards.push(...data.data);
+        
+        // Check if there are more pages
+        const totalCount = data.totalCount || 0;
+        hasMore = allCards.length < totalCount;
+        page++;
 
-      // Rate limiting - Pokemon TCG API has limits
-      if (hasMore) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log(`  Got ${data.data.length} cards, total so far: ${allCards.length}/${totalCount}`);
+
+        // Rate limiting - Pokemon TCG API has limits
+        if (hasMore) {
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          console.error(`Timeout on page ${page}, stopping pagination`);
+          break;
+        }
+        throw fetchError;
       }
     }
 

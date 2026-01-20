@@ -6,27 +6,37 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// OPTCG API - free One Piece card database
-const OPTCG_API_SETS = 'https://optcgapi.com/api/allSets/';
-const OPTCG_API_SET = 'https://optcgapi.com/api/sets/'; // + setId
+// punk-records GitHub raw URLs - reliable static JSON dataset
+const PUNK_RECORDS_BASE = 'https://raw.githubusercontent.com/buhbbl/punk-records/main/english';
+const PACKS_URL = `${PUNK_RECORDS_BASE}/packs.json`;
+const CARDS_INDEX_URL = `${PUNK_RECORDS_BASE}/index/cards_by_id.json`;
 
 interface OnePieceCard {
-  id: string;
+  id: string; // e.g., "ST01-004", "OP01-001"
+  pack_id: string;
   name: string;
-  type: string; // Leader, Character, Event, Stage
-  category?: string;
-  cost?: number;
-  power?: number;
-  counter?: number;
-  color: string | string[];
-  attribute?: string;
-  effect?: string;
-  trigger?: string;
   rarity: string;
-  set: string; // e.g., "OP01", "OP02"
-  cardNumber: string; // e.g., "001", "002"
-  imageUrl?: string;
-  altArt?: boolean;
+  category: string; // Leader, Character, Event, Stage, Don
+  img_url: string;
+  img_full_url: string;
+  colors: string[];
+  cost: number | null;
+  attributes: string[];
+  power: number | null;
+  counter: number | null;
+  types: string[];
+  effect: string | null;
+  trigger: string | null;
+}
+
+interface Pack {
+  id: string;
+  raw_title: string;
+  title_parts: {
+    prefix?: string;
+    title: string;
+    label?: string;
+  };
 }
 
 interface ImportResult {
@@ -52,53 +62,47 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { setFilter, dryRun = true } = await req.json();
+    const { setFilter, dryRun = true, limit = 500 } = await req.json();
 
-    console.log(`Fetching One Piece cards, setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}`);
+    console.log(`Fetching One Piece cards from punk-records, setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}`);
 
-    let allCards: OnePieceCard[] = [];
+    // First fetch available packs
+    console.log(`Fetching packs from: ${PACKS_URL}`);
+    const packsResponse = await fetch(PACKS_URL);
+    
+    if (!packsResponse.ok) {
+      throw new Error(`Failed to fetch packs: ${packsResponse.status}`);
+    }
+    
+    const packs: Pack[] = await packsResponse.json();
+    console.log(`Found ${packs.length} packs`);
 
+    // Fetch all cards from the index
+    console.log(`Fetching cards index from: ${CARDS_INDEX_URL}`);
+    const cardsResponse = await fetch(CARDS_INDEX_URL);
+    
+    if (!cardsResponse.ok) {
+      throw new Error(`Failed to fetch cards index: ${cardsResponse.status}`);
+    }
+    
+    const cardsIndex: Record<string, OnePieceCard> = await cardsResponse.json();
+    let allCards = Object.values(cardsIndex);
+    console.log(`Found ${allCards.length} total cards in index`);
+
+    // Build pack name lookup
+    const packNames: Record<string, string> = {};
+    for (const pack of packs) {
+      packNames[pack.id] = pack.title_parts.title || pack.raw_title;
+    }
+
+    // Filter by set if provided (match card ID prefix like "OP01-")
     if (setFilter) {
-      // Fetch specific set
-      const setUrl = `${OPTCG_API_SET}${setFilter}/`;
-      console.log(`Fetching set: ${setUrl}`);
-      const response = await fetch(setUrl);
-      
-      if (!response.ok) {
-        throw new Error(`OPTCG API error for set ${setFilter}: ${response.status}`);
-      }
-      
-      const setData = await response.json();
-      allCards = Array.isArray(setData) ? setData : setData.cards || [];
-    } else {
-      // Fetch all sets first, then get cards from each
-      console.log(`Fetching all sets from: ${OPTCG_API_SETS}`);
-      const setsResponse = await fetch(OPTCG_API_SETS);
-      
-      if (!setsResponse.ok) {
-        throw new Error(`OPTCG API error: ${setsResponse.status}`);
-      }
-      
-      const sets = await setsResponse.json();
-      console.log(`Found ${sets.length || Object.keys(sets).length} sets`);
-      
-      // Get cards from each set
-      const setIds = Array.isArray(sets) ? sets.map((s: any) => s.id || s.setCode || s) : Object.keys(sets);
-      
-      for (const setId of setIds.slice(0, 20)) { // Limit to first 20 sets for safety
-        try {
-          const setUrl = `${OPTCG_API_SET}${setId}/`;
-          const response = await fetch(setUrl);
-          if (response.ok) {
-            const setData = await response.json();
-            const cards = Array.isArray(setData) ? setData : setData.cards || [];
-            allCards.push(...cards);
-          }
-          await new Promise(resolve => setTimeout(resolve, 100)); // Rate limit
-        } catch (e) {
-          console.error(`Error fetching set ${setId}:`, e);
-        }
-      }
+      const filterUpper = setFilter.toUpperCase();
+      allCards = allCards.filter(c => 
+        c.id.toUpperCase().startsWith(filterUpper + '-') || 
+        c.id.toUpperCase().startsWith(filterUpper)
+      );
+      console.log(`Filtered to ${allCards.length} cards matching "${setFilter}"`);
     }
     
     console.log(`Fetched ${allCards.length} total One Piece cards`);
@@ -111,57 +115,73 @@ serve(async (req) => {
     };
 
     // Process each card
-    for (const card of allCards) {
+    for (const card of allCards.slice(0, limit)) {
       try {
-        // Normalize card number to 3 digits (e.g., "1" -> "001")
-        const normalizedNumber = card.cardNumber.padStart(3, '0');
-        
-        // Build card code: OP01-001
-        const card_code = `${card.set}-${normalizedNumber}`;
+        // Parse card ID (e.g., "OP01-001" or "ST01-004")
+        const idMatch = card.id.match(/^([A-Z]+\d+)-(\d+)$/i);
+        if (!idMatch) {
+          result.errors.push(`${card.name}: Invalid card ID format "${card.id}"`);
+          result.skipped++;
+          continue;
+        }
+
+        const setCode = idMatch[1].toUpperCase(); // e.g., "OP01"
+        const cardNumber = idMatch[2]; // e.g., "001"
+        const card_code = `${setCode}-${cardNumber}`;
         
         // Build canonical key: onepiece:english:SET:NUMBER
-        const canonical_key = `onepiece:english:${card.set.toLowerCase()}:${normalizedNumber}`;
+        const canonical_key = `onepiece:english:${setCode.toLowerCase()}:${cardNumber}`;
         
-        // Determine variant (alt art, parallel, etc.)
-        const variant = card.altArt ? 'alt-art' : null;
+        // Get set name from our pack data
+        const setName = packNames[card.pack_id] || getOnePieceSetName(setCode);
         
-        // Handle color array
-        const colorStr = Array.isArray(card.color) ? card.color.join('/') : card.color;
+        // Determine rarity mapping
+        const rarityMap: Record<string, string> = {
+          'Common': 'C',
+          'Uncommon': 'UC',
+          'Rare': 'R',
+          'SuperRare': 'SR',
+          'SecretRare': 'SEC',
+          'Leader': 'L',
+          'Special': 'SP',
+          'TreasureRare': 'TR',
+          'Promo': 'P'
+        };
+        const rarity = rarityMap[card.rarity] || card.rarity;
 
         const stagingRecord = {
           game: 'onepiece',
           canonical_key,
-          set_code: card.set,
-          set_name: getOnePieceSetName(card.set),
-          card_number: normalizedNumber,
+          set_code: setCode,
+          set_name: setName,
+          card_number: cardNumber,
           card_name: card.name,
-          variant,
+          variant: null,
           finish: null,
-          rarity: card.rarity,
+          rarity,
           language: 'english',
-          image_url: card.imageUrl || null,
-          image_url_hires: null,
+          image_url: card.img_full_url || card.img_url,
+          image_url_hires: card.img_full_url,
           artist: null,
-          types: [colorStr], // Use types for color
-          subtypes: card.type ? [card.type] : null, // Leader, Character, etc.
-          supertype: card.category || card.type,
-          hp: card.power?.toString() || null, // Use HP field for power
-          retreat_cost: card.cost || null, // Use retreat_cost for cost
-          tcg_id: card.id || card_code,
-          source_api: 'optcg_api',
+          types: card.colors,
+          subtypes: card.types,
+          supertype: card.category,
+          hp: card.power?.toString() || null,
+          retreat_cost: card.cost,
+          tcg_id: card.id,
+          source_api: 'punk_records_github',
           status: 'pending'
         };
 
         result.cards.push({
           name: card.name,
-          set: card.set,
-          number: normalizedNumber,
+          set: setCode,
+          number: cardNumber,
           canonical_key,
           card_code
         });
 
         if (!dryRun) {
-          // Insert to staging table (upsert to avoid duplicates)
           const { error } = await supabase
             .from('catalog_import_staging')
             .upsert(stagingRecord, { 
@@ -186,7 +206,10 @@ serve(async (req) => {
     }
 
     // Get unique sets for summary
-    const uniqueSets = [...new Set(allCards.map(c => c.set))].sort();
+    const uniqueSets = [...new Set(allCards.map(c => {
+      const match = c.id.match(/^([A-Z]+\d+)-/i);
+      return match ? match[1].toUpperCase() : c.pack_id;
+    }))].sort();
 
     return new Response(
       JSON.stringify({
@@ -194,7 +217,9 @@ serve(async (req) => {
         dryRun,
         setFilter: setFilter || 'ALL',
         totalCards: allCards.length,
+        processedCards: Math.min(allCards.length, limit),
         uniqueSets,
+        availablePacks: packs.map(p => ({ id: p.id, title: p.title_parts.title })),
         result,
         message: dryRun 
           ? `DRY RUN: Would import ${result.imported} cards. Set dryRun: false to actually import.`
@@ -215,7 +240,7 @@ serve(async (req) => {
   }
 });
 
-// Helper to get full set names
+// Fallback set name lookup
 function getOnePieceSetName(setCode: string): string {
   const setNames: Record<string, string> = {
     'ST01': 'Straw Hat Crew',
@@ -237,6 +262,7 @@ function getOnePieceSetName(setCode: string): string {
     'ST17': 'BLUE Donquixote Doflamingo',
     'ST18': 'PURPLE Monkey D. Luffy',
     'ST19': 'BLACK Smoker',
+    'ST20': 'YELLOW Charlotte Katakuri',
     'OP01': 'Romance Dawn',
     'OP02': 'Paramount War',
     'OP03': 'Pillars of Strength',
@@ -254,7 +280,7 @@ function getOnePieceSetName(setCode: string): string {
     'EB01': 'Memorial Collection',
     'EB02': 'Anime 25th Anniversary',
     'EB03': 'Anime 25th Anniversary Vol.2',
-    'P': 'Promo',
+    'PRB01': 'Premium Booster -ONE PIECE CARD THE BEST-',
   };
   return setNames[setCode] || setCode;
 }
