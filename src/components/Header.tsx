@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Flame, Rocket, Package } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, BadgeCheck, TrendingUp, Star, Sparkles, Gift, Trophy, PieChart, Gamepad2, Medal, ChevronDown, Users, Crown, MessageCircle, Award, ArrowLeftRight, Mic, Film, Award as GradingIcon, Swords, Flame, Rocket, Package, BarChart3 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { CardboomPointsBadge } from '@/components/CardboomPointsBadge';
@@ -230,6 +230,19 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <ul className="grid w-[260px] gap-1 p-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link to="/markets" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
+                            <div className="w-8 h-8 rounded-md bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
+                              <BarChart3 className="w-3.5 h-3.5 text-emerald-500" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-xs">Markets</div>
+                              <div className="text-[10px] text-muted-foreground">Live market overview</div>
+                            </div>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
                       <li>
                         <NavigationMenuLink asChild>
                           <Link to="/catalog" className="flex items-center gap-2.5 p-2 rounded-md hover:bg-muted/80 transition-colors group">
