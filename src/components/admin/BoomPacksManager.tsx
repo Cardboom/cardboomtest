@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -650,7 +651,7 @@ export const BoomPacksManager: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-center">
                           <span className="font-semibold text-primary">{pack.price_gems}</span>
-                          <span className="text-xs text-muted-foreground ml-1">💣</span>
+                          <BoomCoinIcon size="sm" className="text-amber-500 inline-block ml-1" />
                         </TableCell>
                         <TableCell className="text-center">{pack.cards_count}</TableCell>
                         <TableCell className="text-center">
@@ -912,8 +913,8 @@ export const BoomPacksManager: React.FC = () => {
                             {item.rarity.replace('_', ' ')}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-center">
-                          {item.utility_value_gems} 💣
+                        <TableCell className="text-center flex items-center justify-center gap-1">
+                          {item.utility_value_gems} <BoomCoinIcon size="sm" className="text-amber-500" />
                         </TableCell>
                         <TableCell className="text-center">
                           {item.is_available ? (

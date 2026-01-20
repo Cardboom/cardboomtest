@@ -184,10 +184,10 @@ export const GemsProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return afterMarkup / GEM_FACE_VALUE_USD;
   }, [pricing.markupMultiplier]);
 
-  // Format coins with symbol (bomb emoji for Boom Coins)
+  // Format coins (number only - use BoomCoinIcon separately for display)
   const formatGems = useCallback((gems: number): string => {
     const rounded = Math.round(gems);
-    return `${rounded.toLocaleString()} 💣`;
+    return rounded.toLocaleString();
   }, []);
 
   // Format price for display based on current mode
