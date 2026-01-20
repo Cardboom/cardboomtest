@@ -137,6 +137,8 @@ const CatalogCardPage = () => {
             {/* Card Details */}
             <Card className="glass">
               <CardContent className="p-4 space-y-3">
+                <h3 className="font-semibold text-foreground">Card Details</h3>
+                
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Game</span>
                   <Badge variant="secondary">{gameLabels[card.game] || card.game}</Badge>
@@ -150,13 +152,55 @@ const CatalogCardPage = () => {
                 {card.card_number && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Number</span>
-                    <span className="font-medium">{card.card_number}</span>
+                    <span className="font-medium">{card.set_code}-{card.card_number}</span>
                   </div>
                 )}
                 {card.rarity && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Rarity</span>
                     <Badge variant="outline">{card.rarity}</Badge>
+                  </div>
+                )}
+                {card.color && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Color</span>
+                    <span className="font-medium capitalize">{card.color}</span>
+                  </div>
+                )}
+                {card.card_type && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Card Type</span>
+                    <span className="font-medium">{card.card_type}</span>
+                  </div>
+                )}
+                {card.cost !== null && card.cost !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Cost</span>
+                    <span className="font-medium">{card.cost}</span>
+                  </div>
+                )}
+                {card.power !== null && card.power !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Power</span>
+                    <span className="font-medium">{card.power.toLocaleString()}</span>
+                  </div>
+                )}
+                {card.counter !== null && card.counter !== undefined && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Counter</span>
+                    <span className="font-medium">+{card.counter.toLocaleString()}</span>
+                  </div>
+                )}
+                {card.attribute && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Attribute</span>
+                    <span className="font-medium">{card.attribute}</span>
+                  </div>
+                )}
+                {card.subtypes && card.subtypes.length > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtype(s)</span>
+                    <span className="font-medium text-right">{card.subtypes.join(' / ')}</span>
                   </div>
                 )}
                 {card.variant && (
@@ -173,6 +217,18 @@ const CatalogCardPage = () => {
                 )}
               </CardContent>
             </Card>
+
+            {/* Effect Text */}
+            {card.effect_text && (
+              <Card className="glass">
+                <CardContent className="p-4 space-y-2">
+                  <h3 className="font-semibold text-foreground">Effect</h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {card.effect_text}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Right Column - Pricing & Listings */}

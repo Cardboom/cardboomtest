@@ -13,6 +13,15 @@ export interface CatalogCard {
   rarity: string | null;
   image_url: string | null;
   name: string;
+  // New detailed fields
+  effect_text: string | null;
+  color: string | null;
+  card_type: string | null;
+  cost: number | null;
+  power: number | null;
+  counter: number | null;
+  attribute: string | null;
+  subtypes: string[] | null;
 }
 
 export interface PriceSnapshot {

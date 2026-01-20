@@ -2658,9 +2658,15 @@ export type Database = {
       }
       catalog_cards: {
         Row: {
+          attribute: string | null
           canonical_key: string
           card_number: string | null
+          card_type: string | null
+          color: string | null
+          cost: number | null
+          counter: number | null
           created_at: string | null
+          effect_text: string | null
           finish: string | null
           game: string
           id: string
@@ -2675,16 +2681,24 @@ export type Database = {
             | null
           normalized_image_url: string | null
           normalized_key: string | null
+          power: number | null
           rarity: string | null
           set_code: string | null
           set_name: string | null
+          subtypes: string[] | null
           updated_at: string | null
           variant: string | null
         }
         Insert: {
+          attribute?: string | null
           canonical_key: string
           card_number?: string | null
+          card_type?: string | null
+          color?: string | null
+          cost?: number | null
+          counter?: number | null
           created_at?: string | null
+          effect_text?: string | null
           finish?: string | null
           game: string
           id?: string
@@ -2699,16 +2713,24 @@ export type Database = {
             | null
           normalized_image_url?: string | null
           normalized_key?: string | null
+          power?: number | null
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
+          subtypes?: string[] | null
           updated_at?: string | null
           variant?: string | null
         }
         Update: {
+          attribute?: string | null
           canonical_key?: string
           card_number?: string | null
+          card_type?: string | null
+          color?: string | null
+          cost?: number | null
+          counter?: number | null
           created_at?: string | null
+          effect_text?: string | null
           finish?: string | null
           game?: string
           id?: string
@@ -2723,9 +2745,11 @@ export type Database = {
             | null
           normalized_image_url?: string | null
           normalized_key?: string | null
+          power?: number | null
           rarity?: string | null
           set_code?: string | null
           set_name?: string | null
+          subtypes?: string[] | null
           updated_at?: string | null
           variant?: string | null
         }
@@ -2782,10 +2806,16 @@ export type Database = {
       catalog_import_staging: {
         Row: {
           artist: string | null
+          attribute: string | null
           canonical_key: string
           card_name: string
           card_number: string | null
+          card_type: string | null
+          color: string | null
+          cost: number | null
+          counter: number | null
           created_at: string | null
+          effect_text: string | null
           existing_catalog_id: string | null
           finish: string | null
           game: string
@@ -2795,6 +2825,7 @@ export type Database = {
           image_url_hires: string | null
           imported_at: string | null
           language: string | null
+          power: number | null
           rarity: string | null
           rejection_reason: string | null
           retreat_cost: number | null
@@ -2813,10 +2844,16 @@ export type Database = {
         }
         Insert: {
           artist?: string | null
+          attribute?: string | null
           canonical_key: string
           card_name: string
           card_number?: string | null
+          card_type?: string | null
+          color?: string | null
+          cost?: number | null
+          counter?: number | null
           created_at?: string | null
+          effect_text?: string | null
           existing_catalog_id?: string | null
           finish?: string | null
           game: string
@@ -2826,6 +2863,7 @@ export type Database = {
           image_url_hires?: string | null
           imported_at?: string | null
           language?: string | null
+          power?: number | null
           rarity?: string | null
           rejection_reason?: string | null
           retreat_cost?: number | null
@@ -2844,10 +2882,16 @@ export type Database = {
         }
         Update: {
           artist?: string | null
+          attribute?: string | null
           canonical_key?: string
           card_name?: string
           card_number?: string | null
+          card_type?: string | null
+          color?: string | null
+          cost?: number | null
+          counter?: number | null
           created_at?: string | null
+          effect_text?: string | null
           existing_catalog_id?: string | null
           finish?: string | null
           game?: string
@@ -2857,6 +2901,7 @@ export type Database = {
           image_url_hires?: string | null
           imported_at?: string | null
           language?: string | null
+          power?: number | null
           rarity?: string | null
           rejection_reason?: string | null
           retreat_cost?: number | null
