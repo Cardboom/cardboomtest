@@ -11,22 +11,21 @@ const CARDS_DB_URL = 'https://raw.githubusercontent.com/nemesis312/OnePieceTCGEn
 
 interface RawCard {
   Name: string;
-  "Card number"?: string;
-  CardNum?: string;
+  CardNum: string; // Format: "#OP01-001"
+  "Card number"?: number; // Just the index
   Rarity: string;
   "Card Type"?: string;
-  Type?: string;
   "Primary color"?: string;
-  Color?: string;
-  Cost?: string;
-  Power?: string;
-  Counter?: string;
+  Power?: number;
+  "Cost/Life"?: number;
   Attribute?: string;
   Effect?: string;
   Trigger?: string;
   Img?: string;
-  ImgSrc?: string;
-  Alt?: string;
+  TcgPlayer?: string;
+  Alt?: boolean;
+  "Type 1"?: string;
+  "Type 2"?: string;
 }
 
 interface CardDbResponse {
@@ -72,12 +71,12 @@ serve(async (req) => {
     let allCards = data.Cards || [];
     console.log(`Found ${allCards.length} total cards`);
 
-    // Filter by set if provided (Card number format: "OP01-001")
+    // Filter by set if provided (CardNum format: "#OP01-001")
     if (setFilter) {
       const filterUpper = setFilter.toUpperCase();
       allCards = allCards.filter(c => {
-        const cardNum = String(c["Card number"] || c.CardNum || '');
-        // Extract set code from card number (e.g., "OP01" from "OP01-001")
+        // CardNum is "#OP01-001" format - strip # and extract set code
+        const cardNum = String(c.CardNum || '').replace(/^#/, '');
         const match = cardNum.match(/^([A-Z]+\d+)/i);
         const setCode = match ? match[1].toUpperCase() : '';
         return setCode === filterUpper || setCode.startsWith(filterUpper);
@@ -95,13 +94,39 @@ serve(async (req) => {
     // Process each card
     const cardsToProcess = allCards.slice(0, limit);
     
+    // Log first card structure for debugging
+    if (cardsToProcess.length > 0) {
+      const sampleCard = cardsToProcess[0];
+      console.log('Sample card keys:', Object.keys(sampleCard));
+      console.log('Sample card:', JSON.stringify(sampleCard).slice(0, 500));
+    }
+    
     for (const card of cardsToProcess) {
       try {
-        const cardNumRaw = String(card["Card number"] || card.CardNum || '');
+        // CardNum format is "#OP01-001" - strip the # prefix
+        const cardNumRaw = String(card.CardNum || '').replace(/^#/, '');
         
-        // Parse card number (e.g., "OP01-001")
-        const match = cardNumRaw.match(/^([A-Z]+\d+)-(\d+)/i);
+        if (!cardNumRaw) {
+          result.skipped++;
+          continue;
+        }
+        
+        // Parse card number (e.g., "OP01-001" or "OP-01-001")
+        let match = cardNumRaw.match(/^([A-Z]+-?\d+)-(\d+)/i);
+        
+        // Also try format without dash in set code
+        if (!match) {
+          match = cardNumRaw.match(/^([A-Z]+)(\d+)-(\d+)/i);
+          if (match) {
+            // Reconstruct: "OP" + "01" + "-" + "001"
+            match = [cardNumRaw, match[1] + match[2], match[3]];
+          }
+        }
+        
         if (!card.Name || !match) {
+          if (cardsToProcess.indexOf(card) < 3) {
+            console.log(`Skipping card - Name: ${card.Name}, cardNumRaw: "${cardNumRaw}"`);
+          }
           result.skipped++;
           continue;
         }
@@ -137,14 +162,14 @@ serve(async (req) => {
           finish: null,
           rarity,
           language: 'english',
-          image_url: card.ImgSrc || null,
-          image_url_hires: null,
+          image_url: card.Img || null,
+          image_url_hires: card.Img || null,
           artist: null,
-          types: card.Color ? [card.Color] : null,
+          types: card["Primary color"] ? [card["Primary color"]] : null,
           subtypes: card.Attribute ? [card.Attribute] : null,
-          supertype: card.Type,
-          hp: card.Power || null,
-          retreat_cost: card.Cost ? parseInt(card.Cost) : null,
+          supertype: card["Card Type"],
+          hp: card.Power?.toString() || null,
+          retreat_cost: card["Cost/Life"] || null,
           tcg_id: card_code,
           source_api: 'nemesis312_github',
           status: 'pending'
@@ -184,7 +209,7 @@ serve(async (req) => {
 
     // Get unique sets for summary
     const uniqueSets = [...new Set(cardsToProcess.map(c => {
-      const cardNum = String(c["Card number"] || c.CardNum || '');
+      const cardNum = String(c.CardNum || '').replace(/^#/, '');
       const match = cardNum.match(/^([A-Z]+\d+)/i);
       return match ? match[1].toUpperCase() : '';
     }).filter(Boolean))].sort();
