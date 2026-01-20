@@ -64,12 +64,14 @@ export const extractYear = (text?: string | null): string | null => {
  * For other TCGs: Uses name-set-number format
  */
 export const generateCardSlug = (card: CardSlugData): string => {
-  // For One Piece, use card_code as the unique identifier
+  // For One Piece, use card-name + card_code for SEO-friendly URLs
+  // e.g., "monkey-d-luffy-op01-003" or "sanji-op01-013"
   if (isOnePieceCategory(card.category)) {
     const cardCode = card.card_code || extractCardCode(card.name);
     if (cardCode) {
-      // Format: card-code (e.g., eb03-053)
-      return cardCode.toLowerCase();
+      // Format: name-code (e.g., sanji-op01-013)
+      const namePart = normalizeSlug(card.name.replace(/\s*[A-Z]{2,3}\d{1,2}-\d{2,3}\s*/i, '').trim());
+      return namePart ? `${namePart}-${cardCode.toLowerCase()}` : cardCode.toLowerCase();
     }
     // Fallback for One Piece without card code: include set name for uniqueness
     const parts: string[] = [];
