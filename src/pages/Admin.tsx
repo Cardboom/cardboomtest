@@ -75,6 +75,7 @@ import { ImageNormalizationManager } from '@/components/admin/ImageNormalization
 import { CatalogOpsPanel } from '@/components/admin/CatalogOpsPanel';
 import { SampleDataManager } from '@/components/admin/SampleDataManager';
 import { BoomPacksManager } from '@/components/admin/BoomPacksManager';
+import { TCGDropsManager } from '@/components/admin/TCGDropsManager';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -407,6 +408,8 @@ const Admin = () => {
         return <SystemStatusDashboard />;
       case 'bounties':
         return <BountyManager />;
+      case 'tcg-drops':
+        return <TCGDropsManager />;
       default:
         return <RevenueDashboard />;
     }
