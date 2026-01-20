@@ -84,10 +84,20 @@ export const trackViewItemEvent = (item: { id: string; name: string; price: numb
 };
 
 export const trackSignUpEvent = (method = 'email') => {
-  if (typeof window !== 'undefined' && window.dataLayer) {
+  if (typeof window === 'undefined') return;
+  
+  // GA4 / GTM sign_up event
+  if (window.dataLayer) {
     window.dataLayer.push({
       event: 'sign_up',
       method,
+    });
+  }
+  
+  // Google Ads conversion for new user registration
+  if (window.gtag) {
+    window.gtag('event', 'conversion', {
+      send_to: 'AW-17885952633/7FbfCL-2pugbEPn019BC',
     });
   }
 };
