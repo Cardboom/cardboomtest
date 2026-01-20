@@ -14,12 +14,15 @@ interface OPTCGCard {
   name: string;
   rarity: string;
   colors?: string[];
+  color?: string;
   type?: string;
-  cost?: number;
-  power?: number;
-  counter?: number;
+  cost?: number | string;
+  power?: number | string;
+  counter?: number | string;
   text?: string;
+  effect?: string;
   attribute?: string;
+  types?: string[];
   img?: string;
   image?: string;
 }
@@ -142,6 +145,17 @@ serve(async (req) => {
         // Get image URL
         const imageUrl = card.image || card.img || null;
 
+        // Get effect text
+        const effectText = card.effect || card.text || null;
+        
+        // Get color (primary)
+        const cardColor = card.color || (card.colors && card.colors[0]) || null;
+        
+        // Parse numeric values
+        const cardCost = card.cost !== undefined ? parseInt(String(card.cost)) : null;
+        const cardPower = card.power !== undefined ? parseInt(String(card.power)) : null;
+        const cardCounter = card.counter !== undefined ? parseInt(String(card.counter)) : null;
+
         const stagingRecord = {
           game: 'onepiece',
           canonical_key,
@@ -156,14 +170,22 @@ serve(async (req) => {
           image_url: imageUrl,
           image_url_hires: imageUrl,
           artist: null,
-          types: card.colors || null,
-          subtypes: card.attribute ? [card.attribute] : null,
+          types: card.colors || card.types || null,
+          subtypes: card.attribute ? [card.attribute] : (card.types || null),
           supertype: card.type || null,
-          hp: card.power?.toString() || null,
-          retreat_cost: card.cost || null,
+          hp: cardPower?.toString() || null,
+          retreat_cost: cardCost,
           tcg_id: card_code,
           source_api: 'optcg_api',
-          status: 'pending'
+          status: 'pending',
+          // New detailed fields
+          effect_text: effectText,
+          color: cardColor,
+          card_type: card.type || null,
+          cost: cardCost,
+          power: cardPower,
+          counter: cardCounter,
+          attribute: card.attribute || null,
         };
 
         result.cards.push({

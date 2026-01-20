@@ -29,11 +29,9 @@ import { useAdminRole } from '@/hooks/useAdminRole';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { WireTransferManagement } from '@/components/admin/WireTransferManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
-import { FractionalManagement } from '@/components/admin/FractionalManagement';
 import { APIAnalytics } from '@/components/admin/APIAnalytics';
 import { SupportTickets } from '@/components/admin/SupportTickets';
 import { AutoBuyManager } from '@/components/admin/AutoBuyManager';
-import { DataSyncManager } from '@/components/admin/DataSyncManager';
 import { DiagnosticsDashboard } from '@/components/admin/DiagnosticsDashboard';
 import { GradingManagement } from '@/components/admin/GradingManagement';
 import { CardWarsManager } from '@/components/admin/CardWarsManager';
@@ -73,7 +71,6 @@ import { BoomCoinsPricingManager } from '@/components/admin/BoomCoinsPricingMana
 import { CoachVerificationQueue } from '@/components/admin/CoachVerificationQueue';
 import { ImageNormalizationManager } from '@/components/admin/ImageNormalizationManager';
 import { CatalogOpsPanel } from '@/components/admin/CatalogOpsPanel';
-import { SampleDataManager } from '@/components/admin/SampleDataManager';
 import { BoomPacksManager } from '@/components/admin/BoomPacksManager';
 import { TCGDropsManager } from '@/components/admin/TCGDropsManager';
 type LiquidityLevel = 'high' | 'medium' | 'low';
@@ -140,15 +137,12 @@ const Admin = () => {
     { id: 'featured', label: 'Featured' },
     { id: 'items-manager', label: 'Items Manager' },
     { id: 'listings-manager', label: 'Listings Manager' },
-    { id: 'sample-data', label: 'Sample Data' },
     { id: 'catalog-ops', label: 'Catalog Ops' },
-    { id: 'prices', label: 'Prices (Legacy)' },
     { id: 'controls', label: 'Market Controls' },
     { id: 'cardwars', label: 'Card Wars' },
     { id: 'communityvotes', label: 'Community Votes' },
     { id: 'fanaccounts', label: 'Boom Reels' },
     { id: 'auctions', label: 'Auctions' },
-    { id: 'fractional', label: 'Fractional' },
     { id: 'points', label: 'Points Manager' },
     { id: 'coins-pricing', label: 'Coins Pricing' },
     { id: 'bounties', label: 'Boom Challenges' },
@@ -165,11 +159,12 @@ const Admin = () => {
     { id: 'currency', label: 'Currency' },
     { id: 'vault', label: 'Vault' },
     { id: 'grading', label: 'Grading' },
+    { id: 'grading-pricing', label: 'Grading Pricing' },
     { id: 'grading-calibration', label: 'AI Calibration' },
     { id: 'image-normalization', label: 'Image AI' },
-    { id: 'datasync', label: 'Data Sync' },
     { id: 'autobuy', label: 'Deal Scooper' },
     { id: 'inventory', label: 'Inventory Integrity' },
+    { id: 'tcg-drops', label: 'TCG Drops' },
   ];
 
   const filteredSections = allSections.filter(s => 
@@ -346,12 +341,8 @@ const Admin = () => {
         return <MarketItemsManager />;
       case 'listings-manager':
         return <AdminListingsManager />;
-      case 'prices':
-        return renderPricesSection();
       case 'controls':
         return <MarketControlPanel />;
-      case 'fractional':
-        return <FractionalManagement />;
       case 'cardwars':
         return <CardWarsManager />;
       case 'communityvotes':
@@ -390,12 +381,8 @@ const Admin = () => {
         return <ImageNormalizationManager />;
       case 'catalog-ops':
         return <CatalogOpsPanel />;
-      case 'datasync':
-        return <DataSyncManager />;
       case 'autobuy':
         return <AutoBuyManager />;
-      case 'sample-data':
-        return <SampleDataManager />;
       case 'inventory':
         return <InventoryIntegrityDashboard />;
       case 'digital-products':
@@ -415,247 +402,6 @@ const Admin = () => {
     }
   };
 
-  const renderPricesSection = () => (
-    <div className="space-y-6">
-      {/* Sync Button */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Price Management</h2>
-        <Button 
-          onClick={handleSyncPrices} 
-          disabled={isSyncing}
-          className="gap-2"
-        >
-          {isSyncing ? (
-            <RefreshCw className="w-4 h-4 animate-spin" />
-          ) : (
-            <Zap className="w-4 h-4" />
-          )}
-          Sync PriceCharting API
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Database className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Items</p>
-                <p className="text-2xl font-bold text-foreground">{stats.totalItems}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-500/10">
-                <TrendingUp className="w-5 h-5 text-orange-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Trending</p>
-                <p className="text-2xl font-bold text-foreground">{stats.trending}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <TrendingUp className="w-5 h-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Gainers (24h)</p>
-                <p className="text-2xl font-bold text-emerald-500">{stats.gainers}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <TrendingUp className="w-5 h-5 text-red-500 rotate-180" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Losers (24h)</p>
-                <p className="text-2xl font-bold text-red-500">{stats.losers}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card className="bg-card/50 border-border/50">
-        <CardContent className="p-4 flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search items..."
-              value={priceSearchQuery}
-              onChange={(e) => setPriceSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-
-      {/* Items Table */}
-      <Card className="bg-card/50 border-border/50">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">24h</TableHead>
-                  <TableHead className="text-right">7d</TableHead>
-                  <TableHead>Liquidity</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      <RefreshCw className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
-                    </TableCell>
-                  </TableRow>
-                ) : filteredItems.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No items found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredItems.slice(0, 50).map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell className="w-20">
-                        {editingId === item.id ? (
-                          <Input
-                            value={editedItem.image_url || ''}
-                            onChange={(e) => setEditedItem({ ...editedItem, image_url: e.target.value })}
-                            className="h-8 text-xs"
-                            placeholder="Image URL"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 rounded overflow-hidden bg-muted">
-                            {item.image_url ? (
-                              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No img</div>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {editingId === item.id ? (
-                          <Input
-                            value={editedItem.name || ''}
-                            onChange={(e) => setEditedItem({ ...editedItem, name: e.target.value })}
-                            className="h-8"
-                          />
-                        ) : (
-                          <span className="flex items-center gap-2">
-                            {item.name}
-                            {item.is_trending && <Badge className="bg-orange-500 text-xs">🔥</Badge>}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{item.category}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {editingId === item.id ? (
-                          <Input
-                            type="number"
-                            value={editedItem.current_price || 0}
-                            onChange={(e) => setEditedItem({ ...editedItem, current_price: parseFloat(e.target.value) })}
-                            className="h-8 w-24 text-right"
-                          />
-                        ) : (
-                          formatPrice(item.current_price)
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {editingId === item.id ? (
-                          <Input
-                            type="number"
-                            value={editedItem.change_24h || 0}
-                            onChange={(e) => setEditedItem({ ...editedItem, change_24h: parseFloat(e.target.value) })}
-                            className="h-8 w-20 text-right"
-                          />
-                        ) : (
-                          <span className={item.change_24h && item.change_24h > 0 ? 'text-emerald-500' : item.change_24h && item.change_24h < 0 ? 'text-red-500' : 'text-muted-foreground'}>
-                            {item.change_24h ? `${item.change_24h > 0 ? '+' : ''}${item.change_24h.toFixed(1)}%` : '-'}
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <span className={item.change_7d && item.change_7d > 0 ? 'text-emerald-500' : item.change_7d && item.change_7d < 0 ? 'text-red-500' : 'text-muted-foreground'}>
-                          {item.change_7d ? `${item.change_7d > 0 ? '+' : ''}${item.change_7d.toFixed(1)}%` : '-'}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant="outline"
-                          className={
-                            item.liquidity === 'high' ? 'border-emerald-500 text-emerald-500' :
-                            item.liquidity === 'medium' ? 'border-yellow-500 text-yellow-500' :
-                            'border-red-500 text-red-500'
-                          }
-                        >
-                          {item.liquidity || 'N/A'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {editingId === item.id ? (
-                          <div className="flex items-center justify-center gap-1">
-                            <Button size="icon" variant="ghost" onClick={handleSave} className="h-8 w-8">
-                              <Save className="w-4 h-4 text-emerald-500" />
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={handleCancelEdit} className="h-8 w-8">
-                              <X className="w-4 h-4 text-red-500" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button size="icon" variant="ghost" onClick={() => handleEdit(item)} className="h-8 w-8">
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
 
   return (
     <div className="min-h-screen flex w-full bg-background">
