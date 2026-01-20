@@ -2779,6 +2779,102 @@ export type Database = {
         }
         Relationships: []
       }
+      catalog_import_staging: {
+        Row: {
+          artist: string | null
+          canonical_key: string
+          card_name: string
+          card_number: string | null
+          created_at: string | null
+          existing_catalog_id: string | null
+          finish: string | null
+          game: string
+          hp: string | null
+          id: string
+          image_url: string | null
+          image_url_hires: string | null
+          imported_at: string | null
+          language: string | null
+          rarity: string | null
+          rejection_reason: string | null
+          retreat_cost: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          set_code: string | null
+          set_name: string | null
+          source_api: string
+          status: string | null
+          subtypes: string[] | null
+          supertype: string | null
+          tcg_id: string | null
+          types: string[] | null
+          updated_at: string | null
+          variant: string | null
+        }
+        Insert: {
+          artist?: string | null
+          canonical_key: string
+          card_name: string
+          card_number?: string | null
+          created_at?: string | null
+          existing_catalog_id?: string | null
+          finish?: string | null
+          game: string
+          hp?: string | null
+          id?: string
+          image_url?: string | null
+          image_url_hires?: string | null
+          imported_at?: string | null
+          language?: string | null
+          rarity?: string | null
+          rejection_reason?: string | null
+          retreat_cost?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          set_code?: string | null
+          set_name?: string | null
+          source_api: string
+          status?: string | null
+          subtypes?: string[] | null
+          supertype?: string | null
+          tcg_id?: string | null
+          types?: string[] | null
+          updated_at?: string | null
+          variant?: string | null
+        }
+        Update: {
+          artist?: string | null
+          canonical_key?: string
+          card_name?: string
+          card_number?: string | null
+          created_at?: string | null
+          existing_catalog_id?: string | null
+          finish?: string | null
+          game?: string
+          hp?: string | null
+          id?: string
+          image_url?: string | null
+          image_url_hires?: string | null
+          imported_at?: string | null
+          language?: string | null
+          rarity?: string | null
+          rejection_reason?: string | null
+          retreat_cost?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          set_code?: string | null
+          set_name?: string | null
+          source_api?: string
+          status?: string | null
+          subtypes?: string[] | null
+          supertype?: string | null
+          tcg_id?: string | null
+          types?: string[] | null
+          updated_at?: string | null
+          variant?: string | null
+        }
+        Relationships: []
+      }
       community_card_votes: {
         Row: {
           card_a_id: string | null
