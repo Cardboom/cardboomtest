@@ -146,14 +146,29 @@ export const trackGradingPurchase = (params: {
     });
   }
 
-  // Google Ads conversion (via gtag)
-  if (window.gtag) {
-    window.gtag('event', 'conversion', {
-      send_to: 'AW-17885952633/7FbfCL-2pugbEPn019BC',
-      value,
-      currency,
-      transaction_id: orderId,
-    });
+  // Google Ads conversion (via gtag) - fire immediately and with retry
+  const fireGoogleAdsConversion = () => {
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-17885952633/7FbfCL-2pugbEPn019BC',
+        value,
+        currency,
+        transaction_id: orderId,
+      });
+      console.log('[Tracking] Google Ads conversion fired:', orderId);
+      return true;
+    }
+    return false;
+  };
+
+  // Fire immediately if gtag is ready
+  if (!fireGoogleAdsConversion()) {
+    // Retry after gtag loads (fallback for slow script load)
+    setTimeout(() => {
+      if (!fireGoogleAdsConversion()) {
+        console.warn('[Tracking] gtag not available for conversion:', orderId);
+      }
+    }, 1000);
   }
 
   // Meta/Facebook Pixel
