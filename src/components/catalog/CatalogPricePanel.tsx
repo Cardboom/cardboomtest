@@ -155,7 +155,7 @@ export const CatalogPricePanel = ({
           {isFetching ? (
             <div className="flex items-center justify-center gap-3 py-4">
               <Loader2 className="w-5 h-5 animate-spin text-primary" />
-              <span className="text-muted-foreground">Fetching live prices...</span>
+              <span className="text-muted-foreground">Loading market data...</span>
             </div>
           ) : (
             <div className="text-center space-y-3">
@@ -167,10 +167,10 @@ export const CatalogPricePanel = ({
                 className="gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
-                Fetch Live Price
+                Fetch Market Price
               </Button>
               <p className="text-xs text-muted-foreground">
-                Fetches current price from TCGPlayer
+                Fetches current market prices
               </p>
             </div>
           )}
