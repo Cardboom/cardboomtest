@@ -144,7 +144,9 @@ serve(async (req) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const frontendUrl = supabaseUrl.replace('.supabase.co', '.lovableproject.com').replace('https://kgffwhyfgkqeevsuhldt', 'https://b56128be-ee17-48af-baa7-915f88c0900b');
+  
+  // Use the published app URL for redirects
+  const frontendUrl = 'https://cardboomtest.lovable.app';
 
   try {
     // Parse form data from iyzico callback
