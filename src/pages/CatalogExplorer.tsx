@@ -34,13 +34,22 @@ const CatalogExplorer = () => {
     }
   }, [gameParam]);
 
-  // Fetch featured/trending catalog cards
+  // Fetch featured/trending catalog cards with latest price snapshots
   const { data: featuredCards, isLoading } = useQuery({
     queryKey: ['catalog-featured', selectedGame],
     queryFn: async () => {
       let query = supabase
         .from('catalog_cards')
-        .select('id, name, game, canonical_key, set_name, image_url, rarity')
+        .select(`
+          id, name, game, canonical_key, set_name, set_code, card_number, image_url, rarity,
+          card_price_snapshots (
+            median_usd,
+            low_usd,
+            confidence,
+            snapshot_date,
+            sources
+          )
+        `)
         .order('created_at', { ascending: false })
         .limit(24);
 
@@ -50,7 +59,13 @@ const CatalogExplorer = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data || [];
+      
+      // Sort snapshots by date and get latest for each card
+      return (data || []).map(card => ({
+        ...card,
+        latestPrice: card.card_price_snapshots
+          ?.sort((a: any, b: any) => new Date(b.snapshot_date).getTime() - new Date(a.snapshot_date).getTime())[0] || null
+      }));
     },
   });
 
@@ -124,7 +139,11 @@ const CatalogExplorer = () => {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
               {featuredCards?.map((card: any) => {
-                const latestPrice = card.card_price_snapshots?.[0];
+                const latestPrice = card.latestPrice;
+                const cardCode = card.set_code && card.card_number 
+                  ? `${card.set_code.toUpperCase()}-${card.card_number.padStart(3, '0')}`
+                  : null;
+                const hasTcgplayerSource = latestPrice?.sources?.tcgplayer;
                 
                 return (
                   <Card
@@ -139,12 +158,22 @@ const CatalogExplorer = () => {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />
+                      {/* Game badge top left */}
                       <Badge
                         className="absolute top-2 left-2 text-xs"
                         variant="secondary"
                       >
                         {card.game.toUpperCase()}
                       </Badge>
+                      {/* Card code badge top right */}
+                      {cardCode && (
+                        <Badge
+                          className="absolute top-2 right-2 text-[10px] font-mono bg-black/60 text-white border-0"
+                          variant="outline"
+                        >
+                          {cardCode}
+                        </Badge>
+                      )}
                       {/* Hover overlay with arrow */}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1">
@@ -156,16 +185,30 @@ const CatalogExplorer = () => {
                       <p className="font-medium text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors">
                         {card.name}
                       </p>
-                      <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
-                        {card.set_name}
-                      </p>
-                      {latestPrice?.median_usd ? (
-                        <p className="font-display font-bold text-primary">
-                          {formatPrice(latestPrice.median_usd)}
+                      <div className="flex items-center gap-1 mb-2">
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {card.set_name}
                         </p>
+                        {card.rarity && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
+                            {card.rarity}
+                          </Badge>
+                        )}
+                      </div>
+                      {latestPrice?.median_usd ? (
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="font-display font-bold text-primary">
+                            {formatPrice(latestPrice.median_usd)}
+                          </p>
+                          {hasTcgplayerSource && (
+                            <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 bg-green-500/10 text-green-600 border-green-500/30">
+                              TCG
+                            </Badge>
+                          )}
+                        </div>
                       ) : (
-                        <p className="text-xs text-muted-foreground">
-                          No market data yet
+                        <p className="text-xs text-muted-foreground italic">
+                          Price pending...
                         </p>
                       )}
                     </CardContent>
