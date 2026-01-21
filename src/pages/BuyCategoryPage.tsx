@@ -24,20 +24,30 @@ import {
 import { ScrollReveal } from '@/components/ScrollReveal';
 
 // Map URL slugs to database category values
+// Handles both /buy/pokemon and /buy/pokemon-cards patterns
 const CATEGORY_URL_TO_DB: Record<string, string> = {
   'pokemon': 'pokemon',
+  'pokemon-cards': 'pokemon',
   'one-piece': 'onepiece',
   'onepiece': 'onepiece',
+  'onepiece-cards': 'onepiece',
   'mtg': 'mtg',
+  'mtg-cards': 'mtg',
   'magic': 'mtg',
   'yugioh': 'yugioh',
+  'yugioh-cards': 'yugioh',
   'yu-gi-oh': 'yugioh',
   'lorcana': 'lorcana',
+  'lorcana-cards': 'lorcana',
   'nba': 'nba',
+  'nba-cards': 'nba',
   'nfl': 'nfl',
+  'nfl-cards': 'nfl',
   'mlb': 'mlb',
+  'mlb-cards': 'mlb',
   'baseball': 'mlb',
   'football': 'nfl',
+  'football-cards': 'nfl',
   'basketball': 'nba',
   'lol-riftbound': 'lol-riftbound',
   'riftbound': 'lol-riftbound',
@@ -50,10 +60,10 @@ const BuyCategoryPage = () => {
   const [searchParams] = useSearchParams();
   const [cartOpen, setCartOpen] = useState(false);
 
-  // Extract category from URL pattern like "pokemon-cards" and map to DB value
-  const urlCategory = category?.replace(/-cards$/, '') || 'pokemon';
-  const dbCategory = CATEGORY_URL_TO_DB[urlCategory] || urlCategory;
-  const categoryData = CATEGORY_SEO_DATA[urlCategory] || CATEGORY_SEO_DATA[dbCategory];
+  // Map URL directly to DB category - supports both /buy/pokemon and /buy/pokemon-cards
+  const urlCategory = category || 'pokemon';
+  const dbCategory = CATEGORY_URL_TO_DB[urlCategory] || CATEGORY_URL_TO_DB[urlCategory.replace(/-cards$/, '')] || urlCategory;
+  const categoryData = CATEGORY_SEO_DATA[dbCategory] || CATEGORY_SEO_DATA[urlCategory.replace(/-cards$/, '')];
 
   // Fetch category item count
   const { data: itemCount } = useQuery({

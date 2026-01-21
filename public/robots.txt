@@ -89,6 +89,14 @@ User-agent: *
 Allow: /
 Allow: /ai/
 Allow: /ai/*
+Allow: /buy/
+Allow: /buy/*
+Allow: /deals/
+Allow: /deals/*
+Allow: /catalog/
+Allow: /catalog/*
+Allow: /grading
+Allow: /grading/
 Disallow: /auth
 Disallow: /wallet
 Disallow: /vault
@@ -99,6 +107,9 @@ Disallow: /trades
 Disallow: /portfolio
 Disallow: /admin
 Disallow: /order-success
+Disallow: /buy-orders
+Disallow: /grading/new
+Disallow: /grading/orders
 
 # Host
 Host: https://www.cardboom.com
