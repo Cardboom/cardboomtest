@@ -33,6 +33,11 @@ const otpSchema = z.string().length(6, 'OTP must be 6 digits');
 
 type LoginMethod = 'email' | 'phone' | 'magic-link';
 
+const AUTH_VIDEOS = [
+  '/videos/boom-packs-hero.mp4',
+  '/videos/hero-video.mp4',
+];
+
 const Auth = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
@@ -58,18 +63,19 @@ const Auth = () => {
   const [resetMethod, setResetMethod] = useState<'email' | 'phone'>('email');
   const [resetEmail, setResetEmail] = useState('');
   const [resetPhone, setResetPhone] = useState('');
-  const [resetCountryCode, setResetCountryCode] = useState('+90');
+  const [resetCountryCode, setResetCountryCode] = useState('+1');
   const [resetOtp, setResetOtp] = useState('');
   const [resetOtpSent, setResetOtpSent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [resetVerified, setResetVerified] = useState(false);
-  const [loginCountryCode, setLoginCountryCode] = useState('+90');
+  const [loginCountryCode, setLoginCountryCode] = useState('+1');
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [magicLinkEmail, setMagicLinkEmail] = useState('');
   const [show2FA, setShow2FA] = useState(false);
   const [pending2FAUser, setPending2FAUser] = useState<{ id: string; phone: string } | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingUser, setOnboardingUser] = useState<{ id: string; email: string; displayName?: string } | null>(null);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [errors, setErrors] = useState<{ 
     email?: string; 
     password?: string; 
@@ -86,6 +92,14 @@ const Auth = () => {
     newPassword?: string;
     magicLinkEmail?: string;
   }>({});
+
+  // Rotate videos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentVideoIndex((prev) => (prev + 1) % AUTH_VIDEOS.length);
+    }, 15000); // Change video every 15 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   // Load saved email on mount
   useEffect(() => {
@@ -503,17 +517,22 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Video Background */}
+      {/* Video Background - Rotating */}
       <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover opacity-30 pointer-events-none"
-        >
-          <source src="/videos/boom-packs-hero.mp4" type="video/mp4" />
-        </video>
+        {AUTH_VIDEOS.map((video, index) => (
+          <video
+            key={video}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-1000 ${
+              index === currentVideoIndex ? 'opacity-30' : 'opacity-0'
+            }`}
+          >
+            <source src={video} type="video/mp4" />
+          </video>
+        ))}
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background/90" />
       </div>
 
@@ -1094,14 +1113,18 @@ const Auth = () => {
 
                 {/* Register Tab */}
                 <TabsContent value="register">
-                  <div className="space-y-4">
-                    {/* Google Sign Up */}
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-5"
+                  >
+                    {/* Google Sign Up - Premium styling */}
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handleGoogleSignIn}
                       disabled={loading}
-                      className="w-full h-12 border-border/50 hover:bg-secondary/50 rounded-xl flex items-center justify-center gap-3"
+                      className="w-full h-14 border-border/50 hover:bg-secondary/50 rounded-2xl flex items-center justify-center gap-3 transition-all hover:scale-[1.02] hover:shadow-lg"
                     >
                       <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -1109,184 +1132,177 @@ const Auth = () => {
                         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                       </svg>
-                      {t.auth.continueWithGoogle}
+                      <span className="font-medium">{t.auth.continueWithGoogle}</span>
                     </Button>
 
-                    <div className="relative">
+                    {/* Divider */}
+                    <div className="relative py-2">
                       <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border/50" />
+                        <div className="w-full border-t border-border/30" />
                       </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">{t.auth.orContinueWith}</span>
+                      <div className="relative flex justify-center">
+                        <span className="bg-card px-4 text-xs text-muted-foreground uppercase tracking-wider">or create with email</span>
                       </div>
                     </div>
 
-                  <form onSubmit={handleSignUp} className="space-y-5">
-                    {/* Welcome Message */}
-                    <div className="text-center space-y-1">
-                      <h3 className="text-lg font-semibold text-foreground">Create Your Account</h3>
-                      <p className="text-sm text-muted-foreground">Your portfolio deserves a market.</p>
-                    </div>
-
-                    {/* Early Access Badge */}
-                    <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-3">
-                      <div className="flex items-center justify-center gap-4 text-xs">
-                        <span className="flex items-center gap-1.5 text-foreground/80">
-                          <span className="text-primary">✓</span> 500 XP Bonus
+                    {/* Form */}
+                    <form onSubmit={handleSignUp} className="space-y-4">
+                      {/* Early Access Benefits - Compact */}
+                      <div className="flex items-center justify-center gap-6 py-2 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                          <Sparkles className="w-3 h-3 text-primary" /> 500 XP Bonus
                         </span>
-                        <span className="flex items-center gap-1.5 text-foreground/80">
-                          <span className="text-primary">✓</span> Beta Badge
+                        <span className="flex items-center gap-1.5">
+                          <Star className="w-3 h-3 text-accent" /> Beta Badge
                         </span>
-                        <span className="flex items-center gap-1.5 text-foreground/80">
-                          <span className="text-primary">✓</span> Reduced Fees
+                        <span className="flex items-center gap-1.5">
+                          <TrendingUp className="w-3 h-3 text-primary" /> Reduced Fees
                         </span>
                       </div>
-                    </div>
 
-                    {/* Email Field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email" className="text-foreground font-medium">{t.auth.email}</Label>
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                        required
-                      />
-                      {errors.email && <p className="text-destructive text-xs">{errors.email}</p>}
-                    </div>
-
-                    {/* Password Field */}
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password" className="text-foreground font-medium">{t.auth.password}</Label>
-                      <Input
-                        id="register-password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                        required
-                      />
-                      {errors.password && <p className="text-destructive text-xs">{errors.password}</p>}
-                    </div>
-
-                    {/* Phone and National ID in a row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="register-phone" className="text-foreground font-medium flex items-center gap-2">
-                          <Phone className="w-3.5 h-3.5" />
-                          {t.auth.phone}
-                        </Label>
-                        <PhoneInputWithCountry
-                          value={phone}
-                          onChange={(fullNumber) => setPhone(fullNumber)}
-                          placeholder="Phone number"
-                          error={errors.phone}
-                        />
+                      {/* Email & Password in seamless group */}
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="register-email"
+                            type="email"
+                            placeholder="Email address"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="h-12 pl-11 bg-secondary/30 border-border/30 focus:border-primary/50 rounded-xl transition-all"
+                            required
+                          />
+                        </div>
+                        {errors.email && <p className="text-destructive text-xs px-1">{errors.email}</p>}
+                        
+                        <div className="relative">
+                          <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            id="register-password"
+                            type="password"
+                            placeholder="Password (min 6 characters)"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="h-12 pl-11 bg-secondary/30 border-border/30 focus:border-primary/50 rounded-xl transition-all"
+                            required
+                          />
+                        </div>
+                        {errors.password && <p className="text-destructive text-xs px-1">{errors.password}</p>}
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="register-national-id" className="text-foreground font-medium flex items-center gap-2">
-                          <CreditCard className="w-3.5 h-3.5" />
-                          {t.auth.nationalId}
-                        </Label>
+
+                      {/* Phone & National ID */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground font-medium">{t.auth.phone}</Label>
+                          <PhoneInputWithCountry
+                            value={phone}
+                            onChange={(fullNumber) => setPhone(fullNumber)}
+                            placeholder="Phone number"
+                            error={errors.phone}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-muted-foreground font-medium">{t.auth.nationalId}</Label>
+                          <Input
+                            id="register-national-id"
+                            type="text"
+                            placeholder={t.auth.nationalIdPlaceholder}
+                            value={nationalId}
+                            onChange={(e) => setNationalId(e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 20))}
+                            className="h-12 bg-secondary/30 border-border/30 focus:border-primary/50 rounded-xl"
+                            maxLength={20}
+                            required
+                          />
+                          {errors.nationalId && <p className="text-destructive text-xs">{errors.nationalId}</p>}
+                        </div>
+                      </div>
+
+                      {/* Referral Code - Compact */}
+                      <div className="relative">
+                        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-accent/60" />
                         <Input
-                          id="register-national-id"
+                          id="register-referral"
                           type="text"
-                          placeholder={t.auth.nationalIdPlaceholder}
-                          value={nationalId}
-                          onChange={(e) => setNationalId(e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 20))}
-                          className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                          maxLength={20}
-                          required
+                          placeholder="Referral code (optional)"
+                          value={referralCode}
+                          onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
+                          className="h-12 pl-11 bg-secondary/30 border-border/30 focus:border-primary/50 rounded-xl"
+                          maxLength={12}
                         />
-                        {errors.nationalId && <p className="text-destructive text-xs">{errors.nationalId}</p>}
                       </div>
-                    </div>
 
-                    {/* Referral Code - Collapsible style */}
-                    <div className="space-y-2">
-                      <Label htmlFor="register-referral" className="text-foreground font-medium flex items-center gap-2">
-                        <Sparkles className="w-3.5 h-3.5 text-accent" />
-                        Referral Code <span className="text-muted-foreground font-normal">(optional)</span>
-                      </Label>
-                      <Input
-                        id="register-referral"
-                        type="text"
-                        placeholder="Enter code for bonus rewards"
-                        value={referralCode}
-                        onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
-                        className="h-12 bg-secondary/50 border-border/50 focus:border-primary/50 rounded-xl"
-                        maxLength={12}
-                      />
-                    </div>
+                      {/* Agreements Section - Compact & Seamless */}
+                      <div className="space-y-2 pt-2">
+                        <p className="text-xs text-muted-foreground font-medium px-1">Agreements</p>
+                        
+                        {/* All Terms Combined */}
+                        <label className="flex items-start gap-3 p-3 rounded-xl bg-secondary/20 border border-border/20 cursor-pointer hover:bg-secondary/30 transition-colors">
+                          <Checkbox
+                            checked={acceptedTerms}
+                            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                            className="mt-0.5 shrink-0"
+                          />
+                          <span className="text-xs text-muted-foreground leading-relaxed">
+                            I agree to the{' '}
+                            <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Terms</a>,{' '}
+                            <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Privacy</a>,{' '}
+                            <a href="/kvkk" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">KVKK</a> &{' '}
+                            <a href="/mesafeli-satis-sozlesmesi" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Distance Sales</a>
+                          </span>
+                        </label>
+                        {errors.terms && <p className="text-destructive text-xs px-1">{t.auth.termsError}</p>}
+                        
+                        {/* Fees */}
+                        <label className="flex items-start gap-3 p-3 rounded-xl bg-secondary/20 border border-border/20 cursor-pointer hover:bg-secondary/30 transition-colors">
+                          <Checkbox
+                            checked={acceptedFees}
+                            onCheckedChange={(checked) => setAcceptedFees(checked === true)}
+                            className="mt-0.5 shrink-0"
+                          />
+                          <span className="text-xs text-muted-foreground leading-relaxed">
+                            I accept{' '}
+                            <a href="/pricing" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">platform fees</a>:{' '}
+                            <span className="text-foreground/80">Card 6.5%, Wire 3%, Seller 5%</span>
+                          </span>
+                        </label>
+                        {errors.fees && <p className="text-destructive text-xs px-1">{t.auth.feesError}</p>}
+                        
+                        {/* Consignment */}
+                        <label className="flex items-start gap-3 p-3 rounded-xl bg-primary/5 border border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors">
+                          <Checkbox
+                            checked={acceptedConsignment}
+                            onCheckedChange={(checked) => setAcceptedConsignment(checked === true)}
+                            className="mt-0.5 shrink-0"
+                          />
+                          <span className="text-xs text-muted-foreground leading-relaxed">
+                            <span className="text-foreground font-medium">{t.auth.consignmentAgreement}</span>{' '}
+                            <a href="/consignment-agreement" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">({t.auth.consignmentLink})</a>
+                          </span>
+                        </label>
+                        {errors.consignment && <p className="text-destructive text-xs px-1">{t.auth.consignmentError}</p>}
+                      </div>
 
-                    {/* Terms Checkbox */}
-                    <div className="space-y-2 bg-secondary/30 rounded-lg p-3 border border-border/30">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={acceptedTerms}
-                          onChange={(e) => setAcceptedTerms(e.target.checked)}
-                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50 shrink-0"
-                        />
-                        <span className="text-sm text-muted-foreground leading-relaxed">
-                          I have read and agree to the{' '}
-                          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Terms of Service</a>,{' '}
-                          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Privacy Policy</a>,{' '}
-                          <a href="/kvkk" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">KVKK Privacy Notice</a>, and{' '}
-                          <a href="/mesafeli-satis-sozlesmesi" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Distance Sales Contract</a>
-                        </span>
-                      </label>
-                      {errors.terms && <p className="text-destructive text-xs ml-8">{t.auth.termsError}</p>}
-                    </div>
-
-                    {/* Fees & Commissions Checkbox */}
-                    <div className="space-y-2 bg-secondary/30 rounded-lg p-3 border border-border/30">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={acceptedFees}
-                          onChange={(e) => setAcceptedFees(e.target.checked)}
-                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50 shrink-0"
-                        />
-                        <span className="text-sm text-muted-foreground leading-relaxed">
-                          I acknowledge and accept the{' '}
-                          <a href="/pricing" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">Platform Fees & Commissions</a>:{' '}
-                          <span className="text-foreground">Credit Card (6.5% + $0.50), Wire Transfer (3% + $0.50), Seller Fee (5%)</span>
-                        </span>
-                      </label>
-                      {errors.fees && <p className="text-destructive text-xs ml-8">{t.auth.feesError}</p>}
-                    </div>
-
-                    {/* Consignment & Agency Agreement Checkbox */}
-                    <div className="space-y-2 bg-primary/5 rounded-lg p-3 border border-primary/20">
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={acceptedConsignment}
-                          onChange={(e) => setAcceptedConsignment(e.target.checked)}
-                          className="w-5 h-5 mt-0.5 rounded border-border/50 bg-secondary/50 text-primary focus:ring-primary/50 shrink-0"
-                        />
-                        <span className="text-sm text-muted-foreground leading-relaxed">
-                          <span className="text-foreground font-medium">{t.auth.consignmentAgreement}</span>{' '}
-                          <a href="/consignment-agreement" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">({t.auth.consignmentLink})</a>
-                        </span>
-                      </label>
-                      {errors.consignment && <p className="text-destructive text-xs ml-8">{t.auth.consignmentError}</p>}
-                    </div>
-
-                    <Button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-lg rounded-xl shadow-lg hover:shadow-glow transition-all"
-                    >
-                      {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Account...</> : 'Create Account'}
-                    </Button>
-                  </form>
-                  </div>
+                      {/* Submit Button */}
+                      <Button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 font-semibold text-base rounded-2xl shadow-lg hover:shadow-glow transition-all hover:scale-[1.02]"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Creating Account...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Create Account
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </motion.div>
                 </TabsContent>
               </Tabs>
             </div>
