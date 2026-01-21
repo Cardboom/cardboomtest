@@ -437,6 +437,8 @@ serve(async (req) => {
     // Speed tier determines grading visibility timing (NOT subscription tier)
     // Priority: 4 hours, Express: 24 hours, Standard: 72 hours
     // SPECIAL: First free grading = 5 minutes (instant)
+    // ONLINE GRADING: All online gradings get instant 3-minute countdown
+    // Physical grading (with protection bundle) uses traditional speed tier hours
     const SPEED_TIER_HOURS: Record<string, number> = {
       priority: 4,
       express: 24,
@@ -444,18 +446,26 @@ serve(async (req) => {
     };
     
     const speedTier = existingOrder.speed_tier || 'standard';
-    let countdownHours = SPEED_TIER_HOURS[speedTier] || 72;
     
-    // First free grading gets 5-minute countdown (0.083 hours)
-    if (isFirstFreeGrading) {
-      countdownHours = 5 / 60; // 5 minutes in hours
-      console.log('First free grading detected - setting 5-minute instant countdown');
+    // Check if this is online grading (no protection bundle) - all online = instant 3 min
+    const isOnlineGrading = !existingOrder.include_protection;
+    
+    let countdownHours: number;
+    if (isOnlineGrading || isFirstFreeGrading) {
+      // All online gradings get 3-minute instant countdown
+      countdownHours = 3 / 60; // 3 minutes in hours
+      console.log('Online grading detected - setting 3-minute instant countdown');
+    } else {
+      // Physical grading uses speed tier hours
+      countdownHours = SPEED_TIER_HOURS[speedTier] || 72;
     }
     
     const estimatedCompletionAt = new Date(Date.now() + countdownHours * 60 * 60 * 1000).toISOString();
     
-    // For admins or first free grading, results are visible immediately/very quickly
-    const resultsVisibleAt = (isAdmin || isFirstFreeGrading) ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : estimatedCompletionAt;
+    // For admins, first free, or online grading, results are visible after 3 minutes
+    const resultsVisibleAt = (isAdmin || isFirstFreeGrading || isOnlineGrading) 
+      ? new Date(Date.now() + 3 * 60 * 1000).toISOString() 
+      : estimatedCompletionAt;
 
     // Update order to paid with estimated completion time and visibility time
     const { error: updateError } = await supabase

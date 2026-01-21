@@ -123,10 +123,43 @@ export default function Grading() {
     { icon: Award, label: 'Label Certification', description: 'Holographic security label with unique QR code' },
   ];
 
-  const pricingTiers = [
-    { name: 'Standard', price: gradingPricing.standard.price, days: `${gradingPricing.standard.daysMin}-${gradingPricing.standard.daysMax}`, description: 'Best value for non-urgent grading', popular: false },
-    { name: 'Express', price: gradingPricing.express.price, days: `${gradingPricing.express.daysMin}-${gradingPricing.express.daysMax}`, description: 'Faster turnaround when time matters', popular: true },
-    { name: 'Priority', price: gradingPricing.priority.price, days: `${gradingPricing.priority.daysMin}-${gradingPricing.priority.daysMax}`, description: 'Rush service for urgent submissions', popular: false },
+  // Check if launch discount is active
+  const isLaunchActive = gradingPricing.launchDiscount > 0;
+  const discountPercent = Math.round(gradingPricing.launchDiscount * 100);
+
+  // Online grading pricing (with 50% launch discount applied)
+  const onlinePricingTiers = [
+    { 
+      name: 'Standard', 
+      originalPrice: gradingPricing.standard.price, 
+      price: isLaunchActive ? Math.round(gradingPricing.standard.price * (1 - gradingPricing.launchDiscount) * 100) / 100 : gradingPricing.standard.price,
+      days: '~3 mins', 
+      description: 'Instant AI-powered digital grading', 
+      popular: false 
+    },
+    { 
+      name: 'Express', 
+      originalPrice: gradingPricing.express.price, 
+      price: isLaunchActive ? Math.round(gradingPricing.express.price * (1 - gradingPricing.launchDiscount) * 100) / 100 : gradingPricing.express.price,
+      days: '~3 mins', 
+      description: 'Priority queue processing', 
+      popular: true 
+    },
+    { 
+      name: 'Priority', 
+      originalPrice: gradingPricing.priority.price, 
+      price: isLaunchActive ? Math.round(gradingPricing.priority.price * (1 - gradingPricing.launchDiscount) * 100) / 100 : gradingPricing.priority.price,
+      days: '~3 mins', 
+      description: 'Highest priority processing', 
+      popular: false 
+    },
+  ];
+
+  // Physical grading pricing (CBGI certification with slab)
+  const physicalPricingTiers = [
+    { name: 'Standard', price: 33, days: '20-25', description: 'Best value for non-urgent grading', popular: false },
+    { name: 'Express', price: 48, days: '7-10', description: 'Faster turnaround when time matters', popular: true },
+    { name: 'Priority', price: 88, days: '2-3', description: 'Rush service for urgent submissions', popular: false },
   ];
 
   const addOns = [
@@ -933,47 +966,150 @@ export default function Grading() {
             >
               <h2 className="text-3xl md:text-4xl font-black mb-4">Pricing & Turnaround Times</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Choose the speed that fits your needs. Batch discounts available for 3+ cards.
+                Choose between instant online grading or physical certification with slabs.
               </p>
             </motion.div>
-            
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-8">
-              {pricingTiers.map((tier, i) => (
-                <motion.div
-                  key={tier.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  className={`relative p-8 rounded-none border ${
-                    tier.popular 
-                      ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' 
-                      : 'border-border bg-card'
-                  }`}
-                >
-                  {tier.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-none">
-                      Most Popular
-                    </div>
-                  )}
-                  <div className="text-center mb-6">
-                    <h3 className="text-xl font-bold mb-1">{tier.name}</h3>
-                    <div className="text-4xl font-black text-primary mb-1">
-                      ${tier.price}<span className="text-base font-normal text-muted-foreground">/card</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{tier.days} business days</p>
+
+            {/* Online Grading Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-4xl mx-auto mb-12"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-none bg-emerald-500/10">
+                    <Zap className="w-5 h-5 text-emerald-500" />
                   </div>
-                  <p className="text-sm text-muted-foreground text-center mb-4">{tier.description}</p>
-                  <Button 
-                    className={`w-full rounded-none ${tier.popular ? '' : 'variant-outline'}`}
-                    variant={tier.popular ? 'default' : 'outline'}
-                    onClick={handleStartGrading}
+                  <div>
+                    <h3 className="text-xl font-bold">Online AI Grading</h3>
+                    <p className="text-sm text-muted-foreground">Instant digital grade in ~3 minutes</p>
+                  </div>
+                </div>
+                {isLaunchActive && (
+                  <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white animate-pulse">
+                    🎉 {discountPercent}% Launch Discount
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-6 mb-4">
+                {onlinePricingTiers.map((tier, i) => (
+                  <motion.div
+                    key={`online-${tier.name}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                    className={`relative p-6 rounded-none border ${
+                      tier.popular 
+                        ? 'border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/10' 
+                        : 'border-border bg-card'
+                    }`}
                   >
-                    Select {tier.name}
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
+                    {tier.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-none">
+                        Most Popular
+                      </div>
+                    )}
+                    <div className="text-center mb-4">
+                      <h4 className="text-lg font-bold mb-1">{tier.name}</h4>
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        {isLaunchActive && tier.originalPrice !== tier.price && (
+                          <span className="text-lg text-muted-foreground line-through">${tier.originalPrice}</span>
+                        )}
+                        <span className="text-3xl font-black text-emerald-500">
+                          ${tier.price}<span className="text-sm font-normal text-muted-foreground">/card</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center gap-1 text-sm text-emerald-600 dark:text-emerald-400">
+                        <Zap className="w-3 h-3" />
+                        <span>{tier.days}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground text-center mb-4">{tier.description}</p>
+                    <Button 
+                      className={`w-full rounded-none ${tier.popular ? 'bg-emerald-500 hover:bg-emerald-600' : ''}`}
+                      variant={tier.popular ? 'default' : 'outline'}
+                      onClick={handleStartGrading}
+                    >
+                      Start Grading
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
+              
+              <div className="p-3 rounded-none bg-emerald-500/10 border border-emerald-500/20 text-center">
+                <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                  <Sparkles className="w-4 h-4 inline mr-1" />
+                  No physical shipping required • Digital CBGI certificate included • Results in ~3 minutes
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Physical Grading Panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-4xl mx-auto mb-8"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-none bg-primary/10">
+                  <Award className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Physical CBGI Certification</h3>
+                  <p className="text-sm text-muted-foreground">Professional slab with holographic label</p>
+                </div>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-6">
+                {physicalPricingTiers.map((tier, i) => (
+                  <motion.div
+                    key={`physical-${tier.name}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: i * 0.1 }}
+                    className={`relative p-6 rounded-none border ${
+                      tier.popular 
+                        ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10' 
+                        : 'border-border bg-card'
+                    }`}
+                  >
+                    {tier.popular && (
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-none">
+                        Most Popular
+                      </div>
+                    )}
+                    <div className="text-center mb-4">
+                      <h4 className="text-lg font-bold mb-1">{tier.name}</h4>
+                      <div className="text-3xl font-black text-primary mb-1">
+                        ${tier.price}<span className="text-sm font-normal text-muted-foreground">/card</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{tier.days} business days</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground text-center mb-4">{tier.description}</p>
+                    <Button 
+                      className={`w-full rounded-none`}
+                      variant={tier.popular ? 'default' : 'outline'}
+                      onClick={handleStartGrading}
+                    >
+                      Select {tier.name}
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 rounded-none bg-muted/50 border border-border text-center">
+                <p className="text-sm text-muted-foreground">
+                  <Shield className="w-4 h-4 inline mr-1" />
+                  Includes: Ultrasonic-welded slab + Holographic label + Tamper-proof case + QR verification
+                </p>
+              </div>
+            </motion.div>
 
             {/* Add-ons */}
             <motion.div

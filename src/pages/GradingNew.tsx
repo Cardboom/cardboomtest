@@ -289,7 +289,7 @@ export default function GradingNew() {
         savings: fullBaseGradingCost + fullSpeedUpgradeCost + protectionCost,
         speedPrice: selectedSpeed.price,
         protectionPrice: protectionCost,
-        daysMin: 0, // Instant 5-minute results for first free grading
+        daysMin: 0, // Instant 3-minute results for first free grading
         daysMax: 0,
         // Credit-specific fields
         creditsApplied: 1,
@@ -332,8 +332,10 @@ export default function GradingNew() {
       savings: creditDiscount + launchDiscountAmount,
       speedPrice: baseGradingCost + speedUpgradeCost,
       protectionPrice: protectionCost,
-      daysMin: selectedSpeed.daysMin,
-      daysMax: selectedSpeed.daysMax,
+      // Online grading = instant 3 min, Physical = speed tier days
+      daysMin: includeProtection ? selectedSpeed.daysMin : 0,
+      daysMax: includeProtection ? selectedSpeed.daysMax : 0,
+      isOnlineGrading: !includeProtection,
       // Credit-specific fields
       creditsApplied: creditsToApply,
       creditDiscount,

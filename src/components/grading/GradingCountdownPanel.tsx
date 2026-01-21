@@ -26,13 +26,15 @@ interface SubscriptionInfo {
   tier: 'free' | 'pro' | 'enterprise';
 }
 
-// Countdown durations based on SPEED TIER selected during grading (in hours)
-// Speed tier is what determines the wait time, NOT subscription tier
+// Countdown durations based on grading type
+// Online grading (no protection): Instant 3 minutes
+// Physical grading (with protection): Uses speed tier hours
 const SPEED_TIER_HOURS = {
-  standard: 72, // 3 days
-  express: 24,  // 1 day  
-  priority: 4,  // 4 hours
+  standard: 72, // 3 days (physical only)
+  express: 24,  // 1 day (physical only)
+  priority: 4,  // 4 hours (physical only)
 };
+const ONLINE_GRADING_MINUTES = 3; // All online gradings = 3 minutes
 
 export function GradingCountdownPanel({ gradingOrderId, onComplete }: GradingCountdownPanelProps) {
   const [orderInfo, setOrderInfo] = useState<GradingOrderInfo | null>(null);
