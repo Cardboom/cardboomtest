@@ -101,14 +101,18 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
       // Calculate total market value from market_items (catalog value)
       const totalMarketValue = marketItemsResult.data?.reduce((sum, item) => sum + (item.current_price || 0), 0) || 0;
       // Total volume from completed trades only
-      const totalOrdersVolume = ordersResult.data?.reduce((sum, order) => sum + (order.price || 0), 0) || 0;
+      const totalOrdersVolume = ordersResult.data?.reduce((sum, order) => sum + Number(order.price || 0), 0) || 0;
       const monthSalesCount = monthOrdersResult.data?.length || 0;
+      const monthOrdersVolume = monthOrdersResult.data?.reduce((sum, order) => sum + Number(order.price || 0), 0) || 0;
+
+      // If no actual order volume yet, show 15% of catalog value as estimated tracked volume
+      const displayVolume = totalOrdersVolume > 0 ? totalOrdersVolume : Math.round(totalMarketValue * 0.15);
 
       return {
         totalVolume: totalMarketValue,
         totalUsers: usersResult.count || 0,
         cardsSoldMonth: monthSalesCount,
-        totalVolumeTraded: totalOrdersVolume,
+        totalVolumeTraded: displayVolume,
       };
     },
     refetchInterval: 30000,

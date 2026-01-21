@@ -10,15 +10,28 @@ export interface GradingCredits {
   first_deposit_credit_claimed: boolean;
   first_subscribe_credit_claimed: boolean;
   signup_credit_claimed: boolean;
+  lite_credit_claimed?: boolean;
+  monthly_credits_tier?: string | null;
 }
 
-// Check if this is the user's first free signup grading (completely free, no extras)
+// Monthly credits per subscription tier (pre-grading only)
+export const MONTHLY_GRADING_CREDITS = {
+  lite: 1,
+  pro: 2,
+  enterprise: 3,
+} as const;
+
+// Helper to determine if this is the user's first free signup grading
 export const isFirstFreeSignupGrading = (credits: GradingCredits | null): boolean => {
   if (!credits) return false;
-  // First free grading: signup credit claimed AND credits remaining > 0 AND this is their first use
-  // The signup_credit_claimed flag indicates verification was completed
-  // credits_remaining > 0 means they haven't used it yet
+  // First free = signup credit was claimed AND they still have credits from it
   return credits.signup_credit_claimed && credits.credits_remaining > 0;
+};
+
+// Helper to check if user has any free grading credits available
+export const hasAvailableGradingCredits = (credits: GradingCredits | null): boolean => {
+  if (!credits) return false;
+  return credits.credits_remaining > 0;
 };
 
 export const useGradingCredits = (userId?: string) => {
@@ -99,8 +112,16 @@ export const useGradingCredits = (userId?: string) => {
     }
   };
 
-  const grantFirstSubscribeCredit = async () => {
-    if (!userId || credits?.first_subscribe_credit_claimed) return false;
+  // Grant credits when subscribing to a tier
+  // Lite: +1 credit, Pro: +2 credits, Enterprise: +3 credits
+  const grantSubscriptionCredits = async (tier: 'lite' | 'pro' | 'enterprise') => {
+    if (!userId) return false;
+
+    // Check if this tier's credits have already been claimed
+    const creditField = tier === 'lite' ? 'lite_credit_claimed' : 'first_subscribe_credit_claimed';
+    if (credits && (credits as any)[creditField]) return false;
+
+    const creditsToGrant = MONTHLY_GRADING_CREDITS[tier];
 
     try {
       if (!credits) {
@@ -108,8 +129,8 @@ export const useGradingCredits = (userId?: string) => {
           .from('grading_credits')
           .insert({
             user_id: userId,
-            credits_remaining: 1,
-            first_subscribe_credit_claimed: true,
+            credits_remaining: creditsToGrant,
+            [creditField]: true,
           });
 
         if (error) throw error;
@@ -117,8 +138,8 @@ export const useGradingCredits = (userId?: string) => {
         const { error } = await supabase
           .from('grading_credits')
           .update({
-            credits_remaining: credits.credits_remaining + 1,
-            first_subscribe_credit_claimed: true,
+            credits_remaining: credits.credits_remaining + creditsToGrant,
+            [creditField]: true,
           })
           .eq('user_id', userId);
 
@@ -127,17 +148,22 @@ export const useGradingCredits = (userId?: string) => {
 
       await supabase.from('grading_credit_history').insert({
         user_id: userId,
-        credits_change: 1,
-        reason: 'First subscription bonus - 1 free grading',
+        credits_change: creditsToGrant,
+        reason: `${tier.charAt(0).toUpperCase() + tier.slice(1)} subscription bonus - ${creditsToGrant} free grading${creditsToGrant > 1 ? 's' : ''}`,
       });
 
-      toast.success('🎉 You received 1 free grading credit for subscribing!');
+      toast.success(`🎉 You received ${creditsToGrant} free grading credit${creditsToGrant > 1 ? 's' : ''} for subscribing to ${tier.charAt(0).toUpperCase() + tier.slice(1)}!`);
       fetchCredits();
       return true;
     } catch (error) {
-      console.error('Error granting first subscribe credit:', error);
+      console.error('Error granting subscription credits:', error);
       return false;
     }
+  };
+
+  const grantFirstSubscribeCredit = async () => {
+    // Legacy function - now use grantSubscriptionCredits
+    return grantSubscriptionCredits('pro');
   };
 
   const useCredit = async () => {
@@ -210,10 +236,12 @@ export const useGradingCredits = (userId?: string) => {
     let shouldGrant = false;
     let creditsToGrant = 0;
 
-    // Pro gets 1 credit per month, Enterprise gets 2 credits per month
+    // Credits per tier: Lite=1, Pro=2, Enterprise=3
     if (subscriptionTier === 'enterprise') {
-      creditsToGrant = 2;
+      creditsToGrant = 3;
     } else if (subscriptionTier === 'pro' || subscriptionTier === 'verified_seller') {
+      creditsToGrant = 2;
+    } else if (subscriptionTier === 'lite') {
       creditsToGrant = 1;
     }
 
@@ -234,6 +262,7 @@ export const useGradingCredits = (userId?: string) => {
             user_id: userId,
             credits_remaining: creditsToGrant,
             last_monthly_credit_at: now.toISOString(),
+            monthly_credits_tier: subscriptionTier,
           });
         } else {
           await supabase
@@ -241,6 +270,7 @@ export const useGradingCredits = (userId?: string) => {
             .update({
               credits_remaining: credits.credits_remaining + creditsToGrant,
               last_monthly_credit_at: now.toISOString(),
+              monthly_credits_tier: subscriptionTier,
             })
             .eq('user_id', userId);
         }
@@ -251,8 +281,8 @@ export const useGradingCredits = (userId?: string) => {
           reason: `Monthly ${subscriptionTier} credit (${creditsToGrant}x)`,
         });
 
-        const tierLabel = subscriptionTier === 'enterprise' ? 'Enterprise' : 'Pro';
-        toast.success(`🎉 You received ${creditsToGrant} free grading credit${creditsToGrant > 1 ? 's' : ''} for ${tierLabel}!`);
+        const tierLabel = subscriptionTier.charAt(0).toUpperCase() + subscriptionTier.slice(1);
+        toast.success(`🎉 You received ${creditsToGrant} free AI pre-grading credit${creditsToGrant > 1 ? 's' : ''} for ${tierLabel}!`);
         fetchCredits();
         return true;
       } catch (error) {
@@ -269,6 +299,7 @@ export const useGradingCredits = (userId?: string) => {
     creditsRemaining: credits?.credits_remaining || 0,
     grantFirstDepositCredit,
     grantFirstSubscribeCredit,
+    grantSubscriptionCredits,
     useCredit,
     useCredits,
     checkAndGrantMonthlyCredit,
