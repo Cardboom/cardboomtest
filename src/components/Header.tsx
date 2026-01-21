@@ -582,6 +582,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                     <BadgeCheck className="w-4 h-4 mr-2" />
                     {t.nav.verifiedSeller}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <User className="w-4 h-4 mr-2" />
+                    Account Settings
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-red-500">
                     <LogOut className="w-4 h-4 mr-2" />
