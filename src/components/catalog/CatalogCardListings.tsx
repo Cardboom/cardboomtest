@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   ShoppingCart, User, AlertCircle, TestTube2, 
-  BadgeCheck, Crown, Gem, Package
+  BadgeCheck, Crown, Gem, Package, Award, Shield
 } from 'lucide-react';
 import { useCatalogCardListings, useCatalogCardMappings } from '@/hooks/useCatalogCard';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -244,11 +244,35 @@ export const CatalogCardListings = ({ catalogCardId }: CatalogCardListingsProps)
                   </div>
                 </div>
                 
-                {/* Condition Column */}
-                <div className="hidden sm:block text-center min-w-[100px]">
-                  {item.condition && (
+                {/* Condition/Grade Column */}
+                <div className="hidden sm:flex flex-col items-center min-w-[120px] gap-1">
+                  {/* CBGI Grade - show if completed */}
+                  {item.cbgi_completed_at && item.cbgi_grade_label && (
+                    <Badge className="bg-primary/20 text-primary border-primary/30">
+                      <Award className="w-3 h-3 mr-1" />
+                      CBGI {item.cbgi_grade_label}
+                    </Badge>
+                  )}
+                  
+                  {/* External Grading (PSA, BGS, CGC, etc.) */}
+                  {item.external_grade && item.external_grading_company && (
+                    <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30">
+                      <Shield className="w-3 h-3 mr-1" />
+                      {item.external_grading_company} {item.external_grade}
+                    </Badge>
+                  )}
+                  
+                  {/* Show condition if no grading */}
+                  {!item.cbgi_completed_at && !item.external_grade && item.condition && (
                     <span className="text-sm font-medium text-foreground">
                       {item.condition}
+                    </span>
+                  )}
+                  
+                  {/* Show "Ungraded" if raw */}
+                  {!item.cbgi_completed_at && !item.external_grade && !item.condition && (
+                    <span className="text-sm text-muted-foreground">
+                      Ungraded
                     </span>
                   )}
                 </div>

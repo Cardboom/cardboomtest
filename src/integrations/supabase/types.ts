@@ -13002,7 +13002,12 @@ export type Database = {
         Args: { p_catalog_card_id: string }
         Returns: {
           category: string
+          cbgi_completed_at: string
+          cbgi_grade_label: string
+          cbgi_score: number
           condition: string
+          external_grade: string
+          external_grading_company: string
           image_url: string
           is_sample: boolean
           listing_id: string
