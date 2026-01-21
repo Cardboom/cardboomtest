@@ -8707,6 +8707,7 @@ export type Database = {
           featured_card_id: string | null
           first_deposit_at: string | null
           first_deposit_completed: boolean | null
+          first_name: string | null
           first_vault_card_sent: boolean | null
           first_vault_card_sent_at: string | null
           full_name: string | null
@@ -8724,6 +8725,7 @@ export type Database = {
           last_ip_address: string | null
           last_location: string | null
           last_login_at: string | null
+          last_name: string | null
           level: number | null
           location: string | null
           national_id: string | null
@@ -8793,6 +8795,7 @@ export type Database = {
           featured_card_id?: string | null
           first_deposit_at?: string | null
           first_deposit_completed?: boolean | null
+          first_name?: string | null
           first_vault_card_sent?: boolean | null
           first_vault_card_sent_at?: string | null
           full_name?: string | null
@@ -8810,6 +8813,7 @@ export type Database = {
           last_ip_address?: string | null
           last_location?: string | null
           last_login_at?: string | null
+          last_name?: string | null
           level?: number | null
           location?: string | null
           national_id?: string | null
@@ -8879,6 +8883,7 @@ export type Database = {
           featured_card_id?: string | null
           first_deposit_at?: string | null
           first_deposit_completed?: boolean | null
+          first_name?: string | null
           first_vault_card_sent?: boolean | null
           first_vault_card_sent_at?: string | null
           full_name?: string | null
@@ -8896,6 +8901,7 @@ export type Database = {
           last_ip_address?: string | null
           last_location?: string | null
           last_login_at?: string | null
+          last_name?: string | null
           level?: number | null
           location?: string | null
           national_id?: string | null

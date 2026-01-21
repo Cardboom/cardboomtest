@@ -206,10 +206,25 @@ const Auth = () => {
       } else {
         toast.error(error.message);
       }
-    } else {
+    } else if (data.user) {
       // Save remember me preference
       saveRememberMe(email, rememberMe);
       toast.success('Welcome back!');
+      
+      // Trigger login alert (async, don't block)
+      supabase.functions.invoke('send-login-alert', {
+        body: {
+          user_id: data.user.id,
+          device_info: {
+            browser: navigator.userAgent.includes('Chrome') ? 'Chrome' : 
+                     navigator.userAgent.includes('Firefox') ? 'Firefox' : 
+                     navigator.userAgent.includes('Safari') ? 'Safari' : 'Browser',
+            os: navigator.platform,
+            device_type: /Mobile|Android|iPhone/.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+          },
+          is_new_device: false,
+        }
+      }).catch(console.error);
     }
     setLoading(false);
   };

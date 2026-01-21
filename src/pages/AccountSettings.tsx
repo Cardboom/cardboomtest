@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { AddressBook } from '@/components/profile/AddressBook';
 import { SessionManagement } from '@/components/profile/SessionManagement';
 import { LoginNotificationSettings } from '@/components/profile/LoginNotificationSettings';
+import { ProfileInfoForm } from '@/components/profile/ProfileInfoForm';
 
 const AccountSettings = () => {
   const navigate = useNavigate();
@@ -194,6 +195,8 @@ const AccountSettings = () => {
 
               {/* Account Tab */}
               <TabsContent value="account" className="space-y-6">
+                {/* Profile Information */}
+                <ProfileInfoForm userId={user.id} />
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
