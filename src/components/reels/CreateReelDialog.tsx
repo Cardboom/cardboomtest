@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Video, Tag, Image as ImageIcon, AlertCircle, Check, Loader2 } from 'lucide-react';
+import { X, Upload, Video, Tag, Image as ImageIcon, AlertCircle, Check, Loader2, Hash, Globe, Lock, Users, MessageCircle, AtSign } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { Switch } from '@/components/ui/switch';
 import { useUploadReel } from '@/hooks/useReels';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +26,8 @@ interface MarketItem {
   category: string;
 }
 
+type Visibility = 'public' | 'followers' | 'private';
+
 export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDialogProps) {
   const { t } = useLanguage();
   const { uploadReel, uploading, progress } = useUploadReel();
@@ -39,8 +42,14 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [hashtags, setHashtags] = useState('');
   const [taggedCardId, setTaggedCardId] = useState<string | null>(null);
   const [taggedCard, setTaggedCard] = useState<MarketItem | null>(null);
+  
+  // TikTok-like settings
+  const [visibility, setVisibility] = useState<Visibility>('public');
+  const [allowComments, setAllowComments] = useState(true);
+  const [allowDuets, setAllowDuets] = useState(true);
   
   const [cardSearch, setCardSearch] = useState('');
   const [searchResults, setSearchResults] = useState<MarketItem[]>([]);
@@ -203,9 +212,13 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
     setThumbnailPreview(null);
     setTitle('');
     setDescription('');
+    setHashtags('');
     setTaggedCardId(null);
     setTaggedCard(null);
     setCardSearch('');
+    setVisibility('public');
+    setAllowComments(true);
+    setAllowDuets(true);
     setError(null);
     setStep('upload');
   };
@@ -356,6 +369,22 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
                 <p className="text-xs text-muted-foreground mt-1">{description.length}/500</p>
               </div>
 
+              {/* Hashtags */}
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Hash className="w-4 h-4" />
+                  Hashtags
+                </Label>
+                <Input
+                  value={hashtags}
+                  onChange={(e) => setHashtags(e.target.value.slice(0, 100))}
+                  placeholder="#pokemon #packopening #fyp"
+                  maxLength={100}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Separate with spaces</p>
+              </div>
+
               {/* Tag card */}
               <div>
                 <Label className="flex items-center gap-2">
@@ -423,6 +452,63 @@ export function CreateReelDialog({ open, onOpenChange, onSuccess }: CreateReelDi
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* TikTok-like Settings Section */}
+              <div className="space-y-4 pt-2 border-t border-border/50">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Settings</p>
+                
+                {/* Visibility */}
+                <div>
+                  <Label className="text-sm">Who can view this reel</Label>
+                  <div className="flex gap-2 mt-2">
+                    {[
+                      { value: 'public' as Visibility, icon: Globe, label: 'Everyone' },
+                      { value: 'followers' as Visibility, icon: Users, label: 'Followers' },
+                      { value: 'private' as Visibility, icon: Lock, label: 'Only me' },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setVisibility(option.value)}
+                        className={cn(
+                          "flex-1 flex flex-col items-center gap-1 p-3 rounded-lg border transition-all text-xs",
+                          visibility === option.value 
+                            ? "border-primary bg-primary/10 text-primary" 
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <option.icon className="w-4 h-4" />
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggle Settings */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">Allow comments</span>
+                    </div>
+                    <Switch
+                      checked={allowComments}
+                      onCheckedChange={setAllowComments}
+                    />
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AtSign className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">Allow duets & stitches</span>
+                    </div>
+                    <Switch
+                      checked={allowDuets}
+                      onCheckedChange={setAllowDuets}
+                    />
+                  </div>
+                </div>
               </div>
 
               {error && (

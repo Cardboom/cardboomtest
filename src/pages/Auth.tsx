@@ -31,10 +31,8 @@ const otpSchema = z.string().length(6, 'OTP must be 6 digits');
 
 type LoginMethod = 'email' | 'phone' | 'magic-link';
 
-const AUTH_VIDEOS = [
-  '/videos/boom-packs-hero.mp4',
-  '/videos/hero-video.mp4',
-];
+// Single hero video for the auth page - no rotation/fading
+const AUTH_VIDEO = '/videos/boom-packs-hero.mp4';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -73,7 +71,7 @@ const Auth = () => {
   const [pending2FAUser, setPending2FAUser] = useState<{ id: string; phone: string } | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingUser, setOnboardingUser] = useState<{ id: string; email: string; displayName?: string } | null>(null);
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  
   const [errors, setErrors] = useState<{ 
     email?: string; 
     password?: string; 
@@ -91,13 +89,7 @@ const Auth = () => {
     magicLinkEmail?: string;
   }>({});
 
-  // Rotate videos
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentVideoIndex((prev) => (prev + 1) % AUTH_VIDEOS.length);
-    }, 15000);
-    return () => clearInterval(interval);
-  }, []);
+  // No video rotation - static split layout
 
   // Load saved email on mount
   useEffect(() => {
@@ -527,21 +519,16 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex">
       {/* Left Side - Video */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Video Background */}
-        {AUTH_VIDEOS.map((video, index) => (
-          <video
-            key={video}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-              index === currentVideoIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <source src={video} type="video/mp4" />
-          </video>
-        ))}
+        {/* Single Static Video Background */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src={AUTH_VIDEO} type="video/mp4" />
+        </video>
         
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-background/40 via-transparent to-background" />
