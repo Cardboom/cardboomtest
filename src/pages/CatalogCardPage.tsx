@@ -236,10 +236,15 @@ const CatalogCardPage = () => {
           <div className="lg:col-span-2 space-y-6">
             {/* Header */}
             <header>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 <Badge variant="secondary" className="capitalize">
                   {gameLabels[card.game] || card.game}
                 </Badge>
+                {card.set_code && card.card_number && (
+                  <Badge variant="outline" className="font-mono">
+                    {card.set_code}-{card.card_number.padStart(3, '0')}
+                  </Badge>
+                )}
                 {card.rarity && <Badge variant="outline">{card.rarity}</Badge>}
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-2">
@@ -255,7 +260,15 @@ const CatalogCardPage = () => {
 
             {/* Price Panel */}
             <div className="space-y-2">
-              <CatalogPricePanel price={price} isLoading={priceLoading} />
+              <CatalogPricePanel 
+                price={price} 
+                isLoading={priceLoading}
+                cardName={card.name}
+                setCode={card.set_code}
+                cardNumber={card.card_number}
+                game={card.game}
+                catalogCardId={card.id}
+              />
               <div className="flex justify-end">
                 <PriceReportButton
                   catalogCardId={card.id}
