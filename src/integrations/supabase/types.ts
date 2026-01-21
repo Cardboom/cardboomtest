@@ -13001,15 +13001,21 @@ export type Database = {
       get_catalog_card_listings: {
         Args: { p_catalog_card_id: string }
         Returns: {
+          category: string
           condition: string
           image_url: string
+          is_sample: boolean
           listing_id: string
           mapping_confidence: number
           market_item_id: string
           price: number
           seller_avatar: string
+          seller_country_code: string
           seller_id: string
+          seller_is_verified: boolean
           seller_name: string
+          seller_subscription_tier: string
+          seller_total_sales: number
           status: string
           title: string
         }[]

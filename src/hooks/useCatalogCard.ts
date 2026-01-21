@@ -55,6 +55,12 @@ export interface CatalogListing {
   seller_avatar: string | null;
   market_item_id: string;
   mapping_confidence: number;
+  is_sample?: boolean;
+  category?: string;
+  seller_country_code?: string | null;
+  seller_total_sales?: number;
+  seller_is_verified?: boolean;
+  seller_subscription_tier?: string | null;
 }
 
 export const useCatalogCard = (canonicalKey: string | undefined) => {
