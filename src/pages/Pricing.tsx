@@ -135,12 +135,14 @@ const Pricing = () => {
         sellerOver: '2.35%',
         gemsMarkup: '12%',
       },
+      gradingPerks: '1 Free AI Pre-Grading on signup',
       features: [
         'Browse marketplace',
         'Buy & sell cards',
         'Basic portfolio tracking',
         'Community access',
         'Standard support',
+        '1 Free AI Pre-Grading',
       ],
       notIncluded: [
         'PnL Graph & Analytics',
@@ -162,11 +164,13 @@ const Pricing = () => {
         sellerOver: '2%',
         gemsMarkup: '10%',
       },
+      gradingPerks: '+1 Free AI Pre-Grading on subscribe + 1/month',
       features: [
         'Everything in Free',
         'Reduced transaction fees',
         'Lower Gems markup',
         'Lite badge on profile',
+        '1 Free AI Pre-Grading/month',
         'Standard support',
       ],
       savings: 'Save ~$30/month on fees',
@@ -184,11 +188,13 @@ const Pricing = () => {
         sellerOver: '1.5%',
         gemsMarkup: '8%',
       },
+      gradingPerks: '+2 Free AI Pre-Gradings on subscribe + 2/month',
       features: [
         'Everything in Lite',
         'PnL Graph & Analytics',
         'Portfolio performance tracking',
         'Price alerts (unlimited)',
+        '2 Free AI Pre-Gradings/month',
         'Pro badge on profile',
         'Priority customer support',
         'Early access to features',
@@ -208,9 +214,11 @@ const Pricing = () => {
         sellerOver: '1%',
         gemsMarkup: '5%',
       },
+      gradingPerks: '+3 Free AI Pre-Gradings on subscribe + 3/month',
       features: [
         'Everything in Pro',
         'Lowest transaction fees (4%)',
+        '3 Free AI Pre-Gradings/month',
         'Advanced analytics dashboard',
         'API access (coming soon)',
         'Bulk listing tools',
@@ -302,7 +310,7 @@ const Pricing = () => {
                   </div>
 
                   {/* Fee Comparison */}
-                  <div className="bg-muted/50 rounded-lg p-4 mb-6">
+                  <div className="bg-muted/50 rounded-lg p-4 mb-4">
                     <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Seller Fees</p>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between">
@@ -319,6 +327,19 @@ const Pricing = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Grading Perks */}
+                  {'gradingPerks' in plan && plan.gradingPerks && (
+                    <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
+                      <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                        <Award className="w-4 h-4" />
+                        <span>AI Pre-Grading</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {plan.gradingPerks}
+                      </p>
+                    </div>
+                  )}
 
                   {'savings' in plan && plan.savings && (
                     <div className="mb-4 text-sm font-medium text-green-600 dark:text-green-400">

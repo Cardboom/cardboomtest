@@ -5369,6 +5369,8 @@ export type Database = {
           gifted_by: string | null
           id: string
           last_monthly_credit_at: string | null
+          lite_credit_claimed: boolean | null
+          monthly_credits_tier: string | null
           signup_credit_claimed: boolean | null
           updated_at: string
           user_id: string
@@ -5381,6 +5383,8 @@ export type Database = {
           gifted_by?: string | null
           id?: string
           last_monthly_credit_at?: string | null
+          lite_credit_claimed?: boolean | null
+          monthly_credits_tier?: string | null
           signup_credit_claimed?: boolean | null
           updated_at?: string
           user_id: string
@@ -5393,6 +5397,8 @@ export type Database = {
           gifted_by?: string | null
           id?: string
           last_monthly_credit_at?: string | null
+          lite_credit_claimed?: boolean | null
+          monthly_credits_tier?: string | null
           signup_credit_claimed?: boolean | null
           updated_at?: string
           user_id?: string
