@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,7 @@ interface CardQuery {
   cardNumber: string;
   game?: string; // 'onepiece', 'pokemon', 'mtg', etc.
   variant?: string; // 'parallel', 'alt-art', etc.
+  catalogCardId?: string; // If provided, store the price in card_price_snapshots
 }
 
 interface PriceResult {
@@ -22,6 +24,7 @@ interface PriceResult {
   midPrice: number | null;
   highPrice: number | null;
   source: string;
+  stored: boolean; // Whether price was stored in DB
   error?: string;
 }
 
@@ -130,6 +133,8 @@ serve(async (req) => {
 
   try {
     const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
     if (!FIRECRAWL_API_KEY) {
       return new Response(
@@ -138,20 +143,22 @@ serve(async (req) => {
       );
     }
 
-    const { cards } = await req.json();
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { cards, storeResults = true } = await req.json();
     
     if (!cards || !Array.isArray(cards)) {
       return new Response(
         JSON.stringify({ 
           success: false, 
           error: 'cards array required',
-          example: { cards: [{ name: 'Monkey.D.Luffy', setCode: 'OP01', cardNumber: '003', game: 'onepiece' }] }
+          example: { cards: [{ name: 'Monkey.D.Luffy', setCode: 'OP01', cardNumber: '003', game: 'onepiece', catalogCardId: 'uuid-optional' }] }
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const results: PriceResult[] = [];
+    const today = new Date().toISOString().split('T')[0];
 
     for (const card of cards.slice(0, 5)) { // Limit to 5 cards per request
       const cardCode = `${card.setCode?.toUpperCase() || ''}-${(card.cardNumber || '').padStart(3, '0')}`;
@@ -165,6 +172,7 @@ serve(async (req) => {
         midPrice: null,
         highPrice: null,
         source: 'tcgplayer_scrape',
+        stored: false,
       };
 
       try {
@@ -205,6 +213,33 @@ serve(async (req) => {
             result.highPrice = prices.high;
             
             console.log(`[scrape-tcgplayer] Found prices for ${cardCode}: market=$${prices.market}, low=$${prices.low}`);
+            
+            // Store price in card_price_snapshots if catalogCardId provided and storeResults is true
+            if (storeResults && card.catalogCardId && prices.market && prices.market > 0) {
+              try {
+                const { error: upsertError } = await supabase
+                  .from('card_price_snapshots')
+                  .upsert({
+                    catalog_card_id: card.catalogCardId,
+                    snapshot_date: today,
+                    median_usd: prices.market,
+                    low_usd: prices.low || prices.market * 0.8,
+                    high_usd: prices.high || prices.market * 1.5,
+                    liquidity_count: 1,
+                    confidence: 0.7,
+                    sources: { tcgplayer: true, live_fetch: true },
+                  }, { onConflict: 'catalog_card_id,snapshot_date' });
+                
+                if (!upsertError) {
+                  result.stored = true;
+                  console.log(`[scrape-tcgplayer] ✅ Stored price for ${cardCode} (${card.catalogCardId})`);
+                } else {
+                  console.error(`[scrape-tcgplayer] Failed to store price:`, upsertError);
+                }
+              } catch (storeErr) {
+                console.error(`[scrape-tcgplayer] Store error:`, storeErr);
+              }
+            }
           }
         } else {
           console.log(`[scrape-tcgplayer] No results for ${cardCode}`);

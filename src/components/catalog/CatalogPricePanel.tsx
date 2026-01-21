@@ -81,7 +81,7 @@ export const CatalogPricePanel = ({
   const hasPrice = price?.has_price && price?.price_usd !== null;
   const showNoData = !hasPrice && !hasListings && !livePrice && !isLoading;
 
-  // Fetch live price from TCGPlayer via Firecrawl
+  // Fetch live price from TCGPlayer via Firecrawl and store in DB
   const fetchLivePrice = async () => {
     if (!cardName || !setCode || !cardNumber) return;
     
@@ -93,8 +93,10 @@ export const CatalogPricePanel = ({
             name: cardName,
             setCode: setCode,
             cardNumber: cardNumber,
-            game: game || 'onepiece'
-          }]
+            game: game || 'onepiece',
+            catalogCardId: catalogCardId // Pass ID so price gets stored in card_price_snapshots
+          }],
+          storeResults: true // Ensure prices are persisted
         }
       });
 
@@ -108,6 +110,11 @@ export const CatalogPricePanel = ({
             url: result.tcgplayerUrl,
             source: 'tcgplayer_live'
           });
+          
+          // Log if price was stored
+          if (result.stored) {
+            console.log(`[CatalogPricePanel] Price stored for ${cardName}`);
+          }
         }
       }
     } catch (error) {
