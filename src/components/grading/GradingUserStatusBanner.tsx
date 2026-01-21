@@ -96,11 +96,11 @@ export const GradingUserStatusBanner: React.FC = () => {
                   <h3 className="font-bold text-foreground">Unlock Your Free AI Grading</h3>
                   <Badge className="bg-yellow-500/20 text-yellow-600 border-yellow-500/30">
                     <Zap className="w-3 h-3 mr-1" />
-                    Instant Results
+                    5-Min Results
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Verify your phone & ID to get 1 free grading with <strong>5-minute results</strong>!
+                  Verify your phone & ID to get <strong>1 completely free grading</strong> with instant results!
                 </p>
               </div>
             </div>
@@ -136,7 +136,10 @@ export const GradingUserStatusBanner: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-bold text-foreground">
-                    {status.creditsRemaining} Free Grading Credit{status.creditsRemaining > 1 ? 's' : ''}
+                    {isFirstFree 
+                      ? '🎉 First Free Grading Ready!' 
+                      : `${status.creditsRemaining} Free Grading Credit${status.creditsRemaining > 1 ? 's' : ''}`
+                    }
                   </h3>
                   {isFirstFree && (
                     <Badge className="bg-primary/20 text-primary border-primary/30">
@@ -147,7 +150,7 @@ export const GradingUserStatusBanner: React.FC = () => {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {isFirstFree 
-                    ? "Your first grading is free with instant results!"
+                    ? "Your first grading is completely free - includes protection bundle & instant results!"
                     : `You have ${status.creditsRemaining} credit${status.creditsRemaining > 1 ? 's' : ''} to use. Applied automatically at checkout.`
                   }
                 </p>

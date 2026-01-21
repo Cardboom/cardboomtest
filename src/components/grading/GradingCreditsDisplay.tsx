@@ -119,7 +119,10 @@ export const GradingCreditsDisplay: React.FC<GradingCreditsDisplayProps> = ({
           <span>Credits applied automatically at checkout</span>
         </div>
         <p className="text-xs text-muted-foreground/70 pl-6">
-          Covers base certification only. Speed upgrades & protection bundles are paid separately.
+          {credits?.signup_credit_claimed && creditsRemaining === 1
+            ? "First signup grading is completely free - includes everything!"
+            : "Covers base certification only. Speed upgrades & protection bundles are paid separately."
+          }
         </p>
       </div>
     </motion.div>
