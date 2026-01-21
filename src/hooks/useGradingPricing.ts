@@ -13,16 +13,22 @@ export interface GradingPricing {
   priority: GradingSpeedTier;
   referralCommissionRate: number;
   creatorRevenueShare: number;
+  launchDiscount: number; // 0-1 (e.g., 0.5 = 50% off)
+  launchDiscountEndsAt: string | null;
   isLoading: boolean;
 }
 
-// Default fallback values
+// Default fallback values - 50% launch discount active for 1st year
+const LAUNCH_END_DATE = '2027-01-21T00:00:00Z'; // 1 year from launch
+
 const DEFAULT_PRICING: Omit<GradingPricing, 'isLoading'> = {
   standard: { price: 18, daysMin: 20, daysMax: 25 },
   express: { price: 35, daysMin: 7, daysMax: 10 },
   priority: { price: 75, daysMin: 2, daysMax: 3 },
   referralCommissionRate: 0.10,
   creatorRevenueShare: 0.15,
+  launchDiscount: 0.50, // 50% off for launch
+  launchDiscountEndsAt: LAUNCH_END_DATE,
 };
 
 export function useGradingPricing(): GradingPricing {
@@ -67,6 +73,11 @@ export function useGradingPricing(): GradingPricing {
     return parseFloat(val) || defaultVal;
   };
 
+  // Check if launch discount is still active
+  const launchDiscountEndsAt = DEFAULT_PRICING.launchDiscountEndsAt;
+  const isLaunchActive = launchDiscountEndsAt ? new Date() < new Date(launchDiscountEndsAt) : false;
+  const launchDiscount = isLaunchActive ? DEFAULT_PRICING.launchDiscount : 0;
+
   return {
     standard: {
       price: getValue('grading_price_standard', DEFAULT_PRICING.standard.price),
@@ -85,6 +96,8 @@ export function useGradingPricing(): GradingPricing {
     },
     referralCommissionRate: getValue('grading_referral_commission_rate', DEFAULT_PRICING.referralCommissionRate),
     creatorRevenueShare: getValue('grading_creator_revenue_share', DEFAULT_PRICING.creatorRevenueShare),
+    launchDiscount,
+    launchDiscountEndsAt,
     isLoading,
   };
 }

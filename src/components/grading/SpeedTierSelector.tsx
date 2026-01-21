@@ -60,6 +60,8 @@ const SPEED_TIERS: SpeedTierOption[] = buildSpeedTiers({
   ...GRADING_SPEED_TIERS_DEFAULT,
   referralCommissionRate: 0.10,
   creatorRevenueShare: 0.15,
+  launchDiscount: 0.50,
+  launchDiscountEndsAt: '2027-01-21T00:00:00Z',
   isLoading: false,
 });
 
@@ -75,10 +77,21 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
   const pricing = useGradingPricing();
   const dynamicTiers = buildSpeedTiers(pricing);
   const selectedTier = dynamicTiers.find(t => t.id === value) || dynamicTiers[0];
+  
+  // Check if launch discount is active
+  const isLaunchActive = pricing.launchDiscount > 0;
+  const discountPercent = Math.round(pricing.launchDiscount * 100);
 
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium">Grading Speed</Label>
+      <div className="flex items-center justify-between">
+        <Label className="text-sm font-medium">Grading Speed</Label>
+        {isLaunchActive && (
+          <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white text-[10px] animate-pulse">
+            🎉 {discountPercent}% Launch Discount
+          </Badge>
+        )}
+      </div>
       <RadioGroup
         value={value}
         onValueChange={(v) => onChange(v as SpeedTier)}
@@ -87,6 +100,10 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
         {dynamicTiers.map((tier) => {
           const isSelected = value === tier.id;
           const Icon = tier.icon;
+          
+          // Calculate original price before discount
+          const originalPrice = isLaunchActive ? Math.round(tier.price / (1 - pricing.launchDiscount)) : tier.price;
+          const showStrikethrough = isLaunchActive && originalPrice !== tier.price;
           
           return (
             <motion.div
@@ -129,7 +146,15 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
                 </div>
                 
                 <div className="text-right shrink-0">
-                  <span className="text-lg font-bold text-primary">${tier.price}</span>
+                  <div className="flex items-center gap-1.5">
+                    {showStrikethrough && (
+                      <span className="text-sm text-muted-foreground line-through">${originalPrice}</span>
+                    )}
+                    <span className={cn(
+                      "text-lg font-bold",
+                      isLaunchActive ? "text-emerald-500" : "text-primary"
+                    )}>${tier.price}</span>
+                  </div>
                   {isSelected && (
                     <CheckCircle2 className="w-4 h-4 text-primary ml-auto mt-0.5" />
                   )}
@@ -139,6 +164,14 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
           );
         })}
       </RadioGroup>
+      
+      {isLaunchActive && (
+        <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-center">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+            🚀 Launch Special: {discountPercent}% off base grading (without protection bundle)
+          </p>
+        </div>
+      )}
       
       <div className="p-2 rounded-lg bg-muted/50 text-center">
         <p className="text-xs text-muted-foreground">
