@@ -99,8 +99,28 @@ serve(async (req) => {
       throw new Error('Invalid amount. Must be between $10 and $10,000');
     }
 
-    // Fee structure: USD = 6.5%, TRY/local currencies = 12%
-    const feePercent = paymentCurrency === 'USD' ? 0.065 : 0.12;
+    // Fee structure: USD = 6.5%, TRY = tiered by subscription (8%/7%/6%/5.5%)
+    // Get user's subscription tier to determine TRY fee
+    let tryFeePercent = 0.08; // Default 8% for free users
+    
+    if (paymentCurrency === 'TRY') {
+      const { data: subscription } = await supabase
+        .from('user_subscriptions')
+        .select('tier, expires_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (subscription && (!subscription.expires_at || new Date(subscription.expires_at) > new Date())) {
+        switch (subscription.tier) {
+          case 'enterprise': tryFeePercent = 0.055; break;
+          case 'pro': tryFeePercent = 0.06; break;
+          case 'lite': tryFeePercent = 0.07; break;
+          default: tryFeePercent = 0.08;
+        }
+      }
+    }
+    
+    const feePercent = paymentCurrency === 'USD' ? 0.065 : tryFeePercent;
     const flatFee = 0.50;
     const feeUSD = (amountUSD * feePercent) + flatFee;
     const totalUSD = amountUSD + feeUSD;

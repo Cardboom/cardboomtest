@@ -20,9 +20,8 @@ interface WalletTopUpDialogProps {
 }
 
 const FLAT_FEE_USD = 0.5;
-// Fee percentages: USD = 6.5%, TRY/local currencies = 12%
+// Fee percentages: USD = 6.5%, TRY = tiered by subscription (8%/7%/6%/5.5%)
 const USD_FEE_PERCENT = 6.5;
-const LOCAL_CURRENCY_FEE_PERCENT = 12;
 type PaymentCurrency = 'USD' | 'TRY';
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
@@ -42,12 +41,17 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   // No extra markup on rate - fee is applied separately
   const tryRate = baseRate;
 
-  const { isPro } = useSubscription(userId);
+  const { isPro, isLite, isEnterprise } = useSubscription(userId);
   
-  // Fee structure: USD = 6.5%, TRY/local = 12%
-  // Pro users get 1% discount on top
-  const baseFeePercent = paymentCurrency === 'USD' ? USD_FEE_PERCENT : LOCAL_CURRENCY_FEE_PERCENT;
-  const TOPUP_FEE_PERCENT = isPro ? baseFeePercent - 1 : baseFeePercent;
+  // Fee structure: USD = 6.5%, TRY = tiered by subscription (8%/7%/6%/5.5%)
+  const getTryFeePercent = () => {
+    if (isEnterprise) return 5.5;
+    if (isPro) return 6;
+    if (isLite) return 7;
+    return 8; // Free tier
+  };
+  
+  const TOPUP_FEE_PERCENT = paymentCurrency === 'USD' ? USD_FEE_PERCENT : getTryFeePercent();
 
   // Saved cards state
   const [selectedCardId, setSelectedCardId] = useState<string | 'new'>('new');
