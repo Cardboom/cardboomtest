@@ -47,7 +47,7 @@ import { GradingCreditsDisplay } from '@/components/grading/GradingCreditsDispla
 import { GradeAndFlipToggle } from '@/components/grading/GradeAndFlipToggle';
 import { SpeedTierSelector, SpeedTier } from '@/components/grading/SpeedTierSelector';
 import { useGradingPricing } from '@/hooks/useGradingPricing';
-import { useGradingCredits } from '@/hooks/useGradingCredits';
+import { useGradingCredits, isFirstFreeSignupGrading } from '@/hooks/useGradingCredits';
 import { CardScannerUpload } from '@/components/CardScannerUpload';
 import { CardAnalysis } from '@/hooks/useCardAnalysis';
 import { CardReviewModal, ReviewedCardData } from '@/components/card-scan/CardReviewModal';
@@ -225,7 +225,7 @@ export default function GradingNew() {
     checkAuth();
   }, [navigate, toast]);
 
-  const { creditsRemaining, useCredit, refetch: refetchCredits } = useGradingCredits(userId);
+  // Credits are now fetched in the pricing calculation section below
 
   const steps = [
     { key: 'photos', label: 'Photos' },
@@ -237,14 +237,20 @@ export default function GradingNew() {
   const currentStepIndex = steps.findIndex(s => s.key === step);
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
+  // Get full credits data for first free grading check
+  const { credits, creditsRemaining, useCredit, refetch: refetchCredits } = useGradingCredits(userId);
+  
+  // Check if this is the user's first free signup grading (completely free)
+  const isFirstFree = isFirstFreeSignupGrading(credits);
+  
   // Calculate pricing - single card grading only
-  // Pro subscribers get 1 free grading/month for BASE certification only
-  // Extras (protection, speed upgrades) still cost money
+  // FIRST FREE SIGNUP GRADING: Completely free - no extras charged
+  // Regular credits: Cover base certification only, extras still cost money
   const pricing = useMemo(() => {
     const selectedSpeed = gradingPricing[speedTier];
     const standardSpeed = gradingPricing.standard;
     
-    // Base grading cost (standard tier price) - this is what credits cover
+    // Base grading cost (standard tier price)
     const baseGradingCost = standardSpeed.price;
     
     // Speed upgrade cost (difference between selected tier and standard)
@@ -253,7 +259,34 @@ export default function GradingNew() {
     // Protection bundle cost
     const protectionCost = includeProtection ? PROTECTION_BUNDLE_PRICE : 0;
     
-    // Can we apply a credit? (1 credit = 1 grading)
+    // FIRST FREE SIGNUP GRADING: Everything is free (no extras)
+    if (isFirstFree) {
+      return { 
+        basePerCard: 0, 
+        subtotal: baseGradingCost + speedUpgradeCost + protectionCost, 
+        hasBulkDiscount: false,
+        batchDiscount: 0,
+        batchLabel: '',
+        isBatchOrder: false,
+        discountAmount: baseGradingCost + speedUpgradeCost + protectionCost, 
+        total: 0, // Completely free!
+        savings: baseGradingCost + speedUpgradeCost + protectionCost,
+        speedPrice: selectedSpeed.price,
+        protectionPrice: protectionCost,
+        daysMin: 0, // Instant 5-minute results for first free grading
+        daysMax: 0,
+        // Credit-specific fields
+        creditsApplied: 1,
+        creditDiscount: baseGradingCost + speedUpgradeCost + protectionCost,
+        baseGradingCost,
+        speedUpgradeCost,
+        totalExtras: 0, // No extras charged for first free
+        gradingAfterCredits: 0,
+        isFirstFreeGrading: true,
+      };
+    }
+    
+    // Regular credits: Cover base only, extras still cost money
     const creditsToApply = creditsRemaining > 0 ? 1 : 0;
     const creditDiscount = creditsToApply * baseGradingCost;
     
@@ -287,8 +320,9 @@ export default function GradingNew() {
       speedUpgradeCost,
       totalExtras,
       gradingAfterCredits,
+      isFirstFreeGrading: false,
     };
-  }, [includeProtection, speedTier, creditsRemaining, gradingPricing]);
+  }, [includeProtection, speedTier, creditsRemaining, gradingPricing, isFirstFree]);
 
   const handleBackImageChange = (file: File | null) => {
     if (!file) return;

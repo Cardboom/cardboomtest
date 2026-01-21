@@ -253,45 +253,86 @@ serve(async (req) => {
       );
     }
 
-    // Use order's price_usd (based on speed tier)
-    const gradingPrice = existingOrder.price_usd || 10;
+    // Check if this is the user's FIRST FREE signup grading (completely free)
+    const { data: creditsData } = await supabase
+      .from('grading_credits')
+      .select('signup_credit_claimed, credits_remaining')
+      .eq('user_id', user.id)
+      .maybeSingle();
     
-    if (wallet.balance < gradingPrice) {
+    // Check if user has any previous grading orders (completed or not)
+    const { count: existingOrderCount } = await supabase
+      .from('grading_orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .neq('id', orderId); // Exclude current order
+    
+    // First free grading: signup credit claimed, credits remaining, AND no previous orders
+    const isFirstFreeGrading = creditsData?.signup_credit_claimed && 
+                               creditsData?.credits_remaining > 0 && 
+                               (existingOrderCount || 0) === 0;
+
+    // Use order's price_usd (based on speed tier) - BUT first free grading is completely free
+    let gradingPrice = existingOrder.price_usd || 10;
+    
+    // FIRST FREE SIGNUP GRADING: Completely free - no payment required
+    if (isFirstFreeGrading) {
+      console.log('First free signup grading detected - skipping payment, everything is free!');
+      gradingPrice = 0;
+      
+      // Deduct the credit
+      await supabase
+        .from('grading_credits')
+        .update({ credits_remaining: creditsData.credits_remaining - 1 })
+        .eq('user_id', user.id);
+      
+      // Log the credit usage
+      await supabase.from('grading_credit_history').insert({
+        user_id: user.id,
+        credits_change: -1,
+        reason: 'First free signup grading (includes protection bundle)',
+      });
+    }
+    
+    if (gradingPrice > 0 && wallet.balance < gradingPrice) {
       return new Response(
         JSON.stringify({ error: 'Insufficient balance', required: gradingPrice, current: wallet.balance }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Atomically deduct balance
-    const { error: deductError } = await supabase
-      .from('wallets')
-      .update({ balance: wallet.balance - gradingPrice, updated_at: new Date().toISOString() })
-      .eq('id', wallet.id)
-      .eq('balance', wallet.balance); // Optimistic lock
+    // Only deduct balance if there's a charge
+    if (gradingPrice > 0) {
+      // Atomically deduct balance
+      const { error: deductError } = await supabase
+        .from('wallets')
+        .update({ balance: wallet.balance - gradingPrice, updated_at: new Date().toISOString() })
+        .eq('id', wallet.id)
+        .eq('balance', wallet.balance); // Optimistic lock
 
-    if (deductError) {
-      console.error('Balance deduction error:', deductError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to process payment. Please try again.' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      if (deductError) {
+        console.error('Balance deduction error:', deductError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to process payment. Please try again.' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    // Create ledger transaction
-    const { error: txError } = await supabase
-      .from('transactions')
-      .insert({
-        wallet_id: wallet.id,
-        type: 'grading_fee',
-        amount: -gradingPrice,
-        description: `Card grading fee - Order ${orderId}`,
-        reference_id: orderId
-      });
+      // Create ledger transaction (only if payment was made)
+      const { error: txError } = await supabase
+        .from('transactions')
+        .insert({
+          wallet_id: wallet.id,
+          type: 'grading_fee',
+          amount: -gradingPrice,
+          description: `Card grading fee - Order ${orderId}`,
+          reference_id: orderId
+        });
 
-    if (txError) {
-      console.error('Transaction log error:', txError);
-      // Continue anyway, payment was successful
+      if (txError) {
+        console.error('Transaction log error:', txError);
+        // Continue anyway, payment was successful
+      }
     }
 
     // Award Cardboom Gems (0.2% of transaction, or 0.25% for Pro)
@@ -383,24 +424,8 @@ serve(async (req) => {
     
     const isAdmin = !!adminRole;
 
-    // Check if this is the user's first free grading (signup credit)
-    // First free grading gets instant 5-minute results
-    const { data: creditsData } = await supabase
-      .from('grading_credits')
-      .select('signup_credit_claimed, credits_remaining')
-      .eq('user_id', user.id)
-      .maybeSingle();
-    
-    // Check if user's first grading order
-    const { count: orderCount } = await supabase
-      .from('grading_orders')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('status', 'completed');
-    
-    const isFirstFreeGrading = creditsData?.signup_credit_claimed && 
-                               creditsData?.credits_remaining > 0 && 
-                               (orderCount || 0) === 0;
+    // Note: isFirstFreeGrading was already computed above during payment check
+    // Reuse it here for the countdown logic
 
     // Get user subscription tier for countdown calculation
     const { data: subscription } = await supabase

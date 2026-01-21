@@ -12,6 +12,15 @@ export interface GradingCredits {
   signup_credit_claimed: boolean;
 }
 
+// Check if this is the user's first free signup grading (completely free, no extras)
+export const isFirstFreeSignupGrading = (credits: GradingCredits | null): boolean => {
+  if (!credits) return false;
+  // First free grading: signup credit claimed AND credits remaining > 0 AND this is their first use
+  // The signup_credit_claimed flag indicates verification was completed
+  // credits_remaining > 0 means they haven't used it yet
+  return credits.signup_credit_claimed && credits.credits_remaining > 0;
+};
+
 export const useGradingCredits = (userId?: string) => {
   const [credits, setCredits] = useState<GradingCredits | null>(null);
   const [loading, setLoading] = useState(true);
