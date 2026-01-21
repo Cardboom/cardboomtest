@@ -242,9 +242,42 @@ serve(async (req) => {
           
           result.tcgplayerUrl = productResult.url;
           
+          // Search results often don't include prices - need to scrape the actual page
+          let markdown = productResult.markdown || '';
+          
+          // If no prices in search result, scrape the product page directly
+          if (productResult.url && !markdown.includes('$')) {
+            console.log(`[scrape-tcgplayer] Scraping product page: ${productResult.url}`);
+            
+            try {
+              const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  url: productResult.url,
+                  formats: ['markdown'],
+                  onlyMainContent: true,
+                  waitFor: 2000, // Wait for dynamic content
+                }),
+              });
+              
+              const scrapeData = await scrapeResponse.json();
+              if (scrapeData.success && scrapeData.data?.markdown) {
+                markdown = scrapeData.data.markdown;
+              } else if (scrapeData.markdown) {
+                markdown = scrapeData.markdown;
+              }
+            } catch (scrapeErr) {
+              console.error(`[scrape-tcgplayer] Direct scrape failed:`, scrapeErr);
+            }
+          }
+          
           // Extract prices from the scraped content
-          if (productResult.markdown) {
-            const prices = extractPricesFromMarkdown(productResult.markdown);
+          if (markdown) {
+            const prices = extractPricesFromMarkdown(markdown);
             result.marketPrice = prices.market;
             result.lowPrice = prices.low;
             result.midPrice = prices.mid;
