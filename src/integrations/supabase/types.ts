@@ -8429,6 +8429,90 @@ export type Database = {
           },
         ]
       }
+      price_reports: {
+        Row: {
+          catalog_card_id: string | null
+          created_at: string
+          expected_price: number | null
+          id: string
+          listing_id: string | null
+          market_item_id: string | null
+          notes: string | null
+          report_reason: string
+          reported_price: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          catalog_card_id?: string | null
+          created_at?: string
+          expected_price?: number | null
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          notes?: string | null
+          report_reason: string
+          reported_price?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          catalog_card_id?: string | null
+          created_at?: string
+          expected_price?: number | null
+          id?: string
+          listing_id?: string | null
+          market_item_id?: string | null
+          notes?: string | null
+          report_reason?: string
+          reported_price?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "price_reports_catalog_card_id_fkey"
+            columns: ["catalog_card_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["listing_id"]
+          },
+          {
+            foreignKeyName: "price_reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "price_reports_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_card_active_listings"
+            referencedColumns: ["market_item_id"]
+          },
+          {
+            foreignKeyName: "price_reports_market_item_id_fkey"
+            columns: ["market_item_id"]
+            isOneToOne: false
+            referencedRelation: "market_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       price_votes: {
         Row: {
           created_at: string
