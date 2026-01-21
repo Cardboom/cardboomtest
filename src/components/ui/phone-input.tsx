@@ -12,8 +12,8 @@ interface Country {
 }
 
 const countries: Country[] = [
-  { code: 'TR', name: 'Turkey', dial: '+90', flag: '🇹🇷' },
   { code: 'US', name: 'United States', dial: '+1', flag: '🇺🇸' },
+  { code: 'CA', name: 'Canada', dial: '+1', flag: '🇨🇦' },
   { code: 'GB', name: 'United Kingdom', dial: '+44', flag: '🇬🇧' },
   { code: 'DE', name: 'Germany', dial: '+49', flag: '🇩🇪' },
   { code: 'FR', name: 'France', dial: '+33', flag: '🇫🇷' },
@@ -28,10 +28,10 @@ const countries: Country[] = [
   { code: 'KR', name: 'South Korea', dial: '+82', flag: '🇰🇷' },
   { code: 'CN', name: 'China', dial: '+86', flag: '🇨🇳' },
   { code: 'AU', name: 'Australia', dial: '+61', flag: '🇦🇺' },
-  { code: 'CA', name: 'Canada', dial: '+1', flag: '🇨🇦' },
   { code: 'BR', name: 'Brazil', dial: '+55', flag: '🇧🇷' },
   { code: 'MX', name: 'Mexico', dial: '+52', flag: '🇲🇽' },
   { code: 'IN', name: 'India', dial: '+91', flag: '🇮🇳' },
+  { code: 'TR', name: 'Turkey', dial: '+90', flag: '🇹🇷' },
   { code: 'RU', name: 'Russia', dial: '+7', flag: '🇷🇺' },
   { code: 'SA', name: 'Saudi Arabia', dial: '+966', flag: '🇸🇦' },
   { code: 'AE', name: 'UAE', dial: '+971', flag: '🇦🇪' },
@@ -60,7 +60,7 @@ export const PhoneInputWithCountry = ({
 }: PhoneInputWithCountryProps) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState<Country>(countries[0]); // Default Turkey
+  const [selectedCountry, setSelectedCountry] = useState<Country>(countries[0]); // Default United States
 
   // Auto-detect country from input
   const handleInputChange = (input: string) => {
