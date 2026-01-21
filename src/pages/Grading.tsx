@@ -127,31 +127,26 @@ export default function Grading() {
   const isLaunchActive = gradingPricing.launchDiscount > 0;
   const discountPercent = Math.round(gradingPricing.launchDiscount * 100);
 
-  // Online grading pricing (with 50% launch discount applied)
+  // Online grading pricing - Standard $5 (from $10), Priority $10 (from $20)
+  // Standard: 5 min queue | Priority: Instant
   const onlinePricingTiers = [
     { 
       name: 'Standard', 
-      originalPrice: gradingPricing.standard.price, 
-      price: isLaunchActive ? Math.round(gradingPricing.standard.price * (1 - gradingPricing.launchDiscount) * 100) / 100 : gradingPricing.standard.price,
-      days: '~3 mins', 
-      description: 'Instant AI-powered digital grading', 
-      popular: false 
-    },
-    { 
-      name: 'Express', 
-      originalPrice: gradingPricing.express.price, 
-      price: isLaunchActive ? Math.round(gradingPricing.express.price * (1 - gradingPricing.launchDiscount) * 100) / 100 : gradingPricing.express.price,
-      days: '~3 mins', 
-      description: 'Priority queue processing', 
-      popular: true 
+      originalPrice: 10, // Base price before discount
+      price: isLaunchActive ? 5 : 10, // 50% off = $5
+      days: '~5 mins', 
+      description: 'Queued AI grading - results in 5 minutes', 
+      popular: false,
+      isInstant: false,
     },
     { 
       name: 'Priority', 
-      originalPrice: gradingPricing.priority.price, 
-      price: isLaunchActive ? Math.round(gradingPricing.priority.price * (1 - gradingPricing.launchDiscount) * 100) / 100 : gradingPricing.priority.price,
-      days: '~3 mins', 
-      description: 'Highest priority processing', 
-      popular: false 
+      originalPrice: 20, // Base price before discount
+      price: isLaunchActive ? 10 : 20, // 50% off = $10
+      days: 'Instant', 
+      description: 'Instant AI grading - immediate results', 
+      popular: true,
+      isInstant: true,
     },
   ];
 

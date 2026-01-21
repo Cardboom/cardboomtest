@@ -435,29 +435,35 @@ serve(async (req) => {
       .maybeSingle();
 
     // Speed tier determines grading visibility timing (NOT subscription tier)
-    // Priority: 4 hours, Express: 24 hours, Standard: 72 hours
-    // SPECIAL: First free grading = 5 minutes (instant)
-    // ONLINE GRADING: All online gradings get instant 3-minute countdown
+    // Online AI Grading: Standard = 5 min queue, Priority = Instant
     // Physical grading (with protection bundle) uses traditional speed tier hours
-    const SPEED_TIER_HOURS: Record<string, number> = {
+    const PHYSICAL_SPEED_TIER_HOURS: Record<string, number> = {
       priority: 4,
       express: 24,
       standard: 72,
     };
     
+    // Online grading minutes: Standard = 5 min queue, Priority = instant (0)
+    const ONLINE_SPEED_TIER_MINUTES: Record<string, number> = {
+      priority: 0, // Instant
+      express: 2,  // 2 minutes  
+      standard: 5, // 5 minute queue
+    };
+    
     const speedTier = existingOrder.speed_tier || 'standard';
     
-    // Check if this is online grading (no protection bundle) - all online = instant 3 min
+    // Check if this is online grading (no protection bundle)
     const isOnlineGrading = !existingOrder.include_protection;
     
     let countdownHours: number;
     if (isOnlineGrading || isFirstFreeGrading) {
-      // All online gradings get 3-minute instant countdown
-      countdownHours = 3 / 60; // 3 minutes in hours
-      console.log('Online grading detected - setting 3-minute instant countdown');
+      // Online grading uses minute-based countdown
+      const minutes = ONLINE_SPEED_TIER_MINUTES[speedTier] || 5;
+      countdownHours = minutes / 60; // Convert minutes to hours
+      console.log(`Online grading (${speedTier}) - setting ${minutes}-minute countdown`);
     } else {
       // Physical grading uses speed tier hours
-      countdownHours = SPEED_TIER_HOURS[speedTier] || 72;
+      countdownHours = PHYSICAL_SPEED_TIER_HOURS[speedTier] || 72;
     }
     
     const estimatedCompletionAt = new Date(Date.now() + countdownHours * 60 * 60 * 1000).toISOString();

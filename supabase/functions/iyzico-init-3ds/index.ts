@@ -99,12 +99,15 @@ serve(async (req) => {
       throw new Error('Invalid amount. Must be between $10 and $10,000');
     }
 
-    const feePercent = 0.065;
+    // Fee structure: USD = 6.5%, TRY/local currencies = 12%
+    const feePercent = paymentCurrency === 'USD' ? 0.065 : 0.12;
     const flatFee = 0.50;
     const feeUSD = (amountUSD * feePercent) + flatFee;
     const totalUSD = amountUSD + feeUSD;
     
-    const paymentAmount = paymentCurrency === 'TRY' ? totalUSD * tryRate : totalUSD;
+    // Use consistent rate - default to 45.01 TRY/USD if not provided
+    const effectiveTryRate = tryRate || 45.01;
+    const paymentAmount = paymentCurrency === 'TRY' ? totalUSD * effectiveTryRate : totalUSD;
     const currency = paymentCurrency === 'TRY' ? 'TRY' : 'USD';
     
     const conversationId = `topup_${user.id.substring(0, 8)}_${Date.now()}`;
