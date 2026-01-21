@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Gift, Crown, Check } from 'lucide-react';
+import { Sparkles, Gift, Crown, Check, AlertCircle, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useGradingCredits } from '@/hooks/useGradingCredits';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface GradingCreditsDisplayProps {
   userId?: string;
@@ -13,9 +16,71 @@ export const GradingCreditsDisplay: React.FC<GradingCreditsDisplayProps> = ({
   userId,
   onUseCredit 
 }) => {
-  const { creditsRemaining, loading } = useGradingCredits(userId);
+  const { creditsRemaining, credits, loading } = useGradingCredits(userId);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const navigate = useNavigate();
+
+  // Check if user has phone and national ID
+  useEffect(() => {
+    const checkVerification = async () => {
+      if (!userId) return;
+      
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('phone, national_id')
+        .eq('id', userId)
+        .single();
+      
+      if (profile) {
+        const hasPhone = profile.phone && profile.phone.trim() !== '';
+        const hasNationalId = profile.national_id && profile.national_id.trim() !== '';
+        setNeedsVerification(!hasPhone || !hasNationalId);
+      }
+    };
+    
+    checkVerification();
+  }, [userId]);
 
   if (loading || !userId) return null;
+
+  // Show pending signup credit if user hasn't claimed it yet
+  if (!credits?.signup_credit_claimed && needsVerification) {
+    return (
+      <motion.div
+        className="p-4 rounded-xl border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-orange-500/10"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500">
+              <Gift className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold flex items-center gap-2">
+                Unlock Free Grading
+                <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-600">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  Pending
+                </Badge>
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Verify phone & ID to claim your free credit!
+              </p>
+            </div>
+          </div>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="border-yellow-500/50 text-yellow-600 hover:bg-yellow-500/10"
+            onClick={() => navigate('/settings')}
+          >
+            Verify <ArrowRight className="w-3 h-3 ml-1" />
+          </Button>
+        </div>
+      </motion.div>
+    );
+  }
 
   if (creditsRemaining <= 0) return null;
 

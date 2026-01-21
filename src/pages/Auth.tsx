@@ -364,6 +364,28 @@ const Auth = () => {
     } else {
       // Track signup event for retargeting pixels
       trackSignUpEvent('email');
+      
+      // Record signup fingerprint for abuse prevention
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          // Generate a simple device fingerprint
+          const deviceFingerprint = btoa(
+            `${navigator.userAgent}|${screen.width}x${screen.height}|${navigator.language}|${new Date().getTimezoneOffset()}`
+          ).slice(0, 64);
+          
+          await supabase.functions.invoke('record-signup', {
+            body: { 
+              userId: user.id,
+              deviceFingerprint 
+            }
+          });
+        }
+      } catch (fingerprintError) {
+        console.error('Failed to record signup fingerprint:', fingerprintError);
+        // Don't block signup if fingerprint recording fails
+      }
+      
       toast.success('Account created successfully! Welcome to Cardboom!');
       setLoading(false);
       // Redirect to success page for conversion tracking
