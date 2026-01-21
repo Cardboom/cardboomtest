@@ -116,6 +116,83 @@ export const trackSearchEvent = (searchTerm: string) => {
  * Fires GA4, Google Ads, Meta Pixel, and TikTok Pixel events
  * Uses transaction ID for deduplication
  */
+/**
+ * Track subscription conversion
+ * Fires GA4, Google Ads, Meta Pixel events for monthly/yearly subscriptions
+ */
+export const trackSubscriptionConversion = (params: {
+  subscriptionId: string;
+  tier: 'lite' | 'pro' | 'enterprise';
+  billingCycle: 'monthly' | 'yearly';
+  value: number;
+  currency?: string;
+}) => {
+  const { subscriptionId, tier, billingCycle, value, currency = 'USD' } = params;
+  
+  if (typeof window === 'undefined') return;
+
+  // GA4 / GTM subscription event
+  if (window.dataLayer) {
+    window.dataLayer.push({
+      event: 'purchase',
+      transaction_id: subscriptionId,
+      ecommerce: {
+        value,
+        currency,
+        items: [{
+          item_id: `subscription_${tier}_${billingCycle}`,
+          item_name: `${tier.charAt(0).toUpperCase() + tier.slice(1)} Subscription - ${billingCycle}`,
+          item_category: 'Subscription',
+          price: value,
+          quantity: 1,
+        }],
+      },
+    });
+  }
+
+  // Google Ads conversion - use a dedicated subscription conversion label
+  const fireGoogleAdsConversion = () => {
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-17885952633/subscription_monthly',
+        value,
+        currency,
+        transaction_id: subscriptionId,
+      });
+      console.log('[Conversion] Subscription conversion fired:', { tier, billingCycle, value });
+    }
+  };
+
+  fireGoogleAdsConversion();
+  // Retry in case gtag loads late
+  setTimeout(fireGoogleAdsConversion, 1000);
+
+  // Meta Pixel (if available)
+  if (window.fbq) {
+    window.fbq('track', 'Subscribe', {
+      value,
+      currency,
+      subscription_id: subscriptionId,
+      content_name: `${tier} ${billingCycle}`,
+    });
+  }
+
+  // TikTok Pixel (if available)
+  if (window.ttq) {
+    window.ttq.track('Subscribe', {
+      value,
+      currency,
+      content_id: subscriptionId,
+      content_name: `${tier} ${billingCycle}`,
+    });
+  }
+};
+
+/**
+ * Track grading purchase conversion
+ * Fires GA4, Google Ads, Meta Pixel, and TikTok Pixel events
+ * Uses transaction ID for deduplication
+ */
 export const trackGradingPurchase = (params: {
   orderId: string;
   value: number;
