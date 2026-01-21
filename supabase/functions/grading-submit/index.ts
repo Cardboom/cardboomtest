@@ -383,6 +383,25 @@ serve(async (req) => {
     
     const isAdmin = !!adminRole;
 
+    // Check if this is the user's first free grading (signup credit)
+    // First free grading gets instant 5-minute results
+    const { data: creditsData } = await supabase
+      .from('grading_credits')
+      .select('signup_credit_claimed, credits_remaining')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    
+    // Check if user's first grading order
+    const { count: orderCount } = await supabase
+      .from('grading_orders')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', 'completed');
+    
+    const isFirstFreeGrading = creditsData?.signup_credit_claimed && 
+                               creditsData?.credits_remaining > 0 && 
+                               (orderCount || 0) === 0;
+
     // Get user subscription tier for countdown calculation
     const { data: subscription } = await supabase
       .from('user_subscriptions')
@@ -392,6 +411,7 @@ serve(async (req) => {
 
     // Speed tier determines grading visibility timing (NOT subscription tier)
     // Priority: 4 hours, Express: 24 hours, Standard: 72 hours
+    // SPECIAL: First free grading = 5 minutes (instant)
     const SPEED_TIER_HOURS: Record<string, number> = {
       priority: 4,
       express: 24,
@@ -399,12 +419,18 @@ serve(async (req) => {
     };
     
     const speedTier = existingOrder.speed_tier || 'standard';
-    const countdownHours = SPEED_TIER_HOURS[speedTier] || 72;
+    let countdownHours = SPEED_TIER_HOURS[speedTier] || 72;
+    
+    // First free grading gets 5-minute countdown (0.083 hours)
+    if (isFirstFreeGrading) {
+      countdownHours = 5 / 60; // 5 minutes in hours
+      console.log('First free grading detected - setting 5-minute instant countdown');
+    }
     
     const estimatedCompletionAt = new Date(Date.now() + countdownHours * 60 * 60 * 1000).toISOString();
     
-    // For admins, results are visible immediately. For others, after countdown based on speed tier
-    const resultsVisibleAt = isAdmin ? new Date().toISOString() : estimatedCompletionAt;
+    // For admins or first free grading, results are visible immediately/very quickly
+    const resultsVisibleAt = (isAdmin || isFirstFreeGrading) ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : estimatedCompletionAt;
 
     // Update order to paid with estimated completion time and visibility time
     const { error: updateError } = await supabase
