@@ -149,7 +149,7 @@ export default function Grading() {
 
   const seoContent = {
     en: {
-      title: "AI Card Grading | TCG Card Grading Service | CardBoom Grading Index",
+      title: "AI Card Grading for Pokémon, Yu-Gi-Oh!, MTG & One Piece",
       description: "Professional AI-powered TCG card grading in 24 hours. Grade Pokémon, MTG, Yu-Gi-Oh!, One Piece & sports cards. Get accurate grades for corners, edges, surface & centering. PSA alternative with instant results.",
       keywords: "card grading, TCG card grading, AI card grading, Pokemon card grading, MTG grading, Yu-Gi-Oh grading, sports card grading, PSA alternative, BGS alternative, CGC alternative, card authentication, trading card grading, collectible card grading, professional card grading, online card grading, instant card grading, card condition check, grading service",
     },

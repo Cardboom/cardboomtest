@@ -58,7 +58,7 @@ const Markets = () => {
       <FilteredPageSEO canonicalPath="/markets" />
       
       <Helmet>
-        <title>Marketplace | CardBoom - Buy Trading Cards & Collectibles</title>
+        <title>Buy, Sell & AI-Grade Trading Cards | CardBoom</title>
         <meta name="description" content="Browse user-listed trading cards and collectibles for sale. Find Pokemon, One Piece, Yu-Gi-Oh!, MTG cards, and more from verified sellers on CardBoom." />
         <meta name="keywords" content="buy trading cards, Pokemon cards for sale, One Piece cards, collectibles marketplace, TCG marketplace, card sellers" />
         <meta property="og:title" content="Marketplace | CardBoom" />
