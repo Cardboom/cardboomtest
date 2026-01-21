@@ -75,54 +75,92 @@ function buildOnePieceProductUrl(card: CardQuery): string {
   return buildTcgPlayerSearchUrl(card);
 }
 
-// Extract price from scraped markdown/html
+// Extract price from scraped markdown/html - improved patterns for TCGPlayer
 function extractPricesFromMarkdown(markdown: string): { market: number | null; low: number | null; mid: number | null; high: number | null } {
   const result = { market: null as number | null, low: null as number | null, mid: null as number | null, high: null as number | null };
   
-  // Common patterns for TCGPlayer prices
-  // Market Price: $X.XX
-  const marketMatch = markdown.match(/market\s*price[:\s]*\$?([\d,]+\.?\d*)/i);
-  if (marketMatch) {
-    result.market = parseFloat(marketMatch[1].replace(',', ''));
-  }
+  // Debug: log first 500 chars to see what we're working with
+  console.log('[extractPrices] Markdown sample:', markdown.substring(0, 500));
   
-  // Low: $X.XX or Lowest: $X.XX
-  const lowMatch = markdown.match(/(?:low(?:est)?|from)[:\s]*\$?([\d,]+\.?\d*)/i);
-  if (lowMatch) {
-    result.low = parseFloat(lowMatch[1].replace(',', ''));
-  }
+  // TCGPlayer specific patterns (their HTML structure)
+  // Pattern: "Market Price: $X.XX" or "Market\n$X.XX"
+  const marketPatterns = [
+    /market\s*(?:price)?[:\s]*\$?([\d,]+\.?\d*)/i,
+    /\bmarket\b[^\d]*\$?([\d,]+\.?\d*)/i,
+    /price[:\s]+\$?([\d,]+\.?\d*)/i,
+  ];
   
-  // Mid/Median: $X.XX
-  const midMatch = markdown.match(/(?:mid|median)[:\s]*\$?([\d,]+\.?\d*)/i);
-  if (midMatch) {
-    result.mid = parseFloat(midMatch[1].replace(',', ''));
-  }
-  
-  // High: $X.XX
-  const highMatch = markdown.match(/(?:high(?:est)?)[:\s]*\$?([\d,]+\.?\d*)/i);
-  if (highMatch) {
-    result.high = parseFloat(highMatch[1].replace(',', ''));
-  }
-  
-  // Also try to find standalone prices if specific labels not found
-  if (!result.market) {
-    // Look for price patterns like "$12.99" in product context
-    const priceMatches = markdown.match(/\$(\d+\.?\d*)/g);
-    if (priceMatches && priceMatches.length > 0) {
-      // Filter reasonable prices (between $0.10 and $10000)
-      const prices = priceMatches
-        .map(p => parseFloat(p.replace('$', '')))
-        .filter(p => p >= 0.10 && p <= 10000)
-        .sort((a, b) => a - b);
-      
-      if (prices.length > 0) {
-        result.low = prices[0];
-        result.high = prices[prices.length - 1];
-        result.market = prices[Math.floor(prices.length / 2)]; // median
+  for (const pattern of marketPatterns) {
+    const match = markdown.match(pattern);
+    if (match && match[1]) {
+      const price = parseFloat(match[1].replace(/,/g, ''));
+      if (price >= 0.01 && price <= 100000) {
+        result.market = price;
+        break;
       }
     }
   }
   
+  // Low price patterns
+  const lowPatterns = [
+    /(?:low(?:est)?|from|starting)[:\s]*\$?([\d,]+\.?\d*)/i,
+    /\blow\b[^\d]*\$?([\d,]+\.?\d*)/i,
+    /as\s+low\s+as[:\s]*\$?([\d,]+\.?\d*)/i,
+  ];
+  
+  for (const pattern of lowPatterns) {
+    const match = markdown.match(pattern);
+    if (match && match[1]) {
+      const price = parseFloat(match[1].replace(/,/g, ''));
+      if (price >= 0.01 && price <= 100000) {
+        result.low = price;
+        break;
+      }
+    }
+  }
+  
+  // High price patterns  
+  const highPatterns = [
+    /(?:high(?:est)?)[:\s]*\$?([\d,]+\.?\d*)/i,
+    /\bhigh\b[^\d]*\$?([\d,]+\.?\d*)/i,
+  ];
+  
+  for (const pattern of highPatterns) {
+    const match = markdown.match(pattern);
+    if (match && match[1]) {
+      const price = parseFloat(match[1].replace(/,/g, ''));
+      if (price >= 0.01 && price <= 100000) {
+        result.high = price;
+        break;
+      }
+    }
+  }
+  
+  // Fallback: Look for ALL price patterns and use statistical approach
+  if (!result.market && !result.low) {
+    // Match all prices in the content
+    const allPriceMatches = markdown.match(/\$\s*([\d,]+\.?\d*)/g);
+    if (allPriceMatches && allPriceMatches.length > 0) {
+      const prices = allPriceMatches
+        .map(p => parseFloat(p.replace(/[$,\s]/g, '')))
+        .filter(p => p >= 0.10 && p <= 10000 && !isNaN(p))
+        .sort((a, b) => a - b);
+      
+      // Remove duplicates
+      const uniquePrices = [...new Set(prices)];
+      
+      if (uniquePrices.length > 0) {
+        result.low = uniquePrices[0];
+        result.high = uniquePrices[uniquePrices.length - 1];
+        // Use median as market price
+        const midIdx = Math.floor(uniquePrices.length / 2);
+        result.market = uniquePrices[midIdx];
+        console.log(`[extractPrices] Fallback prices found: ${uniquePrices.join(', ')}`);
+      }
+    }
+  }
+  
+  console.log(`[extractPrices] Extracted: market=$${result.market}, low=$${result.low}, high=$${result.high}`);
   return result;
 }
 
