@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, TrendingUp, Clock, Sparkles, Tag, ShoppingCart } from 'lucide-react';
+import { Search, X, TrendingUp, Clock, Tag, ShoppingCart, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -264,7 +264,7 @@ export const SmartSearch = ({ placeholder = "Search cards, collectibles...", cla
           {/* Loading state */}
           {isLoading && (
             <div className="p-4 text-center text-sm text-muted-foreground">
-              <Sparkles className="w-4 h-4 inline animate-pulse mr-2" />
+              <Loader2 className="w-4 h-4 inline animate-spin mr-2" />
               Searching...
             </div>
           )}

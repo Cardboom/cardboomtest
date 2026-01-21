@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Camera, Upload, Loader2, CheckCircle2, XCircle, Sparkles, Trash2, Edit2, Layers, ArrowLeft } from 'lucide-react';
+import { Camera, Upload, Loader2, CheckCircle2, XCircle, Scan, Trash2, Edit2, Layers, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -474,7 +474,7 @@ export const BulkImageImportDialog = ({ onImportComplete }: BulkImageImportDialo
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-primary" />
+            <Scan className="w-5 h-5 text-primary" />
             AI Bulk Card Scanner
           </DialogTitle>
           <DialogDescription>
