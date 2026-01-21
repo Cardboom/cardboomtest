@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Building2, Check, Zap, Shield, TrendingDown, Star, Users, Headphones } from 'lucide-react';
 import {
   Dialog,
@@ -22,13 +23,14 @@ export const EnterpriseUpgradeDialog = ({
   onSuccess,
   children 
 }: EnterpriseUpgradeDialogProps) => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const { subscribe, ENTERPRISE_PRICE } = useSubscription(userId);
 
   const handleSubscribe = async () => {
     setProcessing(true);
-    const success = await subscribe('enterprise');
+    const success = await subscribe('enterprise', 'monthly', navigate);
     setProcessing(false);
     
     if (success) {

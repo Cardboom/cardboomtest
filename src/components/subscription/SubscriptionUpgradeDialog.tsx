@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Crown, Check, Zap, Shield, TrendingDown, Star, Calendar } from 'lucide-react';
 import {
   Dialog,
@@ -25,6 +26,7 @@ export const SubscriptionUpgradeDialog = ({
   onSuccess,
   children 
 }: SubscriptionUpgradeDialogProps) => {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
@@ -32,7 +34,7 @@ export const SubscriptionUpgradeDialog = ({
 
   const handleSubscribe = async () => {
     setProcessing(true);
-    const success = await subscribe('pro', billingCycle);
+    const success = await subscribe('pro', billingCycle, navigate);
     setProcessing(false);
     
     if (success) {

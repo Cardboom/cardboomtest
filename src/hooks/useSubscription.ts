@@ -84,7 +84,7 @@ export const useSubscription = (userId?: string) => {
     return true;
   }, [subscription]);
 
-  const subscribe = async (tier: 'pro' | 'enterprise' = 'pro', billingCycle: 'monthly' | 'yearly' = 'monthly') => {
+  const subscribe = async (tier: 'lite' | 'pro' | 'enterprise' = 'pro', billingCycle: 'monthly' | 'yearly' = 'monthly', navigate?: (path: string) => void) => {
     if (!userId) {
       toast.error('Please sign in to subscribe');
       return false;
@@ -193,6 +193,12 @@ export const useSubscription = (userId?: string) => {
       const savings = billingCycle === 'yearly' ? ' You saved 1 month free!' : '';
       toast.success(`Welcome to ${tierLabel}! Enjoy reduced fees and premium features.${savings}`);
       await fetchSubscription();
+      
+      // Navigate to subscription success page if navigate function provided
+      if (navigate) {
+        navigate(`/subscription-success?tier=${tier}&cycle=${billingCycle}&price=${price.toFixed(2)}`);
+      }
+      
       return true;
 
     } catch (error: any) {

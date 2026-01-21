@@ -21,6 +21,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SignUpSuccess from "./pages/SignUpSuccess";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import Wallet from "./pages/Wallet";
 import Vault from "./pages/Vault";
 import Sell from "./pages/Sell";
@@ -141,6 +142,7 @@ const AppContent = () => {
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/signup-success" element={<SignUpSuccess />} />
+          <Route path="/subscription-success" element={<SubscriptionSuccess />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/vault" element={<Vault />} />
           <Route path="/sell" element={<Sell />} />
