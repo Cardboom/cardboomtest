@@ -20,7 +20,9 @@ interface WalletTopUpDialogProps {
 }
 
 const FLAT_FEE_USD = 0.5;
-const TRY_MARKUP_PERCENT = 0.08;
+// Fee percentages: USD = 6.5%, TRY/local currencies = 12%
+const USD_FEE_PERCENT = 6.5;
+const LOCAL_CURRENCY_FEE_PERCENT = 12;
 type PaymentCurrency = 'USD' | 'TRY';
 
 export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUpDialogProps) => {
@@ -36,11 +38,16 @@ export const WalletTopUpDialog = ({ open, onOpenChange, onSuccess }: WalletTopUp
   const { needsProfileInfo, refetch: refetchProfileInfo } = useRequireProfileInfo();
 
   const { exchangeRates } = useCurrency();
-  const baseRate = exchangeRates.USD_TRY || 38;
-  const tryRate = baseRate * (1 + TRY_MARKUP_PERCENT);
+  const baseRate = exchangeRates.USD_TRY || 45.01; // Default to 45.01 TRY/USD
+  // No extra markup on rate - fee is applied separately
+  const tryRate = baseRate;
 
   const { isPro } = useSubscription(userId);
-  const TOPUP_FEE_PERCENT = isPro ? 5.5 : 6.5;
+  
+  // Fee structure: USD = 6.5%, TRY/local = 12%
+  // Pro users get 1% discount on top
+  const baseFeePercent = paymentCurrency === 'USD' ? USD_FEE_PERCENT : LOCAL_CURRENCY_FEE_PERCENT;
+  const TOPUP_FEE_PERCENT = isPro ? baseFeePercent - 1 : baseFeePercent;
 
   // Saved cards state
   const [selectedCardId, setSelectedCardId] = useState<string | 'new'>('new');

@@ -22,9 +22,10 @@ export interface GradingPricing {
 const LAUNCH_END_DATE = '2027-01-21T00:00:00Z'; // 1 year from launch
 
 const DEFAULT_PRICING: Omit<GradingPricing, 'isLoading'> = {
-  standard: { price: 18, daysMin: 20, daysMax: 25 },
-  express: { price: 35, daysMin: 7, daysMax: 10 },
-  priority: { price: 75, daysMin: 2, daysMax: 3 },
+  // Online AI grading: Standard $5 (from $10), Priority $10 (from $20)
+  standard: { price: 10, daysMin: 5, daysMax: 5 }, // 5 mins queue, shows as $5 with 50% discount
+  express: { price: 15, daysMin: 3, daysMax: 3 }, // Express tier
+  priority: { price: 20, daysMin: 0, daysMax: 0 }, // Instant, shows as $10 with 50% discount
   referralCommissionRate: 0.10,
   creatorRevenueShare: 0.15,
   launchDiscount: 0.50, // 50% off for launch

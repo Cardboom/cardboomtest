@@ -22,36 +22,27 @@ interface SpeedTierOption {
 }
 
 // Helper to build speed tiers from pricing data
+// Online AI Grading: Standard ($5 from $10, 5 min queue), Priority ($10 from $20, instant)
 const buildSpeedTiers = (pricing: ReturnType<typeof useGradingPricing>): SpeedTierOption[] => [
   {
     id: 'standard',
     name: 'Standard',
     price: pricing.standard.price,
-    daysMin: pricing.standard.daysMin,
-    daysMax: pricing.standard.daysMax,
+    daysMin: 5, // 5 minutes represented as "5 min"
+    daysMax: 5,
     icon: Clock,
-    description: 'Quality grading at our best price',
-  },
-  {
-    id: 'express',
-    name: 'Express',
-    price: pricing.express.price,
-    daysMin: pricing.express.daysMin,
-    daysMax: pricing.express.daysMax,
-    icon: Zap,
-    description: 'Faster turnaround for time-sensitive cards',
-    popular: true,
-    badge: 'Popular',
+    description: 'AI grading with 5-minute queue',
   },
   {
     id: 'priority',
     name: 'Priority',
     price: pricing.priority.price,
-    daysMin: pricing.priority.daysMin,
-    daysMax: pricing.priority.daysMax,
-    icon: Rocket,
-    description: 'Our fastest service for urgent grading',
-    badge: 'Fastest',
+    daysMin: 0, // Instant
+    daysMax: 0,
+    icon: Zap,
+    description: 'Instant AI grading - immediate results',
+    popular: true,
+    badge: 'Instant',
   },
 ];
 
@@ -141,7 +132,7 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {tier.daysMin}-{tier.daysMax} days • {tier.description}
+                    {tier.daysMin === 0 ? 'Instant results' : `~${tier.daysMin} min queue`} • {tier.description}
                   </p>
                 </div>
                 
@@ -175,7 +166,11 @@ export const SpeedTierSelector: React.FC<SpeedTierSelectorProps> = ({
       
       <div className="p-2 rounded-lg bg-muted/50 text-center">
         <p className="text-xs text-muted-foreground">
-          Est. completion: <span className="font-semibold text-foreground">{selectedTier.daysMin}-{selectedTier.daysMax} days</span>
+          {selectedTier.daysMin === 0 ? (
+            <>Results: <span className="font-semibold text-foreground">Instant</span></>
+          ) : (
+            <>Estimated wait: <span className="font-semibold text-foreground">~{selectedTier.daysMin} minutes</span></>
+          )}
         </p>
       </div>
     </div>
