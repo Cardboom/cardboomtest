@@ -233,6 +233,7 @@ const AppContent = () => {
           <Route path="/orders" element={<Orders />} />
           <Route path="/purchases" element={<Orders />} /> {/* Redirect legacy purchases URL */}
           <Route path="/account-settings" element={<AccountSettings />} />
+          <Route path="/settings" element={<AccountSettings />} />
           {/* AI Research & Citation Pages (AEO Strategy) */}
           <Route path="/ai" element={<ResearchIndex />} />
           <Route path="/ai/card-grading-questions" element={<CardGradingQuestionsIndex />} />
