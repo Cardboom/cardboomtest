@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { CartDrawer } from '@/components/CartDrawer';
 import { Award, Clock, Shield, ChevronRight, Zap, CheckCircle, ArrowRight, Camera, CreditCard, BarChart3, Sparkles, Target, Eye, Layers, Star, TrendingUp, Users, FileCheck, Lock, Cpu, Globe, Fingerprint, History, QrCode, Link, Package, DollarSign, Percent, Scale, BadgeCheck, Trophy } from 'lucide-react';
 import { useGradingPricing } from '@/hooks/useGradingPricing';
+import { GradingUserStatusBanner } from '@/components/grading/GradingUserStatusBanner';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
@@ -309,6 +310,11 @@ export default function Grading() {
       />
       
       <main>
+        {/* User Status Banner */}
+        <div className="container mx-auto px-4 pt-6">
+          <GradingUserStatusBanner />
+        </div>
+
         {/* Video Hero Section */}
         <section className="relative min-h-[85vh] flex items-center overflow-hidden">
           {/* Video Background */}
