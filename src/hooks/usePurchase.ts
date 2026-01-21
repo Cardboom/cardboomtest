@@ -188,13 +188,28 @@ export const usePurchase = () => {
       // CRITICAL: Convert listing price to USD first (our base currency for all calculations)
       const priceInUSD = convertToUSD(params.price, listingCurrency, exchangeRates);
 
+      // Fetch buyer's checkout discount from CardBoom Pass rewards
+      const { data: buyerProfile } = await supabase
+        .from('profiles')
+        .select('checkout_discount_percent')
+        .eq('id', buyerId)
+        .single();
+      
+      const checkoutDiscountPercent = buyerProfile?.checkout_discount_percent || 0;
+
       // 4. Calculate fees based on USD price
       const fees = await calculateFees(priceInUSD, buyerId, params.sellerId);
 
       // Calculate gem discount in USD (1 gem = $0.01)
       const gemsUsed = params.gemsUsed || 0;
       const gemDiscountUSD = gemsUsed / 100;
-      const adjustedTotalBuyerPays = Math.max(0, fees.totalBuyerPays - gemDiscountUSD);
+      
+      // Apply CardBoom Pass checkout discount (applies to the total before gems)
+      const passDiscountUSD = checkoutDiscountPercent > 0 
+        ? fees.totalBuyerPays * (checkoutDiscountPercent / 100) 
+        : 0;
+      
+      const adjustedTotalBuyerPays = Math.max(0, fees.totalBuyerPays - gemDiscountUSD - passDiscountUSD);
 
       // Convert buyer's total to their wallet currency for balance check
       const buyerTotalInWalletCurrency = convertFromUSD(adjustedTotalBuyerPays, buyerCurrency, exchangeRates);
