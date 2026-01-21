@@ -12708,6 +12708,7 @@ export type Database = {
       }
       public_profiles: {
         Row: {
+          account_status: string | null
           account_type: Database["public"]["Enums"]["account_type"] | null
           avatar_url: string | null
           badges: Json | null
@@ -12720,22 +12721,27 @@ export type Database = {
           guru_expertise: string[] | null
           id: string | null
           is_beta_tester: boolean | null
+          is_fan_account: boolean | null
           is_id_verified: boolean | null
+          is_verified_seller: boolean | null
           level: number | null
           profile_background: string | null
           profile_color_primary: string | null
           profile_color_secondary: string | null
           reputation_score: number | null
           reputation_tier: string | null
+          seller_trust_score: number | null
           show_collection_count: boolean | null
           show_portfolio_value: boolean | null
           showcase_items: string[] | null
           title: string | null
+          total_sales_completed: number | null
           trust_rating: number | null
           trust_review_count: number | null
           xp: number | null
         }
         Insert: {
+          account_status?: string | null
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           badges?: Json | null
@@ -12748,22 +12754,27 @@ export type Database = {
           guru_expertise?: string[] | null
           id?: string | null
           is_beta_tester?: boolean | null
+          is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          is_verified_seller?: boolean | null
           level?: number | null
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
+          seller_trust_score?: number | null
           show_collection_count?: boolean | null
           show_portfolio_value?: boolean | null
           showcase_items?: string[] | null
           title?: string | null
+          total_sales_completed?: number | null
           trust_rating?: number | null
           trust_review_count?: number | null
           xp?: number | null
         }
         Update: {
+          account_status?: string | null
           account_type?: Database["public"]["Enums"]["account_type"] | null
           avatar_url?: string | null
           badges?: Json | null
@@ -12776,17 +12787,21 @@ export type Database = {
           guru_expertise?: string[] | null
           id?: string | null
           is_beta_tester?: boolean | null
+          is_fan_account?: boolean | null
           is_id_verified?: boolean | null
+          is_verified_seller?: boolean | null
           level?: number | null
           profile_background?: string | null
           profile_color_primary?: string | null
           profile_color_secondary?: string | null
           reputation_score?: number | null
           reputation_tier?: string | null
+          seller_trust_score?: number | null
           show_collection_count?: boolean | null
           show_portfolio_value?: boolean | null
           showcase_items?: string[] | null
           title?: string | null
+          total_sales_completed?: number | null
           trust_rating?: number | null
           trust_review_count?: number | null
           xp?: number | null
@@ -13014,6 +13029,7 @@ export type Database = {
       }
       get_current_user_email: { Args: never; Returns: string }
       get_current_user_phone: { Args: never; Returns: string }
+      get_platform_stats: { Args: never; Returns: Json }
       get_seller_rating: {
         Args: { seller_uuid: string }
         Returns: {
