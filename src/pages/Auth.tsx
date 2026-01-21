@@ -346,12 +346,15 @@ const Auth = () => {
       } else {
         toast.error(error.message);
       }
+      setLoading(false);
     } else {
       // Track signup event for retargeting pixels
       trackSignUpEvent('email');
       toast.success('Account created successfully! Welcome to Cardboom!');
+      setLoading(false);
+      // Redirect to success page for conversion tracking
+      navigate('/signup-success');
     }
-    setLoading(false);
   };
 
   // Forgot password handlers - Email method
