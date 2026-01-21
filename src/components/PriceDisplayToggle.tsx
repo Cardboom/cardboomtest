@@ -53,7 +53,7 @@ export const PriceDisplayToggle = () => {
         className={cn(
           "h-7 px-2.5 gap-1.5 text-xs font-medium transition-all rounded-md",
           displayMode === 'gems' 
-            ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 hover:text-amber-400" 
+            ? "bg-primary/20 text-primary hover:bg-primary/30 hover:text-primary" 
             : "text-muted-foreground hover:text-foreground hover:bg-muted"
         )}
       >

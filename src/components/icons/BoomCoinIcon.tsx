@@ -68,18 +68,18 @@ export const BoomCoinIcon: React.FC<BoomCoinIconProps> = ({
         opacity="0.6"
       />
       
-      {/* Sparkle on fuse tip */}
+      {/* Sparkle on fuse tip - using brand primary color */}
       <circle
         cx="15"
         cy="2.5"
         r="1.5"
-        className="fill-amber-400"
+        className="fill-primary"
       />
       <circle
         cx="15"
         cy="2.5"
         r="1"
-        className="fill-amber-300"
+        className="fill-primary/70"
       />
     </svg>
   );

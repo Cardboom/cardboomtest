@@ -52,7 +52,7 @@ export const MobileCurrencyToggle = () => {
       className={cn(
         "h-8 px-2 gap-1 text-xs font-medium transition-all rounded-lg",
         isCoins 
-          ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30" 
+          ? "bg-primary/20 text-primary hover:bg-primary/30" 
           : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
       )}
     >
