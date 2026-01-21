@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Search, Calendar } from "lucide-react";
+import { Search, Calendar, Flag } from "lucide-react";
 import {
   LayoutDashboard,
   Users,
@@ -104,6 +104,7 @@ const navGroups: NavGroup[] = [
       { id: "items-manager", label: "Items Manager", icon: Package },
       { id: "listings-manager", label: "Listings (Delete)", icon: Trash2 },
       { id: "catalog-ops", label: "Catalog Ops", icon: RefreshCw },
+      { id: "price-reports", label: "Price Reports", icon: Flag },
       { id: "tcg-drops", label: "TCG Drops", icon: Calendar },
       { id: "controls", label: "Market Controls", icon: Settings },
     ],

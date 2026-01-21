@@ -73,6 +73,7 @@ import { ImageNormalizationManager } from '@/components/admin/ImageNormalization
 import { CatalogOpsPanel } from '@/components/admin/CatalogOpsPanel';
 import { BoomPacksManager } from '@/components/admin/BoomPacksManager';
 import { TCGDropsManager } from '@/components/admin/TCGDropsManager';
+import { PriceReportsPanel } from '@/components/admin/PriceReportsPanel';
 type LiquidityLevel = 'high' | 'medium' | 'low';
 
 interface MarketItem {
@@ -138,6 +139,7 @@ const Admin = () => {
     { id: 'items-manager', label: 'Items Manager' },
     { id: 'listings-manager', label: 'Listings Manager' },
     { id: 'catalog-ops', label: 'Catalog Ops' },
+    { id: 'price-reports', label: 'Price Reports' },
     { id: 'controls', label: 'Market Controls' },
     { id: 'cardwars', label: 'Card Wars' },
     { id: 'communityvotes', label: 'Community Votes' },
@@ -381,6 +383,8 @@ const Admin = () => {
         return <ImageNormalizationManager />;
       case 'catalog-ops':
         return <CatalogOpsPanel />;
+      case 'price-reports':
+        return <PriceReportsPanel />;
       case 'autobuy':
         return <AutoBuyManager />;
       case 'inventory':

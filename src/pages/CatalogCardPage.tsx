@@ -5,12 +5,13 @@ import { Footer } from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Bell, Heart, Share2 } from 'lucide-react';
+import { Loader2, Bell, Heart } from 'lucide-react';
 import { useCatalogCard, useCatalogCardPrice } from '@/hooks/useCatalogCard';
 import { CatalogPricePanel } from '@/components/catalog/CatalogPricePanel';
 import { CatalogPriceChart } from '@/components/catalog/CatalogPriceChart';
 import { CatalogCardListings } from '@/components/catalog/CatalogCardListings';
 import { ShareButton } from '@/components/ShareButton';
+import { PriceReportButton } from '@/components/catalog/PriceReportButton';
 
 const gameLabels: Record<string, string> = {
   pokemon: 'Pokémon',
@@ -253,7 +254,16 @@ const CatalogCardPage = () => {
             </header>
 
             {/* Price Panel */}
-            <CatalogPricePanel price={price} isLoading={priceLoading} />
+            <div className="space-y-2">
+              <CatalogPricePanel price={price} isLoading={priceLoading} />
+              <div className="flex justify-end">
+                <PriceReportButton
+                  catalogCardId={card.id}
+                  currentPrice={price?.price_usd}
+                  cardName={card.name}
+                />
+              </div>
+            </div>
 
             {/* Price Chart */}
             {card.id && (
