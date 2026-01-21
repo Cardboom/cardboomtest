@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { ArrowLeft, Phone, CreditCard, Sparkles, TrendingUp, Star, Smartphone, Mail, Link, Loader2 } from 'lucide-react';
+import { ArrowLeft, Phone, CreditCard, TrendingUp, Smartphone, Mail, Link, Loader2, Gift, Shield, Zap } from 'lucide-react';
 import { PhoneInputWithCountry } from '@/components/ui/phone-input';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
@@ -606,7 +606,7 @@ const Auth = () => {
                   className="flex items-start gap-4 p-4 rounded-xl glass"
                 >
                   <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center">
-                    <Star className="w-6 h-6 text-accent" />
+                    <Gift className="w-6 h-6 text-accent" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">Earn XP & Rewards</h3>
@@ -621,7 +621,7 @@ const Auth = () => {
                   className="flex items-start gap-4 p-4 rounded-xl glass"
                 >
                   <div className="w-12 h-12 rounded-xl bg-premium/20 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-premium" />
+                    <Shield className="w-6 h-6 text-premium" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">Verified Sellers</h3>
@@ -1150,10 +1150,10 @@ const Auth = () => {
                       {/* Early Access Benefits - Compact */}
                       <div className="flex items-center justify-center gap-6 py-2 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1.5">
-                          <Sparkles className="w-3 h-3 text-primary" /> 500 XP Bonus
+                          <Zap className="w-3 h-3 text-primary" /> 500 XP Bonus
                         </span>
                         <span className="flex items-center gap-1.5">
-                          <Star className="w-3 h-3 text-accent" /> Beta Badge
+                          <Gift className="w-3 h-3 text-accent" /> Beta Badge
                         </span>
                         <span className="flex items-center gap-1.5">
                           <TrendingUp className="w-3 h-3 text-primary" /> Reduced Fees
@@ -1220,7 +1220,7 @@ const Auth = () => {
 
                       {/* Referral Code - Compact */}
                       <div className="relative">
-                        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-accent/60" />
+                        <Gift className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-accent/60" />
                         <Input
                           id="register-referral"
                           type="text"
@@ -1295,10 +1295,7 @@ const Auth = () => {
                             Creating Account...
                           </>
                         ) : (
-                          <>
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Create Account
-                          </>
+                          'Create Account'
                         )}
                       </Button>
                     </form>

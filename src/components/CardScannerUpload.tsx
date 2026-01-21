@@ -9,7 +9,6 @@ import {
   Upload, 
   X, 
   Loader2, 
-  Sparkles, 
   AlertCircle, 
   CheckCircle2,
   RefreshCw,
@@ -19,12 +18,15 @@ import {
   Lightbulb,
   ChevronRight,
   HelpCircle,
-  Edit3
+  Edit3,
+  Scan,
+  Cpu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { processImageFile, isHeicFile } from '@/lib/heic-converter';
+import { ScanningLoader } from '@/components/ui/scanning-loader';
 
 interface CardScannerUploadProps {
   onScanComplete: (analysis: CardAnalysis, imageFile: File, previewUrl: string) => void;
@@ -179,7 +181,7 @@ export function CardScannerUpload({
     <Card className={cn("border-primary/10 overflow-hidden", className)}>
       <CardHeader className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-b border-border/50">
       <CardTitle className="flex items-center gap-2 text-lg">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <Scan className="h-5 w-5 text-primary" />
           {mode === 'sell' ? 'AI Card Scanner' : 'AI Card Recognition'}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
@@ -363,13 +365,7 @@ export function CardScannerUpload({
                   />
                 )}
                 <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
-                  <div className="relative">
-                    <Sparkles className="w-10 h-10 text-primary animate-pulse" />
-                    <div className="absolute inset-0 animate-ping">
-                      <Sparkles className="w-10 h-10 text-primary opacity-50" />
-                    </div>
-                  </div>
-                  <span className="text-sm font-medium">AI Analyzing Card...</span>
+                  <ScanningLoader size="lg" text="AI Analyzing Card..." />
                 </div>
               </div>
 
@@ -544,7 +540,7 @@ export function CardScannerUpload({
               {mode === 'sell' && analysis.pricing && analysis.detectionStatus !== 'not_detected' && (
                 <div className="p-4 rounded-lg bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 space-y-3">
                   <h4 className="font-medium text-sm flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-primary" />
+                    <Cpu className="w-4 h-4 text-primary" />
                     AI Pricing Intelligence
                     {analysis.detectionStatus === 'detected_needs_confirmation' && (
                       <Badge variant="outline" className="text-xs text-amber-500 border-amber-500/50">
