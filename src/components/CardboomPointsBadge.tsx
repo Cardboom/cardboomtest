@@ -22,12 +22,12 @@ export const CardboomPointsBadge = () => {
   return (
     <motion.button
       onClick={() => navigate('/coins')}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 transition-colors cursor-pointer"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 transition-colors cursor-pointer"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <BoomCoinIcon className="w-4 h-4 text-amber-400" />
-      <span className="text-sm font-medium text-amber-400">
+      <BoomCoinIcon className="w-4 h-4 text-primary" />
+      <span className="text-sm font-medium text-primary">
         {loading ? '...' : balance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
       </span>
     </motion.button>

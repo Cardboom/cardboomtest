@@ -106,9 +106,9 @@ const CoinsPage: React.FC = () => {
         <main className="flex-1">
           {/* Hero Section */}
           <section className="relative py-16 md:py-24 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-background to-primary/5" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
             <div className="absolute inset-0">
-              <div className="absolute top-20 left-1/4 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl" />
+              <div className="absolute top-20 left-1/4 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
               <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
             </div>
             
@@ -117,10 +117,10 @@ const CoinsPage: React.FC = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-full mb-6"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-6"
                 >
-                  <BoomCoinIcon size="md" className="text-amber-400" />
-                  <span className="text-sm font-medium text-amber-400">Boom Coins</span>
+                  <BoomCoinIcon size="md" className="text-primary" />
+                  <span className="text-sm font-medium text-primary">Boom Coins</span>
                 </motion.div>
 
                 <motion.h1
@@ -130,7 +130,7 @@ const CoinsPage: React.FC = () => {
                   className="text-4xl md:text-6xl font-bold mb-6"
                 >
                   Power Your
-                  <span className="bg-gradient-to-r from-amber-400 to-primary bg-clip-text text-transparent"> Collection</span>
+                  <span className="bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent"> Collection</span>
                 </motion.h1>
 
                 <motion.p
@@ -152,8 +152,8 @@ const CoinsPage: React.FC = () => {
                     className="flex flex-col sm:flex-row items-center gap-4"
                   >
                     <div className="inline-flex items-center gap-4 px-8 py-4 bg-card border border-border rounded-2xl shadow-xl">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                        <BoomCoinIcon size="lg" className="text-white" />
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                        <BoomCoinIcon size="lg" className="text-primary-foreground" />
                       </div>
                       <div className="text-left">
                         <p className="text-sm text-muted-foreground">Your Balance</p>
@@ -243,8 +243,8 @@ const CoinsPage: React.FC = () => {
                       
                       <CardHeader className="pb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/20 flex items-center justify-center">
-                            <BoomCoinIcon size="lg" className="text-amber-400" />
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/30 flex items-center justify-center">
+                            <BoomCoinIcon size="lg" className="text-primary" />
                           </div>
                           <div>
                             <CardTitle className="text-2xl">{pack.coins.toLocaleString()}</CardTitle>
@@ -316,8 +316,8 @@ const CoinsPage: React.FC = () => {
                 </div>
                 
                 <div className="text-center p-6 rounded-xl bg-card border border-border">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-amber-500/10 flex items-center justify-center">
-                    <Package className="w-6 h-6 text-amber-500" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Package className="w-6 h-6 text-primary" />
                   </div>
                   <h3 className="font-semibold mb-2">Instant Delivery</h3>
                   <p className="text-sm text-muted-foreground">
@@ -326,8 +326,8 @@ const CoinsPage: React.FC = () => {
                 </div>
                 
                 <div className="text-center p-6 rounded-xl bg-card border border-border">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-amber-500/10 flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-amber-500" />
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                    <TrendingUp className="w-6 h-6 text-primary" />
                   </div>
                   <h3 className="font-semibold mb-2">Member Discounts</h3>
                   <p className="text-sm text-muted-foreground">
