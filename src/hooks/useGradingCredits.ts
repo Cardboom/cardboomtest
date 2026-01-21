@@ -9,6 +9,7 @@ export interface GradingCredits {
   last_monthly_credit_at: string | null;
   first_deposit_credit_claimed: boolean;
   first_subscribe_credit_claimed: boolean;
+  signup_credit_claimed: boolean;
 }
 
 export const useGradingCredits = (userId?: string) => {

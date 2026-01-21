@@ -5369,6 +5369,7 @@ export type Database = {
           gifted_by: string | null
           id: string
           last_monthly_credit_at: string | null
+          signup_credit_claimed: boolean | null
           updated_at: string
           user_id: string
         }
@@ -5380,6 +5381,7 @@ export type Database = {
           gifted_by?: string | null
           id?: string
           last_monthly_credit_at?: string | null
+          signup_credit_claimed?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -5391,6 +5393,7 @@ export type Database = {
           gifted_by?: string | null
           id?: string
           last_monthly_credit_at?: string | null
+          signup_credit_claimed?: boolean | null
           updated_at?: string
           user_id?: string
         }
@@ -10521,6 +10524,36 @@ export type Database = {
           },
         ]
       }
+      signup_fingerprints: {
+        Row: {
+          block_reason: string | null
+          blocked: boolean | null
+          created_at: string
+          device_fingerprint: string | null
+          id: string
+          ip_address: string
+          user_id: string | null
+        }
+        Insert: {
+          block_reason?: string | null
+          blocked?: boolean | null
+          created_at?: string
+          device_fingerprint?: string | null
+          id?: string
+          ip_address: string
+          user_id?: string | null
+        }
+        Update: {
+          block_reason?: string | null
+          blocked?: boolean | null
+          created_at?: string
+          device_fingerprint?: string | null
+          id?: string
+          ip_address?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       sms_otps: {
         Row: {
           attempts: number | null
@@ -12910,6 +12943,10 @@ export type Database = {
           reset_at: string
         }[]
       }
+      check_signup_rate_limit: {
+        Args: { p_device_fingerprint?: string; p_ip_address: string }
+        Returns: Json
+      }
       claim_bounty_reward:
         | { Args: { p_bounty_id: string }; Returns: Json }
         | { Args: { p_bounty_id: string; p_user_id?: string }; Returns: Json }
@@ -13056,6 +13093,10 @@ export type Database = {
         Args: { p_currency?: string; p_wallet_id: string }
         Returns: number
       }
+      grant_signup_grading_credit: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -13122,6 +13163,14 @@ export type Database = {
           p_key: string
           p_request_hash: string
           p_response: Json
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      record_signup_fingerprint: {
+        Args: {
+          p_device_fingerprint?: string
+          p_ip_address: string
           p_user_id: string
         }
         Returns: undefined

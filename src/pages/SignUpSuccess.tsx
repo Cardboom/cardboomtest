@@ -89,6 +89,31 @@ const SignUpSuccess = () => {
           </div>
 
           <CardContent className="p-6 space-y-6">
+            {/* Free grading credit section */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 rounded-lg p-4 border border-yellow-500/30"
+            >
+              <div className="flex items-start gap-3">
+                <Sparkles className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-foreground">🎉 Free AI Grading Credit</p>
+                  <p className="text-sm text-muted-foreground">
+                    Complete your profile with phone & ID verification to unlock your <strong>free AI grading</strong>! 
+                    Grade any card with CBGI absolutely free.
+                  </p>
+                  <Link 
+                    to="/settings" 
+                    className="text-xs text-yellow-600 hover:text-yellow-500 font-medium mt-2 inline-flex items-center gap-1"
+                  >
+                    Complete verification <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+
             {/* Welcome bonus section */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
