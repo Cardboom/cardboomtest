@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { trackSubscriptionConversion } from '@/lib/tracking';
 
 interface Subscription {
   id: string;
@@ -179,6 +180,15 @@ export const useSubscription = (userId?: string) => {
 
         if (insertError) throw insertError;
       }
+
+      // Track subscription conversion
+      trackSubscriptionConversion({
+        subscriptionId: `${userId}_${Date.now()}`,
+        tier: tier as 'lite' | 'pro' | 'enterprise',
+        billingCycle,
+        value: price,
+        currency: 'USD',
+      });
 
       const savings = billingCycle === 'yearly' ? ' You saved 1 month free!' : '';
       toast.success(`Welcome to ${tierLabel}! Enjoy reduced fees and premium features.${savings}`);
