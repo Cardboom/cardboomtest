@@ -246,43 +246,64 @@ export default function GradingNew() {
   // Calculate pricing - single card grading only
   // FIRST FREE SIGNUP GRADING: Completely free - no extras charged
   // Regular credits: Cover base certification only, extras still cost money
+  // LAUNCH DISCOUNT: 50% off base grading (without protection) for 1st year
   const pricing = useMemo(() => {
     const selectedSpeed = gradingPricing[speedTier];
     const standardSpeed = gradingPricing.standard;
     
-    // Base grading cost (standard tier price)
-    const baseGradingCost = standardSpeed.price;
+    // Check if launch discount applies (only to base grading, not protection)
+    const launchDiscountRate = gradingPricing.launchDiscount || 0;
+    const isLaunchActive = launchDiscountRate > 0;
     
-    // Speed upgrade cost (difference between selected tier and standard)
-    const speedUpgradeCost = selectedSpeed.price - standardSpeed.price;
+    // Base grading cost (standard tier price) - apply launch discount
+    const fullBaseGradingCost = standardSpeed.price;
+    const baseGradingCost = isLaunchActive && !includeProtection 
+      ? Math.round(fullBaseGradingCost * (1 - launchDiscountRate) * 100) / 100
+      : fullBaseGradingCost;
     
-    // Protection bundle cost
+    // Speed upgrade cost (difference between selected tier and standard) - also discounted if no protection
+    const fullSpeedUpgradeCost = selectedSpeed.price - standardSpeed.price;
+    const speedUpgradeCost = isLaunchActive && !includeProtection
+      ? Math.round(fullSpeedUpgradeCost * (1 - launchDiscountRate) * 100) / 100
+      : fullSpeedUpgradeCost;
+    
+    // Protection bundle cost (NOT discounted - as per requirement)
     const protectionCost = includeProtection ? PROTECTION_BUNDLE_PRICE : 0;
+    
+    // Calculate launch discount amount
+    const launchDiscountAmount = isLaunchActive && !includeProtection
+      ? (fullBaseGradingCost - baseGradingCost) + (fullSpeedUpgradeCost - speedUpgradeCost)
+      : 0;
     
     // FIRST FREE SIGNUP GRADING: Everything is free (no extras)
     if (isFirstFree) {
       return { 
         basePerCard: 0, 
-        subtotal: baseGradingCost + speedUpgradeCost + protectionCost, 
+        subtotal: fullBaseGradingCost + fullSpeedUpgradeCost + protectionCost, 
         hasBulkDiscount: false,
         batchDiscount: 0,
         batchLabel: '',
         isBatchOrder: false,
-        discountAmount: baseGradingCost + speedUpgradeCost + protectionCost, 
+        discountAmount: fullBaseGradingCost + fullSpeedUpgradeCost + protectionCost, 
         total: 0, // Completely free!
-        savings: baseGradingCost + speedUpgradeCost + protectionCost,
+        savings: fullBaseGradingCost + fullSpeedUpgradeCost + protectionCost,
         speedPrice: selectedSpeed.price,
         protectionPrice: protectionCost,
         daysMin: 0, // Instant 5-minute results for first free grading
         daysMax: 0,
         // Credit-specific fields
         creditsApplied: 1,
-        creditDiscount: baseGradingCost + speedUpgradeCost + protectionCost,
-        baseGradingCost,
-        speedUpgradeCost,
+        creditDiscount: fullBaseGradingCost + fullSpeedUpgradeCost + protectionCost,
+        baseGradingCost: fullBaseGradingCost,
+        speedUpgradeCost: fullSpeedUpgradeCost,
         totalExtras: 0, // No extras charged for first free
         gradingAfterCredits: 0,
         isFirstFreeGrading: true,
+        // Launch discount fields
+        launchDiscountActive: false,
+        launchDiscountAmount: 0,
+        originalBasePrice: fullBaseGradingCost,
+        originalSpeedPrice: selectedSpeed.price,
       };
     }
     
@@ -300,16 +321,16 @@ export default function GradingNew() {
     const total = gradingAfterCredits + totalExtras;
     
     return { 
-      basePerCard: selectedSpeed.price + protectionCost, 
+      basePerCard: (isLaunchActive && !includeProtection ? baseGradingCost + speedUpgradeCost : selectedSpeed.price) + protectionCost, 
       subtotal, 
       hasBulkDiscount: false,
       batchDiscount: 0,
       batchLabel: '',
       isBatchOrder: false,
-      discountAmount: 0, 
+      discountAmount: launchDiscountAmount, 
       total, 
-      savings: creditDiscount,
-      speedPrice: selectedSpeed.price,
+      savings: creditDiscount + launchDiscountAmount,
+      speedPrice: baseGradingCost + speedUpgradeCost,
       protectionPrice: protectionCost,
       daysMin: selectedSpeed.daysMin,
       daysMax: selectedSpeed.daysMax,
@@ -321,6 +342,11 @@ export default function GradingNew() {
       totalExtras,
       gradingAfterCredits,
       isFirstFreeGrading: false,
+      // Launch discount fields
+      launchDiscountActive: isLaunchActive && !includeProtection,
+      launchDiscountAmount,
+      originalBasePrice: fullBaseGradingCost,
+      originalSpeedPrice: selectedSpeed.price,
     };
   }, [includeProtection, speedTier, creditsRemaining, gradingPricing, isFirstFree]);
 
