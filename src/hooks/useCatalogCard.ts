@@ -61,6 +61,13 @@ export interface CatalogListing {
   seller_total_sales?: number;
   seller_is_verified?: boolean;
   seller_subscription_tier?: string | null;
+  // CBGI grading fields
+  cbgi_score?: number | null;
+  cbgi_grade_label?: string | null;
+  cbgi_completed_at?: string | null;
+  // External grading
+  external_grade?: string | null;
+  external_grading_company?: string | null;
 }
 
 export const useCatalogCard = (canonicalKey: string | undefined) => {
