@@ -34,11 +34,11 @@ export const usePlatformStats = (): PlatformStats => {
           .eq('status', 'active')
           .neq('category', 'coaching'); // Exclude coaching from stats
 
-        // Fetch completed orders for volume - use broader status match for visibility
+        // Fetch completed orders for volume - include all revenue-generating statuses
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
           .select('price')
-          .in('status', ['completed', 'shipped', 'delivered']);
+          .in('status', ['paid', 'completed', 'shipped', 'delivered']);
 
         if (!isMounted) return;
 
