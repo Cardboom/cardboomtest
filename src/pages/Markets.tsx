@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { ListingsTable } from '@/components/market/ListingsTable';
 import { WantedBoard } from '@/components/market/WantedBoard';
-import { FilteredPageSEO } from '@/components/seo/FilteredPageSEO';
 import { getCategoryLabel, getCategoryIcon } from '@/lib/categoryLabels';
 import { 
   Search, BarChart3, ChevronDown, X, ShoppingBag
@@ -20,6 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UniversalSEO } from '@/components/seo/UniversalSEO';
+import { FilteredPageSEO } from '@/components/seo/FilteredPageSEO';
 
 const Markets = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,15 +57,18 @@ const Markets = () => {
       {/* SEO - noindex for filtered/sorted views */}
       <FilteredPageSEO canonicalPath="/markets" />
       
-      <Helmet>
-        <title>Buy, Sell & AI-Grade Trading Cards | CardBoom</title>
-        <meta name="description" content="Browse user-listed trading cards and collectibles for sale. Find Pokemon, One Piece, Yu-Gi-Oh!, MTG cards, and more from verified sellers on CardBoom." />
-        <meta name="keywords" content="buy trading cards, Pokemon cards for sale, One Piece cards, collectibles marketplace, TCG marketplace, card sellers" />
-        <meta property="og:title" content="Marketplace | CardBoom" />
-        <meta property="og:description" content="Browse user-listed trading cards and collectibles for sale from verified sellers." />
-        <meta property="og:url" content="https://cardboom.com/markets" />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <UniversalSEO
+        data={{
+          intent: 'category',
+          entityName: 'Marketplace',
+          identifier: 'markets',
+          keywords: ['buy trading cards', 'Pokemon cards for sale', 'One Piece cards', 'collectibles marketplace', 'TCG marketplace', 'card sellers'],
+          customMeta: {
+            title: 'Buy, Sell & AI-Grade Trading Cards | CardBoom',
+            description: 'Browse user-listed trading cards and collectibles for sale. Find Pokemon, One Piece, Yu-Gi-Oh!, MTG cards, and more from verified sellers on CardBoom.',
+          },
+        }}
+      />
       <Header cartCount={cartItems.length} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">

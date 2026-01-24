@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { MarketTicker } from '@/components/MarketTicker';
 import { HeroSection } from '@/components/HeroSection';
@@ -51,6 +50,7 @@ import { SEOFeaturesSection } from '@/components/SEOFeaturesSection';
 import { TrustBadgesBar, ViralReferralLeaderboard } from '@/components/growth';
 import { RecentlyViewedSection } from '@/components/home/RecentlyViewedSection';
 import { CatalogCollectionsSection } from '@/components/home/CatalogCollectionsSection';
+import { UniversalSEO } from '@/components/seo/UniversalSEO';
 
 
 const Index = () => {
@@ -309,16 +309,25 @@ const Index = () => {
       
       {/* Main content */}
       <div className="relative">
-        <Helmet>
-        <title>Cardboom - Premier Collectibles Trading Exchange | Buy & Sell Trading Cards</title>
-        <meta name="description" content="Trade NBA cards, football cards, Pokemon TCG, Yu-Gi-Oh!, and rare collectible figures with real-time pricing, secure transactions, and instant settlements on Cardboom." />
-        <meta name="keywords" content="trading cards, NBA cards, football cards, TCG, Pokemon cards, Yu-Gi-Oh cards, collectibles, figures, marketplace, live prices, card grading, PSA, BGS, sports cards" />
-        <link rel="canonical" href="https://cardboom.com/" />
-        <meta property="og:title" content="Cardboom - Premier Collectibles Trading Exchange" />
-        <meta property="og:description" content="Trade collectible cards and figures with real-time pricing, secure transactions, and instant settlements." />
-        <meta property="og:url" content="https://cardboom.com/" />
-        <meta property="og:type" content="website" />
-      </Helmet>
+        <UniversalSEO
+          data={{
+            intent: 'landing',
+            entityName: 'CardBoom',
+            identifier: '',
+            keywords: ['trading cards', 'NBA cards', 'football cards', 'TCG', 'Pokemon cards', 'Yu-Gi-Oh cards', 'collectibles', 'figures', 'marketplace', 'live prices', 'card grading', 'PSA', 'BGS', 'sports cards'],
+            customMeta: {
+              title: 'AI Trading Card Grading & Marketplace | CardBoom',
+              description: 'AI-grade Pokémon, Yu-Gi-Oh!, One Piece & MTG cards. Track real-time portfolio value, trade instantly, and store securely — only on CardBoom.',
+            },
+            faqs: [
+              { question: 'What is CardBoom?', answer: 'CardBoom is a premier collectibles trading exchange for buying, selling, and grading trading cards including Pokémon, Yu-Gi-Oh!, One Piece, MTG, and sports cards.' },
+              { question: 'How does AI grading work?', answer: 'Our AI-powered grading system analyzes your card images to provide instant condition assessments comparable to professional grading services.' },
+              { question: 'Is my purchase protected?', answer: 'Yes, all purchases on CardBoom are protected with buyer protection, secure payments, and dispute resolution.' },
+            ],
+          }}
+          includePreconnects
+          includeAEO
+        />
       
       {user && <DailyXPClaimNotification />}
       {user && <DailyCardVotePopup />}
