@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams, useLocation } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -33,6 +32,8 @@ import {
   extractCardCode 
 } from '@/lib/seoSlug';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { UniversalSEO } from '@/components/seo/UniversalSEO';
+import { SEOBreadcrumbs } from '@/components/seo/SEOBreadcrumbs';
 
 const CardPage = () => {
   const { category, slug } = useParams();
@@ -382,45 +383,41 @@ const CardPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:type" content="product" />
-        {item?.image_url && <meta property="og:image" content={item.image_url} />}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={pageTitle} />
-        <meta name="twitter:description" content={pageDescription} />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            "name": cardName,
-            "description": pageDescription,
-            "image": item?.image_url,
-            "brand": {
-              "@type": "Brand",
-              "name": item?.category || category
-            },
-            "offers": {
-              "@type": "AggregateOffer",
-              "priceCurrency": "USD",
-              "lowPrice": activeListings?.length ? Math.min(...activeListings.map(l => l.price)) : item?.current_price,
-              "highPrice": activeListings?.length ? Math.max(...activeListings.map(l => l.price)) : item?.current_price,
-              "offerCount": activeListings?.length || 0,
-              "availability": activeListings?.length ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
-            },
-            "aggregateRating": item?.sales_count_30d ? {
-              "@type": "AggregateRating",
-              "ratingValue": "4.5",
-              "reviewCount": item.sales_count_30d
-            } : undefined
-          })}
-        </script>
-      </Helmet>
+      <UniversalSEO
+        data={{
+          intent: 'product',
+          entityName: cardName,
+          entityType: `${canonicalCategory} Card`,
+          identifier: `cards/${canonicalCategory}/${canonicalSlug}`,
+          category: canonicalCategory,
+          subcategory: setName,
+          image: item?.image_url,
+          pricing: {
+            current: item?.current_price,
+            low: activeListings?.length ? Math.min(...activeListings.map(l => l.price)) : item?.current_price,
+            high: activeListings?.length ? Math.max(...activeListings.map(l => l.price)) : item?.current_price,
+            offerCount: activeListings?.length || 0,
+            availability: activeListings?.length ? 'InStock' : 'OutOfStock',
+          },
+          rating: item?.sales_count_30d ? {
+            value: 4.5,
+            count: item.sales_count_30d,
+          } : undefined,
+          keywords: [cardName, canonicalCategory, setName, 'trading card', 'price guide', 'market value'].filter(Boolean) as string[],
+          customMeta: {
+            title: pageTitle,
+            description: pageDescription,
+            canonicalOverride: canonicalUrl,
+          },
+        }}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://cardboom.com/' },
+          { name: 'Markets', url: 'https://cardboom.com/markets' },
+          { name: canonicalCategory.charAt(0).toUpperCase() + canonicalCategory.slice(1), url: `https://cardboom.com/explorer?category=${canonicalCategory}` },
+          { name: cardName, url: canonicalUrl },
+        ]}
+        itemCount={activeListings?.length}
+      />
 
       <Header cartCount={0} onCartClick={() => {}} />
       

@@ -102,4 +102,6 @@ export const FAQSectionSEO = ({
   );
 };
 
+// Export with both names for compatibility
+export { FAQSectionSEO as FAQSection };
 export default FAQSectionSEO;

@@ -1,5 +1,4 @@
 import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +11,8 @@ import { CatalogPriceChart } from '@/components/catalog/CatalogPriceChart';
 import { CatalogCardListings } from '@/components/catalog/CatalogCardListings';
 import { ShareButton } from '@/components/ShareButton';
 import { PriceReportButton } from '@/components/catalog/PriceReportButton';
+import { UniversalSEO } from '@/components/seo/UniversalSEO';
+import { SEOBreadcrumbs } from '@/components/seo/SEOBreadcrumbs';
 
 const gameLabels: Record<string, string> = {
   pokemon: 'Pokémon',
@@ -61,31 +62,33 @@ const CatalogCardPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>{pageTitle}</title>
-        <meta name="description" content={pageDescription} />
-        <link rel="canonical" href={canonicalUrl} />
-        <meta property="og:title" content={pageTitle} />
-        <meta property="og:description" content={pageDescription} />
-        <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:type" content="product" />
-        {card.image_url && <meta property="og:image" content={card.image_url} />}
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Product",
-            "name": card.name,
-            "description": pageDescription,
-            "image": card.image_url,
-            "brand": { "@type": "Brand", "name": gameLabels[card.game] || card.game },
-            "offers": price?.has_price && price?.price_usd ? {
-              "@type": "Offer",
-              "priceCurrency": "USD",
-              "price": price.price_usd,
-            } : undefined
-          })}
-        </script>
-      </Helmet>
+      <UniversalSEO
+        data={{
+          intent: 'product',
+          entityName: card.name,
+          entityType: `${gameLabels[card.game] || card.game} Card`,
+          identifier: `catalog/${card.game}/${card.canonical_key}`,
+          category: card.game,
+          subcategory: card.set_name || undefined,
+          image: card.image_url || undefined,
+          pricing: price?.has_price && price?.price_usd ? {
+            current: price.price_usd,
+            availability: 'InStock',
+          } : undefined,
+          keywords: [card.name, gameLabels[card.game] || card.game, card.set_name, 'price guide', 'trading card'].filter(Boolean) as string[],
+          customMeta: {
+            title: pageTitle,
+            description: pageDescription,
+            canonicalOverride: canonicalUrl,
+          },
+        }}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://cardboom.com/' },
+          { name: 'Catalog', url: 'https://cardboom.com/explorer' },
+          { name: gameLabels[card.game] || card.game, url: `https://cardboom.com/explorer?game=${card.game}` },
+          { name: card.name, url: canonicalUrl },
+        ]}
+      />
 
       <Header cartCount={0} onCartClick={() => {}} />
 

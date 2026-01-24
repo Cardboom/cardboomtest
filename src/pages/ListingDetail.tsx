@@ -40,6 +40,7 @@ import { Pencil } from 'lucide-react';
 import { isUUID, generateListingUrl } from '@/lib/listingUrl';
 import { normalizeCategory, urlCategoryToDbCategory } from '@/lib/seoSlug';
 import { CardShowcase } from '@/components/ui/card-showcase';
+import { UniversalSEO } from '@/components/seo/UniversalSEO';
 
 interface Listing {
   id: string;
@@ -584,8 +585,46 @@ const ListingDetail = () => {
     );
   }
 
+  // Generate SEO data
+  const canonicalUrl = listing.slug 
+    ? `https://cardboom.com/listing/${normalizeCategory(listing.category)}/${listing.slug}`
+    : `https://cardboom.com/listing/${listing.id}`;
+  
+  const pageTitle = `${listing.title} - ${getCategoryLabel(listing.category)} | CardBoom`;
+  const pageDescription = `Buy ${listing.title} for ${formatPrice(listing.price)}. ${listing.condition} condition${listing.grading_company ? `, ${listing.grading_company} ${listing.grade}` : ''}. Secure checkout with buyer protection on CardBoom.`;
+
   return (
     <div className="min-h-screen bg-background">
+      <UniversalSEO
+        data={{
+          intent: 'product',
+          entityName: listing.title,
+          entityType: `${getCategoryLabel(listing.category)} Listing`,
+          identifier: listing.slug || listing.id,
+          category: listing.category,
+          subcategory: listing.set_name || undefined,
+          image: listing.image_url || undefined,
+          pricing: {
+            current: listing.price,
+            currency: listing.currency || 'USD',
+            availability: listing.status === 'active' ? 'InStock' : 'OutOfStock',
+            condition: 'used',
+          },
+          keywords: [listing.title, getCategoryLabel(listing.category), listing.set_name, 'buy', 'for sale'].filter(Boolean) as string[],
+          customMeta: {
+            title: pageTitle,
+            description: pageDescription,
+            canonicalOverride: canonicalUrl,
+            noIndex: listing.status !== 'active',
+          },
+        }}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://cardboom.com/' },
+          { name: 'Marketplace', url: 'https://cardboom.com/markets' },
+          { name: getCategoryLabel(listing.category), url: `https://cardboom.com/buy/${listing.category}-cards` },
+          { name: listing.title, url: canonicalUrl },
+        ]}
+      />
       <Header cartCount={0} onCartClick={() => {}} />
       
       <main className="container mx-auto px-4 py-6">

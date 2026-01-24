@@ -1,17 +1,14 @@
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
-import { CategorySchema } from '@/components/seo/CategorySchema';
 import { ListingsTable } from '@/components/market/ListingsTable';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { CATEGORY_SEO_DATA, SITE_URL, generateFAQSchema } from '@/lib/seoUtils';
+import { CATEGORY_SEO_DATA, SITE_URL } from '@/lib/seo';
 import { 
   TrendingUp, 
   Shield, 
@@ -22,6 +19,10 @@ import {
   SortAsc
 } from 'lucide-react';
 import { ScrollReveal } from '@/components/ScrollReveal';
+import { UniversalSEO } from '@/components/seo/UniversalSEO';
+import { SEOBreadcrumbs } from '@/components/seo/SEOBreadcrumbs';
+import { FAQSection } from '@/components/seo/FAQSection';
+import { RelatedLinks } from '@/components/seo/RelatedLinks';
 
 // Map URL slugs to database category values
 // Handles both /buy/pokemon and /buy/pokemon-cards patterns
@@ -118,19 +119,35 @@ const BuyCategoryPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <CategorySchema 
-        category={dbCategory} 
+      <UniversalSEO
+        data={{
+          intent: 'category',
+          entityName: categoryData?.pluralName || `${urlCategory} Cards`,
+          identifier: `buy/${urlCategory}-cards`,
+          category: dbCategory,
+          keywords: categoryData?.keywords || [urlCategory, 'trading cards', 'buy', 'marketplace'],
+          faqs: categoryFaqs,
+          customMeta: {
+            title: `Buy ${categoryData?.pluralName || `${urlCategory} Cards`} Online | CardBoom`,
+            description: categoryData?.description || `Shop ${urlCategory} trading cards and collectibles from verified sellers. Best prices, buyer protection, and secure shipping.`,
+          },
+        }}
         itemCount={itemCount || 0}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://cardboom.com/' },
+          { name: 'Marketplace', url: 'https://cardboom.com/markets' },
+          { name: categoryData?.pluralName || `${urlCategory} Cards`, url: `https://cardboom.com/buy/${urlCategory}-cards` },
+        ]}
       />
 
       <Header cartCount={0} onCartClick={() => setCartOpen(!cartOpen)} />
 
       <main className="container mx-auto px-4 py-6">
         {/* Breadcrumbs */}
-        <BreadcrumbSchema
+        <SEOBreadcrumbs
           items={[
-            { name: 'Marketplace', href: '/markets' },
-            { name: categoryData?.pluralName || `${urlCategory} Cards` },
+            { name: 'Marketplace', url: '/markets' },
+            { name: categoryData?.pluralName || `${urlCategory} Cards`, url: `/buy/${urlCategory}-cards` },
           ]}
           className="mb-6"
         />
@@ -230,28 +247,10 @@ const BuyCategoryPage = () => {
 
         {/* FAQ Section */}
         <ScrollReveal delay={0.3}>
-          <section className="mb-12">
-            <h2 className="font-display text-2xl font-bold mb-6 text-center">
-              Frequently Asked Questions
-            </h2>
-            <div className="max-w-3xl mx-auto space-y-4">
-              {categoryFaqs.map((faq, index) => (
-                <Card key={index}>
-                  <CardContent className="pt-6">
-                    <h3 className="font-semibold mb-2">{faq.question}</h3>
-                    <p className="text-muted-foreground text-sm">{faq.answer}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            {/* FAQ Schema */}
-            <Helmet>
-              <script type="application/ld+json">
-                {JSON.stringify(generateFAQSchema(categoryFaqs))}
-              </script>
-            </Helmet>
-          </section>
+          <FAQSection 
+            faqs={categoryFaqs} 
+            title={`Frequently Asked Questions about ${categoryData?.pluralName || urlCategory}`}
+          />
         </ScrollReveal>
 
         {/* SEO Content Block */}
@@ -267,7 +266,7 @@ const BuyCategoryPage = () => {
                 our verified sellers offer competitive prices with full buyer protection.
               </p>
               <p>
-                Every {categoryData?.name || urlCategory} card sold on CardBoom comes with our guarantee. 
+                Every {categoryData?.displayName || urlCategory} card sold on CardBoom comes with our guarantee. 
                 We verify seller authenticity, provide secure payment processing, and offer dispute resolution
                 if anything goes wrong. Shop with confidence knowing your purchase is protected.
               </p>
