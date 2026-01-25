@@ -6,9 +6,21 @@
 import type { VerticalConfig, PageTemplateConfig, PageIntent } from './types';
 
 // ============= Site Configuration =============
+// Use environment variable for URL, fallback to production domain
+const getSiteUrl = () => {
+  // Check if running in Lovable preview/test environment
+  if (typeof window !== 'undefined') {
+    const host = window.location.host;
+    if (host.includes('lovable.app')) {
+      return `https://${host}`;
+    }
+  }
+  return 'https://cardboom.com';
+};
+
 export const SITE_CONFIG = {
   name: 'CardBoom',
-  url: 'https://cardboom.com',
+  url: getSiteUrl(),
   defaultImage: '/og-image.png',
   twitterHandle: '@cardboom',
   foundingYear: 2025,
