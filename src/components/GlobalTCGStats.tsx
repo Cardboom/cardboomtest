@@ -20,6 +20,7 @@ interface GlobalTCGStatsProps {
 }
 
 // Animated counter component for NYSE-style number scrolling
+// Only animates on initial load (from 0), then shows stable value
 const AnimatedCounter = ({ 
   value, 
   prefix = '', 
@@ -32,11 +33,20 @@ const AnimatedCounter = ({
   duration?: number;
 }) => {
   const [displayValue, setDisplayValue] = useState(0);
-  const previousValue = useRef(0);
+  const hasAnimated = useRef(false);
   const animationRef = useRef<number>();
 
   useEffect(() => {
-    const startValue = previousValue.current;
+    // Only animate once on initial load
+    if (hasAnimated.current) {
+      // Skip animation, just set value directly
+      setDisplayValue(value);
+      return;
+    }
+
+    if (value === 0) return;
+
+    const startValue = 0;
     const endValue = value;
     const startTime = performance.now();
 
@@ -53,7 +63,7 @@ const AnimatedCounter = ({
       if (progress < 1) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
-        previousValue.current = endValue;
+        hasAnimated.current = true;
       }
     };
 

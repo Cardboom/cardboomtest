@@ -1,8 +1,8 @@
 # CardBoom Robots.txt
-# https://www.cardboom.com
+# https://cardboomtest.lovable.app
 
 # Sitemaps - Static pages and dynamic sitemap index
-Sitemap: https://www.cardboom.com/sitemap-static.xml
+Sitemap: https://cardboomtest.lovable.app/sitemap-static.xml
 Sitemap: https://kgffwhyfgkqeevsuhldt.supabase.co/functions/v1/sitemap?type=index
 
 # Canonical URL structure
@@ -112,4 +112,4 @@ Disallow: /grading/new
 Disallow: /grading/orders
 
 # Host
-Host: https://www.cardboom.com
+Host: https://cardboomtest.lovable.app
