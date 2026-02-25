@@ -3,8 +3,17 @@
  * Centralized functions for generating structured data, meta tags, and SEO-friendly content
  */
 
-// Base URL for the site
-export const SITE_URL = 'https://cardboom.com';
+// Base URL for the site - dynamic detection matching src/lib/seo/config.ts
+const getSiteUrl = () => {
+  if (typeof window !== 'undefined') {
+    const host = window.location.host;
+    if (host.includes('lovable.app') || host.includes('localhost')) {
+      return `https://${host}`;
+    }
+  }
+  return 'https://cardboom.com';
+};
+export const SITE_URL = getSiteUrl();
 export const SITE_NAME = 'CardBoom';
 
 // Category display names and slugs

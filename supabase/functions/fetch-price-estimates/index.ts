@@ -302,7 +302,7 @@ Deno.serve(async (req) => {
     if (pricingData.length === 0 && market_item_id) {
       const { data: marketItem } = await supabase
         .from('market_items')
-        .select('current_price, psa_10_price, psa_9_price')
+        .select('current_price, psa10_price, psa9_price')
         .eq('id', market_item_id)
         .single()
 
@@ -313,8 +313,8 @@ Deno.serve(async (req) => {
           null,
           null,
           null,
-          marketItem.psa_9_price ? Number(marketItem.psa_9_price) : null,
-          marketItem.psa_10_price ? Number(marketItem.psa_10_price) : marketItem.current_price
+          marketItem.psa9_price ? Number(marketItem.psa9_price) : null,
+          marketItem.psa10_price ? Number(marketItem.psa10_price) : marketItem.current_price
         )
 
         const recordData = {
