@@ -9,6 +9,7 @@ import { useGradingPricing } from '@/hooks/useGradingPricing';
 import { GradingUserStatusBanner } from '@/components/grading/GradingUserStatusBanner';
 import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
+import { UniversalSEO } from '@/components/seo/UniversalSEO';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -302,31 +303,25 @@ export default function Grading() {
 
   return (
     <div className="min-h-screen bg-background">
+      <UniversalSEO
+        data={{
+          intent: 'guide',
+          entityName: 'AI Card Grading',
+          identifier: 'grading',
+          keywords: seo.keywords.split(', '),
+          customMeta: {
+            title: seo.title,
+            description: seo.description,
+          },
+          faqs: faqStructuredData.mainEntity.map((q: any) => ({
+            question: q.name,
+            answer: q.acceptedAnswer.text,
+          })),
+        }}
+        includeAEO
+      />
       <Helmet>
-        <title>{seo.title}</title>
-        <meta name="description" content={seo.description} />
-        <meta name="keywords" content={seo.keywords} />
-        <link rel="canonical" href="https://cardboom.com/grading" />
-        
-        {/* Open Graph */}
-        <meta property="og:title" content={seo.title} />
-        <meta property="og:description" content={seo.description} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://cardboom.com/grading" />
-        <meta property="og:image" content="https://cardboom.com/og-grading.jpg" />
-        <meta property="og:site_name" content="CardBoom" />
-        
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={seo.title} />
-        <meta name="twitter:description" content={seo.description} />
-        
-        {/* Robots */}
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        
-        {/* Structured Data */}
         <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-        <script type="application/ld+json">{JSON.stringify(faqStructuredData)}</script>
       </Helmet>
       
       <Header cartCount={cartItems.length} onCartClick={() => setIsCartOpen(true)} />
