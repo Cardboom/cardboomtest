@@ -2920,6 +2920,54 @@ export type Database = {
         }
         Relationships: []
       }
+      collectr_scrape_queue: {
+        Row: {
+          card_count: number | null
+          category_id: string
+          category_name: string
+          created_at: string
+          error_message: string | null
+          group_id: string
+          id: string
+          last_scraped_at: string | null
+          set_name: string
+          slug: string | null
+          status: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          card_count?: number | null
+          category_id: string
+          category_name: string
+          created_at?: string
+          error_message?: string | null
+          group_id: string
+          id?: string
+          last_scraped_at?: string | null
+          set_name: string
+          slug?: string | null
+          status?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          card_count?: number | null
+          category_id?: string
+          category_name?: string
+          created_at?: string
+          error_message?: string | null
+          group_id?: string
+          id?: string
+          last_scraped_at?: string | null
+          set_name?: string
+          slug?: string | null
+          status?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       community_card_votes: {
         Row: {
           card_a_id: string | null
