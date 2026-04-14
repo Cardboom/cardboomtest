@@ -23,6 +23,7 @@ const gameFilters = [
   { value: 'lorcana', label: 'Disney Lorcana', icon: '✨' },
   { value: 'dbs', label: 'Dragon Ball Super', icon: '🐉' },
   { value: 'digimon', label: 'Digimon', icon: '🦖' },
+  { value: 'unionarena', label: 'Union Arena', icon: '⚔️' },
 ];
 
 // ─── Sets View: shows all sets for a game ───

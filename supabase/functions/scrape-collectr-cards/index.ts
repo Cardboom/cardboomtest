@@ -17,6 +17,7 @@ function categoryToGame(categoryName: string): string {
   if (n.includes('lorcana')) return 'lorcana'
   if (n.includes('digimon')) return 'digimon'
   if (n.includes('dragon ball')) return 'dbs'
+  if (n.includes('union arena')) return 'unionarena'
   return 'other'
 }
 
