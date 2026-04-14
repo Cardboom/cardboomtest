@@ -206,7 +206,10 @@ serve(async (req) => {
             const markdown = scraped.data?.markdown || scraped.markdown || ''
             const pageCards = parseCardsFromMarkdown(markdown)
             
-            console.log(`[scrape] Page ${page}: ${pageCards.length} cards`)
+            console.log(`[scrape] Page ${page}: ${pageCards.length} cards, md length: ${markdown.length}`)
+            if (pageCards.length === 0 && page === 1) {
+              console.log(`[scrape] MD preview: ${markdown.substring(0, 800)}`)
+            }
             results.pages_scraped++
             
             if (pageCards.length === 0) break // No more cards on this page
