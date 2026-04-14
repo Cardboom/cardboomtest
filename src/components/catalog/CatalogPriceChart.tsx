@@ -10,7 +10,6 @@ interface CatalogPriceChartProps {
   catalogCardId: string;
   cardName: string;
   currentPrice?: number | null;
-  canonicalKey?: string;
 }
 
 type TimeRange = '7d' | '30d' | '90d' | '1y';
@@ -25,14 +24,13 @@ const getDaysFromRange = (range: TimeRange): number => {
   }
 };
 
-export const CatalogPriceChart = ({ catalogCardId, cardName, currentPrice, canonicalKey }: CatalogPriceChartProps) => {
+export const CatalogPriceChart = ({ catalogCardId, cardName, currentPrice }: CatalogPriceChartProps) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const { formatPrice } = useCurrency();
   
   const { data: priceHistory, isLoading } = useCatalogPriceHistory(
     catalogCardId, 
-    getDaysFromRange(timeRange),
-    canonicalKey
+    getDaysFromRange(timeRange)
   );
 
   const chartData = useMemo(() => {
