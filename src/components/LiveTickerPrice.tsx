@@ -22,7 +22,7 @@ export const LiveTickerPrice = ({
   const [direction, setDirection] = useState<'up' | 'down' | null>(null);
   const baseValue = useRef(value);
   const animationRef = useRef<number>();
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
   // Update base value when prop changes
   useEffect(() => {

@@ -44,7 +44,7 @@ export const DataSyncManager = () => {
     updated: 0,
     isRunning: false,
   });
-  const [schedulerInterval, setSchedulerInterval] = useState<NodeJS.Timeout | null>(null);
+  const [schedulerInterval, setSchedulerInterval] = useState<ReturnType<typeof setInterval> | null>(null);
   const [is24x7Enabled, setIs24x7Enabled] = useState(false);
   const [schedulerMode, setSchedulerMode] = useState<string>('auto');
 
