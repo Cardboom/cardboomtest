@@ -33,7 +33,7 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<any> {
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown'],
+      formats: ['markdown', 'links'],
       onlyMainContent: true,
       waitFor: 5000,
     }),
@@ -118,6 +118,57 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
   return cards
 }
 
+// Parse category index pages to discover sets with groupIds
+interface DiscoveredSubSet {
+  groupId: string
+  setName: string
+  imageUrl: string | null
+}
+
+function discoverSetsFromIndexPage(markdown: string): DiscoveredSubSet[] {
+  const sets: DiscoveredSubSet[] = []
+  const seen = new Set<string>()
+  const lines = markdown.split('\n')
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    // Match: ![Set Name](https://public.getcollectr.com/public-assets/catalog-groups/group_XXXXX.png...)
+    const imgMatch = line.match(/!\[([^\]]*)\]\((https:\/\/public\.getcollectr\.com\/public-assets\/catalog-groups\/group_(\d+)\.[^)]+)\)/)
+    if (!imgMatch) continue
+
+    const altText = imgMatch[1]
+    const imageUrl = imgMatch[2].split('?')[0]
+    const groupId = imgMatch[3]
+
+    if (seen.has(groupId)) continue
+    seen.add(groupId)
+
+    // Try to find the set name from nearby headings
+    let setName = altText || ''
+    for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+      const nextLine = lines[j].trim()
+      const headingMatch = nextLine.match(/^#{1,3}\s+(.+)$/)
+      if (headingMatch && !setName) {
+        setName = headingMatch[1].trim()
+        break
+      }
+      // Also try plain text lines that look like set names
+      if (!setName && nextLine.length > 2 && nextLine.length < 80 && 
+          !nextLine.startsWith('!') && !nextLine.startsWith('[') &&
+          !nextLine.match(/^\d+ cards?$/i) && !nextLine.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/) ) {
+        setName = nextLine
+        break
+      }
+    }
+
+    if (!setName) setName = `Set ${groupId}`
+
+    sets.push({ groupId, setName, imageUrl })
+  }
+
+  return sets
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -146,6 +197,7 @@ serve(async (req) => {
       cards_staged: 0,
       cards_promoted: 0,
       pages_scraped: 0,
+      sub_sets_discovered: 0,
       errors: [] as string[],
     }
 
@@ -182,50 +234,151 @@ serve(async (req) => {
 
     for (const set of sets) {
       try {
-        console.log(`[scrape] Scraping: ${set.set_name}`)
+        console.log(`[scrape] Scraping: ${set.set_name} | URL: ${set.url}`)
 
         await internalDb
           .from('collectr_scrape_queue')
           .update({ status: 'processing', updated_at: new Date().toISOString() })
           .eq('id', set.id)
 
-        let allCards: ParsedCard[] = []
-        let page = 1
-        const MAX_PAGES = 10 // Safety limit
+        // Check if URL has groupId - if not, this might be a category index
+        const hasGroupId = set.url.includes('groupId=')
 
-        // Paginate through all cards in the set
-        while (page <= MAX_PAGES) {
-          const pageUrl = page === 1 
-            ? set.url 
-            : `${set.url}${set.url.includes('?') ? '&' : '?'}page=${page}`
+        const scraped = await firecrawlScrape(firecrawlKey, set.url)
+        const markdown = scraped.data?.markdown || scraped.markdown || ''
+        
+        console.log(`[scrape] Page 1: md length: ${markdown.length}`)
+
+        let allCards = parseCardsFromMarkdown(markdown)
+        results.pages_scraped++
+
+        // If page 1 returned 0 cards, check if this is a category index page
+        if (allCards.length === 0 && !hasGroupId) {
+          console.log(`[scrape] No cards found, checking if this is a category index page...`)
+          const subSets = discoverSetsFromIndexPage(markdown)
           
-          console.log(`[scrape] Page ${page}: ${pageUrl}`)
+          if (subSets.length > 0) {
+            console.log(`[scrape] Found ${subSets.length} sub-sets with groupIds, queuing them`)
+            
+            // Extract category_id from the URL
+            const catIdMatch = set.url.match(/\/sets\/category\/(\d+)/)
+            const categoryId = catIdMatch ? catIdMatch[1] : set.category_id
+            
+            for (const sub of subSets) {
+              const subSlug = slugify(sub.setName)
+              const subUrl = `https://app.getcollectr.com/sets/category/${categoryId}/${subSlug}?groupId=${sub.groupId}&cardType=cards`
+              
+              const { error: queueErr } = await internalDb
+                .from('collectr_scrape_queue')
+                .upsert({
+                  group_id: sub.groupId,
+                  set_name: sub.setName,
+                  category_id: categoryId,
+                  category_name: set.category_name,
+                  slug: subSlug,
+                  url: subUrl,
+                  status: 'pending',
+                }, { onConflict: 'group_id' })
+              
+              if (!queueErr) {
+                results.sub_sets_discovered++
+              } else {
+                results.errors.push(`Queue sub-set ${sub.setName}: ${queueErr.message}`)
+              }
+            }
+            
+            // Mark original as "index_resolved" so it doesn't get retried
+            await internalDb
+              .from('collectr_scrape_queue')
+              .update({
+                status: 'scraped',
+                error_message: `Index page - resolved ${subSets.length} sub-sets`,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', set.id)
+            
+            results.sets_processed++
+            continue
+          }
           
-          try {
-            const scraped = await firecrawlScrape(firecrawlKey, pageUrl)
-            const markdown = scraped.data?.markdown || scraped.markdown || ''
-            const pageCards = parseCardsFromMarkdown(markdown)
+          // Also try extracting groupIds from the links array
+          const links: string[] = scraped.data?.links || scraped.links || []
+          const linkGroupIds = new Set<string>()
+          for (const link of links) {
+            const gMatch = (typeof link === 'string' ? link : link?.url || '').match(/groupId=(\d+)/)
+            if (gMatch) linkGroupIds.add(gMatch[1])
+          }
+          
+          if (linkGroupIds.size > 0) {
+            console.log(`[scrape] Found ${linkGroupIds.size} groupIds from links`)
+            const catIdMatch = set.url.match(/\/sets\/category\/(\d+)/)
+            const categoryId = catIdMatch ? catIdMatch[1] : set.category_id
             
-            console.log(`[scrape] Page ${page}: ${pageCards.length} cards`)
-            results.pages_scraped++
+            for (const gId of linkGroupIds) {
+              const subUrl = `https://app.getcollectr.com/sets/category/${categoryId}/${set.slug || slugify(set.set_name)}?groupId=${gId}&cardType=cards`
+              
+              await internalDb
+                .from('collectr_scrape_queue')
+                .upsert({
+                  group_id: gId,
+                  set_name: `${set.set_name} (${gId})`,
+                  category_id: categoryId,
+                  category_name: set.category_name,
+                  url: subUrl,
+                  status: 'pending',
+                }, { onConflict: 'group_id' })
+              
+              results.sub_sets_discovered++
+            }
             
-            if (pageCards.length === 0) break // No more cards on this page
+            await internalDb
+              .from('collectr_scrape_queue')
+              .update({
+                status: 'scraped',
+                error_message: `Index page - resolved ${linkGroupIds.size} sub-sets from links`,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', set.id)
             
-            allCards = allCards.concat(pageCards)
-            
-            // If we got fewer than ~28 cards, probably the last page
-            if (pageCards.length < 25) break
-            
-            page++
-            await new Promise(r => setTimeout(r, 1500)) // Rate limit between pages
-          } catch (pageErr: unknown) {
-            const msg = pageErr instanceof Error ? pageErr.message : String(pageErr)
-            console.log(`[scrape] Page ${page} error: ${msg}`)
-            break // Stop paginating on error
+            results.sets_processed++
+            continue
+          }
+          
+          console.log(`[scrape] MD preview: ${markdown.substring(0, 500)}`)
+        }
+
+        // Paginate if page 1 had cards
+        if (allCards.length > 0) {
+          let page = 2
+          const MAX_PAGES = 10
+
+          while (page <= MAX_PAGES) {
+            const pageUrl = `${set.url}${set.url.includes('?') ? '&' : '?'}page=${page}`
+            console.log(`[scrape] Page ${page}: ${pageUrl}`)
+
+            try {
+              const scraped = await firecrawlScrape(firecrawlKey, pageUrl)
+              const md = scraped.data?.markdown || scraped.markdown || ''
+              const pageCards = parseCardsFromMarkdown(md)
+
+              console.log(`[scrape] Page ${page}: ${pageCards.length} cards`)
+              results.pages_scraped++
+
+              if (pageCards.length === 0) break
+              allCards = allCards.concat(pageCards)
+              if (pageCards.length < 25) break
+
+              page++
+              await new Promise(r => setTimeout(r, 1500))
+            } catch (pageErr: unknown) {
+              const msg = pageErr instanceof Error ? pageErr.message : String(pageErr)
+              console.log(`[scrape] Page ${page} error: ${msg}`)
+              break
+            }
           }
         }
 
-        console.log(`[scrape] Total cards for ${set.set_name}: ${allCards.length} across ${page} pages`)
+        console.log(`[scrape] Total cards for ${set.set_name}: ${allCards.length}`)
 
         results.sets_processed++
         results.cards_found += allCards.length
@@ -304,7 +457,7 @@ serve(async (req) => {
             status: allCards.length > 0 ? 'scraped' : 'error',
             card_count: allCards.length,
             last_scraped_at: new Date().toISOString(),
-            error_message: allCards.length === 0 ? 'No cards parsed' : null,
+            error_message: allCards.length === 0 ? 'No cards parsed (has groupId)' : null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', set.id)
