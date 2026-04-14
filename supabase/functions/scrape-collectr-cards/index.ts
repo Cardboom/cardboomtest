@@ -96,7 +96,7 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
         continue
       }
 
-      const priceMatch = next.match(/^\$([\d,]+\.?\d*)$/)
+      const priceMatch = next.match(/^\$([\d,]+\.?\d{0,3})$/)
       if (priceMatch && price === null) {
         price = parseFloat(priceMatch[1].replace(/,/g, ''))
         continue
@@ -413,7 +413,9 @@ serve(async (req) => {
               results.cards_staged++
             }
 
-            const upsertData: Record<string, any> = {
+            const { error: promoErr } = await extDb
+              .from('catalog_cards')
+              .upsert({
                 game,
                 canonical_key: canonicalKey,
                 set_code: setSlug,
@@ -423,11 +425,7 @@ serve(async (req) => {
                 variant: card.variant,
                 rarity: card.rarity,
                 image_url: card.imageUrl,
-              }
-
-            const { error: promoErr } = await extDb
-              .from('catalog_cards')
-              .upsert(upsertData, { onConflict: 'canonical_key' })
+              }, { onConflict: 'canonical_key' })
 
             if (promoErr && promoErr.code !== '23505') {
               results.errors.push(`Promote ${card.name}: ${promoErr.message}`)
@@ -436,27 +434,16 @@ serve(async (req) => {
             }
 
             if (card.price !== null && card.price >= 0) {
-              // Store in internal card_prices
+              const roundedPrice = Math.round(card.price * 1000) / 1000
               await internalDb
                 .from('card_prices')
                 .upsert({
                   canonical_card_key: canonicalKey,
                   source: 'collectr',
-                  price: Math.round(card.price * 1000) / 1000, // 3 decimal precision
-                  market_price: Math.round(card.price * 1000) / 1000,
+                  price: roundedPrice,
+                  market_price: roundedPrice,
                   condition: card.variant?.toLowerCase() || 'normal',
                 }, { onConflict: 'canonical_card_key,source' })
-                .then(() => {})
-
-              // Store price event on external DB for history
-              await extDb
-                .from('price_events')
-                .insert({
-                  canonical_key: canonicalKey,
-                  source: 'collectr',
-                  price_usd: Math.round(card.price * 1000) / 1000,
-                  game,
-                })
                 .then(() => {})
             }
           } catch (cardErr: unknown) {
