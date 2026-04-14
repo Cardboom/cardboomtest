@@ -21,6 +21,8 @@ const gameFilters = [
   { value: 'onepiece', label: 'One Piece', icon: '🏴‍☠️' },
   { value: 'yugioh', label: 'Yu-Gi-Oh!', icon: '👁️' },
   { value: 'lorcana', label: 'Disney Lorcana', icon: '✨' },
+  { value: 'dbs', label: 'Dragon Ball Super', icon: '🐉' },
+  { value: 'digimon', label: 'Digimon', icon: '🦖' },
 ];
 
 // ─── Sets View: shows all sets for a game ───
