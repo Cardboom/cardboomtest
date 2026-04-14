@@ -240,12 +240,11 @@ serve(async (req) => {
             const { error: stageErr } = await extDb
               .from('catalog_import_staging')
               .upsert({
-                source_api: 'collectr',
                 game,
                 set_code: setSlug,
                 set_name: set.set_name,
                 card_number: card.cardNumber,
-                card_name: card.name,
+                name: card.name,
                 variant: card.variant,
                 rarity: card.rarity,
                 image_url: card.imageUrl,
