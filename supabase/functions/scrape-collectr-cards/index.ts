@@ -33,8 +33,8 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<any> {
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown'],
-      onlyMainContent: true,
+      formats: ['markdown', 'links'],
+      onlyMainContent: false,
       waitFor: 5000,
     }),
   })
