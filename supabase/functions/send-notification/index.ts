@@ -246,7 +246,7 @@ serve(async (req) => {
 
         if (profile?.phone) {
           const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
-          const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+          const supabaseAnonKey = Deno.env.get('EXTERNAL_SUPABASE_ANON_KEY')!;
           
           // Call send-sms function
           const smsResponse = await fetch(`${supabaseUrl}/functions/v1/send-sms`, {
