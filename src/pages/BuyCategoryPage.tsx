@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ListingsTable } from '@/components/market/ListingsTable';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { CATEGORY_SEO_DATA, SITE_URL } from '@/lib/seo';
 import { 
   TrendingUp, 

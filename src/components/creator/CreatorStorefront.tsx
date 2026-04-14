@@ -21,7 +21,7 @@ import {
   Megaphone,
   Shield,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { SellerTrustScore } from '@/components/seller/SellerTrustScore';
 import { FollowCreatorButton } from './FollowCreatorButton';
 import { ShareCreatorDialog } from './ShareCreatorDialog';

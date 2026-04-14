@@ -4,7 +4,7 @@ import { X, Gift, Clock, Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface ExitIntentPopupProps {

@@ -4,7 +4,7 @@ import { Sparkles, Gift, Crown, Check, AlertCircle, ArrowRight } from 'lucide-re
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useGradingCredits } from '@/hooks/useGradingCredits';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
 interface GradingCreditsDisplayProps {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCardboomPoints } from '@/hooks/useCardboomPoints';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
 

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, TrendingUp, Sparkles, Plus, Award } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';

@@ -10,7 +10,7 @@ import {
   User, Camera, Sparkles, ChevronRight, ChevronLeft, 
   GamepadIcon, Swords, Crown, Loader2, CheckCircle
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 

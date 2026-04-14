@@ -4,7 +4,7 @@ import {
   ShieldCheck, Users, TrendingUp, Shield, 
   BadgeCheck, Lock, Globe, Award
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface TrustBadgesBarProps {

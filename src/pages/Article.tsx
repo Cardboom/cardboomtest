@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Clock, ArrowLeft, ArrowRight, MessageSquare, ThumbsUp, Share2, Bookmark, User } from 'lucide-react';
 import { getArticleBySlug, getRelatedArticles, BlogArticle } from '@/data/blogArticles';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
 

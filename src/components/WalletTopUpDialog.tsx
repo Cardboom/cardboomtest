@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CreditCard, AlertCircle, Loader2, Crown } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { SavedCardsSelector, SavedCard } from '@/components/wallet/SavedCardsSelector';

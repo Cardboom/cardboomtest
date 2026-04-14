@@ -16,7 +16,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import type { ResolvedPrice } from '@/hooks/useCatalogCard';
 
 interface CatalogPricePanelProps {

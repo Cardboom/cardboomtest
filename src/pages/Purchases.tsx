@@ -14,7 +14,7 @@ import {
   Loader2,
   ExternalLink
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { useCurrency } from '@/contexts/CurrencyContext';

@@ -23,7 +23,7 @@ import {
   Layers, Plus, Check, Sparkles, Search, ChevronRight, Trophy
 } from 'lucide-react';
 import { useSetCompletion } from '@/hooks/useSetCompletion';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { formatCategoryName } from '@/lib/categoryFormatter';
 

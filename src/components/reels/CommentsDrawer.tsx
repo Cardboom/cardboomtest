@@ -9,7 +9,7 @@ import { useReelComments, ReelComment } from '@/hooks/useReels';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 interface CommentsDrawerProps {
   reelId: string;

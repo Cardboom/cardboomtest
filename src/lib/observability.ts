@@ -6,7 +6,7 @@
  */
 
 import { generateRequestCorrelationId, getSessionId, logCriticalAction } from './correlationId';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 // Error severity levels
 export type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical';

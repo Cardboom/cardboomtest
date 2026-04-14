@@ -9,7 +9,7 @@ import {
   BarChart3, Calendar
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
 import { 

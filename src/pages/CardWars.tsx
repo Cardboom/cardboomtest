@@ -11,7 +11,7 @@ import {
   Gem, TrendingUp, History, Users, Gift, Zap, Star,
   ChevronRight, ArrowRight, Info, Shield
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/lib/supabase';
 import { useCardWars, CardWar } from "@/hooks/useCardWars";
 import { formatDistanceToNow, format } from "date-fns";
 import { useNavigate } from "react-router-dom";

@@ -10,7 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Upload, FileSpreadsheet, Award, Loader2, CheckCircle2, XCircle, Sparkles, ChevronLeft, Search, Lock } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 interface PortfolioImportProps {

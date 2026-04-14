@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Flame, Heart, MessageCircle, Repeat2, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { TweetRewardClaim } from '@/components/TweetRewardClaim';
 
 interface XPost {

@@ -6,7 +6,7 @@ import { Search, ShoppingCart, Menu, X, Bell, User, LogOut, Wallet, Vault, Badge
 import { useSubscription } from '@/hooks/useSubscription';
 import { Badge } from '@/components/ui/badge';
 import { CardboomPointsBadge } from '@/components/CardboomPointsBadge';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import {
   DropdownMenu,

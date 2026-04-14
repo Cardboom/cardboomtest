@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { MessageSquare, TrendingUp, TrendingDown, Minus, Clock, Flame, ArrowRight, Plus, AtSign, X, Search, ChevronUp, Globe, Sparkles, Swords, Trophy, Crown, Gem, AlertCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/lib/supabase';
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { normalizeSlug } from "@/lib/seoSlug";

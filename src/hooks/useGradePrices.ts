@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 export type CardGrade = 'raw' | 'psa10' | 'psa9' | 'psa8' | 'psa7' | 'psa6' | 'bgs10' | 'bgs9_5' | 'cgc10' | 'cgc9_5';
 

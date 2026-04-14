@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Sparkles, TrendingUp, TrendingDown, AlertCircle, Flame } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 interface MarketInsight {
   text: string;

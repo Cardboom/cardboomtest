@@ -11,7 +11,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useCardboomPass, PassTier } from '@/hooks/useCardboomPass';
 import { useCardboomPoints } from '@/hooks/useCardboomPoints';
 import { cn } from '@/lib/utils';

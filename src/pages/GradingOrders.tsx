@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 const STATUS_CONFIG: Record<GradingOrderStatus, { label: string; color: string; icon: typeof Clock }> = {

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Gamepad2, Trophy, GraduationCap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 
 const Gaming = () => {

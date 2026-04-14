@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { TrendingUp, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 interface PriceChartProps {
   title?: string;
