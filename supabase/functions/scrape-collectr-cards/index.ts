@@ -433,14 +433,15 @@ serve(async (req) => {
               results.cards_promoted++
             }
 
-            if (card.price !== null && card.price > 0) {
+            if (card.price !== null && card.price >= 0) {
+              const roundedPrice = Math.round(card.price * 1000) / 1000
               await internalDb
                 .from('card_prices')
                 .upsert({
                   canonical_card_key: canonicalKey,
                   source: 'collectr',
-                  price: card.price,
-                  market_price: card.price,
+                  price: roundedPrice,
+                  market_price: roundedPrice,
                   condition: card.variant?.toLowerCase() || 'normal',
                 }, { onConflict: 'canonical_card_key,source' })
                 .then(() => {})
