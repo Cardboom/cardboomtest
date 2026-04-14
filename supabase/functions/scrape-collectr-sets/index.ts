@@ -8,7 +8,6 @@ const corsHeaders = {
 
 const FIRECRAWL_V2 = 'https://api.firecrawl.dev/v2'
 
-// Known Collectr category IDs
 const CATEGORIES: Record<string, { id: string; name: string }> = {
   pokemon:  { id: '3',  name: 'Pokemon' },
   onepiece: { id: '5',  name: 'One Piece' },
@@ -16,6 +15,10 @@ const CATEGORIES: Record<string, { id: string; name: string }> = {
   yugioh:   { id: '2',  name: 'Yu-Gi-Oh' },
   lorcana:  { id: '6',  name: 'Lorcana' },
   digimon:  { id: '7',  name: 'Digimon' },
+}
+
+function slugify(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
 async function firecrawlScrape(apiKey: string, url: string): Promise<any> {
@@ -27,9 +30,9 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<any> {
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown', 'links'],
+      formats: ['markdown'],
       onlyMainContent: true,
-      waitFor: 3000,
+      waitFor: 5000,
     }),
   })
   const data = await response.json()
@@ -37,50 +40,78 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<any> {
   return data
 }
 
-function parseSetLinks(markdown: string, links: string[], categoryId: string): Array<{
-  setName: string; groupId: string; slug: string; url: string
-}> {
-  const results: Array<{ setName: string; groupId: string; slug: string; url: string }> = []
+interface DiscoveredSet {
+  setName: string
+  groupId: string
+  slug: string
+  url: string
+  cardCount: number
+  imageUrl: string | null
+}
+
+function parseSetsFromMarkdown(markdown: string, categoryId: string): DiscoveredSet[] {
+  const sets: DiscoveredSet[] = []
   const seen = new Set<string>()
 
-  // Parse links that match the pattern /sets/category/{id}/{slug}?groupId={id}
-  for (const link of links) {
-    const match = link.match(/\/sets\/category\/(\d+)\/([^?]+)\?groupId=(\d+)/)
-    if (match && match[1] === categoryId) {
-      const slug = match[2]
-      const groupId = match[3]
-      if (!seen.has(groupId)) {
-        seen.add(groupId)
-        // Derive set name from slug
-        const setName = slug
-          .replace(/-/g, ' ')
-          .replace(/\b\w/g, c => c.toUpperCase())
-        results.push({
-          setName,
-          groupId,
-          slug,
-          url: `https://app.getcollectr.com/sets/category/${categoryId}/${slug}?groupId=${groupId}&cardType=cards`,
-        })
+  // Pattern: image URL contains group_{id}.png, followed by set name as ## heading, and card count
+  // Example:
+  // ![Perfect Order](https://public.getcollectr.com/public-assets/catalog-groups/group_24587.png?...)
+  // ## Perfect Order
+  // 124 cards
+  
+  const lines = markdown.split('\n')
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    
+    // Look for image with group ID
+    const imgMatch = line.match(/!\[([^\]]*)\]\((https:\/\/public\.getcollectr\.com\/public-assets\/catalog-groups\/group_(\d+)\.[^)]+)\)/)
+    if (!imgMatch) continue
+    
+    const groupId = imgMatch[3]
+    const imageUrl = imgMatch[2].split('?')[0] // clean URL
+    if (seen.has(groupId)) continue
+    
+    // Look ahead for the ## heading (set name) and card count
+    let setName = ''
+    let cardCount = 0
+    
+    for (let j = i + 1; j < Math.min(i + 15, lines.length); j++) {
+      const nextLine = lines[j].trim()
+      
+      // ## Set Name
+      const headingMatch = nextLine.match(/^#{1,3}\s+(.+)$/)
+      if (headingMatch && !setName) {
+        setName = headingMatch[1].trim()
+      }
+      
+      // 124 cards
+      const countMatch = nextLine.match(/^(\d+)\s+cards?$/i)
+      if (countMatch) {
+        cardCount = parseInt(countMatch[1])
+        break
       }
     }
-  }
-
-  // Also try markdown patterns: [Set Name](url)
-  const mdPattern = /\[([^\]]+)\]\(([^)]*\/sets\/category\/(\d+)\/([^?]+)\?groupId=(\d+)[^)]*)\)/g
-  let mdMatch
-  while ((mdMatch = mdPattern.exec(markdown)) !== null) {
-    if (mdMatch[3] === categoryId && !seen.has(mdMatch[5])) {
-      seen.add(mdMatch[5])
-      results.push({
-        setName: mdMatch[1].trim(),
-        groupId: mdMatch[5],
-        slug: mdMatch[4],
-        url: `https://app.getcollectr.com/sets/category/${categoryId}/${mdMatch[4]}?groupId=${mdMatch[5]}&cardType=cards`,
-      })
+    
+    if (!setName) {
+      // Use alt text from image as fallback
+      setName = imgMatch[1] || `Set ${groupId}`
     }
+    
+    seen.add(groupId)
+    const slug = slugify(setName)
+    
+    sets.push({
+      setName,
+      groupId,
+      slug,
+      url: `https://app.getcollectr.com/sets/category/${categoryId}/${slug}?groupId=${groupId}&cardType=cards`,
+      cardCount,
+      imageUrl,
+    })
   }
-
-  return results
+  
+  return sets
 }
 
 serve(async (req) => {
@@ -97,7 +128,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const body = await req.json().catch(() => ({}))
-    const { category } = body // e.g. 'pokemon', 'onepiece', or undefined for all
+    const { category } = body
 
     const categoriesToScrape = category
       ? { [category]: CATEGORIES[category] }
@@ -108,6 +139,7 @@ serve(async (req) => {
       sets_discovered: 0,
       sets_inserted: 0,
       errors: [] as string[],
+      sets: [] as Array<{ name: string; groupId: string; cards: number }>,
     }
 
     for (const [key, cat] of Object.entries(categoriesToScrape)) {
@@ -122,9 +154,7 @@ serve(async (req) => {
         const scraped = await firecrawlScrape(firecrawlKey, categoryUrl)
 
         const markdown = scraped.data?.markdown || scraped.markdown || ''
-        const links = scraped.data?.links || scraped.links || []
-
-        const sets = parseSetLinks(markdown, links, cat.id)
+        const sets = parseSetsFromMarkdown(markdown, cat.id)
         console.log(`[scrape-collectr-sets] Found ${sets.length} sets for ${cat.name}`)
 
         results.categories_scraped++
@@ -140,12 +170,14 @@ serve(async (req) => {
               group_id: set.groupId,
               slug: set.slug,
               url: set.url,
+              card_count: set.cardCount,
             }, { onConflict: 'group_id' })
 
           if (error) {
             results.errors.push(`${set.setName}: ${error.message}`)
           } else {
             results.sets_inserted++
+            results.sets.push({ name: set.setName, groupId: set.groupId, cards: set.cardCount })
           }
         }
 
@@ -157,7 +189,7 @@ serve(async (req) => {
       }
     }
 
-    console.log('[scrape-collectr-sets] Results:', results)
+    console.log('[scrape-collectr-sets] Results:', JSON.stringify(results))
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
