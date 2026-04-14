@@ -168,7 +168,7 @@ function extractGroupIdLinks(markdown: string, categoryId: number, categoryName:
   return results
 }
 
-
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
