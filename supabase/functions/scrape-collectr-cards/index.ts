@@ -281,6 +281,7 @@ serve(async (req) => {
             }
 
             if (card.price !== null && card.price > 0) {
+              // Save to card_prices (latest price)
               await internalDb
                 .from('card_prices')
                 .upsert({
@@ -291,6 +292,31 @@ serve(async (req) => {
                   condition: card.variant?.toLowerCase() || 'normal',
                 }, { onConflict: 'canonical_card_key,source' })
                 .then(() => {})
+
+              // Also write a price snapshot for the catalog card (for chart history)
+              // Look up the catalog_card_id from external DB
+              const { data: catCard } = await extDb
+                .from('catalog_cards')
+                .select('id')
+                .eq('canonical_key', canonicalKey)
+                .maybeSingle()
+
+              if (catCard?.id) {
+                const today = new Date().toISOString().split('T')[0]
+                await internalDb
+                  .from('card_price_snapshots')
+                  .upsert({
+                    catalog_card_id: catCard.id,
+                    snapshot_date: today,
+                    median_usd: card.price,
+                    low_usd: card.price,
+                    high_usd: card.price,
+                    liquidity_count: 1,
+                    confidence: 0.6,
+                    sources: { collectr: card.price },
+                  }, { onConflict: 'catalog_card_id,snapshot_date' })
+                  .then(() => {})
+              }
             }
           } catch (cardErr: unknown) {
             const msg = cardErr instanceof Error ? cardErr.message : String(cardErr)
