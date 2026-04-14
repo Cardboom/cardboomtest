@@ -229,12 +229,11 @@ serve(async (req) => {
             const variantPart = slugify(card.variant || 'normal')
             const canonicalKey = `${game}:${setSlug}:${numPart}:${variantPart}`
 
-            // Write to external catalog_import_staging
+            // Write to catalog_import_staging (skip raw_data and source_id - not in schema)
             const { error: stageErr } = await db
               .from('catalog_import_staging')
               .upsert({
                 source_api: 'collectr',
-                source_id: `collectr:${set.group_id}:${numPart}:${variantPart}`,
                 game,
                 set_code: setSlug,
                 set_name: set.set_name,
@@ -244,14 +243,8 @@ serve(async (req) => {
                 rarity: card.rarity,
                 image_url: card.imageUrl,
                 canonical_key: canonicalKey,
-                raw_data: {
-                  price_usd: card.price,
-                  price_change: card.priceChange,
-                  collectr_group_id: set.group_id,
-                  collectr_category: set.category_name,
-                },
                 status: 'pending',
-              }, { onConflict: 'source_api,source_id' })
+              }, { onConflict: 'canonical_key' })
 
             if (stageErr) {
               results.errors.push(`Stage ${card.name}: ${stageErr.message}`)
