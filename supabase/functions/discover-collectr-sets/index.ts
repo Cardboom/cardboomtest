@@ -11,11 +11,11 @@ const FIRECRAWL_V2 = 'https://api.firecrawl.dev/v2'
 const CATEGORIES: Record<number, { name: string; game: string }> = {
   1: { name: 'Magic: The Gathering', game: 'mtg' },
   3: { name: 'Pokemon', game: 'pokemon' },
-  4: { name: 'One Piece', game: 'onepiece' },
   5: { name: 'Yu-Gi-Oh!', game: 'yugioh' },
   6: { name: 'Disney Lorcana', game: 'lorcana' },
   7: { name: 'Digimon', game: 'digimon' },
-  27: { name: 'Dragon Ball Super', game: 'dbs' },
+  68: { name: 'One Piece', game: 'onepiece' },
+  80: { name: 'Dragon Ball Super', game: 'dbs' },
 }
 
 serve(async (req) => {
