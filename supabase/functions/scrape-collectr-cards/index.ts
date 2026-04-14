@@ -96,7 +96,7 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
         continue
       }
 
-      const priceMatch = next.match(/^\$([\d,]+\.?\d*)$/)
+      const priceMatch = next.match(/^\$([\d,]+\.?\d{0,3})$/)
       if (priceMatch && price === null) {
         price = parseFloat(priceMatch[1].replace(/,/g, ''))
         continue
