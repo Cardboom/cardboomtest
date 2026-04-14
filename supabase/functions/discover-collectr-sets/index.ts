@@ -28,7 +28,7 @@ serve(async (req) => {
     const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
 
     const body = await req.json().catch(() => ({}))
-    const { category_id } = body
+    const { category_id, mode = 'all' } = body
 
     const catIds = category_id ? [category_id] : Object.keys(CATEGORIES).map(Number)
     
@@ -41,95 +41,80 @@ serve(async (req) => {
       const cat = CATEGORIES[catId]
       if (!cat) continue
 
-      console.log(`[discover] Scraping sets for ${cat.name} (cat ${catId})`)
+      console.log(`[discover] Discovering sets for ${cat.name} (cat ${catId})`)
 
       try {
-        // Scrape the category page with Firecrawl (handles JS rendering)
-        const scrapeUrl = `https://app.getcollectr.com/sets?categoryId=${catId}`
-        const response = await fetch(`${FIRECRAWL_V2}/scrape`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${firecrawlKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url: scrapeUrl,
-            formats: ['markdown', 'links'],
-            onlyMainContent: false,
-            waitFor: 8000,
-          }),
-        })
-
-        const scrapeData = await response.json()
-        if (!response.ok) {
-          errors.push(`${cat.name}: scrape failed ${scrapeData.error || response.status}`)
-          continue
-        }
-
-        const markdown = scrapeData.data?.markdown || scrapeData.markdown || ''
-        const links: string[] = (scrapeData.data?.links || scrapeData.links || []).map(
-          (l: any) => typeof l === 'string' ? l : l?.url || ''
-        ).filter(Boolean)
-
-        console.log(`[discover] ${cat.name}: ${links.length} links, ${markdown.length} chars md`)
-        
-        // Store debug info
-        debug[cat.name] = {
-          links_count: links.length,
-          markdown_length: markdown.length,
-          sample_links: links.slice(0, 10),
-          markdown_preview: markdown.substring(0, 500),
-        }
-
-        const seen = new Set<string>()
-
-        // Parse both absolute and relative set URLs from links AND markdown
-        const setPatterns = [
-          /\/sets\/category\/(\d+)\/([a-z0-9][a-z0-9-]*[a-z0-9])/,
-          /app\.getcollectr\.com\/sets\/category\/(\d+)\/([a-z0-9][a-z0-9-]*[a-z0-9])/,
+        // Strategy 1: Use Firecrawl search to find set URLs on Collectr
+        const searchQueries = [
+          `site:app.getcollectr.com sets category ${catId}`,
+          `site:app.getcollectr.com ${cat.name} sets groupId`,
         ]
+        
+        const seen = new Set<string>()
+        const setPattern = /\/sets\/category\/(\d+)\/([a-z0-9][a-z0-9-]*[a-z0-9])(?:\?[^\s"')]*groupId=(\d+))?/g
 
-        const allStrings = [...links, ...markdown.split(/[\s\n()"']/)]
+        for (const query of searchQueries) {
+          try {
+            const searchRes = await fetch(`${FIRECRAWL_V2}/search`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${firecrawlKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ query, limit: 20 }),
+            })
+            const searchData = await searchRes.json()
+            const results = searchData.data || searchData.results || []
+            
+            console.log(`[discover] Search "${query}": ${results.length} results`)
+            
+            for (const result of results) {
+              const url = result.url || ''
+              const text = `${url} ${result.title || ''} ${result.description || ''}`
+              
+              let m
+              const localPattern = new RegExp(setPattern.source, 'g')
+              while ((m = localPattern.exec(text)) !== null) {
+                const foundCatId = parseInt(m[1])
+                const slug = m[2]
+                const groupId = m[3]
+                
+                if (!CATEGORIES[foundCatId]) continue
+                const key = groupId ? groupId : `${foundCatId}-${slug}`
+                if (seen.has(key)) continue
+                seen.add(key)
+                
+                const setName = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+                const foundCat = CATEGORIES[foundCatId]
+                const setUrl = groupId
+                  ? `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?groupId=${groupId}&cardType=cards`
+                  : `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?cardType=cards`
 
-        for (const str of allStrings) {
-          for (const pattern of setPatterns) {
-            const match = str.match(pattern)
-            if (!match) continue
+                const { error } = await db
+                  .from('collectr_scrape_queue')
+                  .upsert({
+                    group_id: groupId || `${foundCatId}-${slug}`,
+                    set_name: setName,
+                    category_id: foundCatId,
+                    category_name: foundCat.name,
+                    url: setUrl,
+                    status: 'pending',
+                  }, { onConflict: 'group_id' })
 
-            const foundCatId = parseInt(match[1])
-            const slug = match[2]
-            if (category_id && foundCatId !== catId) continue
-            if (!CATEGORIES[foundCatId]) continue
-
-            const key = `${foundCatId}:${slug}`
-            if (seen.has(key)) continue
-            seen.add(key)
-
-            const setName = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
-            const groupId = `${foundCatId}-${slug}`
-            const foundCat = CATEGORIES[foundCatId]
-
-            const { error } = await db
-              .from('collectr_scrape_queue')
-              .upsert({
-                group_id: groupId,
-                set_name: setName,
-                category_id: foundCatId,
-                category_name: foundCat.name,
-                url: `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?cardType=cards`,
-                status: 'pending',
-              }, { onConflict: 'group_id' })
-
-            if (error) {
-              errors.push(`${setName}: ${error.message}`)
-            } else {
-              totalQueued++
-              byCat[foundCat.name] = (byCat[foundCat.name] || 0) + 1
+                if (!error) {
+                  totalQueued++
+                  byCat[foundCat.name] = (byCat[foundCat.name] || 0) + 1
+                }
+              }
             }
+          } catch (searchErr) {
+            console.log(`[discover] Search error: ${searchErr}`)
           }
+          
+          await new Promise(r => setTimeout(r, 1000))
         }
 
-        // Also try Firecrawl map on the category-specific URL
+        // Strategy 2: Firecrawl map on the category page
         try {
           const mapRes = await fetch(`${FIRECRAWL_V2}/map`, {
             method: 'POST',
@@ -138,41 +123,44 @@ serve(async (req) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              url: `https://app.getcollectr.com/sets`,
-              search: cat.game,
+              url: `https://app.getcollectr.com/sets/category/${catId}`,
               limit: 5000,
               includeSubdomains: false,
             }),
           })
           const mapData = await mapRes.json()
-          const mapLinks: any[] = (mapData.links || mapData.data?.links || [])
-
+          const mapLinks: any[] = mapData.links || mapData.data?.links || []
+          
+          debug[`${cat.name}_map`] = { links_count: mapLinks.length }
+          
           for (const rawLink of mapLinks) {
             const linkStr = typeof rawLink === 'string' ? rawLink : rawLink?.url || ''
-            for (const pattern of setPatterns) {
-              const match = linkStr.match(pattern)
-              if (!match) continue
-
-              const foundCatId = parseInt(match[1])
-              const slug = match[2]
+            const localPattern = new RegExp(setPattern.source, 'g')
+            let m
+            while ((m = localPattern.exec(linkStr)) !== null) {
+              const foundCatId = parseInt(m[1])
+              const slug = m[2]
+              const groupId = m[3]
+              
               if (!CATEGORIES[foundCatId]) continue
-
-              const key = `${foundCatId}:${slug}`
+              const key = groupId ? groupId : `${foundCatId}-${slug}`
               if (seen.has(key)) continue
               seen.add(key)
-
+              
               const setName = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
-              const groupId = `${foundCatId}-${slug}`
               const foundCat = CATEGORIES[foundCatId]
+              const setUrl = groupId
+                ? `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?groupId=${groupId}&cardType=cards`
+                : `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?cardType=cards`
 
               const { error } = await db
                 .from('collectr_scrape_queue')
                 .upsert({
-                  group_id: groupId,
+                  group_id: groupId || `${foundCatId}-${slug}`,
                   set_name: setName,
                   category_id: foundCatId,
                   category_name: foundCat.name,
-                  url: `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?cardType=cards`,
+                  url: setUrl,
                   status: 'pending',
                 }, { onConflict: 'group_id' })
 
@@ -182,9 +170,73 @@ serve(async (req) => {
               }
             }
           }
-          debug[`${cat.name}_map`] = { links_count: mapLinks.length }
         } catch (mapErr) {
           console.log(`[discover] Map failed for ${cat.name}`)
+        }
+
+        // Strategy 3: Scrape the sets page and extract links from rendered content
+        try {
+          const scrapeRes = await fetch(`${FIRECRAWL_V2}/scrape`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${firecrawlKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: `https://app.getcollectr.com/sets?categoryId=${catId}`,
+              formats: ['markdown', 'links'],
+              onlyMainContent: false,
+              waitFor: 8000,
+            }),
+          })
+          const scrapeData = await scrapeRes.json()
+          const markdown = scrapeData.data?.markdown || scrapeData.markdown || ''
+          const links: string[] = (scrapeData.data?.links || scrapeData.links || []).map(
+            (l: any) => typeof l === 'string' ? l : l?.url || ''
+          ).filter(Boolean)
+          
+          debug[cat.name] = {
+            links_count: links.length,
+            markdown_length: markdown.length,
+          }
+          
+          const allText = markdown + '\n' + links.join('\n')
+          const localPattern = new RegExp(setPattern.source, 'g')
+          let m
+          while ((m = localPattern.exec(allText)) !== null) {
+            const foundCatId = parseInt(m[1])
+            const slug = m[2]
+            const groupId = m[3]
+            
+            if (!CATEGORIES[foundCatId]) continue
+            const key = groupId ? groupId : `${foundCatId}-${slug}`
+            if (seen.has(key)) continue
+            seen.add(key)
+            
+            const setName = slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+            const foundCat = CATEGORIES[foundCatId]
+            const setUrl = groupId
+              ? `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?groupId=${groupId}&cardType=cards`
+              : `https://app.getcollectr.com/sets/category/${foundCatId}/${slug}?cardType=cards`
+
+            const { error } = await db
+              .from('collectr_scrape_queue')
+              .upsert({
+                group_id: groupId || `${foundCatId}-${slug}`,
+                set_name: setName,
+                category_id: foundCatId,
+                category_name: foundCat.name,
+                url: setUrl,
+                status: 'pending',
+              }, { onConflict: 'group_id' })
+
+            if (!error) {
+              totalQueued++
+              byCat[foundCat.name] = (byCat[foundCat.name] || 0) + 1
+            }
+          }
+        } catch (scrapeErr) {
+          console.log(`[discover] Scrape failed for ${cat.name}`)
         }
 
         console.log(`[discover] ${cat.name}: queued ${byCat[cat.name] || 0} sets`)
