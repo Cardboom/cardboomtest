@@ -28,7 +28,7 @@ const CatalogCardPage = () => {
   const fullKey = canonicalKey || '';
   
   const { data: card, isLoading: cardLoading } = useCatalogCard(fullKey);
-  const { data: price, isLoading: priceLoading } = useCatalogCardPrice(card?.id);
+  const { data: price, isLoading: priceLoading } = useCatalogCardPrice(card?.id, card?.canonical_key);
 
   if (cardLoading) {
     return (
