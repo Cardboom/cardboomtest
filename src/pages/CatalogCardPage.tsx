@@ -283,7 +283,7 @@ const CatalogCardPage = () => {
 
             {/* Price Chart */}
             {card.id && (
-              <CatalogPriceChart catalogCardId={card.id} cardName={card.name} />
+              <CatalogPriceChart catalogCardId={card.id} cardName={card.name} currentPrice={price?.price_usd} />
             )}
 
             {/* Active Listings */}
