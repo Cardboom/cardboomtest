@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Crown, Sparkles, ArrowRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
 interface FeeUpgradeNudgeProps {

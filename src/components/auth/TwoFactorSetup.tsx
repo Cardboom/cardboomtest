@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PhoneInputWithCountry } from '@/components/ui/phone-input';
 import { Shield, Phone, CheckCircle, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { motion } from 'framer-motion';

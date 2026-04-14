@@ -43,7 +43,7 @@ import { NewsPanel } from '@/components/home/NewsPanel';
 import { BountiesPanel } from '@/components/home/BountiesPanel';
 import { MyGradingOrdersPanel } from '@/components/home/MyGradingOrdersPanel';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { FAQSection } from '@/components/FAQSection';
 import { SEOFeaturesSection } from '@/components/SEOFeaturesSection';

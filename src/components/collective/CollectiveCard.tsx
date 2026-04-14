@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, Shield, Vote, Clock, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/lib/supabase';
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { CollectiveJoinDialog } from "./CollectiveJoinDialog";
 import { CollectiveVerificationDialog } from "./CollectiveVerificationDialog";

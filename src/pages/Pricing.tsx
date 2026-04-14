@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Zap, Building2, TrendingUp, PieChart, BarChart3, Shield, Headphones, Rocket, Percent, CreditCard, Banknote, Clock, Award, ShieldCheck, Sparkles, Timer, Package, ChevronRight } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 

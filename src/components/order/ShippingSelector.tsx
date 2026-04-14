@@ -13,7 +13,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useGeliverShipping } from '@/hooks/useGeliverShipping';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useCurrency } from '@/contexts/CurrencyContext';
 

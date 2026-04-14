@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { Award, ChevronRight, Clock, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

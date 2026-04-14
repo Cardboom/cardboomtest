@@ -14,7 +14,7 @@ import {
   Search, Users, Shield, Vote,
   Clock, Filter, ArrowUpDown, Layers, Star, Sparkles, Trophy
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { CollectiveJoinDialog } from '@/components/collective/CollectiveJoinDialog';
 import { Skeleton } from '@/components/ui/skeleton';

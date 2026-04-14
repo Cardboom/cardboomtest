@@ -3,7 +3,7 @@ import { Droplets, DollarSign, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 interface ExternalExitSignalsProps {
   marketItemId: string;

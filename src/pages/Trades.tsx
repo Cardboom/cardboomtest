@@ -10,7 +10,7 @@ import {
   Camera, Package, AlertCircle, ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { TradeDetailDialog } from '@/components/trading/TradeDetailDialog';
 import { ProposeTradeDialog } from '@/components/trading/ProposeTradeDialog';

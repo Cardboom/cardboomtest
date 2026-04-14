@@ -12,7 +12,7 @@ import {
   TrendingUp, TrendingDown, Users, ShoppingBag, Eye, Target,
   ArrowUpRight, ArrowDownRight, DollarSign, UserPlus
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 
 interface ConversionMetrics {

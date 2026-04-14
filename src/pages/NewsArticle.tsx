@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
 import { ArrowLeft, Clock, Eye, Share2, Bookmark, Newspaper } from 'lucide-react';
 import { toast } from 'sonner';

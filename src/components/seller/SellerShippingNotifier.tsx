@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { SellerShippingPrompt } from '@/components/seller/SellerShippingPrompt';
 
 // Helper to extract first item from Supabase relation (may return array or single object)

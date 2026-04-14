@@ -20,7 +20,7 @@ import { useCartAbandonment } from '@/hooks/useCartAbandonment';
 import { useGeliverShipping } from '@/hooks/useGeliverShipping';
 import { useTurkeyCompliance } from '@/hooks/useTurkeyCompliance';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { WalletTopUpDialog } from '@/components/WalletTopUpDialog';
 import { IBANProductCheckout } from '@/components/checkout/IBANProductCheckout';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';

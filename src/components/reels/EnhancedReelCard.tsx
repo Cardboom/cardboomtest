@@ -9,7 +9,7 @@ import { useWatchEvents } from '@/hooks/useReelsFeed';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 interface EnhancedReelCardProps {
   reel: Reel & { 

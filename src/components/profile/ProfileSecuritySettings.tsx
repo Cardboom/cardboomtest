@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { TwoFactorSetup } from '@/components/auth/TwoFactorSetup';
 import { toast } from 'sonner';
 

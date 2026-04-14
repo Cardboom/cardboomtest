@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, Check, Key, Zap, Database, Shield, Code, ArrowRight, Sparkles, Award, TrendingUp, Globe, Clock, Target, Cpu, Eye, BarChart3, CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/lib/supabase';
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 

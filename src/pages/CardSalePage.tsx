@@ -6,7 +6,7 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, Loader2, ShoppingCart, Heart } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CardHeroSection, CardImageModule, PriceMarketPanel, BuyBox, SellerInfoCard, EscrowSection, CardDetailsSection } from '@/components/card-sale';

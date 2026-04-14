@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 
 interface BackgroundRemovedImageProps {

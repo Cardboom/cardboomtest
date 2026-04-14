@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReelsFeed } from '@/components/reels/ReelsFeed';
 import { CreateReelDialog } from '@/components/reels/CreateReelDialog';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { cn } from '@/lib/utils';

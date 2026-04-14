@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown, Eye, Heart, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarketFilters, SortOption } from '@/pages/Explorer';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useUnifiedPricing } from '@/hooks/useUnifiedPricing';
 import { InlinePlaceholder } from './CardPlaceholder';

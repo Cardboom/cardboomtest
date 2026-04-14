@@ -9,7 +9,7 @@
  * - Centralized error reporting
  */
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { errorReporter } from './errorReporter';
 
 export interface PriceData {

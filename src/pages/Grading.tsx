@@ -11,7 +11,7 @@ import { Collectible } from '@/types/collectible';
 import { Helmet } from 'react-helmet-async';
 import { UniversalSEO } from '@/components/seo/UniversalSEO';
 import { motion } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import cbgiCertificate from '@/assets/cbgi-certificate.png';

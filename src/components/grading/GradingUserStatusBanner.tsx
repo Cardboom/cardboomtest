@@ -4,7 +4,7 @@ import { Sparkles, Gift, Package, Zap, ArrowRight, Crown, Clock, Shield, Star } 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { MONTHLY_GRADING_CREDITS } from '@/hooks/useGradingCredits';
 

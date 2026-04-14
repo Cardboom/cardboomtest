@@ -24,7 +24,7 @@ import {
   Eye,
   TrendingUp,
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useSubscription } from '@/hooks/useSubscription';
 import { toast } from 'sonner';
 

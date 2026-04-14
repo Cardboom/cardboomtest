@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown, Tag } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Link } from 'react-router-dom';

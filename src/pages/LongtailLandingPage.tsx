@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { BreadcrumbSchema } from '@/components/seo/BreadcrumbSchema';
 import { FilteredPageSEO } from '@/components/seo/FilteredPageSEO';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { CATEGORY_SEO_DATA, SITE_URL, generateFAQSchema } from '@/lib/seoUtils';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { 

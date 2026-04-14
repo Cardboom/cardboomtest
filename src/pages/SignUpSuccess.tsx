@@ -5,7 +5,7 @@ import { CheckCircle, Sparkles, ArrowRight, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 const SignUpSuccess = () => {
   const navigate = useNavigate();

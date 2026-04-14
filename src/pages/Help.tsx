@@ -12,7 +12,7 @@ import { Search, MessageCircle, BookOpen, CreditCard, Package, Shield, HelpCircl
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 const Help = () => {
   const [searchQuery, setSearchQuery] = useState('');

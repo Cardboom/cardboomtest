@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Vault, Package, CheckCircle, AlertCircle, Copy, Camera, Shield, Truck, Gift, Sparkles, Lock, ScanLine, X, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useCurrency, Currency } from '@/contexts/CurrencyContext';
 import { CardScannerUpload } from './CardScannerUpload';
 import { CardReviewModal, ReviewedCardData } from './card-scan/CardReviewModal';

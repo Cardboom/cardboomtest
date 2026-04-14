@@ -4,7 +4,7 @@ import { Shield, ArrowRight, Sparkles, Clock, Zap, CheckCircle } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export const GradingHero = () => {

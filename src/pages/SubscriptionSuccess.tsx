@@ -5,7 +5,7 @@ import { Crown, Sparkles, ArrowRight, TrendingDown, Zap, Shield } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 const SubscriptionSuccess = () => {
   const [searchParams] = useSearchParams();

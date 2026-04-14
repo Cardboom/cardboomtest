@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertTriangle, CheckCircle, Clock, User, DollarSign, Loader2, RefreshCw, ShieldAlert, MessageSquare } from 'lucide-react';
 import { useAdminEscalations, useAutoEscalateOverdueOrders } from '@/hooks/useOrderConfirmation';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';

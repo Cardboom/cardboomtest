@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 type TableType = 'market_items' | 'catalog_cards' | 'listings' | 'card_instances' | 'vault_items' | 'swap_listings' | 'boom_pack_cards' | 'grading_orders';

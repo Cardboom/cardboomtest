@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Sparkles, TrendingUp, Package } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface CatalogGame {

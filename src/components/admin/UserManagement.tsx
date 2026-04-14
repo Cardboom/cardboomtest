@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BoomCoinIcon } from '@/components/icons/BoomCoinIcon';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

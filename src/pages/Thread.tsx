@@ -13,7 +13,7 @@ import {
   MessageSquare, ArrowLeft, TrendingUp, TrendingDown, Minus, 
   Clock, ChevronUp, Send, ThumbsUp, AlertCircle, Reply
 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/lib/supabase';
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { normalizeSlug } from "@/lib/seoSlug";
