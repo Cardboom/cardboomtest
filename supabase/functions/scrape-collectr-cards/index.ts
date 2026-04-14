@@ -16,6 +16,7 @@ function categoryToGame(categoryName: string): string {
   if (n.includes('yu-gi-oh') || n.includes('yugioh')) return 'yugioh'
   if (n.includes('lorcana')) return 'lorcana'
   if (n.includes('digimon')) return 'digimon'
+  if (n.includes('dragon ball')) return 'dbs'
   return 'other'
 }
 
@@ -56,25 +57,12 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
   const cards: ParsedCard[] = []
   const lines = markdown.split('\n').map(l => l.trim()).filter(l => l.length > 0)
 
-  // Collectr format per card block:
-  // - ![Name](imageUrl)
-  // Name
-  // Set Name
-  // Rarity•CardNumber
-  // Variant (Normal / Holofoil / Reverse Holofoil)
-  // $Price
-  // PriceChange
-
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
-
-    // Detect card block start: line starting with "- ![" containing product image
     const imgMatch = line.match(/^-\s*!\[([^\]]*)\]\((https:\/\/public\.getcollectr\.com\/public-assets\/products\/[^)]+)\)/)
     if (!imgMatch) continue
 
     const imageUrl = imgMatch[2].split('?')[0]
-    
-    // Look ahead to collect card info
     let name = ''
     let cardNumber = ''
     let rarity = ''
@@ -82,14 +70,10 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
     let price: number | null = null
     let priceChange: number | null = null
 
-    // Scan the next ~15 lines for this card's data
     for (let j = i + 1; j < Math.min(i + 20, lines.length); j++) {
       const next = lines[j]
-
-      // Stop if we hit next card block
       if (next.match(/^-\s*!\[/)) break
 
-      // Card name: first non-empty text line after image (not a set name, not a price)
       if (!name && !next.startsWith('$') && !next.startsWith('-$') && !next.startsWith('+$') &&
           !next.includes('•') && !next.match(/^\$/) && next.length > 1 && next.length < 60 &&
           !['Normal', 'Holofoil', 'Reverse Holofoil', 'Full Art', 'Alt Art', 'Manga', 'Parallel', 'Special', 'Textured'].includes(next) &&
@@ -99,7 +83,6 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
         continue
       }
 
-      // Rarity•CardNumber pattern (e.g. "Common•001/088")
       const rarityNumMatch = next.match(/^(.+?)•(.+)$/)
       if (rarityNumMatch) {
         rarity = rarityNumMatch[1].trim()
@@ -107,21 +90,18 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
         continue
       }
 
-      // Variant
       const knownVariants = ['Normal', 'Holofoil', 'Reverse Holofoil', 'Full Art', 'Alt Art', 'Manga', 'Parallel', 'Special', 'Textured']
       if (knownVariants.includes(next)) {
         variant = next
         continue
       }
 
-      // Price (e.g. "$0.07" or "$12.50")
       const priceMatch = next.match(/^\$([\d,]+\.?\d*)$/)
       if (priceMatch && price === null) {
         price = parseFloat(priceMatch[1].replace(/,/g, ''))
         continue
       }
 
-      // Price change (e.g. "-$0.02(-22.22%)" or "+$0.05(10.00%)")
       const changeMatch = next.match(/^([+-])\$([\d,]+\.?\d*)\(/)
       if (changeMatch) {
         priceChange = parseFloat(changeMatch[2].replace(/,/g, ''))
@@ -130,9 +110,6 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
       }
     }
 
-    // Skip the set name line (second occurrence of name text = usually set name)
-    // We already captured the first text as card name
-
     if (name && cardNumber) {
       cards.push({ name, cardNumber, rarity, variant, price, priceChange, imageUrl })
     }
@@ -140,6 +117,7 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
 
   return cards
 }
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -149,31 +127,28 @@ serve(async (req) => {
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!firecrawlKey) throw new Error('FIRECRAWL_API_KEY not configured')
 
-    // Internal DB for queue table
     const internalDb = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
 
-    // External DB for catalog_cards, catalog_import_staging, price_events
     const extUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')
     const extKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')
     if (!extUrl || !extKey) throw new Error('External Supabase credentials not configured')
     const extDb = createClient(extUrl, extKey)
 
     const body = await req.json().catch(() => ({}))
-    const { group_id, limit = 3, category } = body
+    const { group_id, limit = 1, category } = body
 
     const results = {
       sets_processed: 0,
       cards_found: 0,
       cards_staged: 0,
       cards_promoted: 0,
+      pages_scraped: 0,
       errors: [] as string[],
-      raw_markdown_preview: '' as string,
     }
 
-    // Get sets from queue (internal DB)
     let query = internalDb
       .from('collectr_scrape_queue')
       .select('*')
@@ -207,36 +182,63 @@ serve(async (req) => {
 
     for (const set of sets) {
       try {
-        console.log(`[scrape-collectr-cards] Scraping: ${set.set_name} (group=${set.group_id})`)
+        console.log(`[scrape] Scraping: ${set.set_name}`)
 
         await internalDb
           .from('collectr_scrape_queue')
           .update({ status: 'processing', updated_at: new Date().toISOString() })
           .eq('id', set.id)
 
-        const scraped = await firecrawlScrape(firecrawlKey, set.url)
-        const markdown = scraped.data?.markdown || scraped.markdown || ''
+        let allCards: ParsedCard[] = []
+        let page = 1
+        const MAX_PAGES = 10 // Safety limit
 
-        if (results.sets_processed === 0) {
-          results.raw_markdown_preview = markdown.slice(0, 2000)
+        // Paginate through all cards in the set
+        while (page <= MAX_PAGES) {
+          const pageUrl = page === 1 
+            ? set.url 
+            : `${set.url}${set.url.includes('?') ? '&' : '?'}page=${page}`
+          
+          console.log(`[scrape] Page ${page}: ${pageUrl}`)
+          
+          try {
+            const scraped = await firecrawlScrape(firecrawlKey, pageUrl)
+            const markdown = scraped.data?.markdown || scraped.markdown || ''
+            const pageCards = parseCardsFromMarkdown(markdown)
+            
+            console.log(`[scrape] Page ${page}: ${pageCards.length} cards`)
+            results.pages_scraped++
+            
+            if (pageCards.length === 0) break // No more cards on this page
+            
+            allCards = allCards.concat(pageCards)
+            
+            // If we got fewer than ~28 cards, probably the last page
+            if (pageCards.length < 25) break
+            
+            page++
+            await new Promise(r => setTimeout(r, 1500)) // Rate limit between pages
+          } catch (pageErr: unknown) {
+            const msg = pageErr instanceof Error ? pageErr.message : String(pageErr)
+            console.log(`[scrape] Page ${page} error: ${msg}`)
+            break // Stop paginating on error
+          }
         }
 
-        const cards = parseCardsFromMarkdown(markdown)
-        console.log(`[scrape-collectr-cards] Parsed ${cards.length} cards from ${set.set_name}`)
+        console.log(`[scrape] Total cards for ${set.set_name}: ${allCards.length} across ${page} pages`)
 
         results.sets_processed++
-        results.cards_found += cards.length
+        results.cards_found += allCards.length
 
         const game = categoryToGame(set.category_name)
         const setSlug = slugify(set.set_name)
 
-        for (const card of cards) {
+        for (const card of allCards) {
           try {
             const numPart = card.cardNumber.replace(/\//g, '-').toLowerCase()
             const variantPart = slugify(card.variant || 'normal')
             const canonicalKey = `${game}:${setSlug}:${numPart}:${variantPart}`
 
-            // Write to catalog_import_staging (skip raw_data and source_id - not in schema)
             const { error: stageErr } = await extDb
               .from('catalog_import_staging')
               .upsert({
@@ -258,7 +260,6 @@ serve(async (req) => {
               results.cards_staged++
             }
 
-            // Promote to catalog_cards on external only
             const { error: promoErr } = await extDb
               .from('catalog_cards')
               .upsert({
@@ -279,7 +280,6 @@ serve(async (req) => {
               results.cards_promoted++
             }
 
-            // Ingest price into internal card_prices table
             if (card.price !== null && card.price > 0) {
               await internalDb
                 .from('card_prices')
@@ -298,14 +298,13 @@ serve(async (req) => {
           }
         }
 
-        // Update queue on internal DB
         await internalDb
           .from('collectr_scrape_queue')
           .update({
-            status: cards.length > 0 ? 'scraped' : 'error',
-            card_count: cards.length,
+            status: allCards.length > 0 ? 'scraped' : 'error',
+            card_count: allCards.length,
             last_scraped_at: new Date().toISOString(),
-            error_message: cards.length === 0 ? 'No cards parsed from page' : null,
+            error_message: allCards.length === 0 ? 'No cards parsed' : null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', set.id)
@@ -321,13 +320,13 @@ serve(async (req) => {
       }
     }
 
-    console.log('[scrape-collectr-cards] Results:', JSON.stringify(results))
+    console.log('[scrape] Results:', JSON.stringify(results))
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : String(error)
-    console.error('[scrape-collectr-cards] Error:', msg)
+    console.error('[scrape] Error:', msg)
     return new Response(JSON.stringify({ error: msg }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

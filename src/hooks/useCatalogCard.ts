@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { externalSupabase } from '@/integrations/supabase/externalClient';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface CatalogCard {
   id: string;
@@ -91,43 +91,68 @@ export const useCatalogCard = (canonicalKey: string | undefined) => {
 };
 
 // Use the resolved price function that checks all sources
-export const useCatalogCardPrice = (catalogCardId: string | undefined) => {
+export const useCatalogCardPrice = (catalogCardId: string | undefined, canonicalKey?: string) => {
   return useQuery({
-    queryKey: ['catalog-card-price', catalogCardId],
+    queryKey: ['catalog-card-price', catalogCardId, canonicalKey],
     queryFn: async () => {
       if (!catalogCardId) return null;
       
-      // Call the database function that resolves price from all sources
+      // Try the RPC function first
       const { data, error } = await supabase
         .rpc('get_catalog_card_resolved_price', { p_catalog_card_id: catalogCardId });
       
-      if (error) {
-        console.error('Error fetching resolved price:', error);
-        // Fallback to snapshot
-        const { data: snapshot } = await supabase
-          .from('card_price_snapshots')
-          .select('*')
-          .eq('catalog_card_id', catalogCardId)
-          .order('snapshot_date', { ascending: false })
+      if (!error) {
+        const result = Array.isArray(data) ? data[0] : data;
+        if (result?.has_price) return result as ResolvedPrice;
+      }
+      
+      // Fallback to card_price_snapshots
+      const { data: snapshot } = await supabase
+        .from('card_price_snapshots')
+        .select('*')
+        .eq('catalog_card_id', catalogCardId)
+        .order('snapshot_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (snapshot?.median_usd) {
+        return {
+          has_price: true,
+          price_usd: snapshot.median_usd,
+          price_source: 'snapshot',
+          liquidity_count: snapshot.liquidity_count || 0,
+          confidence: snapshot.confidence || 0,
+          last_updated: snapshot.snapshot_date,
+          min_listing_price: null,
+          listing_count: 0,
+        } as ResolvedPrice;
+      }
+      
+      // Fallback to card_prices by canonical_key (from Collectr scraper)
+      if (canonicalKey) {
+        const { data: cardPrice } = await supabase
+          .from('card_prices')
+          .select('price, market_price, source, updated_at')
+          .eq('canonical_card_key', canonicalKey)
+          .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle();
         
-        if (snapshot) {
+        if (cardPrice?.price) {
           return {
-            has_price: !!snapshot.median_usd,
-            price_usd: snapshot.median_usd,
-            price_source: 'snapshot',
-            liquidity_count: snapshot.liquidity_count || 0,
-            confidence: snapshot.confidence || 0,
-            last_updated: snapshot.snapshot_date,
+            has_price: true,
+            price_usd: cardPrice.market_price || cardPrice.price,
+            price_source: cardPrice.source || 'collectr',
+            liquidity_count: 0,
+            confidence: 0.5,
+            last_updated: cardPrice.updated_at,
+            min_listing_price: null,
+            listing_count: 0,
           } as ResolvedPrice;
         }
-        return null;
       }
       
-      // RPC returns array, get first result
-      const result = Array.isArray(data) ? data[0] : data;
-      return result as ResolvedPrice | null;
+      return null;
     },
     enabled: !!catalogCardId,
   });

@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 interface CatalogPriceChartProps {
   catalogCardId: string;
   cardName: string;
+  currentPrice?: number | null;
 }
 
 type TimeRange = '7d' | '30d' | '90d' | '1y';
@@ -23,7 +24,7 @@ const getDaysFromRange = (range: TimeRange): number => {
   }
 };
 
-export const CatalogPriceChart = ({ catalogCardId, cardName }: CatalogPriceChartProps) => {
+export const CatalogPriceChart = ({ catalogCardId, cardName, currentPrice }: CatalogPriceChartProps) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const { formatPrice } = useCurrency();
   
@@ -33,13 +34,23 @@ export const CatalogPriceChart = ({ catalogCardId, cardName }: CatalogPriceChart
   );
 
   const chartData = useMemo(() => {
-    if (!priceHistory) return [];
-    return priceHistory.map(p => ({
-      date: new Date(p.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      price: Number(p.median_usd) || 0,
-      volume: p.liquidity_count,
-    }));
-  }, [priceHistory]);
+    if (priceHistory && priceHistory.length > 0) {
+      return priceHistory.map(p => ({
+        date: new Date(p.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        price: Number(p.median_usd) || 0,
+        volume: p.liquidity_count,
+      }));
+    }
+    // If no snapshot history but we have a current price, show single data point
+    if (currentPrice && currentPrice > 0) {
+      return [{
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        price: currentPrice,
+        volume: 0,
+      }];
+    }
+    return [];
+  }, [priceHistory, currentPrice]);
 
   const stats = useMemo(() => {
     if (!chartData.length) return null;
