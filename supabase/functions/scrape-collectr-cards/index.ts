@@ -8,7 +8,6 @@ const corsHeaders = {
 
 const FIRECRAWL_V2 = 'https://api.firecrawl.dev/v2'
 
-// Map Collectr category names to our game codes
 function categoryToGame(categoryName: string): string {
   const n = categoryName.toLowerCase()
   if (n.includes('pokemon')) return 'pokemon'
@@ -20,7 +19,6 @@ function categoryToGame(categoryName: string): string {
   return 'other'
 }
 
-// Slugify set name for canonical key
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
@@ -58,37 +56,28 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
   const cards: ParsedCard[] = []
   const lines = markdown.split('\n')
 
-  // Strategy: look for table rows or structured card data
-  // Collectr tables typically have: | Image | Name | Number | Rarity | Variant | Price | Change |
-  // Or card blocks with structured data
-
-  // Try table format first
+  // Try table format: | col | col | ... |
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
     if (!line.startsWith('|') || line.includes('---')) continue
 
     const cells = line.split('|').map(c => c.trim()).filter(Boolean)
     if (cells.length < 3) continue
+    if (cells.some(c => c.toLowerCase() === 'name' || c.toLowerCase() === 'card name' || c.toLowerCase() === 'card')) continue
 
-    // Skip header row
-    if (cells.some(c => c.toLowerCase() === 'name' || c.toLowerCase() === 'card name')) continue
-
-    // Try to extract card data from table cells
     const card = parseTableRow(cells)
     if (card) cards.push(card)
   }
 
-  // If no table found, try block/list format
+  // If no table, try block format
   if (cards.length === 0) {
-    const blockCards = parseBlockFormat(markdown)
-    cards.push(...blockCards)
+    cards.push(...parseBlockFormat(markdown))
   }
 
   return cards
 }
 
 function parseTableRow(cells: string[]): ParsedCard | null {
-  // Heuristic: find name, number, rarity, variant, price cells
   let name = ''
   let cardNumber = ''
   let rarity = ''
@@ -98,73 +87,44 @@ function parseTableRow(cells: string[]): ParsedCard | null {
   let imageUrl: string | null = null
 
   for (const cell of cells) {
-    // Image markdown
     const imgMatch = cell.match(/!\[.*?\]\((https?:\/\/[^)]+)\)/)
-    if (imgMatch) {
-      imageUrl = imgMatch[1]
-      continue
-    }
+    if (imgMatch) { imageUrl = imgMatch[1]; continue }
 
-    // Price with $ sign
     const priceMatch = cell.match(/^\$?([\d,]+\.?\d*)$/)
-    if (priceMatch && !name) continue // skip if no name yet
-    if (priceMatch) {
-      if (price === null) {
-        price = parseFloat(priceMatch[1].replace(/,/g, ''))
-      }
+    if (priceMatch && name) { 
+      if (price === null) price = parseFloat(priceMatch[1].replace(/,/g, ''))
       continue
     }
 
-    // Price change
-    const changeMatch = cell.match(/^[+-]?\$?([\d,]+\.?\d*)/)
-    if (changeMatch && cell.includes('%')) {
-      priceChange = parseFloat(changeMatch[1].replace(/,/g, ''))
-      if (cell.startsWith('-')) priceChange = -priceChange
-      continue
+    if (cell.includes('%') && cell.match(/[+-]?\$?[\d.]+/)) {
+      const cm = cell.match(/([+-]?\$?[\d,.]+)/)
+      if (cm) { priceChange = parseFloat(cm[1].replace(/[$,]/g, '')); continue }
     }
 
-    // Card number pattern (001/088, SV1-001, etc.)
     const numMatch = cell.match(/^(\d{1,4}\/\d{1,4}|\w{2,5}-\d{2,4})$/)
-    if (numMatch) {
-      cardNumber = numMatch[1]
-      continue
-    }
+    if (numMatch) { cardNumber = numMatch[1]; continue }
 
-    // Known rarities
-    const rarities = ['common', 'uncommon', 'rare', 'super rare', 'secret rare', 'ultra rare', 
-                       'holo rare', 'double rare', 'illustration rare', 'special art rare',
-                       'art rare', 'hyper rare', 'promo', 'leader', 'don']
-    if (rarities.includes(cell.toLowerCase())) {
-      rarity = cell
-      continue
-    }
+    const rarities = ['common','uncommon','rare','super rare','secret rare','ultra rare','holo rare','double rare','illustration rare','special art rare','art rare','hyper rare','promo','leader','don']
+    if (rarities.includes(cell.toLowerCase())) { rarity = cell; continue }
 
-    // Known variants/finishes
-    const variants = ['normal', 'holofoil', 'reverse holofoil', 'full art', 'alt art',
-                       'manga', 'parallel', 'special', 'textured']
-    if (variants.includes(cell.toLowerCase())) {
-      variant = cell
-      continue
-    }
+    const variants = ['normal','holofoil','reverse holofoil','full art','alt art','manga','parallel','special','textured']
+    if (variants.includes(cell.toLowerCase())) { variant = cell; continue }
 
-    // Otherwise it's probably the name
     if (!name && cell.length > 1 && !cell.match(/^\d+$/)) {
       name = cell.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim()
     }
   }
 
-  if (!name) return null
-
-  return { name, cardNumber, rarity, variant, price, priceChange, imageUrl }
+  return name ? { name, cardNumber, rarity, variant, price, priceChange, imageUrl } : null
 }
 
 function parseBlockFormat(markdown: string): ParsedCard[] {
   const cards: ParsedCard[] = []
 
-  // Match patterns like:
-  // **Spinarak** 001/088 Common Normal $0.07
-  // Or card list items
-  const cardPattern = /(?:^|\n)\s*(?:\*\*|#{1,4}\s*)?([A-Z][a-zA-Zé' -]+?)(?:\*\*)?\s+(\d{1,4}[\/\-]\d{1,4}|\w{2,5}-\d{2,4})\s+(\w[\w ]*?)\s+(?:Normal|Holofoil|Reverse Holofoil|Parallel|Special)?\s*\$?([\d.]+)?/gm
+  // Look for patterns like card entries in a list/grid
+  // Common: "**Card Name** 001/088 Common Normal $0.07"
+  // Or structured blocks with image + name + number
+  const cardPattern = /(?:^|\n)\s*(?:\*\*|#{1,4}\s*)?([A-Z][a-zA-Zé'.\- ]+?)(?:\*\*)?\s+(\d{1,4}[\/\-]\d{1,4}|\w{2,5}-\d{2,4})\s+(\w[\w ]*?)\s+(?:Normal|Holofoil|Reverse Holofoil|Parallel|Special)?\s*\$?([\d.]+)?/gm
   let match
   while ((match = cardPattern.exec(markdown)) !== null) {
     cards.push({
@@ -178,21 +138,13 @@ function parseBlockFormat(markdown: string): ParsedCard[] {
     })
   }
 
-  // Simpler fallback: just find card name + number pairs
+  // Simpler fallback
   if (cards.length === 0) {
-    const simplePattern = /([A-Z][a-zA-Zé' .-]+?)\s+(\d{1,4}\/\d{1,4}|\w{2,5}-\d{2,4})/g
+    const simplePattern = /([A-Z][a-zA-Zé'. -]+?)\s+(\d{1,4}\/\d{1,4}|\w{2,5}-\d{2,4})/g
     while ((match = simplePattern.exec(markdown)) !== null) {
       const name = match[1].trim()
       if (name.length > 2 && name.length < 50) {
-        cards.push({
-          name,
-          cardNumber: match[2],
-          rarity: '',
-          variant: 'Normal',
-          price: null,
-          priceChange: null,
-          imageUrl: null,
-        })
+        cards.push({ name, cardNumber: match[2], rarity: '', variant: 'Normal', price: null, priceChange: null, imageUrl: null })
       }
     }
   }
@@ -209,12 +161,18 @@ serve(async (req) => {
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!firecrawlKey) throw new Error('FIRECRAWL_API_KEY not configured')
 
-    const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    // Internal Supabase for queue table
+    const internalUrl = Deno.env.get('SUPABASE_URL')!
+    const internalKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const internalDb = createClient(internalUrl, internalKey)
+
+    // External Supabase for catalog data
+    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
+    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!
+    const externalDb = createClient(externalUrl, externalKey)
 
     const body = await req.json().catch(() => ({}))
-    const { group_id, limit = 5, category } = body
+    const { group_id, limit = 3, category } = body
 
     const results = {
       sets_processed: 0,
@@ -225,8 +183,8 @@ serve(async (req) => {
       raw_markdown_preview: '' as string,
     }
 
-    // Get sets from queue
-    let query = supabase
+    // Get sets from queue (internal DB)
+    let query = internalDb
       .from('collectr_scrape_queue')
       .select('*')
       .eq('status', 'pending')
@@ -234,13 +192,13 @@ serve(async (req) => {
       .limit(limit)
 
     if (group_id) {
-      query = supabase
+      query = internalDb
         .from('collectr_scrape_queue')
         .select('*')
         .eq('group_id', group_id)
         .limit(1)
     } else if (category) {
-      query = supabase
+      query = internalDb
         .from('collectr_scrape_queue')
         .select('*')
         .ilike('category_name', `%${category}%`)
@@ -261,8 +219,7 @@ serve(async (req) => {
       try {
         console.log(`[scrape-collectr-cards] Scraping: ${set.set_name} (group=${set.group_id})`)
 
-        // Update status to processing
-        await supabase
+        await internalDb
           .from('collectr_scrape_queue')
           .update({ status: 'processing', updated_at: new Date().toISOString() })
           .eq('id', set.id)
@@ -270,7 +227,6 @@ serve(async (req) => {
         const scraped = await firecrawlScrape(firecrawlKey, set.url)
         const markdown = scraped.data?.markdown || scraped.markdown || ''
 
-        // Store preview for debugging (first set only)
         if (results.sets_processed === 0) {
           results.raw_markdown_preview = markdown.slice(0, 2000)
         }
@@ -286,13 +242,12 @@ serve(async (req) => {
 
         for (const card of cards) {
           try {
-            // Build canonical key
             const numPart = card.cardNumber.replace(/\//g, '-').toLowerCase()
             const variantPart = slugify(card.variant || 'normal')
             const canonicalKey = `${game}:${setSlug}:${numPart}:${variantPart}`
 
-            // Upsert to catalog_import_staging
-            const { error: stageErr } = await supabase
+            // Write to external catalog_import_staging
+            const { error: stageErr } = await externalDb
               .from('catalog_import_staging')
               .upsert({
                 source_api: 'collectr',
@@ -321,8 +276,8 @@ serve(async (req) => {
               results.cards_staged++
             }
 
-            // Promote to catalog_cards
-            const { error: promoErr } = await supabase
+            // Promote to catalog_cards on external
+            const { error: promoErr } = await externalDb
               .from('catalog_cards')
               .upsert({
                 game,
@@ -344,9 +299,9 @@ serve(async (req) => {
               results.cards_promoted++
             }
 
-            // Ingest price event if price exists
+            // Ingest price event if available
             if (card.price !== null && card.price > 0) {
-              await supabase
+              await externalDb
                 .from('price_events')
                 .insert({
                   external_canonical_key: canonicalKey,
@@ -354,7 +309,7 @@ serve(async (req) => {
                   price_usd: card.price,
                   condition: card.variant?.toLowerCase() || 'normal',
                 })
-                .then(() => {}) // fire and forget
+                .then(() => {})
             }
           } catch (cardErr: unknown) {
             const msg = cardErr instanceof Error ? cardErr.message : String(cardErr)
@@ -362,8 +317,8 @@ serve(async (req) => {
           }
         }
 
-        // Update queue status
-        await supabase
+        // Update queue on internal DB
+        await internalDb
           .from('collectr_scrape_queue')
           .update({
             status: cards.length > 0 ? 'scraped' : 'error',
@@ -374,23 +329,18 @@ serve(async (req) => {
           })
           .eq('id', set.id)
 
-        // Throttle between sets
         await new Promise(r => setTimeout(r, 2000))
       } catch (setErr: unknown) {
         const msg = setErr instanceof Error ? setErr.message : String(setErr)
         results.errors.push(`Set ${set.set_name}: ${msg}`)
-        await supabase
+        await internalDb
           .from('collectr_scrape_queue')
-          .update({
-            status: 'error',
-            error_message: msg,
-            updated_at: new Date().toISOString(),
-          })
+          .update({ status: 'error', error_message: msg, updated_at: new Date().toISOString() })
           .eq('id', set.id)
       }
     }
 
-    console.log('[scrape-collectr-cards] Results:', results)
+    console.log('[scrape-collectr-cards] Results:', JSON.stringify(results))
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

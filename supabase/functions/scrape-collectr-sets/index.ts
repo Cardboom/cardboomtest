@@ -52,40 +52,26 @@ interface DiscoveredSet {
 function parseSetsFromMarkdown(markdown: string, categoryId: string): DiscoveredSet[] {
   const sets: DiscoveredSet[] = []
   const seen = new Set<string>()
-
-  // Pattern: image URL contains group_{id}.png, followed by set name as ## heading, and card count
-  // Example:
-  // ![Perfect Order](https://public.getcollectr.com/public-assets/catalog-groups/group_24587.png?...)
-  // ## Perfect Order
-  // 124 cards
-  
   const lines = markdown.split('\n')
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
-    
-    // Look for image with group ID
     const imgMatch = line.match(/!\[([^\]]*)\]\((https:\/\/public\.getcollectr\.com\/public-assets\/catalog-groups\/group_(\d+)\.[^)]+)\)/)
     if (!imgMatch) continue
     
     const groupId = imgMatch[3]
-    const imageUrl = imgMatch[2].split('?')[0] // clean URL
+    const imageUrl = imgMatch[2].split('?')[0]
     if (seen.has(groupId)) continue
     
-    // Look ahead for the ## heading (set name) and card count
     let setName = ''
     let cardCount = 0
     
     for (let j = i + 1; j < Math.min(i + 15, lines.length); j++) {
       const nextLine = lines[j].trim()
-      
-      // ## Set Name
       const headingMatch = nextLine.match(/^#{1,3}\s+(.+)$/)
       if (headingMatch && !setName) {
         setName = headingMatch[1].trim()
       }
-      
-      // 124 cards
       const countMatch = nextLine.match(/^(\d+)\s+cards?$/i)
       if (countMatch) {
         cardCount = parseInt(countMatch[1])
@@ -93,11 +79,7 @@ function parseSetsFromMarkdown(markdown: string, categoryId: string): Discovered
       }
     }
     
-    if (!setName) {
-      // Use alt text from image as fallback
-      setName = imgMatch[1] || `Set ${groupId}`
-    }
-    
+    if (!setName) setName = imgMatch[1] || `Set ${groupId}`
     seen.add(groupId)
     const slug = slugify(setName)
     
@@ -123,8 +105,9 @@ serve(async (req) => {
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!firecrawlKey) throw new Error('FIRECRAWL_API_KEY not configured')
 
-    const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!
+    // Use INTERNAL Supabase for queue table (created via migration on this project)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const body = await req.json().catch(() => ({}))
@@ -181,7 +164,6 @@ serve(async (req) => {
           }
         }
 
-        // Throttle between categories
         await new Promise(r => setTimeout(r, 2000))
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
