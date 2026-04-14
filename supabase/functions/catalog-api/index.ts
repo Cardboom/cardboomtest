@@ -30,7 +30,7 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
+    const supabaseKey = Deno.env.get('EXTERNAL_SUPABASE_ANON_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     const url = new URL(req.url)
