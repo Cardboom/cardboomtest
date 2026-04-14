@@ -54,104 +54,92 @@ interface ParsedCard {
 
 function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
   const cards: ParsedCard[] = []
-  const lines = markdown.split('\n')
+  const lines = markdown.split('\n').map(l => l.trim()).filter(l => l.length > 0)
 
-  // Try table format: | col | col | ... |
+  // Collectr format per card block:
+  // - ![Name](imageUrl)
+  // Name
+  // Set Name
+  // Rarity•CardNumber
+  // Variant (Normal / Holofoil / Reverse Holofoil)
+  // $Price
+  // PriceChange
+
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (!line.startsWith('|') || line.includes('---')) continue
+    const line = lines[i]
 
-    const cells = line.split('|').map(c => c.trim()).filter(Boolean)
-    if (cells.length < 3) continue
-    if (cells.some(c => c.toLowerCase() === 'name' || c.toLowerCase() === 'card name' || c.toLowerCase() === 'card')) continue
+    // Detect card block start: line starting with "- ![" containing product image
+    const imgMatch = line.match(/^-\s*!\[([^\]]*)\]\((https:\/\/public\.getcollectr\.com\/public-assets\/products\/[^)]+)\)/)
+    if (!imgMatch) continue
 
-    const card = parseTableRow(cells)
-    if (card) cards.push(card)
-  }
+    const imageUrl = imgMatch[2].split('?')[0]
+    
+    // Look ahead to collect card info
+    let name = ''
+    let cardNumber = ''
+    let rarity = ''
+    let variant = 'Normal'
+    let price: number | null = null
+    let priceChange: number | null = null
 
-  // If no table, try block format
-  if (cards.length === 0) {
-    cards.push(...parseBlockFormat(markdown))
-  }
+    // Scan the next ~15 lines for this card's data
+    for (let j = i + 1; j < Math.min(i + 20, lines.length); j++) {
+      const next = lines[j]
 
-  return cards
-}
+      // Stop if we hit next card block
+      if (next.match(/^-\s*!\[/)) break
 
-function parseTableRow(cells: string[]): ParsedCard | null {
-  let name = ''
-  let cardNumber = ''
-  let rarity = ''
-  let variant = 'Normal'
-  let price: number | null = null
-  let priceChange: number | null = null
-  let imageUrl: string | null = null
+      // Card name: first non-empty text line after image (not a set name, not a price)
+      if (!name && !next.startsWith('$') && !next.startsWith('-$') && !next.startsWith('+$') &&
+          !next.includes('•') && !next.match(/^\$/) && next.length > 1 && next.length < 60 &&
+          !['Normal', 'Holofoil', 'Reverse Holofoil', 'Full Art', 'Alt Art', 'Manga', 'Parallel', 'Special', 'Textured'].includes(next) &&
+          !next.match(/^-?\$[\d.]/) && !next.match(/^\(/) && !next.match(/^Login/) && !next.match(/^Sort/) &&
+          !next.match(/^Cards Only/) && !next.match(/^Clear/) && !next.match(/^Best Match/)) {
+        name = next
+        continue
+      }
 
-  for (const cell of cells) {
-    const imgMatch = cell.match(/!\[.*?\]\((https?:\/\/[^)]+)\)/)
-    if (imgMatch) { imageUrl = imgMatch[1]; continue }
+      // Rarity•CardNumber pattern (e.g. "Common•001/088")
+      const rarityNumMatch = next.match(/^(.+?)•(.+)$/)
+      if (rarityNumMatch) {
+        rarity = rarityNumMatch[1].trim()
+        cardNumber = rarityNumMatch[2].trim()
+        continue
+      }
 
-    const priceMatch = cell.match(/^\$?([\d,]+\.?\d*)$/)
-    if (priceMatch && name) { 
-      if (price === null) price = parseFloat(priceMatch[1].replace(/,/g, ''))
-      continue
-    }
+      // Variant
+      const knownVariants = ['Normal', 'Holofoil', 'Reverse Holofoil', 'Full Art', 'Alt Art', 'Manga', 'Parallel', 'Special', 'Textured']
+      if (knownVariants.includes(next)) {
+        variant = next
+        continue
+      }
 
-    if (cell.includes('%') && cell.match(/[+-]?\$?[\d.]+/)) {
-      const cm = cell.match(/([+-]?\$?[\d,.]+)/)
-      if (cm) { priceChange = parseFloat(cm[1].replace(/[$,]/g, '')); continue }
-    }
+      // Price (e.g. "$0.07" or "$12.50")
+      const priceMatch = next.match(/^\$([\d,]+\.?\d*)$/)
+      if (priceMatch && price === null) {
+        price = parseFloat(priceMatch[1].replace(/,/g, ''))
+        continue
+      }
 
-    const numMatch = cell.match(/^(\d{1,4}\/\d{1,4}|\w{2,5}-\d{2,4})$/)
-    if (numMatch) { cardNumber = numMatch[1]; continue }
-
-    const rarities = ['common','uncommon','rare','super rare','secret rare','ultra rare','holo rare','double rare','illustration rare','special art rare','art rare','hyper rare','promo','leader','don']
-    if (rarities.includes(cell.toLowerCase())) { rarity = cell; continue }
-
-    const variants = ['normal','holofoil','reverse holofoil','full art','alt art','manga','parallel','special','textured']
-    if (variants.includes(cell.toLowerCase())) { variant = cell; continue }
-
-    if (!name && cell.length > 1 && !cell.match(/^\d+$/)) {
-      name = cell.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim()
-    }
-  }
-
-  return name ? { name, cardNumber, rarity, variant, price, priceChange, imageUrl } : null
-}
-
-function parseBlockFormat(markdown: string): ParsedCard[] {
-  const cards: ParsedCard[] = []
-
-  // Look for patterns like card entries in a list/grid
-  // Common: "**Card Name** 001/088 Common Normal $0.07"
-  // Or structured blocks with image + name + number
-  const cardPattern = /(?:^|\n)\s*(?:\*\*|#{1,4}\s*)?([A-Z][a-zA-Zé'.\- ]+?)(?:\*\*)?\s+(\d{1,4}[\/\-]\d{1,4}|\w{2,5}-\d{2,4})\s+(\w[\w ]*?)\s+(?:Normal|Holofoil|Reverse Holofoil|Parallel|Special)?\s*\$?([\d.]+)?/gm
-  let match
-  while ((match = cardPattern.exec(markdown)) !== null) {
-    cards.push({
-      name: match[1].trim(),
-      cardNumber: match[2],
-      rarity: match[3]?.trim() || '',
-      variant: 'Normal',
-      price: match[4] ? parseFloat(match[4]) : null,
-      priceChange: null,
-      imageUrl: null,
-    })
-  }
-
-  // Simpler fallback
-  if (cards.length === 0) {
-    const simplePattern = /([A-Z][a-zA-Zé'. -]+?)\s+(\d{1,4}\/\d{1,4}|\w{2,5}-\d{2,4})/g
-    while ((match = simplePattern.exec(markdown)) !== null) {
-      const name = match[1].trim()
-      if (name.length > 2 && name.length < 50) {
-        cards.push({ name, cardNumber: match[2], rarity: '', variant: 'Normal', price: null, priceChange: null, imageUrl: null })
+      // Price change (e.g. "-$0.02(-22.22%)" or "+$0.05(10.00%)")
+      const changeMatch = next.match(/^([+-])\$([\d,]+\.?\d*)\(/)
+      if (changeMatch) {
+        priceChange = parseFloat(changeMatch[2].replace(/,/g, ''))
+        if (changeMatch[1] === '-') priceChange = -priceChange
+        continue
       }
     }
+
+    // Skip the set name line (second occurrence of name text = usually set name)
+    // We already captured the first text as card name
+
+    if (name && cardNumber) {
+      cards.push({ name, cardNumber, rarity, variant, price, priceChange, imageUrl })
+    }
   }
 
   return cards
 }
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
