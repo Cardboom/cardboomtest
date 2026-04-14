@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/lib/supabase';
+import { externalSupabase } from '@/integrations/supabase/externalClient';
 import { useDebounce } from '@/hooks/useDebounce';
 import { cn } from '@/lib/utils';
 
@@ -46,7 +46,7 @@ export const CatalogCardSearch = ({
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await externalSupabase
         .from('catalog_cards')
         .select('id, name, game, set_name, canonical_key, image_url')
         .ilike('name', `%${searchQuery}%`)

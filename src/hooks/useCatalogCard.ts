@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { externalSupabase } from '@/integrations/supabase/externalClient';
 
 export interface CatalogCard {
   id: string;
