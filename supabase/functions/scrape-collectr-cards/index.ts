@@ -174,7 +174,7 @@ serve(async (req) => {
     }
 
     // Get sets from queue (internal DB)
-    let query = db
+    let query = internalDb
       .from('collectr_scrape_queue')
       .select('*')
       .eq('status', 'pending')
@@ -182,13 +182,13 @@ serve(async (req) => {
       .limit(limit)
 
     if (group_id) {
-      query = db
+      query = internalDb
         .from('collectr_scrape_queue')
         .select('*')
         .eq('group_id', group_id)
         .limit(1)
     } else if (category) {
-      query = db
+      query = internalDb
         .from('collectr_scrape_queue')
         .select('*')
         .ilike('category_name', `%${category}%`)
@@ -209,7 +209,7 @@ serve(async (req) => {
       try {
         console.log(`[scrape-collectr-cards] Scraping: ${set.set_name} (group=${set.group_id})`)
 
-        await db
+        await internalDb
           .from('collectr_scrape_queue')
           .update({ status: 'processing', updated_at: new Date().toISOString() })
           .eq('id', set.id)
@@ -237,7 +237,7 @@ serve(async (req) => {
             const canonicalKey = `${game}:${setSlug}:${numPart}:${variantPart}`
 
             // Write to catalog_import_staging (skip raw_data and source_id - not in schema)
-            const { error: stageErr } = await db
+            const { error: stageErr } = await extDb
               .from('catalog_import_staging')
               .upsert({
                 source_api: 'collectr',
@@ -260,7 +260,7 @@ serve(async (req) => {
             }
 
             // Promote to catalog_cards on external
-            const { error: promoErr } = await db
+            const { error: promoErr } = await extDb
               .from('catalog_cards')
               .upsert({
                 game,
@@ -284,7 +284,7 @@ serve(async (req) => {
 
             // Ingest price event if available
             if (card.price !== null && card.price > 0) {
-              await db
+              await extDb
                 .from('price_events')
                 .insert({
                   external_canonical_key: canonicalKey,
@@ -301,7 +301,7 @@ serve(async (req) => {
         }
 
         // Update queue on internal DB
-        await db
+        await internalDb
           .from('collectr_scrape_queue')
           .update({
             status: cards.length > 0 ? 'scraped' : 'error',
@@ -316,7 +316,7 @@ serve(async (req) => {
       } catch (setErr: unknown) {
         const msg = setErr instanceof Error ? setErr.message : String(setErr)
         results.errors.push(`Set ${set.set_name}: ${msg}`)
-        await db
+        await internalDb
           .from('collectr_scrape_queue')
           .update({ status: 'error', error_message: msg, updated_at: new Date().toISOString() })
           .eq('id', set.id)
