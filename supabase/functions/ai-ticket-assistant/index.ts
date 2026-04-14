@@ -107,8 +107,8 @@ Analyze this ticket and provide your recommendations.`;
 
     // If ticketId provided, update the ticket in database
     if (ticketId) {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseKey);
 
       await supabase

@@ -5,8 +5,8 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Tightened CORS - only allows cardboom.com and Lovable preview URLs
 const corsHeaders = getCorsHeaders();
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const SUPABASE_URL = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
 const PRICECHARTING_API_KEY = Deno.env.get('PRICECHARTING_API_KEY');
 
 // PriceCharting search query mappings - expanded catalog

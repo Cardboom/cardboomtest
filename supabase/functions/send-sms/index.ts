@@ -188,8 +188,8 @@ serve(async (req) => {
     const language = getLanguageFromPhone(formattedPhone);
     console.log("Sending SMS to:", formattedPhone, "in language:", language, "type:", type);
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseUrl = Deno.env.get("EXTERNAL_SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("EXTERNAL_SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     let message: string;
