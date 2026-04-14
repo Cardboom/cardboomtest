@@ -15,7 +15,7 @@ const CATEGORIES: Record<number, { name: string; game: string }> = {
   5: { name: 'Yu-Gi-Oh!', game: 'yugioh' },
   6: { name: 'Disney Lorcana', game: 'lorcana' },
   7: { name: 'Digimon', game: 'digimon' },
-  27: { name: 'Dragon Ball Super', game: 'dbs' },
+  80: { name: 'Dragon Ball Super', game: 'dbs' },
 }
 
 serve(async (req) => {
