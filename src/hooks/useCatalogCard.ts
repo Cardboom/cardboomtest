@@ -158,7 +158,7 @@ export const useCatalogCardPrice = (catalogCardId: string | undefined, canonical
   });
 };
 
-export const useCatalogPriceHistory = (catalogCardId: string | undefined, days = 30) => {
+export const useCatalogPriceHistory = (catalogCardId: string | undefined, days = 30, canonicalKey?: string) => {
   return useQuery({
     queryKey: ['catalog-price-history', catalogCardId, days],
     queryFn: async () => {
@@ -167,6 +167,7 @@ export const useCatalogPriceHistory = (catalogCardId: string | undefined, days =
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
       
+      // Try snapshots first
       const { data, error } = await supabase
         .from('card_price_snapshots')
         .select('snapshot_date, median_usd, liquidity_count, confidence')
@@ -174,8 +175,28 @@ export const useCatalogPriceHistory = (catalogCardId: string | undefined, days =
         .gte('snapshot_date', startDate.toISOString().split('T')[0])
         .order('snapshot_date', { ascending: true });
       
-      if (error) throw error;
-      return data || [];
+      if (!error && data && data.length > 0) return data;
+      
+      // Fallback: build history from card_prices entries
+      if (canonicalKey) {
+        const { data: prices } = await supabase
+          .from('card_prices')
+          .select('price, market_price, updated_at, source')
+          .eq('canonical_card_key', canonicalKey)
+          .gte('updated_at', startDate.toISOString())
+          .order('updated_at', { ascending: true });
+        
+        if (prices && prices.length > 0) {
+          return prices.map(p => ({
+            snapshot_date: p.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+            median_usd: p.market_price || p.price,
+            liquidity_count: 0,
+            confidence: 0.5,
+          }));
+        }
+      }
+      
+      return [];
     },
     enabled: !!catalogCardId,
   });
