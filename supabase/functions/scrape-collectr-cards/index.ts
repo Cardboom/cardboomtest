@@ -149,15 +149,10 @@ serve(async (req) => {
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
     if (!firecrawlKey) throw new Error('FIRECRAWL_API_KEY not configured')
 
-    // Internal Supabase for queue table
-    const internalUrl = Deno.env.get('SUPABASE_URL')!
-    const internalKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const internalDb = createClient(internalUrl, internalKey)
-
-    // External Supabase for catalog data
-    const externalUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
-    const externalKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!
-    const externalDb = createClient(externalUrl, externalKey)
+    // Use internal Supabase for all tables (queue + catalog)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const db = createClient(supabaseUrl, supabaseKey)
 
     const body = await req.json().catch(() => ({}))
     const { group_id, limit = 3, category } = body
