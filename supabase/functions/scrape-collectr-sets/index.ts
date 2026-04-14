@@ -10,11 +10,12 @@ const FIRECRAWL_V2 = 'https://api.firecrawl.dev/v2'
 
 const CATEGORIES: Record<string, { id: string; name: string }> = {
   pokemon:  { id: '3',  name: 'Pokemon' },
-  onepiece: { id: '5',  name: 'One Piece' },
+  onepiece: { id: '68', name: 'One Piece' },
   mtg:      { id: '1',  name: 'Magic The Gathering' },
-  yugioh:   { id: '2',  name: 'Yu-Gi-Oh' },
-  lorcana:  { id: '6',  name: 'Lorcana' },
+  yugioh:   { id: '5',  name: 'Yu-Gi-Oh!' },
+  lorcana:  { id: '6',  name: 'Disney Lorcana' },
   digimon:  { id: '7',  name: 'Digimon' },
+  dbs:      { id: '80', name: 'Dragon Ball Super' },
 }
 
 function slugify(s: string): string {
