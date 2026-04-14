@@ -413,9 +413,7 @@ serve(async (req) => {
               results.cards_staged++
             }
 
-            const { error: promoErr } = await extDb
-              .from('catalog_cards')
-              .upsert({
+            const upsertData: Record<string, any> = {
                 game,
                 canonical_key: canonicalKey,
                 set_code: setSlug,
@@ -425,7 +423,11 @@ serve(async (req) => {
                 variant: card.variant,
                 rarity: card.rarity,
                 image_url: card.imageUrl,
-              }, { onConflict: 'canonical_key' })
+              }
+
+            const { error: promoErr } = await extDb
+              .from('catalog_cards')
+              .upsert(upsertData, { onConflict: 'canonical_key' })
 
             if (promoErr && promoErr.code !== '23505') {
               results.errors.push(`Promote ${card.name}: ${promoErr.message}`)
@@ -433,16 +435,28 @@ serve(async (req) => {
               results.cards_promoted++
             }
 
-            if (card.price !== null && card.price > 0) {
+            if (card.price !== null && card.price >= 0) {
+              // Store in internal card_prices
               await internalDb
                 .from('card_prices')
                 .upsert({
                   canonical_card_key: canonicalKey,
                   source: 'collectr',
-                  price: card.price,
-                  market_price: card.price,
+                  price: Math.round(card.price * 1000) / 1000, // 3 decimal precision
+                  market_price: Math.round(card.price * 1000) / 1000,
                   condition: card.variant?.toLowerCase() || 'normal',
                 }, { onConflict: 'canonical_card_key,source' })
+                .then(() => {})
+
+              // Store price event on external DB for history
+              await extDb
+                .from('price_events')
+                .insert({
+                  canonical_key: canonicalKey,
+                  source: 'collectr',
+                  price_usd: Math.round(card.price * 1000) / 1000,
+                  game,
+                })
                 .then(() => {})
             }
           } catch (cardErr: unknown) {
