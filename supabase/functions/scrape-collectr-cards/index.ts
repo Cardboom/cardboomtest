@@ -207,24 +207,48 @@ serve(async (req) => {
             const pageCards = parseCardsFromMarkdown(markdown)
             
             console.log(`[scrape] Page ${page}: ${pageCards.length} cards, md length: ${markdown.length}`)
+            
             if (pageCards.length === 0 && page === 1) {
-              console.log(`[scrape] MD preview: ${markdown.substring(0, 800)}`)
+              // No cards found on page 1 — this might be a sets-list page
+              // Try to extract set links with groupId and queue them
+              const groupIdLinks = extractGroupIdLinks(markdown, set.category_id, set.category_name)
+              
+              if (groupIdLinks.length > 0) {
+                console.log(`[scrape] Found ${groupIdLinks.length} sub-sets with groupIds, queueing them`)
+                
+                for (const subSet of groupIdLinks) {
+                  await internalDb
+                    .from('collectr_scrape_queue')
+                    .upsert({
+                      group_id: subSet.groupId,
+                      set_name: subSet.setName,
+                      category_id: set.category_id,
+                      category_name: set.category_name,
+                      url: subSet.url,
+                      status: 'pending',
+                    }, { onConflict: 'group_id' })
+                }
+                
+                results.errors.push(`${set.set_name}: redirected to ${groupIdLinks.length} sub-sets`)
+              } else {
+                console.log(`[scrape] MD preview: ${markdown.substring(0, 800)}`)
+              }
             }
+            
             results.pages_scraped++
             
-            if (pageCards.length === 0) break // No more cards on this page
+            if (pageCards.length === 0) break
             
             allCards = allCards.concat(pageCards)
             
-            // If we got fewer than ~28 cards, probably the last page
             if (pageCards.length < 25) break
             
             page++
-            await new Promise(r => setTimeout(r, 1500)) // Rate limit between pages
+            await new Promise(r => setTimeout(r, 1500))
           } catch (pageErr: unknown) {
             const msg = pageErr instanceof Error ? pageErr.message : String(pageErr)
             console.log(`[scrape] Page ${page} error: ${msg}`)
-            break // Stop paginating on error
+            break
           }
         }
 
