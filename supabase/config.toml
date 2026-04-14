@@ -176,3 +176,9 @@ verify_jwt = false
 
 [functions.validate-images]
 verify_jwt = false
+
+[functions.scrape-collectr-sets]
+verify_jwt = false
+
+[functions.scrape-collectr-cards]
+verify_jwt = false
