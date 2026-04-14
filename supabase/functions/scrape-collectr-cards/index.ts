@@ -258,26 +258,31 @@ serve(async (req) => {
               results.cards_staged++
             }
 
-            // Promote to catalog_cards on external
-            const { error: promoErr } = await extDb
-              .from('catalog_cards')
-              .upsert({
-                game,
-                canonical_key: canonicalKey,
-                set_code: setSlug,
-                set_name: set.set_name,
-                card_number: card.cardNumber,
-                name: card.name,
-                variant: card.variant,
-                rarity: card.rarity,
-                image_url: card.imageUrl,
-              }, { onConflict: 'canonical_key' })
+            // Promote to catalog_cards on BOTH external and internal (site reads internal)
+            const catalogPayload = {
+              game,
+              canonical_key: canonicalKey,
+              set_code: setSlug,
+              set_name: set.set_name,
+              card_number: card.cardNumber,
+              name: card.name,
+              variant: card.variant,
+              rarity: card.rarity,
+              image_url: card.imageUrl,
+            }
 
-            if (promoErr) {
-              if (promoErr.code !== '23505') {
-                results.errors.push(`Promote ${card.name}: ${promoErr.message}`)
-              }
-            } else {
+            const [extResult, intResult] = await Promise.all([
+              extDb.from('catalog_cards').upsert(catalogPayload, { onConflict: 'canonical_key' }),
+              internalDb.from('catalog_cards').upsert(catalogPayload, { onConflict: 'canonical_key' }),
+            ])
+
+            if (extResult.error && extResult.error.code !== '23505') {
+              results.errors.push(`ExtPromote ${card.name}: ${extResult.error.message}`)
+            }
+            if (intResult.error && intResult.error.code !== '23505') {
+              results.errors.push(`IntPromote ${card.name}: ${intResult.error.message}`)
+            }
+            if (!extResult.error || !intResult.error) {
               results.cards_promoted++
             }
 
