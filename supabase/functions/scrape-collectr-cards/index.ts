@@ -279,16 +279,17 @@ serve(async (req) => {
               results.cards_promoted++
             }
 
-            // Ingest price event if available
+            // Ingest price into internal card_prices table
             if (card.price !== null && card.price > 0) {
-              await extDb
-                .from('price_events')
-                .insert({
-                  external_canonical_key: canonicalKey,
+              await internalDb
+                .from('card_prices')
+                .upsert({
+                  canonical_card_key: canonicalKey,
                   source: 'collectr',
-                  price_usd: card.price,
+                  price: card.price,
+                  market_price: card.price,
                   condition: card.variant?.toLowerCase() || 'normal',
-                })
+                }, { onConflict: 'canonical_card_key,source' })
                 .then(() => {})
             }
           } catch (cardErr: unknown) {

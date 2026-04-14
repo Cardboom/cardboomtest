@@ -1,0 +1,1 @@
+ALTER TABLE public.card_prices ADD CONSTRAINT card_prices_canonical_source_unique UNIQUE (canonical_card_key, source);
