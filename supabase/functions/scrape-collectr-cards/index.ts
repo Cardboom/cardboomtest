@@ -254,14 +254,18 @@ function extractGroupIdLinks(markdown: string, categoryId: number, categoryName:
           try {
             const scraped = await firecrawlScrape(firecrawlKey, pageUrl)
             const markdown = scraped.data?.markdown || scraped.markdown || ''
+            const scrapedLinks: string[] = (scraped.data?.links || scraped.links || []).map(
+              (l: any) => typeof l === 'string' ? l : l?.url || ''
+            ).filter(Boolean)
             const pageCards = parseCardsFromMarkdown(markdown)
             
-            console.log(`[scrape] Page ${page}: ${pageCards.length} cards, md length: ${markdown.length}`)
+            console.log(`[scrape] Page ${page}: ${pageCards.length} cards, md length: ${markdown.length}, links: ${scrapedLinks.length}`)
             
             if (pageCards.length === 0 && page === 1) {
               // No cards found on page 1 — this might be a sets-list page
-              // Try to extract set links with groupId and queue them
-              const groupIdLinks = extractGroupIdLinks(markdown, set.category_id, set.category_name)
+              // Try to extract set links with groupId from markdown AND links array
+              const allText = markdown + '\n' + scrapedLinks.join('\n')
+              const groupIdLinks = extractGroupIdLinks(allText, set.category_id, set.category_name)
               
               if (groupIdLinks.length > 0) {
                 console.log(`[scrape] Found ${groupIdLinks.length} sub-sets with groupIds, queueing them`)
@@ -281,7 +285,8 @@ function extractGroupIdLinks(markdown: string, categoryId: number, categoryName:
                 
                 results.errors.push(`${set.set_name}: redirected to ${groupIdLinks.length} sub-sets`)
               } else {
-                console.log(`[scrape] MD preview: ${markdown.substring(0, 800)}`)
+                console.log(`[scrape] MD preview: ${markdown.substring(0, 1200)}`)
+                console.log(`[scrape] Links sample: ${scrapedLinks.slice(0, 20).join(', ')}`)
               }
             }
             
