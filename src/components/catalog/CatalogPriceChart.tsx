@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react';
 interface CatalogPriceChartProps {
   catalogCardId: string;
   cardName: string;
+  currentPrice?: number | null;
 }
 
 type TimeRange = '7d' | '30d' | '90d' | '1y';
