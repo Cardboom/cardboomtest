@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { ArrowRight, Sparkles, TrendingUp, Package } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { externalSupabase } from '@/integrations/supabase/externalClient';
 import { supabase } from '@/lib/supabase';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
@@ -44,7 +45,7 @@ const useCatalogStats = () => {
     queryKey: ['catalog-stats'],
     queryFn: async (): Promise<CatalogGame[]> => {
       // Get card counts per game
-      const { data: cards, error: cardsError } = await supabase
+      const { data: cards, error: cardsError } = await externalSupabase
         .from('catalog_cards')
         .select('game');
 

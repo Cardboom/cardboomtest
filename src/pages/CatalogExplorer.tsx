@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { CatalogCardSearch } from '@/components/catalog/CatalogCardSearch';
-import { supabase } from '@/lib/supabase';
+import { externalSupabase } from '@/integrations/supabase/externalClient';
 import { useQuery } from '@tanstack/react-query';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { Loader2, TrendingUp, Flame, Clock } from 'lucide-react';
@@ -38,17 +38,10 @@ const CatalogExplorer = () => {
   const { data: featuredCards, isLoading } = useQuery({
     queryKey: ['catalog-featured', selectedGame],
     queryFn: async () => {
-      let query = supabase
+      let query = externalSupabase
         .from('catalog_cards')
         .select(`
-          id, name, game, canonical_key, set_name, set_code, card_number, image_url, rarity,
-          card_price_snapshots (
-            median_usd,
-            low_usd,
-            confidence,
-            snapshot_date,
-            sources
-          )
+          id, name, game, canonical_key, set_name, set_code, card_number, image_url, rarity
         `)
         .order('created_at', { ascending: false })
         .limit(24);
