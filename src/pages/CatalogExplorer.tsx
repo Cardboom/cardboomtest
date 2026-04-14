@@ -53,11 +53,9 @@ const CatalogExplorer = () => {
       const { data, error } = await query;
       if (error) throw error;
       
-      // Sort snapshots by date and get latest for each card
       return (data || []).map(card => ({
         ...card,
-        latestPrice: card.card_price_snapshots
-          ?.sort((a: any, b: any) => new Date(b.snapshot_date).getTime() - new Date(a.snapshot_date).getTime())[0] || null
+        latestPrice: null,
       }));
     },
   });
