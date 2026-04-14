@@ -77,7 +77,7 @@ export const useCatalogCard = (canonicalKey: string | undefined) => {
     queryFn: async () => {
       if (!canonicalKey) return null;
       
-      const { data, error } = await supabase
+      const { data, error } = await externalSupabase
         .from('catalog_cards')
         .select('*')
         .eq('canonical_key', canonicalKey)
