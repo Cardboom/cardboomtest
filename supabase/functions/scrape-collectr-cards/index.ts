@@ -33,8 +33,8 @@ async function firecrawlScrape(apiKey: string, url: string): Promise<any> {
     },
     body: JSON.stringify({
       url,
-      formats: ['markdown'],
-      onlyMainContent: true,
+      formats: ['markdown', 'links'],
+      onlyMainContent: false,
       waitFor: 5000,
     }),
   })
@@ -116,6 +116,56 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
   }
 
   return cards
+}
+function extractGroupIdLinks(markdown: string, categoryId: number, categoryName: string): Array<{ groupId: string; setName: string; url: string }> {
+  const results: Array<{ groupId: string; setName: string; url: string }> = []
+  const seen = new Set<string>()
+  
+  // Look for links like /sets/category/80/set-slug?groupId=12345
+  // or [Set Name](/sets/category/80/set-slug?groupId=12345)
+  const patterns = [
+    /\[([^\]]+)\]\((?:https?:\/\/app\.getcollectr\.com)?\/sets\/category\/(\d+)\/([a-z0-9-]+)\?[^)]*groupId=(\d+)[^)]*\)/g,
+    /(?:https?:\/\/app\.getcollectr\.com)?\/sets\/category\/(\d+)\/([a-z0-9-]+)\?[^&\s)]*groupId=(\d+)/g,
+  ]
+  
+  // Pattern 1: markdown links with text
+  let match
+  const mdPattern = /\[([^\]]+)\]\((?:https?:\/\/app\.getcollectr\.com)?\/sets\/category\/(\d+)\/([a-z0-9][a-z0-9-]*[a-z0-9])\?[^)]*groupId=(\d+)[^)]*\)/g
+  while ((match = mdPattern.exec(markdown)) !== null) {
+    const name = match[1].trim()
+    const catId = parseInt(match[2])
+    const slug = match[3]
+    const groupId = match[4]
+    
+    if (seen.has(groupId)) continue
+    seen.add(groupId)
+    
+    results.push({
+      groupId: groupId,
+      setName: name || slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      url: `https://app.getcollectr.com/sets/category/${catId}/${slug}?groupId=${groupId}&cardType=cards`,
+    })
+  }
+  
+  // Pattern 2: bare URLs
+  const urlPattern = /https?:\/\/app\.getcollectr\.com\/sets\/category\/(\d+)\/([a-z0-9][a-z0-9-]*[a-z0-9])\?[^\s"')]*groupId=(\d+)/g
+  while ((match = urlPattern.exec(markdown)) !== null) {
+    const catId = parseInt(match[1])
+    const slug = match[2]
+    const groupId = match[3]
+    
+    if (seen.has(groupId)) continue
+    seen.add(groupId)
+    
+    results.push({
+      groupId: groupId,
+      setName: slug.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()),
+      url: `https://app.getcollectr.com/sets/category/${catId}/${slug}?groupId=${groupId}&cardType=cards`,
+    })
+  }
+  
+  console.log(`[scrape] extractGroupIdLinks: found ${results.length} sets with groupIds`)
+  return results
 }
 
 serve(async (req) => {
@@ -204,27 +254,56 @@ serve(async (req) => {
           try {
             const scraped = await firecrawlScrape(firecrawlKey, pageUrl)
             const markdown = scraped.data?.markdown || scraped.markdown || ''
+            const scrapedLinks: string[] = (scraped.data?.links || scraped.links || []).map(
+              (l: any) => typeof l === 'string' ? l : l?.url || ''
+            ).filter(Boolean)
             const pageCards = parseCardsFromMarkdown(markdown)
             
-            console.log(`[scrape] Page ${page}: ${pageCards.length} cards, md length: ${markdown.length}`)
+            console.log(`[scrape] Page ${page}: ${pageCards.length} cards, md length: ${markdown.length}, links: ${scrapedLinks.length}`)
+            
             if (pageCards.length === 0 && page === 1) {
-              console.log(`[scrape] MD preview: ${markdown.substring(0, 800)}`)
+              // No cards found on page 1 — this might be a sets-list page
+              // Try to extract set links with groupId from markdown AND links array
+              const allText = markdown + '\n' + scrapedLinks.join('\n')
+              const groupIdLinks = extractGroupIdLinks(allText, set.category_id, set.category_name)
+              
+              if (groupIdLinks.length > 0) {
+                console.log(`[scrape] Found ${groupIdLinks.length} sub-sets with groupIds, queueing them`)
+                
+                for (const subSet of groupIdLinks) {
+                  await internalDb
+                    .from('collectr_scrape_queue')
+                    .upsert({
+                      group_id: subSet.groupId,
+                      set_name: subSet.setName,
+                      category_id: set.category_id,
+                      category_name: set.category_name,
+                      url: subSet.url,
+                      status: 'pending',
+                    }, { onConflict: 'group_id' })
+                }
+                
+                results.errors.push(`${set.set_name}: redirected to ${groupIdLinks.length} sub-sets`)
+              } else {
+                console.log(`[scrape] MD preview: ${markdown.substring(0, 1200)}`)
+                console.log(`[scrape] Links sample: ${scrapedLinks.slice(0, 20).join(', ')}`)
+              }
             }
+            
             results.pages_scraped++
             
-            if (pageCards.length === 0) break // No more cards on this page
+            if (pageCards.length === 0) break
             
             allCards = allCards.concat(pageCards)
             
-            // If we got fewer than ~28 cards, probably the last page
             if (pageCards.length < 25) break
             
             page++
-            await new Promise(r => setTimeout(r, 1500)) // Rate limit between pages
+            await new Promise(r => setTimeout(r, 1500))
           } catch (pageErr: unknown) {
             const msg = pageErr instanceof Error ? pageErr.message : String(pageErr)
             console.log(`[scrape] Page ${page} error: ${msg}`)
-            break // Stop paginating on error
+            break
           }
         }
 
