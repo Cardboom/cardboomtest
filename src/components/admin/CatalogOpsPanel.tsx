@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/lib/supabase';
+import { externalSupabase } from '@/integrations/supabase/externalClient';
 import { 
   RefreshCw, 
   Database, 
@@ -84,7 +85,7 @@ export function CatalogOpsPanel() {
 
   const fetchStats = async () => {
     const [catalogRes, unmatchedRes, pricesRes] = await Promise.all([
-      supabase.from('catalog_cards').select('id', { count: 'exact', head: true }),
+      externalSupabase.from('catalog_cards').select('id', { count: 'exact', head: true }),
       supabase.from('pricing_unmatched_items').select('id', { count: 'exact', head: true }).is('resolved_at', null),
       supabase.from('card_prices').select('id', { count: 'exact', head: true }),
     ]);
