@@ -32,8 +32,8 @@ serve(async (req) => {
   const correlationId = req.headers.get('x-correlation-id') || `alert_${Date.now()}`;
   const startTime = Date.now();
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   console.log(`[${correlationId}] Running observability alerts check`);

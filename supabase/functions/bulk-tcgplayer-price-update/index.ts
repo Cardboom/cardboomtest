@@ -65,8 +65,8 @@ Deno.serve(async (req) => {
   const startTime = Date.now()
   
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!
     const firecrawlKey = Deno.env.get('FIRECRAWL_API_KEY')
     
     if (!firecrawlKey) {

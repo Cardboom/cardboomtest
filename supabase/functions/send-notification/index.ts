@@ -111,8 +111,8 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const payload: NotificationPayload = await req.json();
@@ -245,7 +245,7 @@ serve(async (req) => {
           .single();
 
         if (profile?.phone) {
-          const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+          const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
           const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
           
           // Call send-sms function

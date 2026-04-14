@@ -7,8 +7,8 @@ const corsHeaders = {
 }
 
 const PRICECHARTING_API_KEY = Deno.env.get('PRICECHARTING_API_KEY')
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const SUPABASE_URL = Deno.env.get('EXTERNAL_SUPABASE_URL')!
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!
 
 // Expanded product catalog to sync from PriceCharting
 const productCatalog = [

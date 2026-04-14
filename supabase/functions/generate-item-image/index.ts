@@ -93,8 +93,8 @@ serve(async (req) => {
 
     // If item_id is provided, update the database
     if (item_id) {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+      const supabaseServiceKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
       const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
       const { error: updateError } = await supabase

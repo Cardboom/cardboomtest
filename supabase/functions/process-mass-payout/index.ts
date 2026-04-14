@@ -65,8 +65,8 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseUrl = Deno.env.get('EXTERNAL_SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
     const iyzicoApiKey = Deno.env.get('IYZICO_API_KEY')!;
     const iyzicoSecretKey = Deno.env.get('IYZICO_SECRET_KEY')!;
     // Remove trailing slash from base URL to avoid double slashes
