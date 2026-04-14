@@ -413,9 +413,7 @@ serve(async (req) => {
               results.cards_staged++
             }
 
-            const { error: promoErr } = await extDb
-              .from('catalog_cards')
-              .upsert({
+            const upsertData: Record<string, any> = {
                 game,
                 canonical_key: canonicalKey,
                 set_code: setSlug,
@@ -425,7 +423,11 @@ serve(async (req) => {
                 variant: card.variant,
                 rarity: card.rarity,
                 image_url: card.imageUrl,
-              }, { onConflict: 'canonical_key' })
+              }
+
+            const { error: promoErr } = await extDb
+              .from('catalog_cards')
+              .upsert(upsertData, { onConflict: 'canonical_key' })
 
             if (promoErr && promoErr.code !== '23505') {
               results.errors.push(`Promote ${card.name}: ${promoErr.message}`)
