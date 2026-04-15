@@ -134,13 +134,14 @@ export const HeroSection = ({ isLoggedIn = false }: HeroSectionProps) => {
         >
           {/* Headline */}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-6">
-            <span className="text-primary">Grade</span>
-            <span className="text-foreground"> Your Portfolio.</span>
+            <span className="text-foreground">Buy, Sell & </span>
+            <span className="text-primary">AI-Grade</span>
             <br />
-            <span className="text-foreground">Track Your Portfolio.</span>
-            <br />
-            <span className="text-foreground">Trade It.</span>
+            <span className="text-foreground">Collectible Trading Cards</span>
           </h1>
+          <p className="text-muted-foreground/80 text-base md:text-lg mb-2">
+            Pokémon · Yu-Gi-Oh! · One Piece · MTG · Lorcana · NBA · NFL · Dragon Ball · Star Wars & More
+          </p>
           
           {/* Subtitle */}
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mb-8">

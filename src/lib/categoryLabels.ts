@@ -28,6 +28,10 @@ export const categoryLabels: Record<string, string> = {
   'dragonball': 'Dragon Ball Super',
   'star-wars': 'Star Wars',
   'starwars': 'Star Wars',
+  'unionarena': 'Union Arena',
+  'union-arena': 'Union Arena',
+  'bleach': 'Union Arena',
+  'wnba': 'WNBA Cards',
 };
 
 // Category counts - these are now fetched dynamically via useCategoryCounts hook
@@ -84,5 +88,6 @@ export const mainCategories = [
   { id: 'fifa', label: 'FIFA', icon: '' },
   { id: 'nba', label: 'NBA', icon: '' },
   { id: 'baseball', label: 'Baseball', icon: '' },
+  { id: 'unionarena', label: 'Union Arena', icon: '' },
   { id: 'figures', label: 'Figures', icon: '' },
 ];

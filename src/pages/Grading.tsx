@@ -370,8 +370,8 @@ export default function Grading() {
                 </Badge>
 
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6 leading-[1.1]">
-                  Our Label Means{" "}
-                  <span className="text-primary">Authentic</span>
+                  AI Trading Card Grading &{" "}
+                  <span className="text-primary">Authentication</span>
                 </h1>
                 
                 <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
@@ -423,7 +423,7 @@ export default function Grading() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl md:text-3xl font-black">
-                Over {formatNumber(totalGraded)} Collectibles Authenticated & Graded
+                Card Grading Stats — {formatNumber(totalGraded)} Collectibles Authenticated
               </h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

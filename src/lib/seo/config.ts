@@ -136,6 +136,54 @@ export const VERTICAL_CONFIG: Record<string, VerticalConfig> = {
     description: 'Dragon Ball Super Card Game and DBS Fusion World cards. Goku, Vegeta, and Saiyan collectibles.',
     keywords: ['dragon ball cards', 'dbs cards', 'goku cards', 'anime trading cards'],
   },
+  'lol-riftbound': {
+    slug: 'lol-riftbound',
+    dbKey: 'lol-riftbound',
+    displayName: 'LoL Riftbound',
+    pluralName: 'LoL Riftbound Cards',
+    description: 'League of Legends Riftbound TCG cards. Collect champions, build decks, and trade competitively.',
+    keywords: ['lol riftbound', 'league of legends tcg', 'riftbound cards', 'riot games tcg'],
+  },
+  unionarena: {
+    slug: 'unionarena',
+    dbKey: 'unionarena',
+    displayName: 'Union Arena',
+    pluralName: 'Union Arena Cards',
+    description: 'Union Arena TCG cards featuring Bleach, Jujutsu Kaisen, Hunter x Hunter, and more anime series.',
+    keywords: ['union arena cards', 'bleach tcg', 'jujutsu kaisen cards', 'anime trading cards', 'union arena tcg'],
+  },
+  'star-wars': {
+    slug: 'star-wars',
+    dbKey: 'star-wars',
+    displayName: 'Star Wars',
+    pluralName: 'Star Wars Cards',
+    description: 'Star Wars Unlimited TCG cards. Trade Jedi, Sith, and iconic characters from a galaxy far, far away.',
+    keywords: ['star wars cards', 'star wars unlimited', 'star wars tcg', 'star wars grading'],
+  },
+  gaming: {
+    slug: 'gaming',
+    dbKey: 'gaming',
+    displayName: 'Video Games',
+    pluralName: 'Video Games & Consoles',
+    description: 'Buy and sell video games, consoles, game points, and gaming collectibles on CardBoom.',
+    keywords: ['video games', 'game points', 'gaming marketplace', 'console games', 'valorant vp', 'pubg uc'],
+  },
+  fifa: {
+    slug: 'fifa',
+    dbKey: 'fifa',
+    displayName: 'FIFA',
+    pluralName: 'FIFA Cards',
+    description: 'FIFA and soccer trading cards. Panini, Topps, and premium football stickers and inserts.',
+    keywords: ['fifa cards', 'soccer cards', 'football cards', 'panini fifa', 'topps football'],
+  },
+  wnba: {
+    slug: 'wnba',
+    dbKey: 'wnba',
+    displayName: 'WNBA',
+    pluralName: 'WNBA Cards',
+    description: 'WNBA basketball cards featuring top women\'s basketball players. Rookie cards and premium parallels.',
+    keywords: ['wnba cards', 'women basketball cards', 'wnba rookie cards', 'sports cards'],
+  },
 };
 
 // ============= URL to DB Category Mapping =============
@@ -167,8 +215,18 @@ export const URL_TO_DB_CATEGORY: Record<string, string> = {
   'riftbound': 'lol-riftbound',
   'figures': 'figures',
   'videogames': 'videogames',
+  'gaming': 'gaming',
   'digimon': 'digimon',
   'dragonball': 'dragonball',
+  'unionarena': 'unionarena',
+  'union-arena': 'unionarena',
+  'bleach': 'unionarena',
+  'star-wars': 'star-wars',
+  'starwars': 'star-wars',
+  'fifa': 'fifa',
+  'soccer': 'fifa',
+  'wnba': 'wnba',
+  'sports-wnba': 'wnba',
 };
 
 // ============= Page Template Configurations =============

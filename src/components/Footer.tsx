@@ -33,7 +33,7 @@ export const Footer = () => {
   return (
     <footer className="border-t border-border/50 py-12 mt-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
           <div>
             <FooterLink to="/" className="flex items-center gap-2 mb-4">
               <img src={cardboomLogo} alt="CardBoom" width={192} height={192} className="h-48 w-auto" />
@@ -48,18 +48,38 @@ export const Footer = () => {
           </div>
 
           <div>
-            <h4 className="font-semibold text-foreground mb-4">{t.footer.marketplace}</h4>
+            <h3 className="font-semibold text-foreground mb-4">Trading Card Games</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><FooterLink to="/catalog?category=pokemon" className="hover:text-foreground transition-colors">Pokémon TCG</FooterLink></li>
               <li><FooterLink to="/catalog?category=mtg" className="hover:text-foreground transition-colors">Magic: The Gathering</FooterLink></li>
               <li><FooterLink to="/catalog?category=yugioh" className="hover:text-foreground transition-colors">Yu-Gi-Oh!</FooterLink></li>
               <li><FooterLink to="/catalog?category=one-piece" className="hover:text-foreground transition-colors">One Piece TCG</FooterLink></li>
               <li><FooterLink to="/catalog?category=lorcana" className="hover:text-foreground transition-colors">Disney Lorcana</FooterLink></li>
+              <li><FooterLink to="/catalog?category=lol-riftbound" className="hover:text-foreground transition-colors">LoL Riftbound</FooterLink></li>
+              <li><FooterLink to="/catalog?category=digimon" className="hover:text-foreground transition-colors">Digimon TCG</FooterLink></li>
+              <li><FooterLink to="/catalog?category=dragon-ball" className="hover:text-foreground transition-colors">Dragon Ball Super</FooterLink></li>
+              <li><FooterLink to="/catalog?category=star-wars" className="hover:text-foreground transition-colors">Star Wars Unlimited</FooterLink></li>
+              <li><FooterLink to="/catalog?category=unionarena" className="hover:text-foreground transition-colors">Union Arena</FooterLink></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-foreground mb-4">Sports Cards</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
               <li><FooterLink to="/catalog?category=sports-nba" className="hover:text-foreground transition-colors">{t.footer.nbaCards}</FooterLink></li>
-              <li><FooterLink to="/catalog?category=sports-football" className="hover:text-foreground transition-colors">Football Cards</FooterLink></li>
-              <li><FooterLink to="/catalog?category=sports-fifa" className="hover:text-foreground transition-colors">FIFA Cards</FooterLink></li>
+              <li><FooterLink to="/catalog?category=sports-nfl" className="hover:text-foreground transition-colors">NFL Cards</FooterLink></li>
+              <li><FooterLink to="/catalog?category=sports-mlb" className="hover:text-foreground transition-colors">MLB Baseball Cards</FooterLink></li>
+              <li><FooterLink to="/catalog?category=fifa" className="hover:text-foreground transition-colors">FIFA Cards</FooterLink></li>
+              <li><FooterLink to="/catalog?category=wnba" className="hover:text-foreground transition-colors">WNBA Cards</FooterLink></li>
               <li><FooterLink to="/catalog?category=figures" className="hover:text-foreground transition-colors">{t.footer.figures}</FooterLink></li>
               <li><FooterLink to="/trades" className="hover:text-foreground transition-colors">{t.nav.tradesOffers}</FooterLink></li>
+            </ul>
+
+            <h3 className="font-semibold text-foreground mb-3 mt-6">Card Grading Services</h3>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><FooterLink to="/grading" className="hover:text-foreground transition-colors">AI Card Grading</FooterLink></li>
+              <li><FooterLink to="/ai/card-grading" className="hover:text-foreground transition-colors">Card Grading Guide</FooterLink></li>
+              <li><FooterLink to="/explorer" className="hover:text-foreground transition-colors">Card Catalog & Prices</FooterLink></li>
             </ul>
           </div>
 
