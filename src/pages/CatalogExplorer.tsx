@@ -42,20 +42,22 @@ function SetsView({ game, onSelectSet }: { game: string; onSelectSet: (setCode: 
       const { data, error } = await query;
       if (error) throw error;
 
-      // Group by set
-      const setMap = new Map<string, { set_code: string; set_name: string; game: string; card_count: number; sample_image: string | null }>();
+      // Group by set, collect up to 4 sample images per set
+      const setMap = new Map<string, { set_code: string; set_name: string; game: string; card_count: number; sample_images: string[] }>();
       for (const card of (data || [])) {
         const existing = setMap.get(card.set_code);
         if (existing) {
           existing.card_count++;
-          if (!existing.sample_image && card.image_url) existing.sample_image = card.image_url;
+          if (card.image_url && existing.sample_images.length < 4 && !existing.sample_images.includes(card.image_url)) {
+            existing.sample_images.push(card.image_url);
+          }
         } else {
           setMap.set(card.set_code, {
             set_code: card.set_code,
             set_name: card.set_name,
             game: card.game,
             card_count: 1,
-            sample_image: card.image_url,
+            sample_images: card.image_url ? [card.image_url] : [],
           });
         }
       }
