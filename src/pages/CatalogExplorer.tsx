@@ -42,20 +42,22 @@ function SetsView({ game, onSelectSet }: { game: string; onSelectSet: (setCode: 
       const { data, error } = await query;
       if (error) throw error;
 
-      // Group by set
-      const setMap = new Map<string, { set_code: string; set_name: string; game: string; card_count: number; sample_image: string | null }>();
+      // Group by set, collect up to 4 sample images per set
+      const setMap = new Map<string, { set_code: string; set_name: string; game: string; card_count: number; sample_images: string[] }>();
       for (const card of (data || [])) {
         const existing = setMap.get(card.set_code);
         if (existing) {
           existing.card_count++;
-          if (!existing.sample_image && card.image_url) existing.sample_image = card.image_url;
+          if (card.image_url && existing.sample_images.length < 4 && !existing.sample_images.includes(card.image_url)) {
+            existing.sample_images.push(card.image_url);
+          }
         } else {
           setMap.set(card.set_code, {
             set_code: card.set_code,
             set_name: card.set_name,
             game: card.game,
             card_count: 1,
-            sample_image: card.image_url,
+            sample_images: card.image_url ? [card.image_url] : [],
           });
         }
       }
@@ -101,8 +103,17 @@ function SetsView({ game, onSelectSet }: { game: string; onSelectSet: (setCode: 
             >
               <CardContent className="p-4 flex items-center gap-4">
                 <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
-                  {set.sample_image ? (
-                    <img src={set.sample_image} alt={set.set_name} className="w-full h-full object-cover" loading="lazy" />
+                  {set.sample_images.length > 0 ? (
+                    <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
+                      {Array.from({ length: 4 }).map((_, idx) => {
+                        const img = set.sample_images[idx];
+                        return img ? (
+                          <img key={idx} src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <div key={idx} className="bg-muted/50" />
+                        );
+                      })}
+                    </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-2xl">🎴</div>
                   )}
