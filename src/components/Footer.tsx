@@ -33,7 +33,7 @@ export const Footer = () => {
   return (
     <footer className="border-t border-border/50 py-12 mt-12">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-8">
           <div>
             <FooterLink to="/" className="flex items-center gap-2 mb-4">
               <img src={cardboomLogo} alt="CardBoom" width={192} height={192} className="h-48 w-auto" />
