@@ -65,6 +65,13 @@ export function CatalogOpsPanel() {
   const [forceRefresh, setForceRefresh] = useState(false);
   const [imageSyncResult, setImageSyncResult] = useState<any>(null);
   
+  // Bulk import state
+  const [bulkImportGame, setBulkImportGame] = useState<string>("pokemon");
+  const [bulkBatchIndex, setBulkBatchIndex] = useState<number>(0);
+  const [bulkBatchSize, setBulkBatchSize] = useState<number>(5);
+  const [bulkImportLoading, setBulkImportLoading] = useState(false);
+  const [bulkImportResults, setBulkImportResults] = useState<any[]>([]);
+  
   // Results state
   const [normalizeResult, setNormalizeResult] = useState<SyncResult | null>(null);
   const [unmatchedItems, setUnmatchedItems] = useState<UnmatchedItem[]>([]);
