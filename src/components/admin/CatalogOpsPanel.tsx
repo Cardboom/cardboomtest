@@ -502,7 +502,7 @@ export function CatalogOpsPanel() {
                     </div>
                   </>
                 )}
-                <Button onClick={runBulkImport} disabled={bulkImportLoading}>
+                <Button onClick={() => runBulkImport()} disabled={bulkImportLoading}>
                   {bulkImportLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Play className="h-4 w-4 mr-2" />}
                   {bulkImportGame === 'onepiece' ? 'Import All One Piece' : `Import Batch ${bulkBatchIndex}`}
                 </Button>
