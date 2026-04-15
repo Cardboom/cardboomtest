@@ -65,6 +65,13 @@ export function CatalogOpsPanel() {
   const [forceRefresh, setForceRefresh] = useState(false);
   const [imageSyncResult, setImageSyncResult] = useState<any>(null);
   
+  // Bulk import state
+  const [bulkImportGame, setBulkImportGame] = useState<string>("pokemon");
+  const [bulkBatchIndex, setBulkBatchIndex] = useState<number>(0);
+  const [bulkBatchSize, setBulkBatchSize] = useState<number>(5);
+  const [bulkImportLoading, setBulkImportLoading] = useState(false);
+  const [bulkImportResults, setBulkImportResults] = useState<any[]>([]);
+  
   // Results state
   const [normalizeResult, setNormalizeResult] = useState<SyncResult | null>(null);
   const [unmatchedItems, setUnmatchedItems] = useState<UnmatchedItem[]>([]);
@@ -139,6 +146,89 @@ export function CatalogOpsPanel() {
     } catch (err) {
       console.error('Failed to fetch set mappings:', err);
     }
+  };
+
+  const runBulkImport = async (overrideBatchIndex?: number) => {
+    setBulkImportLoading(true);
+    try {
+      const batchIdx = overrideBatchIndex ?? bulkBatchIndex;
+      const { data, error } = await supabase.functions.invoke('catalog-bulk-import', {
+        body: {
+          game: bulkImportGame,
+          batchIndex: batchIdx,
+          batchSize: bulkBatchSize,
+          promoteStaging: true,
+        }
+      });
+
+      if (error) throw error;
+
+      setBulkImportResults(prev => [...prev, data]);
+      toast({
+        title: "Bulk Import Complete",
+        description: `Imported ${data.cardsImported} cards for ${bulkImportGame}. ${data.hasMore ? 'More batches available.' : 'All done!'}`,
+      });
+
+      if (data.hasMore) {
+        setBulkBatchIndex(batchIdx + 1);
+      }
+
+      fetchStats();
+      return data;
+    } catch (error) {
+      toast({
+        title: "Import Error",
+        description: error instanceof Error ? error.message : "Failed to run bulk import",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setBulkImportLoading(false);
+    }
+  };
+
+  const runAllBatches = async () => {
+    setBulkImportLoading(true);
+    setBulkImportResults([]);
+    let currentBatch = 0;
+    let hasMore = true;
+
+    while (hasMore && currentBatch < 100) { // safety limit
+      try {
+        const { data, error } = await supabase.functions.invoke('catalog-bulk-import', {
+          body: {
+            game: bulkImportGame,
+            batchIndex: currentBatch,
+            batchSize: bulkBatchSize,
+            promoteStaging: true,
+          }
+        });
+
+        if (error) throw error;
+
+        setBulkImportResults(prev => [...prev, data]);
+        hasMore = data.hasMore;
+        currentBatch++;
+        setBulkBatchIndex(currentBatch);
+
+        // Small delay between batches
+        if (hasMore) await new Promise(r => setTimeout(r, 1000));
+      } catch (err) {
+        toast({
+          title: "Batch Error",
+          description: `Stopped at batch ${currentBatch}: ${err instanceof Error ? err.message : String(err)}`,
+          variant: "destructive",
+        });
+        break;
+      }
+    }
+
+    setBulkImportLoading(false);
+    fetchStats();
+    toast({
+      title: "All Batches Complete",
+      description: `Processed ${currentBatch} batches for ${bulkImportGame}.`,
+    });
   };
 
   const runNormalization = async () => {
@@ -353,6 +443,10 @@ export function CatalogOpsPanel() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
+          <TabsTrigger value="bulk-import">
+            <Download className="h-4 w-4 mr-1" />
+            Bulk Import
+          </TabsTrigger>
           <TabsTrigger value="normalize">Normalize</TabsTrigger>
           <TabsTrigger value="images">
             <Image className="h-4 w-4 mr-1" />
@@ -362,6 +456,99 @@ export function CatalogOpsPanel() {
           <TabsTrigger value="unmatched">Unmatched Queue ({stats.unmatchedCount})</TabsTrigger>
           <TabsTrigger value="set-mappings">Set Mappings</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="bulk-import" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Bulk Catalog Import</CardTitle>
+              <CardDescription>
+                Import ALL cards from official APIs directly into catalog_cards. Pokemon &amp; MTG are batched by sets (5 sets per batch). One Piece imports all at once.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-4 items-end flex-wrap">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Game</label>
+                  <Select value={bulkImportGame} onValueChange={(v) => { setBulkImportGame(v); setBulkBatchIndex(0); }}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pokemon">Pokémon</SelectItem>
+                      <SelectItem value="onepiece">One Piece</SelectItem>
+                      <SelectItem value="mtg">Magic: The Gathering</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {bulkImportGame !== 'onepiece' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Batch Index</label>
+                      <Input
+                        type="number"
+                        value={bulkBatchIndex}
+                        onChange={(e) => setBulkBatchIndex(parseInt(e.target.value) || 0)}
+                        className="w-[100px]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Sets per Batch</label>
+                      <Input
+                        type="number"
+                        value={bulkBatchSize}
+                        onChange={(e) => setBulkBatchSize(parseInt(e.target.value) || 5)}
+                        className="w-[100px]"
+                      />
+                    </div>
+                  </>
+                )}
+                <Button onClick={() => runBulkImport()} disabled={bulkImportLoading}>
+                  {bulkImportLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                  {bulkImportGame === 'onepiece' ? 'Import All One Piece' : `Import Batch ${bulkBatchIndex}`}
+                </Button>
+                {bulkImportGame !== 'onepiece' && (
+                  <Button
+                    variant="outline"
+                    onClick={runAllBatches}
+                    disabled={bulkImportLoading}
+                  >
+                    {bulkImportLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                    Run All Batches (Auto)
+                  </Button>
+                )}
+              </div>
+
+              {bulkImportResults.length > 0 && (
+                <div className="mt-4 space-y-3">
+                  {bulkImportResults.map((result, idx) => (
+                    <div key={idx} className="p-3 bg-muted rounded-lg space-y-1">
+                      <div className="flex gap-3 items-center flex-wrap">
+                        <Badge variant={result.errors?.length > 0 ? "destructive" : "default"}>
+                          Batch {result.batchIndex ?? idx}
+                        </Badge>
+                        <span className="text-sm">Cards: <strong>{result.cardsImported}</strong></span>
+                        <span className="text-sm">Skipped: {result.cardsSkipped}</span>
+                        <span className="text-sm">Staging promoted: {result.stagingPromoted}</span>
+                        {result.hasMore && <Badge variant="outline">More batches available</Badge>}
+                      </div>
+                      {result.setsProcessed?.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Sets: {result.setsProcessed.join(', ')}
+                        </p>
+                      )}
+                      {result.errors?.length > 0 && (
+                        <p className="text-xs text-destructive">
+                          Errors: {result.errors.slice(0, 3).join('; ')}
+                          {result.errors.length > 3 && ` (+${result.errors.length - 3} more)`}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="normalize" className="space-y-4">
           <Card>
