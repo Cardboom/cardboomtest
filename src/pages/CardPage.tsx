@@ -577,6 +577,7 @@ const CardPage = () => {
 
             {/* Price Chart - Full Width */}
             <section aria-labelledby="price-chart-heading">
+              <h2 id="price-chart-heading" className="text-xl font-semibold mb-4">Price History & Market Data for {cardName}</h2>
               {item && (
                 <ItemPriceChart 
                   itemId={item.id} 
@@ -650,6 +651,7 @@ const CardPage = () => {
 
             {/* Active Listings - TCGPlayer style */}
             <section aria-labelledby="listings-heading">
+              <h3 id="listings-heading" className="text-lg font-semibold mb-3">Buy {cardName} — Listings from Verified Sellers</h3>
               {item && <ItemListings itemId={item.id} itemName={item.name} />}
             </section>
           </div>

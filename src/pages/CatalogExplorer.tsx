@@ -77,7 +77,7 @@ function SetsView({ game, onSelectSet }: { game: string; onSelectSet: (setCode: 
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-xl font-semibold">{game ? gameFilters.find(g => g.value === game)?.label : 'All'} Sets</h2>
+        <h2 className="text-xl font-semibold">{game ? `${gameFilters.find(g => g.value === game)?.label} Sets — Complete Card List & Prices` : 'All TCG Sets — Browse by Game'}</h2>
         <Badge variant="secondary">{sets?.length || 0} sets</Badge>
       </div>
       
@@ -277,9 +277,9 @@ const CatalogExplorer = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Hero */}
         <div className="text-center mb-8">
-          <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">Card Catalog</h1>
+          <h1 className="font-display text-4xl md:text-5xl font-bold mb-4">Trading Card Catalog — Browse Sets & Prices</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-6">
-            Browse sets and cards with real market prices.
+            Complete price guide for Pokémon, MTG, Yu-Gi-Oh!, One Piece, Lorcana, Dragon Ball & more TCGs.
           </p>
 
           <div className="max-w-xl mx-auto mb-6">

@@ -81,8 +81,8 @@ const Markets = () => {
                   <ShoppingBag className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h1 className="font-display text-2xl font-bold text-foreground">Marketplace</h1>
-                  <p className="text-sm text-muted-foreground">Cards listed by real sellers</p>
+                  <h1 className="font-display text-2xl font-bold text-foreground">Trading Card Marketplace — Buy & Sell Cards</h1>
+                  <p className="text-sm text-muted-foreground">Browse Pokémon, Yu-Gi-Oh!, MTG, One Piece & sports cards from verified sellers</p>
                 </div>
               </div>
               

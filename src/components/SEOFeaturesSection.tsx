@@ -130,11 +130,11 @@ export const SEOFeaturesSection = () => {
           {/* SEO Header */}
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need to Trade Cards
+              The #1 Collectible Card Trading Platform
             </h2>
             <p className="text-muted-foreground text-lg max-w-3xl mx-auto">
-              The complete platform for Pokemon, Magic the Gathering, Yu-Gi-Oh, sports cards, 
-              and collectibles. AI grading, live marketplace, portfolio tracking, and community features.
+              AI-powered card grading, live marketplace, portfolio tracking, and community features for
+              Pokémon, Magic: The Gathering, Yu-Gi-Oh!, One Piece, Lorcana, Dragon Ball, Star Wars & sports cards.
             </p>
           </div>
 

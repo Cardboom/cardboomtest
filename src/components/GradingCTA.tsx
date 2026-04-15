@@ -47,10 +47,10 @@ export const GradingCTA = () => {
           </motion.div>
           
           <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-3 sm:mb-4">
-            Three Steps to Your Grade
+            AI Card Grading — Get Your Cards Graded in Minutes
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-2">
-            No shipping, no waiting weeks. Get accurate grades in seconds.
+            No shipping, no waiting weeks. Upload photos and get PSA-equivalent grades instantly for Pokémon, MTG, Yu-Gi-Oh! & more.
           </p>
         </motion.div>
         

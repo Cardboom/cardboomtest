@@ -69,7 +69,7 @@ const Gaming = () => {
               </Badge>
             </div>
             <h1 className="text-3xl md:text-5xl font-display font-bold text-foreground mb-4">
-              Gaming Hub
+              Buy & Sell Video Games, Consoles & Game Points
             </h1>
             <p className="text-muted-foreground max-w-2xl text-lg mb-6">
               Game points, skins, coaching services and more. Level up your gaming experience with CardBoom.
