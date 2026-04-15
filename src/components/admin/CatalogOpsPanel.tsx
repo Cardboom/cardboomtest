@@ -148,6 +148,89 @@ export function CatalogOpsPanel() {
     }
   };
 
+  const runBulkImport = async (overrideBatchIndex?: number) => {
+    setBulkImportLoading(true);
+    try {
+      const batchIdx = overrideBatchIndex ?? bulkBatchIndex;
+      const { data, error } = await supabase.functions.invoke('catalog-bulk-import', {
+        body: {
+          game: bulkImportGame,
+          batchIndex: batchIdx,
+          batchSize: bulkBatchSize,
+          promoteStaging: true,
+        }
+      });
+
+      if (error) throw error;
+
+      setBulkImportResults(prev => [...prev, data]);
+      toast({
+        title: "Bulk Import Complete",
+        description: `Imported ${data.cardsImported} cards for ${bulkImportGame}. ${data.hasMore ? 'More batches available.' : 'All done!'}`,
+      });
+
+      if (data.hasMore) {
+        setBulkBatchIndex(batchIdx + 1);
+      }
+
+      fetchStats();
+      return data;
+    } catch (error) {
+      toast({
+        title: "Import Error",
+        description: error instanceof Error ? error.message : "Failed to run bulk import",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setBulkImportLoading(false);
+    }
+  };
+
+  const runAllBatches = async () => {
+    setBulkImportLoading(true);
+    setBulkImportResults([]);
+    let currentBatch = 0;
+    let hasMore = true;
+
+    while (hasMore && currentBatch < 100) { // safety limit
+      try {
+        const { data, error } = await supabase.functions.invoke('catalog-bulk-import', {
+          body: {
+            game: bulkImportGame,
+            batchIndex: currentBatch,
+            batchSize: bulkBatchSize,
+            promoteStaging: true,
+          }
+        });
+
+        if (error) throw error;
+
+        setBulkImportResults(prev => [...prev, data]);
+        hasMore = data.hasMore;
+        currentBatch++;
+        setBulkBatchIndex(currentBatch);
+
+        // Small delay between batches
+        if (hasMore) await new Promise(r => setTimeout(r, 1000));
+      } catch (err) {
+        toast({
+          title: "Batch Error",
+          description: `Stopped at batch ${currentBatch}: ${err instanceof Error ? err.message : String(err)}`,
+          variant: "destructive",
+        });
+        break;
+      }
+    }
+
+    setBulkImportLoading(false);
+    fetchStats();
+    toast({
+      title: "All Batches Complete",
+      description: `Processed ${currentBatch} batches for ${bulkImportGame}.`,
+    });
+  };
+
   const runNormalization = async () => {
     setLoading(true);
     try {
