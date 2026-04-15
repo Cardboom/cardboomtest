@@ -194,7 +194,6 @@ async function importOnePieceAll(
 
     const setCode = match[1].toUpperCase();
     const cardNumber = match[2].padStart(3, '0');
-    const card_code = `${setCode}-${cardNumber}`;
     const canonical_key = `onepiece:english:${setCode.toLowerCase()}:${cardNumber}`;
 
     const rarityMap: Record<string, string> = {
