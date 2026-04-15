@@ -1,55 +1,43 @@
 
 
-# Plan: Scrape Collectr Card Database via Firecrawl
+# Auth Integration Setup for External Supabase
 
-## Context
-- Collectr blocks direct HTTP requests (403 via CloudFront) on most pages, but Firecrawl can bypass this using its browser rendering.
-- The card data page (`/sets/category/{id}/{set-name}?groupId={id}&cardType=cards`) successfully loaded and shows: card name, set name, card number, rarity, variant (Normal/Reverse Holofoil/Holofoil), price, and price change.
-- You already have `FIRECRAWL_API_KEY` configured and 776 catalog cards in the database.
+## Current State
 
-## Approach: Two-Phase Edge Function Pipeline
+Your app already has auth code in place (`src/pages/Auth.tsx`) with email/password signup, Google OAuth, phone OTP login, and password reset — all pointing to your external Supabase project (`dlntgafmjkgtwvflsqsl`) via `src/lib/supabase.ts`.
 
-### Phase 1: Discover all sets (new edge function `scrape-collectr-sets`)
-- Use Firecrawl to scrape `https://app.getcollectr.com/sets` and each category page (`/sets/category/3` for Pokemon, etc.)
-- Extract all set names and `groupId` values from the page
-- Store discovered sets in a new `collectr_sets` table for tracking progress
+However, **Google OAuth needs to be configured on that external Supabase project's dashboard** — this is not something Lovable Cloud can manage since the auth lives on your own Supabase instance.
 
-### Phase 2: Scrape cards per set (new edge function `scrape-collectr-cards`)
-- For each discovered set+groupId, use Firecrawl to scrape the card list page with `?cardType=cards`
-- Parse the markdown/HTML to extract: card name, set name, card number, rarity, variant, finish, price, price change, image URL
-- Upsert into `catalog_import_staging` with `source_api = 'collectr'`
-- Then promote to `catalog_cards` using existing canonical key logic
+## What Needs to Happen
 
-### Database Changes
-1. **New table `collectr_scrape_queue`**: tracks sets to scrape with columns: `id`, `category_id`, `category_name` (e.g. "Pokemon"), `set_name`, `group_id`, `url`, `status` (pending/scraped/error), `card_count`, `last_scraped_at`
+### 1. Configure Google OAuth on Your External Supabase Dashboard
+You need to go to your external Supabase project dashboard → Authentication → Providers → Google and:
+- Enable Google provider
+- Add your **Google Client ID** and **Client Secret** (from Google Cloud Console)
+- Set the redirect URL: `https://dlntgafmjkgtwvflsqsl.supabase.co/auth/v1/callback`
 
-### New Edge Functions
-1. **`scrape-collectr-sets`** — Firecrawl scrapes category pages, discovers sets and groupIds, populates the queue table
-2. **`scrape-collectr-cards`** — Takes a `group_id` from the queue, scrapes the card page via Firecrawl, parses card data, writes to `catalog_import_staging`, then promotes to `catalog_cards`
+### 2. Google Cloud Console Setup
+- Go to [Google Cloud Console](https://console.cloud.google.com/)
+- Create OAuth 2.0 credentials (Web Application type)
+- Add authorized redirect URI: `https://dlntgafmjkgtwvflsqsl.supabase.co/auth/v1/callback`
+- Also add your app origins: `https://cardboomtest.lovable.app` and your production domain
 
-### Data Mapping (Collectr → CardBoom)
-| Collectr Field | CardBoom Column |
-|---|---|
-| Card name (e.g. "Spinarak") | `card_name` / `name` |
-| Set name (e.g. "Perfect Order") | `set_name` |
-| Number (e.g. "001/088") | `card_number` |
-| Rarity (e.g. "Common") | `rarity` |
-| Variant (e.g. "Normal", "Reverse Holofoil") | `variant` / `finish` |
-| Price (e.g. "$0.07") | stored as price event |
-| Price change (e.g. "-$0.02(-22.22%)") | stored as price event delta |
-| Image URL | `image_url` |
+### 3. Auto-Create Profile Trigger
+Your `migration-package/05_auth_triggers.sql` has triggers for `handle_new_user()` and `handle_new_user_wallet()` — verify these are deployed on your external DB so profiles are auto-created on signup.
 
-### Canonical Key Format
-`pokemon:english:{set_code}:{card_number}:{variant}` — e.g. `pokemon:english:perfect-order:001:normal`
+### 4. Code-Side (Minor Fixes)
+- **Email confirmation**: Verify your external Supabase has email templates configured (confirm signup, password reset)
+- **Missing tables**: Console shows errors for `grading_orders`, `cardboom_news`, `cached_tcg_drops`, `card_reels`, `card_wars`, `cached_social_posts` — these tables need to be created on your external DB or the queries need graceful fallbacks
 
-### Rate Limiting & Safety
-- Firecrawl calls will be throttled (1 request per 2 seconds)
-- Each function processes one set at a time to avoid timeouts
-- Queue-based approach allows resuming if interrupted
-- Estimated: ~50-100 Firecrawl credits per set (depends on pagination)
+## What I Can Do in Lovable
+- Add error handling / graceful fallbacks for missing tables
+- Verify the auth flow code is correct
+- Help configure edge function secrets if needed
 
-### Scope
-- 1 new database table
-- 2 new edge functions
-- ~500 lines of code total
+## What You Must Do Externally
+- Configure Google OAuth provider on your external Supabase dashboard
+- Create Google Cloud OAuth credentials
+- Ensure auth triggers are deployed
+
+Would you like me to proceed with the code-side improvements, or do you need help with the Google Cloud setup steps first?
 
