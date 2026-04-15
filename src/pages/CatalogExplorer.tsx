@@ -102,20 +102,21 @@ function SetsView({ game, onSelectSet }: { game: string; onSelectSet: (setCode: 
               onClick={() => onSelectSet(set.set_code, set.set_name)}
             >
               <CardContent className="p-4 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0 grid grid-cols-2 grid-rows-2 gap-px">
+                <div className="w-16 h-16 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                   {set.sample_images.length > 0 ? (
-                    set.sample_images.slice(0, 4).map((img, idx) => (
-                      <img key={idx} src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    ))
+                    <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
+                      {Array.from({ length: 4 }).map((_, idx) => {
+                        const img = set.sample_images[idx];
+                        return img ? (
+                          <img key={idx} src={img} alt="" className="w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <div key={idx} className="bg-muted/50" />
+                        );
+                      })}
+                    </div>
                   ) : (
-                    <div className="col-span-2 row-span-2 flex items-center justify-center text-2xl">🎴</div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl">🎴</div>
                   )}
-                  {set.sample_images.length === 1 && <div className="col-span-1 row-span-1 bg-muted" />}
-                  {set.sample_images.length === 1 && <div className="col-span-1 row-span-1 bg-muted" />}
-                  {set.sample_images.length === 1 && <div className="col-span-1 row-span-1 bg-muted" />}
-                  {set.sample_images.length === 2 && <div className="col-span-1 row-span-1 bg-muted" />}
-                  {set.sample_images.length === 2 && <div className="col-span-1 row-span-1 bg-muted" />}
-                  {set.sample_images.length === 3 && <div className="col-span-1 row-span-1 bg-muted" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">{set.set_name}</p>
