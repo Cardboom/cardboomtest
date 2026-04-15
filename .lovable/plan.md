@@ -1,43 +1,90 @@
 
 
-# Auth Integration Setup for External Supabase
+# SEO Heading Hierarchy & Keyword Optimization Roundup
 
-## Current State
+## Problem
+Pages are missing proper H1/H2/H3 hierarchy for target keywords. Several game categories (Star Wars, Bleach/Union Arena, FIFA, WNBA, Gaming/Video Games) have zero SEO vertical config. Headings use generic text instead of keyword-rich, search-targeted copy.
 
-Your app already has auth code in place (`src/pages/Auth.tsx`) with email/password signup, Google OAuth, phone OTP login, and password reset — all pointing to your external Supabase project (`dlntgafmjkgtwvflsqsl`) via `src/lib/supabase.ts`.
+## Plan
 
-However, **Google OAuth needs to be configured on that external Supabase project's dashboard** — this is not something Lovable Cloud can manage since the auth lives on your own Supabase instance.
+### 1. Fix Homepage H1 & Section Headings (HeroSection + Index)
+- **H1**: Change from `"Grade Your Portfolio. Track Your Portfolio. Trade It."` to keyword-rich: `"Buy, Sell & AI-Grade Collectible Trading Cards"` with a subtitle span for `"Pokémon, Yu-Gi-Oh!, One Piece, MTG & Sports Cards"`
+- **H2 sections** on homepage (currently generic):
+  - Listings section: `"Browse Trading Cards for Sale"` (with category in view)
+  - GradingCTA: `"AI Card Grading — Get Your Cards Graded in Minutes"`
+  - SEOFeaturesSection: `"The #1 Collectible Card Trading Platform"` 
+  - FAQSection: Keep `"Everything You Need to Know About CardBoom"`
+  - FeatureShowcase: Add an H2 like `"Why Collectors Choose CardBoom"`
 
-## What Needs to Happen
+### 2. Fix Grading Page Heading Hierarchy
+- Already has strong H1 (`"Our Label Means Authentic"`) -- change to `"AI Trading Card Grading & Authentication | CBGI"`
+- Ensure H2s follow a keyword strategy:
+  - `"AI-Powered Card Grading — How It Works"`
+  - `"Supported Card Types for Grading"` (Pokémon, Yu-Gi-Oh!, MTG, etc.)
+  - `"Card Grading Pricing & Turnaround Times"`
+  - `"CardBoom Card Passport — Digital Certificate"`
 
-### 1. Configure Google OAuth on Your External Supabase Dashboard
-You need to go to your external Supabase project dashboard → Authentication → Providers → Google and:
-- Enable Google provider
-- Add your **Google Client ID** and **Client Secret** (from Google Cloud Console)
-- Set the redirect URL: `https://dlntgafmjkgtwvflsqsl.supabase.co/auth/v1/callback`
+### 3. Fix Category Pages (BuyCategoryPage) H1/H2
+- H1 is good: `"Buy {Category} Cards Online"` -- keep
+- Add H3s under the "About" section for each game with keyword phrases like:
+  - `"How to Buy Pokémon Cards on CardBoom"`
+  - `"Pokémon Card Price Guide & Market Data"`
 
-### 2. Google Cloud Console Setup
-- Go to [Google Cloud Console](https://console.cloud.google.com/)
-- Create OAuth 2.0 credentials (Web Application type)
-- Add authorized redirect URI: `https://dlntgafmjkgtwvflsqsl.supabase.co/auth/v1/callback`
-- Also add your app origins: `https://cardboomtest.lovable.app` and your production domain
+### 4. Fix Catalog Explorer Heading
+- Change H1 from `"Card Catalog"` to `"Trading Card Catalog — Browse Sets & Prices"`
+- Set-level H2: `"{Game} Sets — Complete Card List & Prices"`
 
-### 3. Auto-Create Profile Trigger
-Your `migration-package/05_auth_triggers.sql` has triggers for `handle_new_user()` and `handle_new_user_wallet()` — verify these are deployed on your external DB so profiles are auto-created on signup.
+### 5. Add Missing Game Verticals to SEO Config
+Add to `src/lib/seo/config.ts` VERTICAL_CONFIG:
+- `'lol-riftbound'` — LoL Riftbound TCG
+- `'unionarena'` / `'bleach'` — Union Arena (Bleach, Jujutsu Kaisen, etc.)
+- `'star-wars'` — Star Wars Unlimited
+- `'gaming'` — Video Games & Consoles
+- `'fifa'` — FIFA Cards
+- `'wnba'` — WNBA Cards
 
-### 4. Code-Side (Minor Fixes)
-- **Email confirmation**: Verify your external Supabase has email templates configured (confirm signup, password reset)
-- **Missing tables**: Console shows errors for `grading_orders`, `cardboom_news`, `cached_tcg_drops`, `card_reels`, `card_wars`, `cached_social_posts` — these tables need to be created on your external DB or the queries need graceful fallbacks
+Add corresponding URL_TO_DB_CATEGORY mappings.
 
-## What I Can Do in Lovable
-- Add error handling / graceful fallbacks for missing tables
-- Verify the auth flow code is correct
-- Help configure edge function secrets if needed
+### 6. Add Missing Category Labels
+Update `src/lib/categoryLabels.ts`:
+- Add `'unionarena': 'Union Arena'`, `'bleach': 'Bleach TCG'`
+- Add to `mainCategories` array
 
-## What You Must Do Externally
-- Configure Google OAuth provider on your external Supabase dashboard
-- Create Google Cloud OAuth credentials
-- Ensure auth triggers are deployed
+### 7. Markets & Gaming Page Headings
+- Markets H1: Change from `"Marketplace"` to `"Trading Card Marketplace — Buy & Sell Cards"`
+- Gaming H1: Change from `"Gaming Hub"` to `"Buy & Sell Video Games, Consoles & Game Points"`
 
-Would you like me to proceed with the code-side improvements, or do you need help with the Google Cloud setup steps first?
+### 8. ItemDetail / CardPage H1 Enhancement
+- CardPage H1 is good (uses `{cardName}`) -- add an H2 for `"Price History & Market Data for {cardName}"`
+- Add H3 for `"Buy {cardName} — Listings from Verified Sellers"`
+
+### 9. Footer Internal Linking with H3 Headers
+Add keyword-rich H3 section headers to Footer:
+- `"Card Grading Services"` — links to /grading, /ai/*
+- `"Trading Card Games"` — links to all category pages
+- `"Sports Cards"` — links to NBA, NFL, MLB, FIFA
+- `"Tools & Resources"` — links to /catalog, /deals, /pricing
+
+## Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/HeroSection.tsx` | Rewrite H1 with target keywords |
+| `src/pages/Index.tsx` | Add H2 to listings section |
+| `src/pages/Grading.tsx` | Rewrite H1 & H2s with grading keywords |
+| `src/pages/CatalogExplorer.tsx` | Keyword-rich H1 & H2 |
+| `src/pages/Markets.tsx` | Better H1 |
+| `src/pages/Gaming.tsx` | Better H1 |
+| `src/pages/CardPage.tsx` | Add H2/H3 for price & listings |
+| `src/components/GradingCTA.tsx` | Keyword-rich H2 |
+| `src/components/SEOFeaturesSection.tsx` | Keyword-rich H2 |
+| `src/components/FAQSection.tsx` | Keep current H2 |
+| `src/components/Footer.tsx` | Add H3 section headers with game links |
+| `src/lib/seo/config.ts` | Add 6+ missing verticals + URL mappings |
+| `src/lib/categoryLabels.ts` | Add Union Arena, Bleach, Star Wars labels |
+
+## Technical Notes
+- Every page gets exactly 1 H1, with H2s for major sections and H3s for subsections
+- All headings target high-volume search queries (e.g. "buy pokemon cards", "ai card grading", "trading card marketplace")
+- No backend changes needed -- all frontend heading + config updates
 
