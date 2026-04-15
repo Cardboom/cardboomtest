@@ -116,11 +116,8 @@ async function importPokemonBatch(
         set_code: card.set.id,
         set_name: card.set.name,
         card_number: card.number,
-        card_code: `${card.set.id}-${card.number}`,
         rarity: card.rarity || null,
-        image_url: card.images?.small || null,
-        image_url_hires: card.images?.large || null,
-        language: 'english',
+        image_url: card.images?.small || card.images?.large || null,
       }));
 
       // Upsert in chunks of 100
