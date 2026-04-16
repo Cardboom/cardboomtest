@@ -82,7 +82,7 @@ serve(async (req) => {
 // POKEMON — paginated by sets
 // ============================================================
 async function importPokemonBatch(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   batchIndex: number,
   batchSize: number,
   results: any
@@ -171,7 +171,7 @@ async function fetchAllPokemonCardsForSet(setId: string): Promise<any[]> {
 // ONE PIECE — fetch all at once
 // ============================================================
 async function importOnePieceAll(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   results: any
 ) {
   const apiUrl = 'https://optcgapi.com/api/allSetCards/';
@@ -245,7 +245,7 @@ async function importOnePieceAll(
 // MTG — uses Scryfall bulk data
 // ============================================================
 async function importMTGBatch(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   batchIndex: number,
   batchSize: number,
   results: any
@@ -333,7 +333,7 @@ async function importMTGBatch(
 // Promote staging → catalog_cards
 // ============================================================
 async function promoteStagingRecords(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   game: string
 ): Promise<number> {
   const { data: staged, error } = await supabase
