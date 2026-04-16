@@ -12,6 +12,17 @@ const OPTCG_API_BASE = 'https://optcgapi.com/api';
 interface OPTCGCard {
   id: string; // e.g., "OP01-001"
   name: string;
+  card_set_id?: string;
+  card_image_id?: string;
+  card_name?: string;
+  set_name?: string;
+  card_image?: string;
+  card_text?: string;
+  card_color?: string;
+  card_type?: string;
+  card_cost?: number | string;
+  card_power?: number | string;
+  counter_amount?: number | string;
   rarity: string;
   colors?: string[];
   color?: string;
@@ -50,7 +61,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('EXTERNAL_SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { setFilter, dryRun = true, limit = 500 } = await req.json();
+    const { setFilter, dryRun = true, limit } = await req.json();
 
     console.log(`[catalog-import-onepiece] Starting. setFilter: ${setFilter || 'ALL'}, dryRun: ${dryRun}, limit: ${limit}`);
 
@@ -106,7 +117,7 @@ serve(async (req) => {
       console.log(`[catalog-import-onepiece] Filtered to ${allCards.length} cards for ${filterUpper}`);
     }
 
-    const cardsToProcess = allCards.slice(0, limit);
+    const cardsToProcess = typeof limit === 'number' && limit > 0 ? allCards.slice(0, limit) : allCards;
     
     // Log sample for debugging
     if (cardsToProcess.length > 0) {
@@ -115,18 +126,17 @@ serve(async (req) => {
 
     for (const card of cardsToProcess) {
       try {
-        const cardId = card.id || '';
-        
-        // Parse card ID (e.g., "OP01-001" or "ST01-004")
-        const match = cardId.match(/^([A-Z]+\d+)-(\d+)/i);
-        if (!card.name || !match) {
+        const identity = parseOnePieceCardIdentity(card);
+        const cardName = card.card_name || card.name;
+
+        if (!cardName || !identity) {
           result.skipped++;
           continue;
         }
 
-        const setCode = match[1].toUpperCase();
-        const cardNumber = match[2].padStart(3, '0');
-        const card_code = `${setCode}-${cardNumber}`;
+        const setCode = identity.setCode;
+        const cardNumber = identity.cardNumber;
+        const card_code = identity.cardCode;
         const canonical_key = `onepiece:english:${setCode.toLowerCase()}:${cardNumber}`;
 
         // Map rarity
@@ -143,26 +153,26 @@ serve(async (req) => {
         const rarity = rarityMap[card.rarity] || card.rarity || '';
 
         // Get image URL
-        const imageUrl = card.image || card.img || null;
+        const imageUrl = card.card_image || card.image || card.img || null;
 
         // Get effect text
-        const effectText = card.effect || card.text || null;
+        const effectText = card.card_text || card.effect || card.text || null;
         
         // Get color (primary)
-        const cardColor = card.color || (card.colors && card.colors[0]) || null;
+        const cardColor = card.card_color || card.color || (card.colors && card.colors[0]) || null;
         
         // Parse numeric values
-        const cardCost = card.cost !== undefined ? parseInt(String(card.cost)) : null;
-        const cardPower = card.power !== undefined ? parseInt(String(card.power)) : null;
-        const cardCounter = card.counter !== undefined ? parseInt(String(card.counter)) : null;
+        const cardCost = parseOptionalInteger(card.card_cost ?? card.cost);
+        const cardPower = parseOptionalInteger(card.card_power ?? card.power);
+        const cardCounter = parseOptionalInteger(card.counter_amount ?? card.counter);
 
         const stagingRecord = {
           game: 'onepiece',
           canonical_key,
           set_code: setCode,
-          set_name: getOnePieceSetName(setCode),
+          set_name: card.set_name || getOnePieceSetName(setCode),
           card_number: cardNumber,
-          card_name: card.name,
+          card_name: cardName,
           variant: null,
           finish: null,
           rarity,
@@ -181,7 +191,7 @@ serve(async (req) => {
           // New detailed fields
           effect_text: effectText,
           color: cardColor,
-          card_type: card.type || null,
+          card_type: card.card_type || card.type || null,
           cost: cardCost,
           power: cardPower,
           counter: cardCounter,
@@ -189,7 +199,7 @@ serve(async (req) => {
         };
 
         result.cards.push({
-          name: card.name,
+          name: cardName,
           set: setCode,
           number: cardNumber,
           canonical_key,
@@ -200,7 +210,7 @@ serve(async (req) => {
           const { error } = await supabase
             .from('catalog_import_staging')
             .upsert(stagingRecord, { 
-              onConflict: 'canonical_key',
+              onConflict: 'canonical_key,source_api',
               ignoreDuplicates: false 
             });
 
@@ -293,4 +303,37 @@ function getOnePieceSetName(setCode: string): string {
     'PRB01': 'Premium Booster',
   };
   return setNames[setCode] || setCode;
+}
+
+function parseOnePieceCardIdentity(card: Record<string, unknown>): { setCode: string; cardNumber: string; cardCode: string } | null {
+  const rawCode = [card.card_set_id, card.id, card.card_image_id]
+    .find((value) => typeof value === 'string' && value.trim().length > 0) as string | undefined;
+
+  if (!rawCode) return null;
+
+  const normalizedCode = rawCode.trim().toUpperCase().replace(/_/g, '-').replace(/\s+/g, '');
+  const separatorIndex = normalizedCode.lastIndexOf('-');
+
+  if (separatorIndex <= 0 || separatorIndex === normalizedCode.length - 1) return null;
+
+  const setCode = normalizedCode.slice(0, separatorIndex).replace(/[^A-Z0-9]/g, '');
+  const rawCardNumber = normalizedCode.slice(separatorIndex + 1).replace(/[^A-Z0-9]/g, '');
+
+  if (!setCode || !rawCardNumber) return null;
+
+  const cardNumber = /^\d+$/.test(rawCardNumber)
+    ? rawCardNumber.padStart(3, '0')
+    : rawCardNumber;
+
+  return {
+    setCode,
+    cardNumber,
+    cardCode: `${setCode}-${cardNumber}`,
+  };
+}
+
+function parseOptionalInteger(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? null : parsed;
 }

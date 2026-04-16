@@ -26,6 +26,28 @@ const gameFilters = [
   { value: 'unionarena', label: 'Union Arena', icon: '⚔️' },
 ];
 
+const CATALOG_FETCH_PAGE_SIZE = 1000;
+
+async function fetchAllCatalogRows<T>(queryFactory: (from: number, to: number) => Promise<{ data: T[] | null; error: unknown }>): Promise<T[]> {
+  const rows: T[] = [];
+  let from = 0;
+
+  while (true) {
+    const to = from + CATALOG_FETCH_PAGE_SIZE - 1;
+    const { data, error } = await queryFactory(from, to);
+
+    if (error) throw error;
+
+    const batch = data || [];
+    rows.push(...batch);
+
+    if (batch.length < CATALOG_FETCH_PAGE_SIZE) break;
+    from += CATALOG_FETCH_PAGE_SIZE;
+  }
+
+  return rows;
+}
+
 // ─── Sets View: shows all sets for a game ───
 function SetsView({ game, onSelectSet }: { game: string; onSelectSet: (setCode: string, setName: string) => void }) {
   const [setSearch, setSetSearch] = useState('');
@@ -33,14 +55,17 @@ function SetsView({ game, onSelectSet }: { game: string; onSelectSet: (setCode: 
   const { data: sets, isLoading } = useQuery({
     queryKey: ['catalog-sets', game],
     queryFn: async () => {
-      let query = externalSupabase
-        .from('catalog_cards')
-        .select('set_code, set_name, game, image_url, rarity');
+      const data = await fetchAllCatalogRows(async (from, to) => {
+        let query = externalSupabase
+          .from('catalog_cards')
+          .select('id, set_code, set_name, game, image_url, rarity')
+          .order('id', { ascending: true })
+          .range(from, to);
 
-      if (game) query = query.eq('game', game);
+        if (game) query = query.eq('game', game);
 
-      const { data, error } = await query;
-      if (error) throw error;
+        return await query;
+      });
 
       // Group by set, collect up to 4 sample images per set
       const setMap = new Map<string, { set_code: string; set_name: string; game: string; card_count: number; sample_images: string[] }>();
@@ -143,13 +168,15 @@ function CardsView({ setCode, setName, game }: { setCode: string; setName: strin
   const { data: cards, isLoading } = useQuery({
     queryKey: ['catalog-set-cards', setCode],
     queryFn: async () => {
-      const { data, error } = await externalSupabase
-        .from('catalog_cards')
-        .select('*')
-        .eq('set_code', setCode)
-        .order('card_number', { ascending: true });
-      if (error) throw error;
-      return data || [];
+      return await fetchAllCatalogRows(async (from, to) => {
+        return await externalSupabase
+          .from('catalog_cards')
+          .select('*')
+          .eq('set_code', setCode)
+          .order('card_number', { ascending: true })
+          .order('id', { ascending: true })
+          .range(from, to);
+      });
     },
   });
 

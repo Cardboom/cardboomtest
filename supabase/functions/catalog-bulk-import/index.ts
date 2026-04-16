@@ -182,47 +182,48 @@ async function importOnePieceAll(
   let allCards: any[] = Array.isArray(data) ? data : (data.cards || data.data || Object.values(data).flat());
   
   console.log(`[onepiece] Fetched ${allCards.length} total cards`);
-  results.totalSets = new Set(allCards.map((c: any) => {
-    const match = (c.id || '').match(/^([A-Z]+\d+)/i);
-    return match ? match[1] : 'unknown';
-  })).size;
+  const rarityMap: Record<string, string> = {
+    'C': 'C', 'Common': 'C', 'UC': 'UC', 'Uncommon': 'UC',
+    'R': 'R', 'Rare': 'R', 'SR': 'SR', 'Super Rare': 'SR',
+    'SEC': 'SEC', 'Secret': 'SEC', 'L': 'L', 'Leader': 'L',
+    'SP': 'SP', 'Special': 'SP', 'P': 'P', 'Promo': 'P',
+  };
 
-  const records = allCards.map((card: any) => {
-    const cardId = card.id || '';
-    const match = cardId.match(/^([A-Z]+\d+)-(\d+)/i);
-    if (!match) return null;
+  const records: any[] = [];
+  const uniqueSets = new Set<string>();
 
-    const setCode = match[1].toUpperCase();
-    const cardNumber = match[2].padStart(3, '0');
-    const canonical_key = `onepiece:english:${setCode.toLowerCase()}:${cardNumber}`;
+  for (const card of allCards) {
+    const identity = parseOnePieceCardIdentity(card);
+    const name = card.card_name || card.name || null;
 
-    const rarityMap: Record<string, string> = {
-      'C': 'C', 'Common': 'C', 'UC': 'UC', 'Uncommon': 'UC',
-      'R': 'R', 'Rare': 'R', 'SR': 'SR', 'Super Rare': 'SR',
-      'SEC': 'SEC', 'Secret': 'SEC', 'L': 'L', 'Leader': 'L',
-      'SP': 'SP', 'Special': 'SP', 'P': 'P', 'Promo': 'P',
-    };
+    if (!identity || !name) {
+      results.cardsSkipped++;
+      continue;
+    }
 
-    return {
+    uniqueSets.add(identity.setCode);
+
+    records.push({
       game: 'onepiece',
-      canonical_key,
-      name: card.name,
-      set_code: setCode,
-      set_name: getOnePieceSetName(setCode),
-      card_number: cardNumber,
+      canonical_key: `onepiece:english:${identity.setCode.toLowerCase()}:${identity.cardNumber}`,
+      name,
+      set_code: identity.setCode,
+      set_name: card.set_name || getOnePieceSetName(identity.setCode),
+      card_number: identity.cardNumber,
       rarity: rarityMap[card.rarity] || card.rarity || null,
-      image_url: card.image || card.img || null,
-      effect_text: card.effect || card.text || null,
-      color: card.color || (card.colors && card.colors[0]) || null,
-      card_type: card.type || null,
-      cost: card.cost !== undefined ? parseInt(String(card.cost)) : null,
-      power: card.power !== undefined ? parseInt(String(card.power)) : null,
-      counter: card.counter !== undefined ? parseInt(String(card.counter)) : null,
+      image_url: card.card_image || card.image || card.img || null,
+      effect_text: card.card_text || card.effect || card.text || null,
+      color: card.card_color || card.color || (Array.isArray(card.colors) ? card.colors[0] : null),
+      card_type: card.card_type || card.type || null,
+      cost: parseOptionalInteger(card.card_cost ?? card.cost),
+      power: parseOptionalInteger(card.card_power ?? card.power),
+      counter: parseOptionalInteger(card.counter_amount ?? card.counter),
       attribute: card.attribute || null,
-    };
-  }).filter(Boolean);
+    });
+  }
 
-  results.setsProcessed.push(`ALL (${records.length} cards)`);
+  results.totalSets = uniqueSets.size;
+  results.setsProcessed.push(`ALL (${records.length} cards across ${uniqueSets.size} sets)`);
 
   // Upsert in chunks
   for (let i = 0; i < records.length; i += 100) {
@@ -403,6 +404,39 @@ function getOnePieceSetName(setCode: string): string {
     'PRB01': 'Premium Booster',
   };
   return setNames[setCode] || setCode;
+}
+
+function parseOnePieceCardIdentity(card: Record<string, unknown>): { setCode: string; cardNumber: string; cardCode: string } | null {
+  const rawCode = [card.card_set_id, card.id, card.card_image_id]
+    .find((value) => typeof value === 'string' && value.trim().length > 0) as string | undefined;
+
+  if (!rawCode) return null;
+
+  const normalizedCode = rawCode.trim().toUpperCase().replace(/_/g, '-').replace(/\s+/g, '');
+  const separatorIndex = normalizedCode.lastIndexOf('-');
+
+  if (separatorIndex <= 0 || separatorIndex === normalizedCode.length - 1) return null;
+
+  const setCode = normalizedCode.slice(0, separatorIndex).replace(/[^A-Z0-9]/g, '');
+  const rawCardNumber = normalizedCode.slice(separatorIndex + 1).replace(/[^A-Z0-9]/g, '');
+
+  if (!setCode || !rawCardNumber) return null;
+
+  const cardNumber = /^\d+$/.test(rawCardNumber)
+    ? rawCardNumber.padStart(3, '0')
+    : rawCardNumber;
+
+  return {
+    setCode,
+    cardNumber,
+    cardCode: `${setCode}-${cardNumber}`,
+  };
+}
+
+function parseOptionalInteger(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 async function fetchWithTimeout(url: string, timeoutMs = 20000): Promise<Response> {
