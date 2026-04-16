@@ -126,7 +126,7 @@ serve(async (req) => {
 
     for (const card of cardsToProcess) {
       try {
-        const identity = parseOnePieceCardIdentity(card);
+        const identity = parseOnePieceCardIdentity(card as unknown as Record<string, unknown>);
         const cardName = card.card_name || card.name;
 
         if (!cardName || !identity) {
