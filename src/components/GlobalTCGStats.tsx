@@ -196,9 +196,8 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               transition={{ duration: 0.5 }}
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 leading-[1.05]"
             >
-              <span className="text-primary">Grade</span> Your Portfolio.
-              <span className="block mt-1">Track Your Portfolio.</span>
-              <span className="block mt-1">Trade It.</span>
+              Buy, Sell & <span className="text-primary">AI-Grade</span>
+              <span className="block mt-1">Collectible Trading Cards</span>
             </motion.h1>
             
             <motion.p 
@@ -207,7 +206,7 @@ export function GlobalTCGStats({ hideHero = false }: GlobalTCGStatsProps) {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-base md:text-lg text-muted-foreground max-w-md mb-8 leading-relaxed"
             >
-              The marketplace for TCG collectors. AI-powered grading, real-time pricing, and a community that knows cards.
+              Pokémon · Yu-Gi-Oh! · One Piece · MTG · Lorcana · NBA · NFL · Star Wars & More. AI-powered grading, real-time pricing, and a community that knows cards.
             </motion.p>
             
             <motion.div 
