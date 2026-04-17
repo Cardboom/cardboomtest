@@ -1,5 +1,5 @@
 // Service Worker for Offline Caching (PWA Support)
-const CACHE_NAME = 'cardboom-v4';
+const CACHE_NAME = 'cardboom-v5';
 const STATIC_ASSETS = [
   '/',
   '/manifest.webmanifest',
