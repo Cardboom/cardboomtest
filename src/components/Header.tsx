@@ -423,6 +423,14 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
             </NavigationMenu>
 
             <Link 
+              to="/catalog" 
+              className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              Catalog
+            </Link>
+
+            <Link 
               to="/grading" 
               className="text-foreground hover:text-primary hover:bg-muted/50 transition-all text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
             >
@@ -702,6 +710,10 @@ export const Header = ({ cartCount, onCartClick }: HeaderProps) => {
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{t.nav.services}</span>
                 </div>
                 
+                <Link to="/catalog" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <span>Catalog</span>
+                </Link>
                 <Link to="/grading" className="flex items-center gap-3 py-3 px-3 rounded-xl hover:bg-muted transition-colors" onClick={() => setMobileMenuOpen(false)}>
                   <Award className="w-5 h-5 text-emerald-500" />
                   <span>{t.nav.grading}</span>
