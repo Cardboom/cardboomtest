@@ -127,10 +127,11 @@ serve(async (req) => {
     const batchSize: number = Math.min(body.batch_size ?? 5, 25)
 
     // Pull pending rows
+    // Pull rows ready for crawling. Includes legacy statuses from older pipeline.
     const { data: queue, error: qErr } = await internal
       .from('collectr_scrape_queue')
       .select('id, group_id, set_name, category_id, category_name, url, attempts')
-      .in('status', ['pending', 'failed'])
+      .in('status', ['pending', 'failed', 'error', 'scraped', 'processing'])
       .lt('attempts', 3)
       .order('last_scraped_at', { ascending: true, nullsFirst: true })
       .limit(batchSize)
