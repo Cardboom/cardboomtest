@@ -89,13 +89,13 @@ function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
       // Stop at next product image
       if (next.match(/!\[[^\]]*\]\([^)]*\/products\/product_/)) break
 
-      // Rarity•cardnumber pattern: "Common•001/159" or "Super Rare•OP11-001"
-      const rarityNumMatch = next.match(/^([A-Za-z][A-Za-z\s]+?)\s*[•·]\s*([A-Z0-9-]+\/\d+|\w+-\d+|\d+\/\d+|\d{2,4})\s*$/)
+      // Rarity•cardnumber pattern: "Common•001/159", "Shiny Holo Rare•SV001/SV122", "Super Rare•OP11-001"
+      const rarityNumMatch = next.match(/^([A-Za-z][A-Za-z\s]+?)\s*[•·]\s*([A-Za-z0-9-]+(?:\/[A-Za-z0-9]+)?)\s*$/)
       if (rarityNumMatch && !cardNumber) {
         rarity = rarityNumMatch[1].trim()
         cardNumberFull = rarityNumMatch[2].trim()
-        // Extract just the card number portion: "001/159" -> "001", "OP11-001" -> "001"
-        const numOnly = cardNumberFull.match(/(\d+)\/\d+/) || cardNumberFull.match(/-(\d+)$/) || cardNumberFull.match(/^(\d+)$/)
+        // Extract numerator: "SV001/SV122" -> "SV001", "001/159" -> "001", "OP11-001" -> "001"
+        const numOnly = cardNumberFull.match(/^([A-Za-z0-9]+)\//) || cardNumberFull.match(/-(\d+)$/) || cardNumberFull.match(/^([A-Za-z0-9]+)$/)
         cardNumber = numOnly ? numOnly[1] : cardNumberFull
         captured++
         continue
