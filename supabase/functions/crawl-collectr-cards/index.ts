@@ -20,90 +20,123 @@ const CATEGORY_TO_GAME: Record<string, string> = {
 
 interface ParsedCard {
   name: string
-  cardNumber: string
-  setCode: string
+  cardNumber: string  // e.g. "001"
+  cardNumberFull: string  // e.g. "001/159"
   rarity: string | null
   imageUrl: string | null
-  variant: string | null
+  variant: string | null  // Normal, Reverse Holofoil, Holofoil, etc.
+  productId: string | null
 }
 
 function buildCanonicalKey(game: string, setCode: string, cardNumber: string, variant?: string | null): string {
   const parts = [game.toLowerCase(), setCode.toLowerCase(), cardNumber.toLowerCase()]
-  if (variant) parts.push(variant.toLowerCase().replace(/\s+/g, '-'))
+  if (variant && variant.toLowerCase() !== 'normal') {
+    parts.push(variant.toLowerCase().replace(/\s+/g, '-'))
+  }
   return parts.join(':')
 }
 
-// Parse Collectr set page markdown for individual cards.
-// Cards typically appear as: ![Name](image-url) followed by "## Name", "CODE-NUM", "Rarity"
-function parseCardsFromMarkdown(markdown: string, fallbackSetCode: string): ParsedCard[] {
-  const cards: ParsedCard[] = []
-  const seen = new Set<string>()
-  const lines = markdown.split('\n')
+// Derive set code from set name when not present in card data.
+// e.g. "OP-11" -> "OP11", "Crown Zenith" -> "CROWNZENITH" (slug fallback)
+function deriveSetCode(setName: string, fallback?: string): string {
+  if (fallback) return fallback.toUpperCase()
+  const codeMatch = setName.match(/\b([A-Z]{1,5})[-\s]?(\d{1,3})\b/)
+  if (codeMatch) return (codeMatch[1] + codeMatch[2]).toUpperCase()
+  return setName.replace(/[^A-Za-z0-9]+/g, '').toUpperCase().slice(0, 16)
+}
 
-  // Card-number pattern e.g. OP11-001, EB03-053, ST-21-002, SV01-123, BLC-001
-  const codeRe = /\b([A-Z]{1,5}\d{0,3}|ST\d{0,3})[\s-]?(\d{2,4})(?:[\s/]+(\w+))?\b/
+/**
+ * Parse Collectr set page markdown. Card entries look like:
+ *
+ *   - ![Name ](.../products/product_NNNNN.jpg...)
+ *
+ *     Name
+ *
+ *     Set Name
+ *
+ *     Rarity•XXX/YYY
+ *
+ *     Variant
+ *
+ *     $price
+ */
+function parseCardsFromMarkdown(markdown: string): ParsedCard[] {
+  const cards: ParsedCard[] = []
+  const lines = markdown.split('\n').map(l => l.trim())
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
-    // Look for catalog-card image (NOT group/set images)
-    const imgMatch = line.match(/!\[([^\]]*)\]\((https:\/\/(?:public\.getcollectr\.com|[^)]*collectr[^)]*)\/[^)]*?(?:cards?|product|catalog)[^)]*)\)/i)
+    const line = lines[i]
+    // Match product image
+    const imgMatch = line.match(/!\[([^\]]*)\]\((https:\/\/[^)]*\/products\/product_(\d+)\.[^)]+)\)/)
     if (!imgMatch) continue
 
-    const altText = imgMatch[1]?.trim() || ''
+    const altName = imgMatch[1]?.trim() || ''
     const imageUrl = imgMatch[2].split('?')[0]
+    const productId = imgMatch[3]
 
-    // Skip group/set hero images
-    if (imageUrl.includes('catalog-groups') || imageUrl.includes('group_')) continue
-
-    // Look ahead up to 10 lines for name + card number + rarity
-    let cardName = altText
+    // Look ahead up to ~25 lines for: name, set, rarity•number, variant
+    let name = altName
     let cardNumber = ''
-    let setCode = fallbackSetCode
+    let cardNumberFull = ''
     let rarity: string | null = null
+    let variant: string | null = null
 
-    for (let j = i + 1; j < Math.min(i + 12, lines.length); j++) {
-      const next = lines[j].trim()
+    let captured = 0
+    for (let j = i + 1; j < Math.min(i + 30, lines.length); j++) {
+      const next = lines[j]
       if (!next) continue
 
-      const heading = next.match(/^#{1,4}\s+(.+)$/)
-      if (heading && (!cardName || cardName.length < 3)) {
-        cardName = heading[1].trim()
+      // Stop at next product image
+      if (next.match(/!\[[^\]]*\]\([^)]*\/products\/product_/)) break
+
+      // Rarity•cardnumber pattern: "Common•001/159" or "Super Rare•OP11-001"
+      const rarityNumMatch = next.match(/^([A-Za-z][A-Za-z\s]+?)\s*[•·]\s*([A-Z0-9-]+\/\d+|\w+-\d+|\d+\/\d+|\d{2,4})\s*$/)
+      if (rarityNumMatch && !cardNumber) {
+        rarity = rarityNumMatch[1].trim()
+        cardNumberFull = rarityNumMatch[2].trim()
+        // Extract just the card number portion: "001/159" -> "001", "OP11-001" -> "001"
+        const numOnly = cardNumberFull.match(/(\d+)\/\d+/) || cardNumberFull.match(/-(\d+)$/) || cardNumberFull.match(/^(\d+)$/)
+        cardNumber = numOnly ? numOnly[1] : cardNumberFull
+        captured++
         continue
       }
 
-      const codeMatch = next.match(codeRe)
-      if (codeMatch && !cardNumber) {
-        setCode = codeMatch[1]
-        cardNumber = codeMatch[2]
+      // Variant detection (after we have rarity)
+      if (rarity && !variant) {
+        const v = next.match(/^(Normal|Reverse Holofoil|Holofoil|Foil|Reverse Foil|Holo|Reverse Holo|Promo|Parallel|1st Edition|Unlimited|Alt Art|Full Art|Showcase|Etched|Borderless)$/i)
+        if (v) {
+          variant = v[1]
+          captured++
+          continue
+        }
       }
 
-      // Rarity keywords
-      const rarityMatch = next.match(/\b(Common|Uncommon|Rare|Super Rare|Secret Rare|Ultra Rare|Special Rare|Promo|Leader|Mythic|Holo|Reverse Holo|Full Art|Alt Art|Secret|SR|UR|SEC|L|C|UC|R|SP)\b/i)
-      if (rarityMatch && !rarity) {
-        rarity = rarityMatch[1]
+      // Name fallback: first plain text line after image, before rarity
+      if (!cardNumber && !name && next.length > 0 && next.length < 100 && !next.startsWith('$') && !next.startsWith('![') && !next.startsWith('-') && !next.startsWith('#')) {
+        name = next
       }
-
-      // Stop if we hit the next image
-      if (next.startsWith('![')) break
     }
 
-    if (!cardNumber || !cardName) continue
-
-    const key = `${setCode}-${cardNumber}`
-    if (seen.has(key)) continue
-    seen.add(key)
-
+    if (!cardNumber) continue
     cards.push({
-      name: cardName,
+      name: name || `Card ${productId}`,
       cardNumber,
-      setCode,
+      cardNumberFull,
       rarity,
       imageUrl,
-      variant: null,
+      variant,
+      productId,
     })
   }
 
-  return cards
+  // Dedupe by productId+variant
+  const seen = new Set<string>()
+  return cards.filter(c => {
+    const k = `${c.productId}:${c.variant || 'normal'}`
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
 }
 
 serve(async (req) => {
@@ -124,15 +157,15 @@ serve(async (req) => {
     const external = createClient(externalUrl, externalKey)
 
     const body = await req.json().catch(() => ({}))
-    const batchSize: number = Math.min(body.batch_size ?? 5, 25)
+    const batchSize: number = Math.min(body.batch_size ?? 3, 10)
 
-    // Pull pending rows
-    // Pull rows ready for crawling. Includes legacy statuses from older pipeline.
+    // Only crawl rows that have a real groupId in the URL — others are useless
     const { data: queue, error: qErr } = await internal
       .from('collectr_scrape_queue')
       .select('id, group_id, set_name, category_id, category_name, url, attempts')
       .in('status', ['pending', 'failed', 'error', 'scraped', 'processing'])
       .lt('attempts', 3)
+      .like('url', '%groupId=%')
       .order('last_scraped_at', { ascending: true, nullsFirst: true })
       .limit(batchSize)
 
@@ -149,7 +182,6 @@ serve(async (req) => {
     for (const row of queue || []) {
       summary.processed++
 
-      // Mark as processing
       await internal
         .from('collectr_scrape_queue')
         .update({ status: 'processing', attempts: (row.attempts || 0) + 1 })
@@ -173,25 +205,17 @@ serve(async (req) => {
         if (!fcRes.ok) throw new Error(fcData.error || `Firecrawl ${fcRes.status}`)
 
         const markdown: string = fcData.data?.markdown || fcData.markdown || ''
-        console.log(`[crawl-cards] ${row.set_name}: markdown ${markdown.length} chars`)
+        const game = CATEGORY_TO_GAME[String(row.category_id)] || 'other'
+        const cards = parseCardsFromMarkdown(markdown)
 
-        const catId = String(row.category_id)
-        const game = CATEGORY_TO_GAME[catId] || 'other'
-
-        // Try to extract a fallback set code from set name (e.g. "OP-11" -> "OP11")
-        const setCodeFromName = (row.set_name.match(/\b([A-Z]{1,4})[-\s]?(\d{1,3})\b/i)?.[0] || '')
-          .replace(/[-\s]/g, '')
-          .toUpperCase()
-
-        const cards = parseCardsFromMarkdown(markdown, setCodeFromName)
-        console.log(`[crawl-cards] ${row.set_name}: parsed ${cards.length} cards`)
+        console.log(`[crawl-cards] ${row.set_name} (group=${row.group_id}): md=${markdown.length}b, parsed=${cards.length}`)
 
         if (cards.length < 5) {
           await internal
             .from('collectr_scrape_queue')
             .update({
               status: 'failed',
-              error_message: `parse_low_yield: only ${cards.length} cards found (markdown=${markdown.length} chars)`,
+              error_message: `parse_low_yield: ${cards.length} cards (md=${markdown.length}b)`,
               last_scraped_at: new Date().toISOString(),
             })
             .eq('id', row.id)
@@ -200,15 +224,19 @@ serve(async (req) => {
           continue
         }
 
+        // Derive set code: prefer card-number prefix (e.g. OP11-001 -> OP11), otherwise from set name
+        const codeFromCard = cards.find(c => c.cardNumberFull.match(/^[A-Z]+\d*-\d+/))?.cardNumberFull.match(/^([A-Z]+\d*)-/)?.[1]
+        const setCode = deriveSetCode(row.set_name, codeFromCard)
+
         let inserted = 0
         for (const c of cards) {
-          const canonicalKey = buildCanonicalKey(game, c.setCode, c.cardNumber, c.variant)
+          const canonicalKey = buildCanonicalKey(game, setCode, c.cardNumber, c.variant)
           const { error: upErr } = await external
             .from('catalog_cards')
             .upsert({
               game,
               canonical_key: canonicalKey,
-              set_code: c.setCode,
+              set_code: setCode,
               set_name: row.set_name,
               card_number: c.cardNumber,
               variant: c.variant,
@@ -235,7 +263,6 @@ serve(async (req) => {
         summary.total_cards_inserted += inserted
         summary.details.push({ set: row.set_name, cards: inserted, status: 'completed' })
 
-        // Throttle Firecrawl
         await new Promise(r => setTimeout(r, 1500))
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
