@@ -2922,7 +2922,9 @@ export type Database = {
       }
       collectr_scrape_queue: {
         Row: {
+          attempts: number
           card_count: number | null
+          cards_inserted: number
           category_id: string
           category_name: string
           created_at: string
@@ -2937,7 +2939,9 @@ export type Database = {
           url: string
         }
         Insert: {
+          attempts?: number
           card_count?: number | null
+          cards_inserted?: number
           category_id: string
           category_name: string
           created_at?: string
@@ -2952,7 +2956,9 @@ export type Database = {
           url: string
         }
         Update: {
+          attempts?: number
           card_count?: number | null
+          cards_inserted?: number
           category_id?: string
           category_name?: string
           created_at?: string
