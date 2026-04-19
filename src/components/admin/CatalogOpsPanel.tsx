@@ -548,6 +548,65 @@ export function CatalogOpsPanel() {
               )}
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Collectr Card Crawler</CardTitle>
+              <CardDescription>
+                Processes the <code>collectr_scrape_queue</code>: scrapes each pending set page via Firecrawl and upserts every card into the external catalog. Runs hourly via cron — use this button for manual backfill.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-3 items-center flex-wrap">
+                <Button
+                  onClick={async () => {
+                    try {
+                      toast({ title: 'Crawl started', description: 'Processing batch of 10 pending sets…' });
+                      const { data, error } = await supabase.functions.invoke('crawl-collectr-cards', {
+                        body: { batch_size: 10 },
+                      });
+                      if (error) throw error;
+                      toast({
+                        title: 'Crawl complete',
+                        description: `Processed ${data.processed} sets · ${data.completed} ok · ${data.failed} failed · ${data.total_cards_inserted} cards inserted`,
+                      });
+                      console.log('[crawl-collectr-cards] result', data);
+                    } catch (err: any) {
+                      toast({ title: 'Crawl failed', description: err.message, variant: 'destructive' });
+                    }
+                  }}
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Crawl 10 Pending Sets
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      toast({ title: 'Large crawl started', description: 'Processing batch of 25…' });
+                      const { data, error } = await supabase.functions.invoke('crawl-collectr-cards', {
+                        body: { batch_size: 25 },
+                      });
+                      if (error) throw error;
+                      toast({
+                        title: 'Crawl complete',
+                        description: `Processed ${data.processed} sets · ${data.total_cards_inserted} cards inserted`,
+                      });
+                      console.log('[crawl-collectr-cards] result', data);
+                    } catch (err: any) {
+                      toast({ title: 'Crawl failed', description: err.message, variant: 'destructive' });
+                    }
+                  }}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Large Backfill (25)
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Hourly cron processes 10 sets per run. Failed sets are retried up to 3 times. Sets with &lt;5 parsed cards are flagged for investigation.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="normalize" className="space-y-4">
